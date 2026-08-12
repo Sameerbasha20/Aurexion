@@ -1,17 +1,24 @@
 import os
 from pathlib import Path
+
 # pyrefly: ignore [missing-import]
+
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Load environment variables
+
 load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'replace-me')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '').split(',')] if os.getenv('ALLOWED_HOSTS') else []
 
+ALLOWED_HOSTS = [
+    'aurexion.onrender.com',
+    'localhost',
+    '127.0.0.1',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -80,7 +87,6 @@ else:
         }
     }
 
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -106,6 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Cache Configuration
+
 import sys
 IS_TESTING = 'test' in sys.argv
 
@@ -132,6 +139,7 @@ else:
     }
 
 # DRF Configuration
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -181,4 +189,3 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'src' / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
