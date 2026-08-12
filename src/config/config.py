@@ -1,1 +1,40 @@
+import os
+from pathlib import Path
+# pyrefly: ignore [missing-import]
+from dotenv import load_dotenv
 
+# Find the project base directory
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Load environment variables
+load_dotenv(BASE_DIR / ".env")
+
+# Administrator Credentials
+ADMINISTRATOR_USERNAME = os.getenv("ADMINISTRATOR_USERNAME")
+ADMINISTRATOR_PASSWORD = os.getenv("ADMINISTRATOR_PASSWORD")
+ADMINISTRATOR_EMAIL = os.getenv("ADMINISTRATOR_EMAIL")
+
+# Business Development Manager Credentials
+BUSINESS_DEV_MANAGER_USERNAME = os.getenv("BUSINESS_DEV_MANAGER_USERNAME")
+BUSINESS_DEV_MANAGER_PASSWORD = os.getenv("BUSINESS_DEV_MANAGER_PASSWORD")
+BUSINESS_DEV_MANAGER_EMAIL = os.getenv("BUSINESS_DEV_MANAGER_EMAIL")
+
+# Sales Executive Credentials
+SALES_EXECUTIVE_USERNAME = os.getenv("SALES_EXECUTIVE_USERNAME")
+SALES_EXECUTIVE_PASSWORD = os.getenv("SALES_EXECUTIVE_PASSWORD")
+SALES_EXECUTIVE_EMAIL = os.getenv("SALES_EXECUTIVE_EMAIL")
+
+# HR Manager Credentials
+HR_MANAGER_USERNAME = os.getenv("HR_MANAGER_USERNAME")
+HR_MANAGER_PASSWORD = os.getenv("HR_MANAGER_PASSWORD")
+HR_MANAGER_EMAIL = os.getenv("HR_MANAGER_EMAIL")
+
+# Content Manager Credentials
+CONTENT_MANAGER_USERNAME = os.getenv("CONTENT_MANAGER_USERNAME")
+CONTENT_MANAGER_PASSWORD = os.getenv("CONTENT_MANAGER_PASSWORD")
+CONTENT_MANAGER_EMAIL = os.getenv("CONTENT_MANAGER_EMAIL")
+
+# Support Executive Credentials
+SUPPORT_EXECUTIVE_USERNAME = os.getenv("SUPPORT_EXECUTIVE_USERNAME")
+SUPPORT_EXECUTIVE_PASSWORD = os.getenv("SUPPORT_EXECUTIVE_PASSWORD")
+SUPPORT_EXECUTIVE_EMAIL = os.getenv("SUPPORT_EXECUTIVE_EMAIL")
