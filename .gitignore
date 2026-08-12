@@ -1,11 +1,45 @@
+# Virtual Environment
+.venv/
 venv/
+env/
+ENV/
+
+# Local Environment Variables
 .env
+.env.local
+.env.*.local
+
+# Python Compiled Files
 *.pyc
+*.pyo
+*.pyd
 __pycache__/
+
+# Databases & Cache
 db.sqlite3
 *.sqlite3
+.pytest_cache/
+
+# IDE & Editor Configs
 .DS_Store
 .idea/
 .vscode/
+*.swp
+*.swo
+
+# Media & Static Uploads
 media/*
 !media/**/.gitkeep
+staticfiles/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Testing & Coverage
+.coverage
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+*.log

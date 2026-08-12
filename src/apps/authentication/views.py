@@ -1,1 +1,286 @@
-from django.shortcuts import render
+import time
+from django.core.cache import cache
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
+from rest_framework import status, viewsets, filters
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from apps.authentication.models import AuditLog
+from apps.authentication.serializers import (
+    UserSerializer, LoginSerializer, AuditLogSerializer
+)
+from apps.authentication.audit import log_audit_event, get_model_state, get_client_ip
+from apps.rbac.permissions import IsSuperAdmin, IsAdministrator
+
+# --- Lockout Throttling Utilities ---
+
+def get_lockout_keys(username, ip):
+    return {
+        'fail_user': f"login_failures:u:{username}",
+        'fail_ip': f"login_failures:ip:{ip}",
+        'lock_user': f"login_lockout:u:{username}",
+        'lock_ip': f"login_lockout:ip:{ip}",
+        'release_user': f"login_lockout_release:u:{username}",
+        'release_ip': f"login_lockout_release:ip:{ip}",
+    }
+
+def is_locked_out(username, ip):
+    keys = get_lockout_keys(username, ip)
+    return cache.get(keys['lock_user']) or cache.get(keys['lock_ip'])
+
+def get_lockout_cooldown(username, ip):
+    keys = get_lockout_keys(username, ip)
+    release_time = cache.get(keys['release_user']) or cache.get(keys['release_ip'])
+    if release_time:
+        remaining = release_time - time.time()
+        return max(int(remaining), 0)
+    return 0
+
+def record_failed_attempt(username, ip):
+    keys = get_lockout_keys(username, ip)
+    
+    # Increment fail counts (cooldown reset/expire in 5 minutes)
+    for type_key in ['fail_user', 'fail_ip']:
+        key = keys[type_key]
+        attempts = cache.get(key, 0) + 1
+        cache.set(key, attempts, 300)
+        
+        # If failure limit reached, trigger lockout for 15 minutes (900 seconds)
+        if attempts >= 5:
+            lock_key = keys['lock_user'] if type_key == 'fail_user' else keys['lock_ip']
+            release_key = keys['release_user'] if type_key == 'fail_user' else keys['release_ip']
+            cache.set(lock_key, True, 900)
+            cache.set(release_key, time.time() + 900, 900)
+
+def clear_failed_attempts(username, ip):
+    keys = get_lockout_keys(username, ip)
+    for k in keys.values():
+        cache.delete(k)
+
+# --- Authentication Views ---
+
+class LoginView(APIView):
+    """
+    Endpoint: POST /api/v1/auth/login/
+    Allows users to log in and obtain JWT access and refresh tokens.
+    Implements a lockout after 5 failed attempts per user or per IP.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+        ip = get_client_ip(request) or 'unknown'
+
+        # Check for Lockout
+        if is_locked_out(username, ip):
+            cooldown = get_lockout_cooldown(username, ip)
+            # Log audit event for lock attempt
+            log_audit_event(
+                user=None,
+                action='LOGIN_FAILURE',
+                module='authentication',
+                repr_str=f"Throttled login attempt for user: {username} (Locked out)",
+                request=request
+            )
+            return Response(
+                {"detail": f"Too many failed login attempts. Please try again in {cooldown} seconds."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+            )
+
+        # Authenticate User
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            if user.is_active:
+                clear_failed_attempts(username, ip)
+                refresh = RefreshToken.for_user(user)
+                
+                # Log success audit
+                log_audit_event(
+                    user=user,
+                    action='LOGIN_SUCCESS',
+                    module='authentication',
+                    repr_str=f"Successful login for user: {username}",
+                    request=request
+                )
+
+                role = user.profile.role if hasattr(user, 'profile') else 'client_user'
+                return Response({
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'role': role
+                    }
+                }, status=status.HTTP_200_OK)
+            else:
+                # User exists but is inactive
+                record_failed_attempt(username, ip)
+                log_audit_event(
+                    user=user,
+                    action='LOGIN_FAILURE',
+                    module='authentication',
+                    repr_str=f"Failed login attempt for inactive user: {username}",
+                    request=request
+                )
+                return Response(
+                    {"detail": "This account is inactive."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            # Invalid credentials
+            record_failed_attempt(username, ip)
+            
+            # Attempt to find if user exists to link to audit log, otherwise log as anonymous user
+            try:
+                db_user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                db_user = None
+
+            log_audit_event(
+                user=db_user,
+                action='LOGIN_FAILURE',
+                module='authentication',
+                repr_str=f"Failed login attempt for username: {username} (Invalid credentials)",
+                request=request
+            )
+            return Response(
+                {"detail": "Invalid username or password."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class UserProfileView(APIView):
+    """
+    Endpoint: GET /api/v1/auth/me/
+    Retrieves the current user's profile and role.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        role = user.profile.role if hasattr(user, 'profile') else 'client_user'
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': role,
+            'date_joined': user.date_joined
+        }, status=status.HTTP_200_OK)
+
+
+# --- User Management Views (RBAC Protected) ---
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    Endpoint: /api/v1/users/
+    Handles User management and RBAC assignment.
+    Requires IsAdministrator (which covers Admin and Super Admin).
+    Prevents privilege escalation.
+    """
+    queryset = User.objects.select_related('profile').all().order_by('-date_joined')
+    serializer_class = UserSerializer
+    permission_classes = [IsAdministrator]
+
+    def perform_create(self, serializer):
+        role = self.request.data.get('role', 'client_user')
+        request_user_role = getattr(self.request.user, 'profile', None).role if hasattr(self.request.user, 'profile') else None
+
+        # Check privilege escalation
+        if role == 'super_admin' and request_user_role != 'super_admin':
+            raise PermissionDenied("Only Super Admins can assign the Super Admin role.")
+
+        user = serializer.save()
+        
+        # Log Audit event
+        log_audit_event(
+            user=self.request.user,
+            action='CREATE',
+            module='authentication',
+            object_id=user.id,
+            repr_str=f"Created user account: {user.username} with role: {role}",
+            updated_state=get_model_state(user),
+            request=self.request
+        )
+
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        prev_state = get_model_state(instance)
+        role = self.request.data.get('role')
+        request_user_role = getattr(self.request.user, 'profile', None).role if hasattr(self.request.user, 'profile') else None
+
+        # Prevent non-super_admin from assigning super_admin
+        if role == 'super_admin' and request_user_role != 'super_admin':
+            raise PermissionDenied("Only Super Admins can assign the Super Admin role.")
+
+        # Prevent non-super_admin from modifying super_admin accounts
+        if hasattr(instance, 'profile') and instance.profile.role == 'super_admin' and request_user_role != 'super_admin':
+            raise PermissionDenied("Only Super Admins can modify Super Admin accounts.")
+
+        user = serializer.save()
+        
+        # Log Audit event
+        log_audit_event(
+            user=self.request.user,
+            action='UPDATE',
+            module='authentication',
+            object_id=user.id,
+            repr_str=f"Updated user account: {user.username}",
+            previous_state=prev_state,
+            updated_state=get_model_state(user),
+            request=self.request
+        )
+
+    def perform_destroy(self, instance):
+        request_user_role = getattr(self.request.user, 'profile', None).role if hasattr(self.request.user, 'profile') else None
+
+        # Prevent non-super_admin from deleting super_admin accounts
+        if hasattr(instance, 'profile') and instance.profile.role == 'super_admin' and request_user_role != 'super_admin':
+            raise PermissionDenied("Only Super Admins can delete Super Admin accounts.")
+
+        prev_state = get_model_state(instance)
+        username = instance.username
+        user_id = instance.id
+        
+        instance.delete()
+        
+        # Log Audit event
+        log_audit_event(
+            user=self.request.user,
+            action='DELETE',
+            module='authentication',
+            object_id=user_id,
+            repr_str=f"Deleted user account: {username}",
+            previous_state=prev_state,
+            request=self.request
+        )
+
+
+# --- Audit Log Viewer (Super Admin Only) ---
+
+class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Endpoint: /api/v1/audit-logs/
+    Allows Super Admins to view and search audit events.
+    Immutable log: read-only actions (list and retrieve) only.
+    """
+    queryset = AuditLog.objects.select_related('user').all()
+    serializer_class = AuditLogSerializer
+    permission_classes = [IsSuperAdmin]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['action', 'module', 'object_id', 'ip_address', 'user__username', 'repr']
+    ordering_fields = ['timestamp']
+    ordering = ['-timestamp']
