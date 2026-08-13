@@ -16,10 +16,18 @@ else:
 # In this project, the SECRET_KEY is set to the Supabase Service Role Key
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', settings.SECRET_KEY)
 
+# Defers the error check to function invocation to avoid Django import crashes during local dev/commands
+import logging
+logger = logging.getLogger(__name__)
+
 if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-    raise ImproperlyConfigured("Supabase URL and Service Role Key are required for Resume Storage.")
+    logger.warning("Supabase URL and Service Role Key are not configured. Resume storage functions will fail.")
 
 BUCKET_NAME = "candidate-resumes"
+
+def _check_storage_configured():
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        raise ImproperlyConfigured("Supabase URL and Service Role Key are required for Resume Storage.")
 
 def upload_resume(file_path, file_content, content_type):
     """
@@ -27,6 +35,7 @@ def upload_resume(file_path, file_content, content_type):
     file_path: applications/<tracking_code>/<safe_filename>
     file_content: bytes
     """
+    _check_storage_configured()
     url = f"{SUPABASE_URL}/storage/v1/object/{BUCKET_NAME}/{file_path}"
     
     req = urllib.request.Request(url, data=file_content, method='POST')
@@ -45,6 +54,7 @@ def generate_signed_url(file_path, expires_in=60):
     """
     Generates a short-lived signed URL for a file in Supabase storage.
     """
+    _check_storage_configured()
     url = f"{SUPABASE_URL}/storage/v1/object/sign/{BUCKET_NAME}/{file_path}"
     
     data = json.dumps({"expiresIn": expires_in}).encode('utf-8')
@@ -66,6 +76,7 @@ def delete_resume(file_path):
     """
     Deletes a file from Supabase storage (used for cleanup if DB save fails).
     """
+    _check_storage_configured()
     url = f"{SUPABASE_URL}/storage/v1/object/{BUCKET_NAME}/{file_path}"
     
     req = urllib.request.Request(url, method='DELETE')

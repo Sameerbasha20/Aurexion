@@ -14,7 +14,7 @@ from apps.authentication.serializers import (
     UserSerializer, LoginSerializer, AuditLogSerializer
 )
 from apps.authentication.audit import log_audit_event, get_model_state, get_client_ip
-from apps.rbac.permissions import IsSuperAdmin, IsAdministrator
+from apps.administration.permissions import IsSuperAdmin, IsAdministrator
 
 # --- Lockout Throttling Utilities ---
 
