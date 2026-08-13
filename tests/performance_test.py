@@ -16,23 +16,57 @@ if 'testserver' not in settings.ALLOWED_HOSTS:
 settings.PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.MD5PasswordHasher',
 ]
+settings.REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+    'anon': '100000/min',
+    'user': '100000/min',
+}
 
 from rest_framework.test import APIClient
 from django.contrib.auth.models import User
+from apps.cms.models import Service, CaseStudy, Industry, Category, BlogPost
 
 def run_performance_test():
     client = APIClient()
     
-    print("Setting up temporary test user for benchmarking...")
+    print("Setting up temporary test user and CMS data for benchmarking...")
     username = "perf_test_user"
     password = "PerfP@ssword10"
     
     # Ensure a clean state
     User.objects.filter(username=username).delete()
+    Service.objects.filter(slug="perf-service").delete()
+    CaseStudy.objects.filter(slug="perf-case-study").delete()
+    Industry.objects.filter(slug="perf-industry").delete()
+    Category.objects.filter(slug="perf-category").delete()
+    BlogPost.objects.filter(slug="perf-blog").delete()
     
     user = User.objects.create_user(username=username, password=password, email="perf@test.com")
     user.profile.role = 'super_admin'
     user.profile.save()
+    
+    # Seed CMS data
+    service = Service.objects.create(
+        title="Perf Service", slug="perf-service", description="perf", 
+        problem="perf", solution="perf", status="published"
+    )
+    case_study = CaseStudy.objects.create(
+        title="Perf Case Study", slug="perf-case-study", client="perf",
+        context="perf", business_challenge="perf", proposed_architecture="perf",
+        development_approach="perf", modules_integration_security="perf",
+        outcomes_performance="perf", status="published"
+    )
+    industry = Industry.objects.create(
+        name="Perf Industry", slug="perf-industry", challenges="perf",
+        target_solutions="perf", status="published"
+    )
+    industry.services.add(service)
+    industry.case_studies.add(case_study)
+    
+    category = Category.objects.create(name="Perf Category", slug="perf-category")
+    BlogPost.objects.create(
+        title="Perf Blog", slug="perf-blog", content="perf",
+        category=category, author=user, status="published"
+    )
     
     print("Warming up endpoints to avoid database connection initialization overhead...")
     # Warmup calls
@@ -41,6 +75,11 @@ def run_performance_test():
     client.get('/api/v1/auth/me/')
     client.get('/api/v1/users/')
     client.get('/api/v1/audit-logs/')
+    client.get('/api/v1/roles/')
+    client.get('/api/v1/cms/public/services/perf-service/')
+    client.get('/api/v1/cms/public/industries/perf-industry/')
+    client.get('/api/v1/cms/public/case-studies/')
+    client.get('/api/v1/cms/public/blog/')
     
     iterations = 50
     endpoints = {
@@ -67,6 +106,36 @@ def run_performance_test():
             'url': '/api/v1/audit-logs/',
             'data': None,
             'needs_auth': True
+        },
+        'Role List (GET /api/v1/roles/)': {
+            'type': 'GET',
+            'url': '/api/v1/roles/',
+            'data': None,
+            'needs_auth': True
+        },
+        'CMS Service Detail (GET /api/v1/cms/public/services/perf-service/)': {
+            'type': 'GET',
+            'url': '/api/v1/cms/public/services/perf-service/',
+            'data': None,
+            'needs_auth': False
+        },
+        'CMS Industry Detail (GET /api/v1/cms/public/industries/perf-industry/)': {
+            'type': 'GET',
+            'url': '/api/v1/cms/public/industries/perf-industry/',
+            'data': None,
+            'needs_auth': False
+        },
+        'CMS Case Study List (GET /api/v1/cms/public/case-studies/)': {
+            'type': 'GET',
+            'url': '/api/v1/cms/public/case-studies/',
+            'data': None,
+            'needs_auth': False
+        },
+        'CMS Blog List (GET /api/v1/cms/public/blog/)': {
+            'type': 'GET',
+            'url': '/api/v1/cms/public/blog/',
+            'data': None,
+            'needs_auth': False
         }
     }
     
@@ -108,6 +177,11 @@ def run_performance_test():
         
     print("Cleaning up benchmarking data...")
     User.objects.filter(username=username).delete()
+    Service.objects.filter(slug="perf-service").delete()
+    CaseStudy.objects.filter(slug="perf-case-study").delete()
+    Industry.objects.filter(slug="perf-industry").delete()
+    Category.objects.filter(slug="perf-category").delete()
+    BlogPost.objects.filter(slug="perf-blog").delete()
     
     # Save the markdown report to the tests/ folder
     report_path = os.path.join(os.path.dirname(__file__), 'performance_report.md')
