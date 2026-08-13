@@ -34,6 +34,7 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 from config import config
+from apps.administration.models import Role, ModulePermission
 
 User = get_user_model()
 
@@ -42,6 +43,15 @@ User = get_user_model()
 # ---------------------------------------------------------
 
 MODULE_ADMINS = [
+    {
+        "module": "Super Admin",
+        "username": "super_admin",
+        "password": "SuperAdmin@2026",
+        "email": "superadmin@aurexion.com",
+        "role": "super_admin",
+        "is_staff": True,
+        "is_superuser": True,
+    },
     {
         "module": "Administrator",
         "username": config.ADMINISTRATOR_USERNAME,
@@ -98,9 +108,119 @@ MODULE_ADMINS = [
     },
 ]
 
+ROLES_METADATA = [
+    {
+        'code': 'super_admin',
+        'name': 'Super Admin',
+        'description': 'Full access to all modules and configurations',
+        'permissions': {
+            'authentication': (True, True, True, True),
+            'recruitment': (True, True, True, True),
+            'cms': (True, True, True, True),
+            'crm': (True, True, True, True),
+            'portal': (True, True, True, True),
+            'rbac': (True, True, True, True),
+        }
+    },
+    {
+        'code': 'administrator',
+        'name': 'Administrator',
+        'description': 'Administrative settings, users and roles management',
+        'permissions': {
+            'authentication': (True, True, True, True),
+            'rbac': (True, True, True, True),
+            'recruitment': (True, True, True, False),
+            'cms': (True, True, True, True),
+            'crm': (True, True, True, True),
+            'portal': (True, True, True, True),
+        }
+    },
+    {
+        'code': 'bdm',
+        'name': 'Business Development Manager',
+        'description': 'Manages clients, leads and contracts',
+        'permissions': {
+            'crm': (True, True, True, True),
+            'portal': (True, True, True, False),
+        }
+    },
+    {
+        'code': 'sales_executive',
+        'name': 'Sales Executive',
+        'description': 'Handles sales leads and pipelines',
+        'permissions': {
+            'crm': (True, True, True, False),
+        }
+    },
+    {
+        'code': 'hr_manager',
+        'name': 'HR Manager',
+        'description': 'ATS, recruitment, and candidate tracking',
+        'permissions': {
+            'recruitment': (True, True, True, True),
+        }
+    },
+    {
+        'code': 'content_manager',
+        'name': 'Content Manager',
+        'description': 'Manages website content, pages and media',
+        'permissions': {
+            'cms': (True, True, True, True),
+        }
+    },
+    {
+        'code': 'support_executive',
+        'name': 'Support Executive',
+        'description': 'Client support, tickets and helpdesk',
+        'permissions': {
+            'crm': (False, True, True, False),
+            'portal': (True, True, True, False),
+            'cms': (False, True, False, False),
+        }
+    },
+    {
+        'code': 'client_user',
+        'name': 'Client User',
+        'description': 'Standard client portal user',
+        'permissions': {
+            'portal': (True, True, True, False),
+        }
+    }
+]
+
 # ---------------------------------------------------------
 # Helpers & Execution
 # ---------------------------------------------------------
+
+def seed_roles_and_permissions():
+    print("Seeding Roles and Module Permissions...")
+    for role_data in ROLES_METADATA:
+        role, created = Role.objects.get_or_create(
+            code=role_data['code'],
+            defaults={
+                'name': role_data['name'],
+                'description': role_data['description']
+            }
+        )
+        if not created:
+            role.name = role_data['name']
+            role.description = role_data['description']
+            role.save()
+            
+        # Seed permissions
+        permissions = role_data['permissions']
+        for module, (c, r, u, d) in permissions.items():
+            ModulePermission.objects.update_or_create(
+                role=role,
+                module=module,
+                defaults={
+                    'can_create': c,
+                    'can_read': r,
+                    'can_update': u,
+                    'can_delete': d
+                }
+            )
+    print("Roles and permissions seeded.")
 
 def create_or_update_admin(module_config):
     module = module_config["module"]
@@ -155,6 +275,9 @@ def main():
     print("=" * 60)
     print("AUREXION MODULE ADMIN INITIALIZATION & ROLE SYNCHRONIZATION")
     print("=" * 60)
+
+    # Seed roles and permissions first
+    seed_roles_and_permissions()
 
     for module_config in MODULE_ADMINS:
         create_or_update_admin(module_config)

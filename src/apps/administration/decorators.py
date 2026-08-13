@@ -1,12 +1,13 @@
 from functools import wraps
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
+from apps.administration.permissions import has_module_permission
 
 def role_required(*roles):
     """
-    Decorator to restrict access to views based on user roles.
+    Decorator to restrict access to views based on user roles and dynamic database permissions.
     If the user is not logged in, they are redirected to the login page.
-    If the user is logged in but does not have the required role, a 403 PermissionDenied is raised.
+    If the user is logged in but does not have the required role or lacks permission, a 403 PermissionDenied is raised.
     """
     def decorator(view_func):
         @wraps(view_func)
@@ -19,7 +20,19 @@ def role_required(*roles):
                 return view_func(request, *args, **kwargs)
                 
             if hasattr(request.user, 'profile') and request.user.profile.role in roles:
-                return view_func(request, *args, **kwargs)
+                role_code = request.user.profile.role
+                role_module_map = {
+                    'administrator': 'authentication',
+                    'bdm': 'crm',
+                    'sales_executive': 'crm',
+                    'hr_manager': 'recruitment',
+                    'content_manager': 'cms',
+                    'support_executive': 'crm',
+                    'client_user': 'portal'
+                }
+                module = role_module_map.get(role_code, 'portal')
+                if has_module_permission(request.user, module, 'read'):
+                    return view_func(request, *args, **kwargs)
                 
             raise PermissionDenied
         return _wrapped_view
@@ -49,4 +62,3 @@ def support_executive_required(view_func):
 
 def client_user_required(view_func):
     return role_required('super_admin', 'client_user')(view_func)
-

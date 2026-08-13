@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_spectacular',
     'apps.authentication',
-    'apps.rbac',
+    'apps.administration',
     'apps.cms',
     'apps.crm',
     'apps.portal',
