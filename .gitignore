@@ -43,3 +43,7 @@ nosetests.xml
 coverage.xml
 *.cover
 *.log
+
+# HR/ATS Module - Test files (report kept, test scripts excluded)
+tests/recruitment/test_hr_api.py
+tests/recruitment/test_hr_performance.py

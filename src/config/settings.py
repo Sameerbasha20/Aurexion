@@ -31,11 +31,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_spectacular',
     'apps.authentication',
-    'apps.rbac',
+    'apps.administration',
     'apps.cms',
     'apps.crm',
     'apps.portal',
     'apps.recruitment',
+    'apps.bdm',
 ]
 
 MIDDLEWARE = [
@@ -178,6 +179,14 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API documentation for Aurexion Technologies platform.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'ENUM_NAME_OVERRIDES': {
+        'LeadStatusEnum': 'apps.crm.models.LeadStatus',
+        'LeadPriorityEnum': 'apps.crm.models.LeadPriority',
+        'LeadFollowUpStatusEnum': 'apps.crm.models.LeadFollowUpStatus',
+        'LeadFollowUpTypeEnum': 'apps.crm.models.LeadFollowUpType',
+        'JobStatusEnum': 'apps.recruitment.models.JobVacancy.Status',
+        'ApplicationStageEnum': 'apps.recruitment.models.CandidateApplication.Stage',
+    },
 }
 
 LANGUAGE_CODE = 'en-us'

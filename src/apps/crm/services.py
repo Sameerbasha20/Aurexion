@@ -1,1 +1,490 @@
-# Placeholder CRM services module
+import secrets
+import string
+
+from django.db import IntegrityError, transaction
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from rest_framework import status
+from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
+
+from apps.authentication.audit import get_model_state, log_audit_event
+from apps.crm.models import Lead, LeadFollowUp, LeadNote
+
+REFERENCE_PREFIX = "AUR-LEAD-"
+REFERENCE_ALPHABET = string.ascii_uppercase + string.digits
+REFERENCE_SUFFIX_LENGTH = 8
+REFERENCE_MAX_RETRIES = 5
+
+# Roles that are valid lead assignment targets (BDM / Sales pipeline users).
+ASSIGNABLE_ROLES = {"super_admin", "administrator", "bdm", "sales_executive"}
+
+# Roles allowed to update any note (admins) vs. only own notes.
+NOTE_ADMIN_ROLES = {"super_admin", "administrator", "bdm"}
+
+STATUS_TRANSITIONS = {
+    Lead.Status.NEW: {
+        Lead.Status.UNDER_REVIEW,
+        Lead.Status.CONTACTED,
+        Lead.Status.LOST,
+    },
+    Lead.Status.UNDER_REVIEW: {
+        Lead.Status.CONTACTED,
+        Lead.Status.LOST,
+    },
+    Lead.Status.CONTACTED: {
+        Lead.Status.QUALIFIED,
+        Lead.Status.LOST,
+    },
+    Lead.Status.QUALIFIED: {
+        Lead.Status.PROPOSAL_SUBMITTED,
+        Lead.Status.LOST,
+    },
+    Lead.Status.PROPOSAL_SUBMITTED: {
+        Lead.Status.NEGOTIATION,
+        Lead.Status.LOST,
+    },
+    Lead.Status.NEGOTIATION: {
+        Lead.Status.WON,
+        Lead.Status.LOST,
+    },
+    Lead.Status.WON: set(),
+    Lead.Status.LOST: set(),
+}
+
+
+class LeadStateTransitionError(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "Invalid lead status transition."
+    default_code = "invalid_transition"
+
+
+def generate_reference():
+    """
+    Generate a server-side business reference identifier.
+
+    The reference is random (not sequential), never derived from client input,
+    and uniqueness is enforced at the database level by the `unique=True`
+    constraint on Lead.reference_id. The random component uses the cryptographically
+    strong `secrets` module to avoid predictable identifiers.
+    """
+    suffix = "".join(secrets.choice(REFERENCE_ALPHABET) for _ in range(REFERENCE_SUFFIX_LENGTH))
+    return f"{REFERENCE_PREFIX}{suffix}"
+
+
+def get_user_role(user):
+    return getattr(getattr(user, "profile", None), "role", None)
+
+
+def _status_label(value):
+    return dict(Lead.Status.choices).get(value, value)
+
+
+def validate_assignable_user(user):
+    """
+    Validate that a target user can receive a lead assignment.
+
+    The user must exist, be active, and hold a CRM pipeline role.
+    """
+    if user is None:
+        raise ValidationError("An assigned user is required.")
+    if not user.is_active:
+        raise ValidationError(f"User '{user.username}' is inactive and cannot be assigned leads.")
+    role = get_user_role(user)
+    if role not in ASSIGNABLE_ROLES:
+        raise ValidationError(
+            f"User '{user.username}' does not hold an assignable role (BDM or Sales Executive)."
+        )
+
+
+def _sync_lead_next_follow_up(lead):
+    """
+    Recompute the lead's next_follow_up_at from its earliest open follow-up.
+
+    Open statuses are PENDING and IN_PROGRESS.
+    """
+    earliest = (
+        lead.follow_ups.filter(status__in=LeadFollowUp.OPEN_STATUSES)
+        .order_by("scheduled_at")
+        .values_list("scheduled_at", flat=True)
+        .first()
+    )
+    updated_fields = ["updated_at"]
+    if lead.next_follow_up_at != earliest:
+        lead.next_follow_up_at = earliest
+        updated_fields.append("next_follow_up_at")
+    lead.save(update_fields=updated_fields)
+
+
+def create_lead(*, actor, request=None, **data):
+    """
+    Create a lead with a unique, server-generated reference identifier.
+
+    Assignment targets are validated before persistence. Reference collisions are
+    handled with bounded retries inside an atomic savepoint.
+    """
+    assignee = data.pop("assigned_to", None)
+    if assignee is not None:
+        validate_assignable_user(assignee)
+
+    for attempt in range(REFERENCE_MAX_RETRIES):
+        try:
+            with transaction.atomic():
+                lead = Lead.objects.create(
+                    reference_id=generate_reference(),
+                    created_by=actor,
+                    assigned_to=assignee,
+                    **data,
+                )
+            break
+        except IntegrityError:
+            if attempt == REFERENCE_MAX_RETRIES - 1:
+                raise
+
+    log_audit_event(
+        user=actor,
+        action="LEAD_CREATED",
+        module="crm",
+        object_id=lead.id,
+        repr_str=f"Lead {lead.reference_id} created",
+        updated_state=get_model_state(lead),
+        request=request,
+    )
+    return lead
+
+
+def change_lead_stage(*, lead, new_status, actor, request=None):
+    """
+    Transition a lead between lifecycle states, validating the transition.
+
+    Terminal states (WON/LOST) cannot transition further. Invalid transitions
+    raise LeadStateTransitionError (HTTP 409 Conflict).
+    """
+    if new_status == lead.status:
+        return lead
+
+    allowed = STATUS_TRANSITIONS.get(lead.status, set())
+    if new_status not in allowed:
+        raise LeadStateTransitionError(
+            f"Lead {lead.reference_id} cannot transition from "
+            f"'{_status_label(lead.status)}' to '{_status_label(new_status)}'."
+        )
+
+    previous = lead.status
+    lead.status = new_status
+    lead.save(update_fields=["status", "updated_at"])
+
+    log_audit_event(
+        user=actor,
+        action="LEAD_STATUS_CHANGED",
+        module="crm",
+        object_id=lead.id,
+        repr_str=(
+            f"Lead {lead.reference_id} status changed from "
+            f"'{_status_label(previous)}' to '{_status_label(lead.status)}'"
+        ),
+        previous_state={"status": previous},
+        updated_state={"status": lead.status},
+        request=request,
+    )
+    return lead
+
+
+def qualify_lead(*, lead, actor, request=None):
+    """Move a lead to QUALIFIED (valid only from CONTACTED)."""
+    return change_lead_stage(
+        lead=lead,
+        new_status=Lead.Status.QUALIFIED,
+        actor=actor,
+        request=request,
+    )
+
+
+def mark_lead_won(*, lead, actor, request=None):
+    """Mark a lead as WON (valid only from NEGOTIATION)."""
+    return change_lead_stage(
+        lead=lead,
+        new_status=Lead.Status.WON,
+        actor=actor,
+        request=request,
+    )
+
+
+def mark_lead_lost(*, lead, actor, reason, request=None):
+    """
+    Mark a lead as LOST (valid from most active states).
+
+    A non-empty business reason is required; it is stored on the lead and
+    included in the audit history so losses remain explainable.
+    """
+    if lead.status == Lead.Status.LOST:
+        return lead
+
+    allowed = STATUS_TRANSITIONS.get(lead.status, set())
+    if Lead.Status.LOST not in allowed:
+        raise LeadStateTransitionError(
+            f"Lead {lead.reference_id} cannot be marked as lost from "
+            f"'{_status_label(lead.status)}'."
+        )
+
+    reason = (reason or "").strip()
+    if not reason:
+        raise ValidationError("A reason is required when a lead is marked as lost.")
+
+    previous = lead.status
+    lead.status = Lead.Status.LOST
+    lead.lost_reason = reason
+    lead.save(update_fields=["status", "lost_reason", "updated_at"])
+
+    log_audit_event(
+        user=actor,
+        action="LEAD_LOST",
+        module="crm",
+        object_id=lead.id,
+        repr_str=(
+            f"Lead {lead.reference_id} marked as lost from "
+            f"'{_status_label(previous)}'. Reason: {reason}"
+        ),
+        previous_state={"status": previous},
+        updated_state={"status": Lead.Status.LOST, "lost_reason": reason},
+        request=request,
+    )
+    return lead
+
+
+def reopen_lost_lead(*, lead, actor, request=None):
+    """
+    Reopen a LOST lead back into the active pipeline.
+
+    The lead returns to NEW and its lost reason is cleared so the fresh
+    lifecycle starts with a clean slate. Only LOST leads can be reopened.
+    """
+    if lead.status != Lead.Status.LOST:
+        raise LeadStateTransitionError(
+            f"Lead {lead.reference_id} is not lost and cannot be reopened."
+        )
+
+    previous_reason = lead.lost_reason
+    lead.status = Lead.Status.NEW
+    lead.lost_reason = ""
+    lead.save(update_fields=["status", "lost_reason", "updated_at"])
+
+    log_audit_event(
+        user=actor,
+        action="LEAD_REOPENED",
+        module="crm",
+        object_id=lead.id,
+        repr_str=(
+            f"Lead {lead.reference_id} reopened into the pipeline"
+            f"{f' (previous reason: {previous_reason})' if previous_reason else ''}"
+        ),
+        previous_state={"status": Lead.Status.LOST},
+        updated_state={"status": Lead.Status.NEW, "lost_reason": ""},
+        request=request,
+    )
+    return lead
+
+
+def assign_lead(*, lead, target_user, actor, request=None):
+    """
+    Assign (or reassign) a lead to an authorized, active user.
+
+    Previous and resulting assignees are recorded in the audit history.
+    """
+    validate_assignable_user(target_user)
+
+    previous = lead.assigned_to
+    if previous == target_user:
+        return lead
+
+    lead.assigned_to = target_user
+    lead.save(update_fields=["assigned_to", "updated_at"])
+
+    action = "LEAD_ASSIGNED" if previous is None else "LEAD_REASSIGNED"
+    log_audit_event(
+        user=actor,
+        action=action,
+        module="crm",
+        object_id=lead.id,
+        repr_str=(
+            f"Lead {lead.reference_id} assigned from "
+            f"'{previous.username if previous else 'unassigned'}' to '{target_user.username}'"
+        ),
+        previous_state={"assigned_to": previous.username if previous else None},
+        updated_state={"assigned_to": target_user.username},
+        request=request,
+    )
+    return lead
+
+
+def schedule_followup(*, lead, actor, scheduled_at, follow_up_type, notes="", assigned_to=None, request=None):
+    """
+    Create a follow-up and refresh the lead's next_follow_up_at.
+    """
+    if assigned_to is not None:
+        validate_assignable_user(assigned_to)
+
+    if isinstance(scheduled_at, str):
+        scheduled_at = parse_datetime(scheduled_at)
+        if scheduled_at is None:
+            raise ValidationError("scheduled_at must be a valid datetime.")
+
+    followup = LeadFollowUp.objects.create(
+        lead=lead,
+        created_by=actor,
+        assigned_to=assigned_to,
+        follow_up_type=follow_up_type,
+        scheduled_at=scheduled_at,
+        notes=notes,
+    )
+    _sync_lead_next_follow_up(lead)
+
+    log_audit_event(
+        user=actor,
+        action="FOLLOWUP_CREATED",
+        module="crm",
+        object_id=lead.id,
+        repr_str=f"Follow-up scheduled for lead {lead.reference_id} at {scheduled_at.isoformat()}",
+        updated_state=get_model_state(followup),
+        request=request,
+    )
+    return followup
+
+
+def update_followup(*, followup, actor, request=None, **data):
+    """
+    Update follow-up fields, refusing edits to an already completed follow-up
+    except by authorized administrators.
+    """
+    role = get_user_role(actor)
+    if followup.status == LeadFollowUp.Status.COMPLETED and role not in NOTE_ADMIN_ROLES:
+        raise ValidationError("A completed follow-up cannot be modified.")
+
+    old_scheduled_at = followup.scheduled_at
+    old_status = followup.status
+
+    for field, value in data.items():
+        setattr(followup, field, value)
+    followup.save()
+
+    if data.get("scheduled_at") != old_scheduled_at or data.get("status") != old_status:
+        _sync_lead_next_follow_up(followup.lead)
+
+    log_audit_event(
+        user=actor,
+        action="FOLLOWUP_UPDATED",
+        module="crm",
+        object_id=followup.lead.id,
+        repr_str=f"Follow-up updated for lead {followup.lead.reference_id}",
+        updated_state=get_model_state(followup),
+        request=request,
+    )
+    return followup
+
+
+def delete_followup(*, followup, actor, request=None):
+    """Delete a follow-up (restricted to BDM/administrator roles)."""
+    role = get_user_role(actor)
+    if role not in ("super_admin", "administrator", "bdm"):
+        raise PermissionDenied("You are not allowed to delete this follow-up.")
+
+    lead = followup.lead
+    followup.delete()
+    _sync_lead_next_follow_up(lead)
+
+    log_audit_event(
+        user=actor,
+        action="FOLLOWUP_DELETED",
+        module="crm",
+        object_id=lead.id,
+        repr_str=f"Follow-up deleted for lead {lead.reference_id}",
+        request=request,
+    )
+
+
+def complete_followup(*, followup, actor, request=None):
+    """
+    Complete a follow-up and record the lead's last_contacted_at timestamp.
+    """
+    if followup.status == LeadFollowUp.Status.COMPLETED:
+        return followup
+
+    followup.status = LeadFollowUp.Status.COMPLETED
+    followup.completed_at = timezone.now()
+    followup.save(update_fields=["status", "completed_at", "updated_at"])
+
+    lead = followup.lead
+    lead.last_contacted_at = followup.completed_at
+    lead.save(update_fields=["last_contacted_at", "updated_at"])
+    _sync_lead_next_follow_up(lead)
+
+    log_audit_event(
+        user=actor,
+        action="FOLLOWUP_COMPLETED",
+        module="crm",
+        object_id=lead.id,
+        repr_str=f"Follow-up completed for lead {lead.reference_id} at {followup.completed_at.isoformat()}",
+        updated_state=get_model_state(followup),
+        request=request,
+    )
+    return followup
+
+
+def add_note(*, lead, author, content, request=None):
+    """Add a note to a lead and record the activity in the audit history."""
+    note = LeadNote.objects.create(lead=lead, created_by=author, content=content)
+
+    log_audit_event(
+        user=author,
+        action="NOTE_ADDED",
+        module="crm",
+        object_id=lead.id,
+        repr_str=f"Note added to lead {lead.reference_id}",
+        updated_state=get_model_state(note),
+        request=request,
+    )
+    return note
+
+
+def can_modify_note(*, note, actor):
+    """Only the note author or an authorized administrator may modify a note."""
+    role = get_user_role(actor)
+    if role in NOTE_ADMIN_ROLES:
+        return True
+    return note.created_by_id == actor.id
+
+
+def update_note(*, note, actor, content, request=None):
+    """Update a note where the actor is allowed to."""
+    if not can_modify_note(note=note, actor=actor):
+        raise PermissionDenied("You are not allowed to modify this note.")
+    note.content = content
+    note.save(update_fields=["content", "updated_at"])
+
+    log_audit_event(
+        user=actor,
+        action="NOTE_UPDATED",
+        module="crm",
+        object_id=note.lead.id,
+        repr_str=f"Note updated on lead {note.lead.reference_id}",
+        updated_state=get_model_state(note),
+        request=request,
+    )
+    return note
+
+
+def delete_note(*, note, actor, request=None):
+    """Delete a note where the actor is allowed to."""
+    if not can_modify_note(note=note, actor=actor):
+        raise PermissionDenied("You are not allowed to delete this note.")
+    lead_id = note.lead_id
+    lead_ref = note.lead.reference_id
+    note.delete()
+
+    log_audit_event(
+        user=actor,
+        action="NOTE_DELETED",
+        module="crm",
+        object_id=lead_id,
+        repr_str=f"Note deleted from lead {lead_ref}",
+        request=request,
+    )
