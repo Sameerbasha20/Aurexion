@@ -1,37 +1,14 @@
 from django.contrib import admin
-from .models import Lead, LeadFollowUp, LeadNote
+from .models import BdmLead, BdmFollowUp
+from apps.crm.admin import LeadFollowUpInline, LeadNoteInline
 
 
-class LeadFollowUpInline(admin.TabularInline):
-    model = LeadFollowUp
-    extra = 0
-    raw_id_fields = ("assigned_to", "created_by")
-    fields = (
-        "follow_up_type",
-        "scheduled_at",
-        "status",
-        "assigned_to",
-        "completed_at",
-        "notes",
-    )
-
-
-class LeadNoteInline(admin.TabularInline):
-    model = LeadNote
-    extra = 0
-    raw_id_fields = ("created_by",)
-    fields = ("created_by", "content", "created_at")
-    readonly_fields = ("created_at",)
-
-
-@admin.register(Lead)
-class LeadAdmin(admin.ModelAdmin):
+@admin.register(BdmLead)
+class BdmLeadAdmin(admin.ModelAdmin):
     list_display = (
         "reference_id",
         "name",
         "company",
-        "email",
-        "phone",
         "status",
         "priority",
         "assigned_to",
@@ -41,10 +18,10 @@ class LeadAdmin(admin.ModelAdmin):
     list_filter = (
         "status",
         "priority",
+        "assigned_to",
         "industry",
         "source",
         "created_at",
-        "assigned_to",
     )
     search_fields = (
         "reference_id",
@@ -62,7 +39,7 @@ class LeadAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (
-            "Lead Information",
+            "BDM Pipeline Lead Info",
             {
                 "fields": (
                     "reference_id",
@@ -75,7 +52,7 @@ class LeadAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Categorization & Details",
+            "Target Industry & Lead Source",
             {
                 "fields": (
                     "industry",
@@ -85,7 +62,7 @@ class LeadAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Status & Pipeline Stage",
+            "Deal Status & Priority",
             {
                 "fields": (
                     "status",
@@ -95,7 +72,7 @@ class LeadAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Assignment & Timings",
+            "Account Executive Assignment & Schedule",
             {
                 "fields": (
                     "created_by",
@@ -106,7 +83,7 @@ class LeadAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Timestamps",
+            "Audit Dates",
             {
                 "fields": (
                     "created_at",
@@ -117,23 +94,31 @@ class LeadAdmin(admin.ModelAdmin):
         ),
     )
 
-    actions = ["mark_as_contacted", "mark_as_qualified"]
+    actions = ["reassign_to_current_user", "mark_as_proposal_submitted", "mark_as_won"]
 
-    @admin.action(description="Mark selected leads as Contacted")
-    def mark_as_contacted(self, request, queryset):
-        updated = queryset.update(status=Lead.Status.CONTACTED)
+    @admin.action(description="Assign selected leads to current user")
+    def reassign_to_current_user(self, request, queryset):
+        if request is not None and getattr(request, "user", None):
+            updated = queryset.update(assigned_to=request.user)
+            self.message_user(request, f"{updated} lead(s) reassigned to {request.user.username}.")
+        else:
+            queryset.update(assigned_to=None)
+
+    @admin.action(description="Mark selected leads as Proposal Submitted")
+    def mark_as_proposal_submitted(self, request, queryset):
+        updated = queryset.update(status=BdmLead.Status.PROPOSAL_SUBMITTED)
         if request is not None:
-            self.message_user(request, f"{updated} lead(s) updated to Contacted.")
+            self.message_user(request, f"{updated} lead(s) updated to Proposal Submitted.")
 
-    @admin.action(description="Mark selected leads as Qualified")
-    def mark_as_qualified(self, request, queryset):
-        updated = queryset.update(status=Lead.Status.QUALIFIED)
+    @admin.action(description="Mark selected leads as Won")
+    def mark_as_won(self, request, queryset):
+        updated = queryset.update(status=BdmLead.Status.WON)
         if request is not None:
-            self.message_user(request, f"{updated} lead(s) updated to Qualified.")
+            self.message_user(request, f"{updated} lead(s) updated to Won.")
 
 
-@admin.register(LeadFollowUp)
-class LeadFollowUpAdmin(admin.ModelAdmin):
+@admin.register(BdmFollowUp)
+class BdmFollowUpAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "lead",
@@ -148,17 +133,4 @@ class LeadFollowUpAdmin(admin.ModelAdmin):
     search_fields = ("lead__name", "lead__reference_id", "lead__company", "notes")
     readonly_fields = ("created_at", "updated_at")
     raw_id_fields = ("lead", "assigned_to", "created_by")
-
-
-@admin.register(LeadNote)
-class LeadNoteAdmin(admin.ModelAdmin):
-    list_display = ("id", "lead", "created_by", "short_content", "created_at")
-    list_filter = ("created_at",)
-    search_fields = ("lead__name", "lead__reference_id", "content")
-    readonly_fields = ("created_at", "updated_at")
-    raw_id_fields = ("lead", "created_by")
-
-    @admin.display(description="Content Preview")
-    def short_content(self, obj):
-        return obj.content[:60] + "..." if len(obj.content) > 60 else obj.content
 
