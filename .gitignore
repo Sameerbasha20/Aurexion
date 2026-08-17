@@ -1,3 +1,6 @@
+# Frontend (separate repo — never commit here)
+Aura/
+
 # Virtual Environment
 .venv/
 venv/
