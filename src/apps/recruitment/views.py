@@ -143,13 +143,18 @@ class ApplyForJobView(APIView):
                 
                 logger.info(f"AUDIT_EVENT: action=APPLICATION_RECEIVED target={application.tracking_code} actor=CANDIDATE job_id={job.job_id}")
                 
-                # Trigger the asynchronous email acknowledgement task
-                send_application_acknowledgement.delay(application.tracking_code)
+                # Trigger the asynchronous email acknowledgement task (non-blocking)
+                try:
+                    send_application_acknowledgement.delay(application.tracking_code)
+                except Exception as task_err:
+                    # Celery/broker may not be running in dev — log and continue
+                    logger.warning(f"TASK_SKIPPED: Could not queue acknowledgement email: {task_err}")
                 
                 return Response({
                     'message': 'Application submitted successfully.',
                     'tracking_code': application.tracking_code
                 }, status=status.HTTP_201_CREATED)
+
                 
             except Exception as e:
                 # 3. Cleanup orphaned storage object if database persistence fails
