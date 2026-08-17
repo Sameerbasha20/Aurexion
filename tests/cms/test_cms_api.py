@@ -87,7 +87,7 @@ class CMSAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.cm_user)
         
         # Create
-        create_url = reverse('admin-services-list')
+        create_url = reverse('admin-service-list')
         response = self.client.post(create_url, {
             'title': 'SEO Optimization',
             'slug': 'seo-optimization',
@@ -100,7 +100,7 @@ class CMSAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Update
-        detail_url = reverse('admin-services-detail', kwargs={'slug': 'seo-optimization'})
+        detail_url = reverse('admin-service-detail', kwargs={'slug': 'seo-optimization'})
         response = self.client.put(detail_url, {
             'title': 'SEO Optimization v2',
             'slug': 'seo-optimization',
@@ -115,7 +115,7 @@ class CMSAPITestCase(APITestCase):
 
     def test_client_cannot_modify_cms(self):
         self.client.force_authenticate(user=self.client_user)
-        create_url = reverse('admin-services-list')
+        create_url = reverse('admin-service-list')
         response = self.client.post(create_url, {
             'title': 'Hack attempt',
             'slug': 'hack'
@@ -123,13 +123,13 @@ class CMSAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_public_service_resolves_by_slug(self):
-        url = reverse('public-services-detail', kwargs={'slug': 'cloud-integration'})
+        url = reverse('public-service-detail', kwargs={'slug': 'cloud-integration'})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['title'], 'Cloud Integration')
 
     def test_public_industry_resolves_with_relations(self):
-        url = reverse('public-industries-detail', kwargs={'slug': 'finance-banking'})
+        url = reverse('public-industry-detail', kwargs={'slug': 'finance-banking'})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['services']), 1)

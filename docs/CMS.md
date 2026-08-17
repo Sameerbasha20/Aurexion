@@ -14,7 +14,7 @@ Manages core business services.
 ### 1.2 Industry Solutions Workflow
 Aggregates relational context for industry solutions.
 *   **Model (`Industry`)**: Name, unique slug, challenges narrative, target solutions, and Many-to-Many associations to `Service` and `CaseStudy`.
-*   **Aggregation**: Public route `GET /api/v1/cms/public/industries/{slug}/` dynamically queries relationships and serializes the aggregated challenges, solutions, associated services, and sector case studies.
+*   **Aggregation**: Public route `GET /api/v1/cms/public/industry/{slug}/` dynamically queries relationships and serializes the aggregated challenges, solutions, associated services, and sector case studies.
 
 ### 1.3 Case Study CMS Workflow
 Narrates technical engineering success stories while guarding confidential client info.
@@ -37,16 +37,16 @@ Knowledge sharing and search index engine.
 ### 2.1 Admin CRUD ViewSets
 Protected by `IsContentManager` permission (accessible only to `super_admin` and `content_manager` roles).
 
-*   `GET/POST/PUT/PATCH/DELETE /api/v1/cms/admin/services/`
-*   `GET/POST/PUT/PATCH/DELETE /api/v1/cms/admin/industries/`
+*   `GET/POST/PUT/PATCH/DELETE /api/v1/cms/admin/service/`
+*   `GET/POST/PUT/PATCH/DELETE /api/v1/cms/admin/industry/`
 *   `GET/POST/PUT/PATCH/DELETE /api/v1/cms/admin/case-studies/`
 *   `GET/POST/PUT/PATCH/DELETE /api/v1/cms/admin/categories/`
 *   `GET/POST/PUT/PATCH/DELETE /api/v1/cms/admin/blog/`
 
 ### 2.2 Public Detail & List Views (Cached)
 Cached for 15 minutes to maximize responsiveness.
-*   `GET /api/v1/cms/public/services/{slug}/` (Service detail)
-*   `GET /api/v1/cms/public/industries/{slug}/` (Aggregated industry data)
+*   `GET /api/v1/cms/public/service/{slug}/` (Service detail)
+*   `GET /api/v1/cms/public/industry/{slug}/` (Aggregated industry data)
 *   `GET /api/v1/cms/public/case-studies/` (Filterable portfolio list)
 *   `GET /api/v1/cms/public/case-studies/{slug}/` (Case study detail - redacted if confidential)
 *   `GET /api/v1/cms/public/blog/` (Searchable/filterable blog posts)
