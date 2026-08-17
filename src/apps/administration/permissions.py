@@ -44,7 +44,7 @@ class BaseRolePermission(permissions.BasePermission):
             return True
 
         # Deduce module name
-        module = getattr(view, 'rbac_module', None)
+        module = getattr(self, 'rbac_module', None) or getattr(view, 'rbac_module', None)
         if not module:
             module_parts = view.__class__.__module__.split('.')
             if 'apps' in module_parts:

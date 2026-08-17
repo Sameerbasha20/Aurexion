@@ -276,8 +276,8 @@ class LeadNestedResourceAPITests(BaseCrmAPITestCase):
 class LeadFilterAndSearchTests(BaseCrmAPITestCase):
     def setUp(self):
         super().setUp()
-        self.lead_a = create_lead(self.bdm, name="Alpha", company="Company A", status=Lead.Status.NEW)
-        self.lead_b = create_lead(self.bdm, name="Beta", company="Company B", status=Lead.Status.CONTACTED)
+        self.lead_a = create_lead(self.bdm, name="Alpha", company="Company-A", status=Lead.Status.NEW)
+        self.lead_b = create_lead(self.bdm, name="Beta", company="Company-B", status=Lead.Status.CONTACTED)
         self.lead_a.priority = Lead.Priority.HIGH
         self.lead_a.save()
 
@@ -295,7 +295,7 @@ class LeadFilterAndSearchTests(BaseCrmAPITestCase):
 
     def test_search_by_company(self):
         self.auth(self.bdm)
-        response = self.client.get(LEADS_URL, {"search": "Company B"})
+        response = self.client.get(LEADS_URL, {"search": "Company-B"})
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(response.data["results"][0]["reference_id"], self.lead_b.reference_id)
 

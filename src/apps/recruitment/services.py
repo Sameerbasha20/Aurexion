@@ -1,7 +1,7 @@
 import random
 import string
 from django.db import IntegrityError, transaction
-from apps.recruitment.models import CandidateApplication
+from .models import CandidateApplication
 
 def generate_tracking_code():
     """Generates a tracking code suffix (AUR-APP-XXXX)."""

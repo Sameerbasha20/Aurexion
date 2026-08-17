@@ -23,14 +23,14 @@ class SupportTicketService:
         queryset = SupportTicket.objects.filter(client_user=client_user).select_related('client_user', 'assigned_to')
         if status:
             queryset = queryset.filter(status=status)
-        return queryset.order_by('-created_at')
+        return queryset.order_by('-created_at', '-id')
 
     @staticmethod
     def get_support_tickets(support_user, status=None):
         queryset = SupportTicket.objects.filter(assigned_to=support_user).select_related('client_user', 'assigned_to')
         if status:
             queryset = queryset.filter(status=status)
-        return queryset.order_by('-created_at')
+        return queryset.order_by('-created_at', '-id')
 
     @staticmethod
     def get_all_tickets(status=None, category=None, priority=None):
@@ -41,7 +41,7 @@ class SupportTicketService:
             queryset = queryset.filter(category=category)
         if priority:
             queryset = queryset.filter(priority=priority)
-        return queryset.order_by('-created_at')
+        return queryset.order_by('-created_at', '-id')
 
     @staticmethod
     def get_ticket_by_id(ticket_id):
