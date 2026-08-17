@@ -1,7 +1,8 @@
 import csv
 import io
 
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count, Exists, OuterRef, Subquery, IntegerField
+import django.db.models
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -13,7 +14,7 @@ from rest_framework.response import Response
 
 from apps.authentication.audit import get_model_state, log_audit_event
 from apps.authentication.models import AuditLog
-from apps.crm.models import Lead, LeadFollowUp
+from apps.crm.models import Lead, LeadFollowUp, LeadNote
 from apps.crm.permissions import CanAccessLead, CanAssignLead, CanCreateLead, CanDeleteLead
 from apps.crm.serializers import (
     LeadActivitySerializer,
@@ -170,9 +171,14 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        from django.db.models import Count, Subquery, OuterRef, IntegerField
+        
+        follow_up_subq = LeadFollowUp.objects.filter(lead=OuterRef("pk")).values("lead").annotate(c=Count("*")).values("c")[:1]
+        note_subq = LeadNote.objects.filter(lead=OuterRef("pk")).values("lead").annotate(c=Count("*")).values("c")[:1]
+        
         queryset = Lead.objects.select_related("created_by", "assigned_to").annotate(
-            follow_up_count=Count("follow_ups", distinct=True),
-            note_count=Count("notes", distinct=True),
+            follow_up_count=Subquery(follow_up_subq, output_field=IntegerField()),
+            note_count=Subquery(note_subq, output_field=IntegerField()),
         )
 
         role = getattr(getattr(user, "profile", None), "role", None)

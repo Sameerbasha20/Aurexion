@@ -18,6 +18,7 @@ ALLOWED_HOSTS = [
     'aurexion.onrender.com',
     'localhost',
     '127.0.0.1',
+    'testserver',
 ]
 
 INSTALLED_APPS = [
