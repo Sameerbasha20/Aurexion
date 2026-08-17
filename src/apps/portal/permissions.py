@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from apps.rbac.permissions import IsClientUser, IsSupportExecutive
+from apps.administration.permissions import IsClientUser, IsSupportExecutive
 
 
 class IsClientTicketOwner(IsClientUser):

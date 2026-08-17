@@ -47,3 +47,32 @@ coverage.xml
 # HR/ATS Module - Test files (report kept, test scripts excluded)
 tests/recruitment/test_hr_api.py
 tests/recruitment/test_hr_performance.py
+
+# QA/Debug test scripts (Testing Files)
+*_test.py
+*_queries.py
+*_migrations.py
+*_db.py
+*_tables.py
+*_crm_tables.py
+*_lead_columns.py
+*_test_db.py
+*_check_*.py
+*_fix_*.py
+*_clear_*.py
+*_drop_*.py
+*_analyze_*.py
+*_smoke_*.py
+*_perf_*.py
+smoke_test.py
+perf_test.py
+check_migrations.py
+fix_migrations.py
+clear_migrations.py
+drop_test_db.py
+drop_test_db2.py
+analyze_queries.py
+check_db.py
+check_test_db.py
+check_lead_columns.py
+check_crm_tables.py

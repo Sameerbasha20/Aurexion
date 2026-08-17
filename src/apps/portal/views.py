@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from rest_framework.authentication import SessionAuthentication
 from apps.authentication.audit import log_audit_event
-from apps.rbac.permissions import IsAdministrator
+from apps.administration.permissions import IsAdministrator
 from apps.portal.models import SupportTicket
 from apps.portal.authentication import ProfileJWTAuthentication
 from apps.portal.permissions import (

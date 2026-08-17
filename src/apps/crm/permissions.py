@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from apps.rbac.permissions import BaseRolePermission
+from apps.administration.permissions import BaseRolePermission
 
 
 class CanAccessLead(BaseRolePermission):

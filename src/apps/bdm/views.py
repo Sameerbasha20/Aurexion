@@ -1,4 +1,5 @@
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count, Exists, OuterRef, Case, When, IntegerField, Sum
+from django.db import models
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
@@ -7,7 +8,7 @@ from rest_framework.views import APIView
 from apps.authentication.models import AuditLog
 from apps.bdm.serializers import BdmDashboardSerializer
 from apps.crm.models import Lead, LeadFollowUp
-from apps.rbac.permissions import BaseRolePermission
+from apps.administration.permissions import BaseRolePermission
 
 
 class CanViewBdmDashboard(BaseRolePermission):
@@ -33,28 +34,41 @@ class BdmDashboardView(APIView):
     """
     BDM dashboard: every metric is computed from the live Lead/FollowUp tables.
     No static or mock values are returned.
+    Optimized with conditional aggregation to reduce query count.
     """
 
     permission_classes = [CanViewBdmDashboard]
     serializer_class = BdmDashboardSerializer
 
     def get(self, request):
-        lead_base = Lead.objects.all()
         now = timezone.now()
 
-        closed = lead_base.filter(status__in=(Lead.Status.WON, Lead.Status.LOST)).count()
-        won = lead_base.filter(status=Lead.Status.WON).count()
-        lost = lead_base.filter(status=Lead.Status.LOST).count()
-        conversion_rate = round((won / closed) * 100, 2) if closed else 0.0
+        # Single query with conditional aggregation for all lead metrics
+        agg = Lead.objects.aggregate(
+            total_leads=Count("id"),
+            assigned_leads=Count("id", filter=models.Q(assigned_to__isnull=False)),
+            unassigned_leads=Count("id", filter=models.Q(assigned_to__isnull=True)),
+            new_leads=Count("id", filter=models.Q(status=Lead.Status.NEW)),
+            qualified_leads=Count("id", filter=models.Q(status=Lead.Status.QUALIFIED)),
+            active_opportunities=Count("id", filter=models.Q(status__in=Lead.OPPORTUNITY_STATUSES)),
+            won_leads=Count("id", filter=models.Q(status=Lead.Status.WON)),
+            lost_leads=Count("id", filter=models.Q(status=Lead.Status.LOST)),
+        )
 
-        overdue_followups = lead_base.filter(Exists(_open_overdue_followup_subquery())).count()
+        closed = agg["won_leads"] + agg["lost_leads"]
+        conversion_rate = round((agg["won_leads"] / closed) * 100, 2) if closed else 0.0
 
+        # Overdue follow-ups - single query with Exists
+        overdue_followups = Lead.objects.filter(Exists(_open_overdue_followup_subquery())).count()
+
+        # Pipeline summary - single grouped query
         pipeline_summary = (
-            lead_base.values("status")
+            Lead.objects.values("status")
             .annotate(total=Count("id"))
             .order_by("status")
         )
 
+        # Recent activities - limited to 10
         recent_activities = (
             AuditLog.objects.filter(module="crm")
             .select_related("user")
@@ -62,15 +76,15 @@ class BdmDashboardView(APIView):
         )
 
         return Response({
-            "total_leads": lead_base.count(),
-            "assigned_leads": lead_base.filter(assigned_to__isnull=False).count(),
-            "unassigned_leads": lead_base.filter(assigned_to__isnull=True).count(),
-            "new_leads": lead_base.filter(status=Lead.Status.NEW).count(),
-            "qualified_leads": lead_base.filter(status=Lead.Status.QUALIFIED).count(),
-            "active_opportunities": lead_base.filter(status__in=Lead.OPPORTUNITY_STATUSES).count(),
+            "total_leads": agg["total_leads"],
+            "assigned_leads": agg["assigned_leads"],
+            "unassigned_leads": agg["unassigned_leads"],
+            "new_leads": agg["new_leads"],
+            "qualified_leads": agg["qualified_leads"],
+            "active_opportunities": agg["active_opportunities"],
             "overdue_follow_ups": overdue_followups,
-            "won_leads": won,
-            "lost_leads": lost,
+            "won_leads": agg["won_leads"],
+            "lost_leads": agg["lost_leads"],
             "conversion_rate": conversion_rate,
             "pipeline_summary": [
                 {"status": item["status"], "total": item["total"]} for item in pipeline_summary
