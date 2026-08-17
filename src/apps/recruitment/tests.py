@@ -8,7 +8,7 @@ from rest_framework import status
 from .models import JobVacancy
 from .validators import validate_resume
 from .services import generate_tracking_code
-from apps.authentication.models import UserProfile
+
 
 User = get_user_model()
 
@@ -41,7 +41,7 @@ class APIPermissionTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.job = JobVacancy.objects.create(
-            job_id="ENG-TEST", title="Test Job", department="IT", location="Remote", skills="Python", responsibilities="Code"
+            job_id="ENG-TEST", title="Test Job", department="IT", location="Remote", experience="2+ years", skills="Python", responsibilities="Code"
         )
         
         self.sales_user = User.objects.create_user(username='sales', password='pwd')

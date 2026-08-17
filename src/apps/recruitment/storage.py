@@ -5,15 +5,26 @@ import json
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-# Deduce Supabase URL from DB_HOST
-db_host = os.environ.get('DB_HOST', '')
-if 'supabase.co' in db_host:
-    project_ref = db_host.split('.')[1]
-    SUPABASE_URL = f"https://{project_ref}.supabase.co"
-else:
-    SUPABASE_URL = os.environ.get('SUPABASE_URL')
+# Resolve Supabase URL:
+# Priority 1: SUPABASE_URL env var
+# Priority 2: Derive from DB_USER which looks like postgres.<project-ref>
+SUPABASE_URL = os.environ.get('SUPABASE_URL')
+if not SUPABASE_URL:
+    db_user = os.environ.get('DB_USER', '')
+    # DB_USER = postgres.<project-ref> for Supabase pooler connections
+    if '.' in db_user and db_user.startswith('postgres.'):
+        project_ref = db_user.split('.', 1)[1]
+        SUPABASE_URL = f"https://{project_ref}.supabase.co"
+    else:
+        # Legacy: try to derive from DB_HOST (non-pooler)
+        db_host = os.environ.get('DB_HOST', '')
+        if 'supabase.co' in db_host and 'pooler' not in db_host:
+            project_ref = db_host.split('.')[0]
+            SUPABASE_URL = f"https://{project_ref}.supabase.co"
 
-# In this project, the SECRET_KEY is set to the Supabase Service Role Key
+# The service role key is needed for storage operations
+# It should be set in .env as SUPABASE_SERVICE_ROLE_KEY
+# Fallback: SECRET_KEY is set to the Supabase service role JWT in this project
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', settings.SECRET_KEY)
 
 # Defers the error check to function invocation to avoid Django import crashes during local dev/commands
