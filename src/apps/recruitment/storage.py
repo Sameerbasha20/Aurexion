@@ -126,5 +126,6 @@ def delete_resume(file_path):
     try:
         urllib.request.urlopen(req)
         return True
-    except urllib.error.HTTPError:
-        pass # Ignore delete failures during cleanup
+    except urllib.error.HTTPError as exc:
+        logger.debug("Failed to delete resume %s during cleanup: %s", file_path, exc)
+        return False

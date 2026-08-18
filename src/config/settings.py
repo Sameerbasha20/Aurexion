@@ -162,7 +162,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Cache Configuration
 
 import sys
-IS_TESTING = 'test' in sys.argv
+IS_TESTING = 'test' in sys.argv or 'pytest' in sys.modules or any('pytest' in arg for arg in sys.argv)
 
 if IS_TESTING:
     CACHES = {
