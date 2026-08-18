@@ -1,8 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from django.http import JsonResponse
+
+def devtools_empty_view(request):
+    return JsonResponse({}, status=200)
 
 urlpatterns = [
+    path('.well-known/appspecific/com.chrome.devtools.json', devtools_empty_view),
     path('admin/', admin.site.urls),
     path('api/v1/', include('apps.authentication.urls')),
     path('api/v1/', include('apps.administration.urls')),
