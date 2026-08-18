@@ -3,6 +3,7 @@ from pathlib import Path
 
 # pyrefly: ignore [missing-import]
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -11,8 +12,42 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'replace-me')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+
+def _env_flag(name, default=False):
+    """Parse a boolean environment variable (1/true/yes/on)."""
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+# Fail-safe default: DEBUG is opt-in and defaults to OFF. A misconfigured
+# production deployment therefore can never silently fall back into debug
+# mode, which would expose stack traces and configuration through Django's
+# technical error pages. Supports both DEBUG and DJANGO_DEBUG env names.
+DEBUG = _env_flag('DEBUG') or _env_flag('DJANGO_DEBUG')
+
+
+def _resolve_secret_key(debug=False):
+    """
+    SECRET_KEY must come from the environment — never from a hardcoded value.
+
+    In DEBUG mode a clearly-marked development key is acceptable so local
+    development works without a .env file. In production (DEBUG off) the
+    server refuses to start rather than signing tokens with a guessable key.
+    """
+    key = os.getenv('SECRET_KEY')
+    if key:
+        return key
+    if debug:
+        return 'dev-only-insecure-secret-key-do-not-use-in-production'
+    raise ImproperlyConfigured(
+        'SECRET_KEY is not set. Set SECRET_KEY in the environment or .env '
+        'before starting the server.'
+    )
+
+
+SECRET_KEY = _resolve_secret_key(debug=DEBUG)
 
 ALLOWED_HOSTS = [
     'aurexion.onrender.com',
@@ -44,6 +79,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'config.middleware.RequestBodySizeLimitMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -178,7 +214,13 @@ REST_FRAMEWORK = {
         'user': '1000/min',
     },
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'EXCEPTION_HANDLER': 'config.exceptions.exception_handler',
 }
+
+# Request body limits — reject oversized/malformed payloads with 4xx instead
+# of crashing. 5MB matches the intended resume upload limit.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
 from datetime import timedelta
 SIMPLE_JWT = {
