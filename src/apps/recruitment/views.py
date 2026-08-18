@@ -39,7 +39,8 @@ class ApplyRateThrottle(AnonRateThrottle):
             OpenApiParameter('location', type=OpenApiTypes.STR, description='Filter by location'),
             OpenApiParameter('experience', type=OpenApiTypes.STR, description='Filter by experience level'),
             OpenApiParameter('search', type=OpenApiTypes.STR, description='Search by job title'),
-        ]
+        ],
+        auth=[]
     )
 )
 @method_decorator(cache_page(60 * 15), name='dispatch')
@@ -75,7 +76,8 @@ class PublicJobVacancyListView(generics.ListAPIView):
     get=extend_schema(
         tags=['Careers (Public)'],
         summary="Get Job Vacancy Details",
-        description="Retrieves full details for a specific active job posting by its ID."
+        description="Retrieves full details for a specific active job posting by its ID.",
+        auth=[]
     )
 )
 class PublicJobVacancyDetailView(generics.RetrieveAPIView):
@@ -94,6 +96,7 @@ class PublicJobVacancyDetailView(generics.RetrieveAPIView):
         summary="Submit Candidate Application",
         description="Submit a job application with a resume file upload (PDF/DOCX max 5MB).",
         request=ApplySerializer,
+        auth=[]
     )
 )
 class ApplyForJobView(APIView):
@@ -104,9 +107,10 @@ class ApplyForJobView(APIView):
     permission_classes = [AllowAny]
     parser_classes = (MultiPartParser, FormParser)
     throttle_classes = [ApplyRateThrottle]
+    serializer_class = ApplySerializer
     
     def post(self, request):
-        serializer = ApplySerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         
         if serializer.is_valid():
             job_id = serializer.validated_data['job_id']

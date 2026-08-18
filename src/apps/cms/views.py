@@ -6,6 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.utils import timezone
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from apps.cms.models import Service, CaseStudy, Industry, Category, BlogPost
 from apps.cms.serializers import (
@@ -49,6 +50,9 @@ class AdminBlogPostViewSet(viewsets.ModelViewSet):
 
 # --- Public CMS Views (Cached) ---
 
+@extend_schema_view(
+    get=extend_schema(tags=['CMS (Public)'], auth=[])
+)
 @method_decorator(cache_page(60 * 15), name='dispatch')
 class PublicServiceDetailView(generics.RetrieveAPIView):
     """
@@ -60,6 +64,9 @@ class PublicServiceDetailView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     lookup_field = 'slug'
 
+@extend_schema_view(
+    get=extend_schema(tags=['CMS (Public)'], auth=[])
+)
 @method_decorator(cache_page(60 * 15), name='dispatch')
 class PublicIndustryDetailView(generics.RetrieveAPIView):
     """
@@ -71,6 +78,10 @@ class PublicIndustryDetailView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     lookup_field = 'slug'
 
+@extend_schema_view(
+    list=extend_schema(tags=['CMS (Public)'], auth=[]),
+    retrieve=extend_schema(tags=['CMS (Public)'], auth=[])
+)
 class PublicCaseStudyViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Public API: GET /api/v1/cms/public/case-studies/
@@ -97,6 +108,11 @@ class PublicCaseStudyViewSet(viewsets.ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
+@extend_schema_view(
+    list=extend_schema(tags=['CMS (Public)'], auth=[]),
+    retrieve=extend_schema(tags=['CMS (Public)'], auth=[]),
+    related=extend_schema(tags=['CMS (Public)'], auth=[])
+)
 class PublicBlogPostViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Public API: GET /api/v1/cms/public/blog/
