@@ -198,7 +198,7 @@ export const Dashboard: React.FC = () => {
         <Card borderAccent>
           <CardContent className="text-center py-8">
             <p style={{ color: "#ef4444" }}>Failed to load dashboard: {error}</p>
-            <button onClick={refetch} className="mt-4 px-4 py-2 bg-[#63f5e8] text-[#050811] rounded font-medium">
+            <button type="button" onClick={refetch} className="mt-4 px-4 py-2 bg-[#63f5e8] text-[#050811] rounded font-medium">
               Retry
             </button>
           </CardContent>
@@ -222,7 +222,7 @@ export const Dashboard: React.FC = () => {
           <p className="eyebrow">BUSINESS DEVELOPMENT</p>
           <h1 style={{ fontSize: "2rem", margin: "0.5rem 0 0 0" }}>BDM Dashboard</h1>
         </div>
-        <button
+        <button type="button"
           onClick={refetch}
           className="px-4 py-2 bg-transparent border border-[#63f5e8] text-[#63f5e8] rounded font-medium hover:bg-[#63f5e8] hover:text-[#050811] transition-colors cursor-pointer"
         >
@@ -532,7 +532,12 @@ export const Dashboard: React.FC = () => {
           <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <h2 style={{ fontSize: "1.3rem", color: "#63f5e8", margin: 0 }}>Assign Lead to Sales Executive</h2>
-              <button onClick={() => setModalMode(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+              <button
+                type="button"
+                aria-label="Close dialog"
+                onClick={() => setModalMode(null)}
+                style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}
+              >
                 <X size={20} />
               </button>
             </div>
@@ -583,7 +588,12 @@ export const Dashboard: React.FC = () => {
           <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: 0 }}>Decline Contact Submission</h2>
-              <button onClick={() => setModalMode(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+              <button
+                type="button"
+                aria-label="Close dialog"
+                onClick={() => setModalMode(null)}
+                style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}
+              >
                 <X size={20} />
               </button>
             </div>

@@ -160,6 +160,8 @@ export const WhyUsPage: React.FC = () => {
                 style={{ background: "#050811", padding: "2.2rem 1.8rem", position: "relative", overflow: "hidden", transition: "background .3s" }}
                 onMouseOver={e => ((e.currentTarget as HTMLDivElement).style.background = "#060d1a")}
                 onMouseOut={e => ((e.currentTarget as HTMLDivElement).style.background = "#050811")}
+                onFocus={e => ((e.currentTarget as HTMLDivElement).style.background = "#060d1a")}
+                onBlur={e => ((e.currentTarget as HTMLDivElement).style.background = "#050811")}
               >
                 <span style={{ position: "absolute", top: "1.2rem", right: "1.5rem", fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.95rem", fontWeight: 700, color: "#63f5e8", opacity: 0.85 }}>
                   {d.number}

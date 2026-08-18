@@ -61,7 +61,7 @@ export const RequestQuotePage: React.FC = () => {
               <p className="text-muted-foreground max-w-md">
                 Thank you for your interest in Aurexion. Our solutions team is reviewing your requirements and will contact you within 24-48 hours.
               </p>
-              <button 
+              <button type="button" 
                 onClick={() => setSuccess(false)} 
                 className="mt-8 text-primary hover:underline text-sm font-medium"
               >

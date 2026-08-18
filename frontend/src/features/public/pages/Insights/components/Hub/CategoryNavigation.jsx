@@ -22,7 +22,7 @@ export const CategoryNavigation = ({ categories, activeCategory, setActiveCatego
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center group py-2">
           {/* Scroll Left Button */}
-          <button
+          <button type="button"
             onClick={() => scroll("left")}
             aria-label="Scroll Left"
             className="hidden sm:flex shrink-0 items-center justify-center h-8 w-8 rounded-full bg-[#0a111c] border border-[rgba(99,245,232,0.2)] text-[#63f5e8] hover:bg-[#63f5e8] hover:text-[#041014] transition-all mr-2 shadow-md"
@@ -37,7 +37,7 @@ export const CategoryNavigation = ({ categories, activeCategory, setActiveCatego
             className="flex flex-1 overflow-x-auto hide-scrollbar gap-2 py-1 scroll-smooth"
             style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
           >
-            <button
+            <button type="button"
               onClick={() => setActiveCategory("")}
               className={`whitespace-nowrap px-4 py-2 text-xs font-semibold tracking-wider rounded-md transition-all shrink-0 ${
                 activeCategory === ""
@@ -51,7 +51,7 @@ export const CategoryNavigation = ({ categories, activeCategory, setActiveCatego
             {categories.map(category => {
               const isActive = activeCategory === category.slug;
               return (
-                <button
+                <button type="button"
                   key={category.slug}
                   onClick={() => setActiveCategory(category.slug)}
                   className={`whitespace-nowrap px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-md transition-all shrink-0 ${
@@ -67,7 +67,7 @@ export const CategoryNavigation = ({ categories, activeCategory, setActiveCatego
           </div>
 
           {/* Scroll Right Button */}
-          <button
+          <button type="button"
             onClick={() => scroll("right")}
             aria-label="Scroll Right"
             className="hidden sm:flex shrink-0 items-center justify-center h-8 w-8 rounded-full bg-[#0a111c] border border-[rgba(99,245,232,0.2)] text-[#63f5e8] hover:bg-[#63f5e8] hover:text-[#041014] transition-all ml-2 shadow-md"

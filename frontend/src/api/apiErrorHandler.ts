@@ -1,32 +1,42 @@
-export interface ApiError {
-  message: string;
+export class ApiError extends Error {
   statusCode?: number;
   errors?: Record<string, string[]>;
   code?: string;
+
+  constructor(message: string, statusCode?: number, errors?: Record<string, string[]>, code?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.statusCode = statusCode;
+    this.errors = errors;
+    this.code = code;
+    Object.setPrototypeOf(this, ApiError.prototype);
+  }
 }
 
 export function handleApiError(error: any): ApiError {
-  const apiError: ApiError = {
-    message: "An unexpected error occurred.",
-  };
+  let message = "An unexpected error occurred.";
+  let statusCode: number | undefined;
+  let errors: Record<string, string[]> | undefined;
+  let code: string | undefined;
 
-  if (error.response) {
+  if (error?.response) {
     // Server responded with status code outside 2xx range
     const data = error.response.data;
-    apiError.statusCode = data?.status || error.response.status;
-    apiError.message = data?.message || data?.detail || data?.error || `Error: ${error.response.statusText}`;
-    apiError.errors = data?.errors || undefined;
-    apiError.code = data?.code || undefined;
-  } else if (error.request) {
+    statusCode = error.response.status;
+    message = data?.message || data?.error || `Error: ${error.response.statusText || 'Request failed'}`;
+    errors = data?.errors || undefined;
+    code = data?.code || undefined;
+  } else if (error?.request) {
     // Request was made but no response received
-    apiError.message = "No response from server. Please check your network connection.";
-    apiError.code = "NETWORK_ERROR";
-  } else {
-    // Something happened setting up the request
-    apiError.message = error.message || "Request setup error.";
+    message = "No response from server. Please check your network connection.";
+    code = "NETWORK_ERROR";
+  } else if (error instanceof Error) {
+    message = error.message;
+  } else if (typeof error === "string") {
+    message = error;
   }
 
-  return apiError;
+  return new ApiError(message, statusCode, errors, code);
 }
 
 export default handleApiError;

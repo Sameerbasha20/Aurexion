@@ -33,7 +33,7 @@ export const Estimator: React.FC = () => {
                   id="devs"
                   type="number"
                   value={developerCount}
-                  onChange={(e) => setDeveloperCount(parseInt(e.target.value) || 0)}
+                  onChange={(e) => setDeveloperCount(Number.parseInt(e.target.value, 10) || 0)}
                   style={{
                     width: "100%",
                     height: "44px",
@@ -60,7 +60,7 @@ export const Estimator: React.FC = () => {
                   id="months"
                   type="number"
                   value={timelineMonths}
-                  onChange={(e) => setTimelineMonths(parseInt(e.target.value) || 0)}
+                  onChange={(e) => setTimelineMonths(Number.parseInt(e.target.value, 10) || 0)}
                   style={{
                     width: "100%",
                     height: "44px",
@@ -81,7 +81,7 @@ export const Estimator: React.FC = () => {
               </div>
             </div>
           </div>
-          <Button onClick={calculateEstimate} glow style={{ width: "100%", height: "46px", marginTop: "24px" }}>
+          <Button type="button" onClick={calculateEstimate} glow style={{ width: "100%", height: "46px", marginTop: "24px" }}>
             RUN SIMULATE CALCULATION
           </Button>
         </Card>

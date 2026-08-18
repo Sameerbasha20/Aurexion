@@ -85,7 +85,7 @@ export const Activities: React.FC = () => {
             ].map((f) => {
               const isSelected = typeFilter === f.value;
               return (
-                <button
+                <button type="button"
                   key={f.value}
                   onClick={() => setTypeFilter(f.value)}
                   style={{

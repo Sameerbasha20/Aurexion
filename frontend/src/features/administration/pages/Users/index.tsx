@@ -313,38 +313,54 @@ export const Users: React.FC = () => {
                       <td style={{ padding: "1rem", textAlign: "right" }}>
                         <div style={{ display: "inline-flex", gap: "0.5rem" }}>
                           <button
+                            type="button"
+                            aria-label="View Operator"
                             onClick={() => handleOpenViewDialog(usr)}
                             title="View Operator"
                             style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "0.25rem" }}
                             onMouseOver={(e) => e.currentTarget.style.color = "var(--color-cyan)"}
                             onMouseOut={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
+                            onFocus={(e) => e.currentTarget.style.color = "var(--color-cyan)"}
+                            onBlur={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
                           >
                             <Eye size={16} />
                           </button>
                           <button
+                            type="button"
+                            aria-label="Edit Operator"
                             onClick={() => handleOpenEditDialog(usr)}
                             title="Edit Operator"
                             style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "0.25rem" }}
                             onMouseOver={(e) => e.currentTarget.style.color = "var(--color-cyan)"}
                             onMouseOut={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
+                            onFocus={(e) => e.currentTarget.style.color = "var(--color-cyan)"}
+                            onBlur={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
                           >
                             <Edit2 size={16} />
                           </button>
                           <button
+                            type="button"
+                            aria-label={usr.status === "ACTIVE" ? "Deactivate Operator" : "Activate Operator"}
                             onClick={() => toggleUserStatus(usr)}
                             title={usr.status === "ACTIVE" ? "Deactivate Operator" : "Activate Operator"}
                             style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "0.25rem" }}
                             onMouseOver={(e) => e.currentTarget.style.color = usr.status === "ACTIVE" ? "#ef4444" : "#10b981"}
                             onMouseOut={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
+                            onFocus={(e) => e.currentTarget.style.color = usr.status === "ACTIVE" ? "#ef4444" : "#10b981"}
+                            onBlur={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
                           >
                             {usr.status === "ACTIVE" ? <UserX size={16} /> : <UserCheck size={16} />}
                           </button>
                           <button
+                            type="button"
+                            aria-label="Delete Operator"
                             onClick={() => handleDeleteUser(usr.id)}
                             title="Delete Operator"
                             style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "0.25rem" }}
                             onMouseOver={(e) => e.currentTarget.style.color = "#ef4444"}
                             onMouseOut={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
+                            onFocus={(e) => e.currentTarget.style.color = "#ef4444"}
+                            onBlur={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
                           >
                             <Trash2 size={16} />
                           </button>

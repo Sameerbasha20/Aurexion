@@ -63,7 +63,7 @@ export const IndustrySearch = () => {
             ) : (
               <div className="text-center py-12 bg-card/10 border border-border/20 rounded-lg">
                 <p className="text-muted-foreground">No industries found matching your criteria.</p>
-                <button 
+                <button type="button" 
                   onClick={() => setQuery("")}
                   className="mt-4 text-primary hover:underline font-bold"
                 >

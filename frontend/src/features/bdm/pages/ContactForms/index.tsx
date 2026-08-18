@@ -419,7 +419,12 @@ export const ContactForms: React.FC = () => {
           <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <h2 style={{ fontSize: "1.3rem", color: "#63f5e8", margin: 0 }}>Assign Lead to Sales Executive</h2>
-              <button onClick={() => setModalMode(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+              <button
+                type="button"
+                aria-label="Close dialog"
+                onClick={() => setModalMode(null)}
+                style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}
+              >
                 <X size={20} />
               </button>
             </div>
@@ -470,7 +475,12 @@ export const ContactForms: React.FC = () => {
           <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: 0 }}>Decline Contact Submission</h2>
-              <button onClick={() => setModalMode(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+              <button
+                type="button"
+                aria-label="Close dialog"
+                onClick={() => setModalMode(null)}
+                style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}
+              >
                 <X size={20} />
               </button>
             </div>

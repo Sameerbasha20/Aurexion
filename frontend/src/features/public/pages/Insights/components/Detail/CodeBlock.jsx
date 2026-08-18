@@ -14,7 +14,7 @@ export const CodeBlock = ({ language, code }) => {
     <div className="my-8 rounded-xl overflow-hidden border border-border/40 bg-[#0a0f18] shadow-lg">
       <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-border/40">
         <span className="text-xs font-mono text-primary font-bold uppercase tracking-wider">{language}</span>
-        <button 
+        <button type="button" 
           onClick={handleCopy}
           className="text-muted-foreground hover:text-white transition-colors"
           title="Copy code"

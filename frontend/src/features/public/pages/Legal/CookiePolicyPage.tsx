@@ -114,7 +114,7 @@ export const CookiePolicyPage: React.FC = () => {
                 key={ct.id}
                 style={{ border: `1px solid ${expanded === ct.id ? "rgba(99,245,232,0.3)" : "rgba(140,174,187,0.12)"}`, background: "#060c18", transition: "border-color .2s" }}
               >
-                <button
+                <button type="button"
                   onClick={() => setExpanded(expanded === ct.id ? null : ct.id)}
                   style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.2rem 1.5rem", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
                 >

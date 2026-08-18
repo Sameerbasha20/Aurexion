@@ -268,6 +268,8 @@ export const Candidates: React.FC = () => {
                       style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
                       onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
                       onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                      onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                     >
                       <td style={{ padding: "1rem" }}>
                         <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{candidate.name}</div>
@@ -366,7 +368,7 @@ export const Candidates: React.FC = () => {
                 <p className="eyebrow" style={{ margin: 0 }}>CANDIDATE STAGE PROGRESSION</p>
                 <h2 style={{ fontSize: "1.3rem", margin: "0.25rem 0 0 0" }}>{selectedCandidate.name}</h2>
               </div>
-              <button onClick={() => setIsStageModalOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", padding: "0.25rem" }}>
+              <button type="button" onClick={() => setIsStageModalOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", padding: "0.25rem" }}>
                 <X size={20} />
               </button>
             </div>

@@ -137,9 +137,9 @@ export const Login: React.FC = () => {
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+          <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
             SELECT SYSTEM ROLE SCOPE
-          </label>
+          </span>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
             {[
               ["ADMIN", "administrator", "Admin@2026"],
@@ -224,12 +224,13 @@ export const Login: React.FC = () => {
             <label htmlFor="password" style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
               PASSWORD
             </label>
-            <span 
+            <button
+              type="button"
               onClick={() => setLocation("/forgot-password")}
-              style={{ fontSize: "0.75rem", color: "#63f5e8", cursor: "pointer", textDecoration: "underline" }}
+              style={{ background: "none", border: "none", padding: 0, fontSize: "0.75rem", color: "#63f5e8", cursor: "pointer", textDecoration: "underline" }}
             >
               Forgot?
-            </span>
+            </button>
           </div>
           <div style={{ position: "relative", width: "100%" }}>
             <input
@@ -261,6 +262,7 @@ export const Login: React.FC = () => {
             />
             <button
               type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
               onClick={() => setShowPassword(!showPassword)}
               style={{
                 position: "absolute",

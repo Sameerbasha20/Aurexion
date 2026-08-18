@@ -23,11 +23,16 @@ const BUDGET_RANGES = [
   "$200,000 – $500,000", "$500,000+", "To be discussed"
 ];
 
-// Generate AUR-RFP-YYYY-XXXXX reference
+// Generate AUR-RFP-YYYY-XXXXX reference securely
 const generateRef = () => {
   const year = new Date().getFullYear();
-  const seq = String(Math.floor(10000 + Math.random() * 90000));
-  return `AUR-RFP-${year}-${seq}`;
+  let seqNum = 10000;
+  if (typeof window !== "undefined" && window.crypto) {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    seqNum = (array[0] % 90000) + 10000;
+  }
+  return `AUR-RFP-${year}-${seqNum}`;
 };
 
 const rfpSchema = z.object({
@@ -129,7 +134,7 @@ export const RfpPage: React.FC = () => {
                 <p style={{ fontFamily: "'IBM Plex Mono'", fontSize: "1.3rem", color: "#eef4f3", fontWeight: 600, letterSpacing: ".08em", margin: 0 }}>{refCode}</p>
                 <p style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".6rem", color: "#5a6b72", marginTop: ".5rem" }}>Please save this for your records</p>
               </div>
-              <button
+              <button type="button"
                 onClick={() => { setSuccess(false); reset(); setFile(null); setCharCount(0); }}
                 style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", background: "none", border: "none", cursor: "pointer" }}
               >

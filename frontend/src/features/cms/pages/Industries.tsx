@@ -314,6 +314,8 @@ export const Industries: React.FC = () => {
                       style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
                       onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
                       onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                      onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                     >
                       <td style={{ padding: "1rem" }}>
                         <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{ind.name}</div>
@@ -397,7 +399,7 @@ export const Industries: React.FC = () => {
                 <p className="eyebrow" style={{ margin: 0 }}>NEW INDUSTRY VERTICAL</p>
                 <h2 style={{ fontSize: "1.5rem", margin: "0.25rem 0 0 0" }}>Create Industry</h2>
               </div>
-              <button onClick={() => setIsCreateOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+              <button type="button" onClick={() => setIsCreateOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
                 <X size={20} />
               </button>
             </div>
@@ -504,7 +506,7 @@ export const Industries: React.FC = () => {
                 <p className="eyebrow" style={{ margin: 0 }}>EDIT INDUSTRY // {editingInd.slug}</p>
                 <h2 style={{ fontSize: "1.5rem", margin: "0.25rem 0 0 0" }}>Update Industry</h2>
               </div>
-              <button onClick={() => setIsEditOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+              <button type="button" onClick={() => setIsEditOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
                 <X size={20} />
               </button>
             </div>

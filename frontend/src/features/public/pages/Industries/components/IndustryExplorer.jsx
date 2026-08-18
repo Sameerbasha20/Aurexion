@@ -28,7 +28,7 @@ export const IndustryExplorer = () => {
                 {industriesData.map((ind, idx) => {
                   const isActive = idx === activeIndex;
                   return (
-                    <button
+                    <button type="button"
                       key={ind.id}
                       onClick={() => setActiveIndex(idx)}
                       className={`text-left px-4 py-3 rounded flex items-center justify-between transition-colors ${

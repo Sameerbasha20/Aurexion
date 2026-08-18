@@ -247,7 +247,7 @@ def create_client_user_and_send_credentials(lead, actor, request=None):
     """
     from django.conf import settings
 
-    default_password = getattr(settings, 'DEFAULT_CLIENT_PASSWORD', 'Aurexion@123')
+    default_password = getattr(settings, 'DEFAULT_CLIENT_PASSWORD', '') or secrets.token_urlsafe(12)
     login_url = getattr(settings, 'CLIENT_PORTAL_LOGIN_URL', 'http://localhost:3000/login')
 
     # Check if user already exists with this email

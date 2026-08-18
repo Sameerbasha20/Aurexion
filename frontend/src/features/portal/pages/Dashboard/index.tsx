@@ -124,6 +124,14 @@ export const Dashboard: React.FC = () => {
                             e.currentTarget.style.borderColor = "rgba(140,174,187,0.18)";
                             e.currentTarget.style.backgroundColor = "transparent";
                           }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = "rgba(99,245,232,0.4)";
+                            e.currentTarget.style.backgroundColor = "rgba(99,245,232,0.03)";
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = "rgba(140,174,187,0.18)";
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }}
                         >
                           <div style={{ minWidth: 0 }}>
                             <div style={{ fontSize: "0.85rem", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -168,6 +176,12 @@ export const Dashboard: React.FC = () => {
                             e.currentTarget.style.borderColor = "rgba(99,245,232,0.4)";
                           }}
                           onMouseOut={(e) => {
+                            e.currentTarget.style.borderColor = "rgba(140,174,187,0.18)";
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = "rgba(99,245,232,0.4)";
+                          }}
+                          onBlur={(e) => {
                             e.currentTarget.style.borderColor = "rgba(140,174,187,0.18)";
                           }}
                         >

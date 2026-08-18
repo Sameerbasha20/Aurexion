@@ -386,6 +386,8 @@ export const Leads: React.FC = () => {
                       }}
                       onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
                       onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                      onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                     >
                       <td style={{ padding: "1rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
                         <div>{lead.reference_id || `#LD-${lead.id}`}</div>
@@ -549,7 +551,7 @@ export const Leads: React.FC = () => {
                 <p className="eyebrow" style={{ margin: 0 }}>NEW CRM ENTRY</p>
                 <h2 style={{ fontSize: "1.5rem", margin: "0.25rem 0 0 0" }}>Create Sales Lead</h2>
               </div>
-              <button
+              <button type="button"
                 onClick={() => setIsCreateOpen(false)}
                 style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}
               >

@@ -134,6 +134,8 @@ export const Contacts: React.FC = () => {
                     style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
                     onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
                     onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                    onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                    onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                   >
                     <td style={{ padding: "1rem" }}>
                       <div style={{ fontWeight: 600, color: "#f8fafc" }}>{contact.name}</div>

@@ -511,7 +511,7 @@ export const LeadDetail: React.FC = () => {
               const Icon = tab.icon;
               const isSelected = activeTab === tab.key;
               return (
-                <button
+                <button type="button"
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as any)}
                   style={{
@@ -700,7 +700,7 @@ export const LeadDetail: React.FC = () => {
           <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <h2 style={{ fontSize: "1.4rem", margin: 0 }}>Edit Lead Information</h2>
-              <button onClick={() => setIsEditOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+              <button type="button" onClick={() => setIsEditOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
                 <X size={20} />
               </button>
             </div>
@@ -856,7 +856,7 @@ export const LeadDetail: React.FC = () => {
           <Card borderAccent style={{ width: "100%", maxWidth: "500px", padding: "2rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <h2 style={{ fontSize: "1.3rem", margin: 0 }}>Schedule Client Follow-up</h2>
-              <button onClick={() => setIsFollowUpOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+              <button type="button" onClick={() => setIsFollowUpOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
                 <X size={20} />
               </button>
             </div>

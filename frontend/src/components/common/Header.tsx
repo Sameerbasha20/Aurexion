@@ -33,6 +33,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
         {showToggle && onToggleSidebar && (
           <button 
+            type="button"
+            aria-label="Toggle sidebar"
             onClick={onToggleSidebar}
             style={{
               background: "none",
@@ -81,6 +83,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
             </span>
             <span style={{ fontSize: "0.9rem", color: "#cbd5e1" }}>{user.name}</span>
             <button
+              type="button"
               onClick={handleLogout}
               style={{
                 background: "none",
@@ -96,6 +99,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
               }}
               onMouseOver={(e) => e.currentTarget.style.color = "#ef4444"}
               onMouseOut={(e) => e.currentTarget.style.color = "#94a3b8"}
+              onFocus={(e) => e.currentTarget.style.color = "#ef4444"}
+              onBlur={(e) => e.currentTarget.style.color = "#94a3b8"}
             >
               <LogOut size={16} />
               <span className="hide-mobile">Logout</span>

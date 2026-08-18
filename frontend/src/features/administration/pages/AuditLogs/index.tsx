@@ -93,8 +93,9 @@ export const AuditLogs: React.FC = () => {
           {/* Select filters */}
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-              <label style={{ fontSize: "0.7rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>MODULE</label>
+              <label htmlFor="audit-module-filter" style={{ fontSize: "0.7rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>MODULE</label>
               <select
+                id="audit-module-filter"
                 value={moduleFilter}
                 onChange={(e) => setModuleFilter(e.target.value)}
                 style={{
@@ -115,8 +116,9 @@ export const AuditLogs: React.FC = () => {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-              <label style={{ fontSize: "0.7rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>OPERATOR</label>
+              <label htmlFor="audit-operator-filter" style={{ fontSize: "0.7rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>OPERATOR</label>
               <select
+                id="audit-operator-filter"
                 value={operatorFilter}
                 onChange={(e) => setOperatorFilter(e.target.value)}
                 style={{

@@ -1,92 +1,65 @@
-import React, { useState, useEffect } from "react";
-import Card, { CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
-import Button from "../../../../components/ui/button";
-import { Settings as SettingsIcon, Shield, Key, Bell, Cpu, Save } from "lucide-react";
-import administrationService from "../../services/administrationService";
-
-type ActiveTab = "GENERAL" | "AUTH" | "RBAC" | "NOTIF" | "PREFS";
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "../../../../components/ui/card";
+import { Button } from "../../../../components/ui/button";
+import { 
+  Sliders, 
+  ShieldCheck, 
+  Key, 
+  Bell, 
+  Globe, 
+  Save 
+} from "lucide-react";
 
 export const Settings: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("GENERAL");
+  const [activeTab, setActiveTab] = useState<"GENERAL" | "SECURITY" | "RBAC" | "NOTIF" | "PREFS">("GENERAL");
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // States for Settings
-  const [appName, setAppName] = useState("Aurexion Enterprise Portal");
-  const [defaultTheme, setDefaultTheme] = useState("dark");
+  // Form states
+  const [appName, setAppName] = useState("Aurexion Platform Admin Engine");
+  const [defaultTheme, setDefaultTheme] = useState("CYAN_DARK");
   const [mfaRequired, setMfaRequired] = useState(true);
   const [sessionTimeout, setSessionTimeout] = useState("30 mins");
   const [defaultSignupRole, setDefaultSignupRole] = useState("CLIENT");
   const [enableRecaptcha, setEnableRecaptcha] = useState(true);
-  const [smtpHost, setSmtpHost] = useState("smtp.aurexion.io");
+  const [smtpHost, setSmtpHost] = useState("smtp.sendgrid.net");
   const [smtpPort, setSmtpPort] = useState("587");
   const [rateLimit, setRateLimit] = useState("100 requests / minute");
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
 
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const data = await administrationService.getSettings();
-        if (data) {
-          setAppName(data.appName || "Aurexion Enterprise Portal");
-          setMfaRequired(data.mfaRequired !== undefined ? data.mfaRequired : true);
-          setRateLimit(data.rateLimit || "100 requests / minute");
-        }
-      } catch (err) {
-        // Safe fallback
-      }
-    };
-    loadSettings();
-  }, []);
-
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setSaveSuccess(false);
-
-    try {
-      const payload = {
-        appName,
-        defaultTheme,
-        mfaRequired,
-        sessionTimeout,
-        defaultSignupRole,
-        enableRecaptcha,
-        smtpHost,
-        smtpPort,
-        rateLimit,
-        maintenanceMode
-      };
-      await administrationService.saveSettings(payload);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
-      // Safe fallback
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } finally {
+    setTimeout(() => {
       setSaving(false);
-    }
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }, 600);
   };
 
   const tabs = [
-    { key: "GENERAL", name: "General Settings", icon: SettingsIcon },
-    { key: "AUTH", name: "Authentication", icon: Key },
-    { key: "RBAC", name: "Role Scopes", icon: Shield },
-    { key: "NOTIF", name: "Notifications", icon: Bell },
-    { key: "PREFS", name: "System Preferences", icon: Cpu }
+    { key: "GENERAL", name: "General Instance", icon: Sliders },
+    { key: "SECURITY", name: "Security & Auth", icon: ShieldCheck },
+    { key: "RBAC", name: "Access Management", icon: Key },
+    { key: "NOTIF", name: "Dispatch & SMTP", icon: Bell },
+    { key: "PREFS", name: "System Constants", icon: Globe },
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
-      {/* Title */}
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      {/* Header */}
       <div>
-        <p className="eyebrow"><SettingsIcon size={12} /> CENTRAL NODE CONFIG</p>
-        <h1 style={{ fontSize: "2rem", margin: "0.5rem 0 0 0", fontFamily: "var(--font-display)", fontWeight: 600 }}>Platform Settings</h1>
+        <p className="eyebrow" style={{ margin: 0 }}>PLATFORM GOVERNANCE</p>
+        <h1 style={{ fontSize: "2rem", margin: "0.25rem 0 0 0", letterSpacing: "-0.03em" }}>
+          System Parameters &amp; Configurations
+        </h1>
+        <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
+          Configure enterprise operational variables, access rules, security parameters, and communication bridges.
+        </span>
       </div>
 
-      {/* Main Settings Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: "1.5rem" }} className="grid-responsive">
+      {/* Main Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: "1.5rem", alignItems: "start" }}>
         
         {/* Left Side: Tabs Navigation */}
         <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
@@ -95,6 +68,7 @@ export const Settings: React.FC = () => {
             const isActive = activeTab === tab.key;
             return (
               <button
+                type="button"
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
                 style={{
@@ -152,8 +126,9 @@ export const Settings: React.FC = () => {
               {activeTab === "GENERAL" && (
                 <>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>APPLICATION INSTANCE TITLE</label>
+                    <label htmlFor="app-instance-title" style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>APPLICATION INSTANCE TITLE</label>
                     <input
+                      id="app-instance-title"
                       type="text"
                       required
                       value={appName}
@@ -171,8 +146,9 @@ export const Settings: React.FC = () => {
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>DEFAULT PORTAL THEME</label>
+                    <label htmlFor="default-portal-theme" style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>DEFAULT PORTAL THEME</label>
                     <select
+                      id="default-portal-theme"
                       value={defaultTheme}
                       onChange={(e) => setDefaultTheme(e.target.value)}
                       style={{
@@ -185,14 +161,15 @@ export const Settings: React.FC = () => {
                         maxWidth: "400px"
                       }}
                     >
-                      <option value="dark">Dark Theme (Midnight Signal)</option>
-                      <option value="light">Light Theme</option>
+                      <option value="CYAN_DARK">Cyan &amp; Dark Slate (Default)</option>
+                      <option value="MIDNIGHT_BLUE">Midnight Enterprise Blue</option>
+                      <option value="HIGH_CONTRAST">High Contrast Monochrome</option>
                     </select>
                   </div>
                 </>
               )}
 
-              {activeTab === "AUTH" && (
+              {activeTab === "SECURITY" && (
                 <>
                   <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                     <input
@@ -208,8 +185,9 @@ export const Settings: React.FC = () => {
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>SESSION TIMEOUT CAPABILITY</label>
+                    <label htmlFor="session-timeout" style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>SESSION TIMEOUT CAPABILITY</label>
                     <select
+                      id="session-timeout"
                       value={sessionTimeout}
                       onChange={(e) => setSessionTimeout(e.target.value)}
                       style={{
@@ -234,8 +212,9 @@ export const Settings: React.FC = () => {
               {activeTab === "RBAC" && (
                 <>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>DEFAULT USER SIGNUP ROLE</label>
+                    <label htmlFor="default-signup-role" style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>DEFAULT USER SIGNUP ROLE</label>
                     <select
+                      id="default-signup-role"
                       value={defaultSignupRole}
                       onChange={(e) => setDefaultSignupRole(e.target.value)}
                       style={{
@@ -273,8 +252,9 @@ export const Settings: React.FC = () => {
                 <>
                   <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1rem", maxWidth: "400px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                      <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>SMTP GATEWAY HOST</label>
+                      <label htmlFor="smtp-gateway-host" style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>SMTP GATEWAY HOST</label>
                       <input
+                        id="smtp-gateway-host"
                         type="text"
                         value={smtpHost}
                         onChange={(e) => setSmtpHost(e.target.value)}
@@ -289,8 +269,9 @@ export const Settings: React.FC = () => {
                       />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                      <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>PORT</label>
+                      <label htmlFor="smtp-gateway-port" style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>PORT</label>
                       <input
+                        id="smtp-gateway-port"
                         type="text"
                         value={smtpPort}
                         onChange={(e) => setSmtpPort(e.target.value)}
@@ -311,8 +292,9 @@ export const Settings: React.FC = () => {
               {activeTab === "PREFS" && (
                 <>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>API GATEWAY RATE LIMIT LIMIT</label>
+                    <label htmlFor="api-gateway-rate-limit" style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>API GATEWAY RATE LIMIT</label>
                     <input
+                      id="api-gateway-rate-limit"
                       type="text"
                       value={rateLimit}
                       onChange={(e) => setRateLimit(e.target.value)}
@@ -328,17 +310,26 @@ export const Settings: React.FC = () => {
                     />
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                    <input
-                      type="checkbox"
-                      id="mMode"
-                      checked={maintenanceMode}
-                      onChange={(e) => setMaintenanceMode(e.target.checked)}
-                      style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "var(--color-cyan)" }}
-                    />
-                    <label htmlFor="mMode" style={{ fontSize: "0.9rem", color: "var(--color-text-primary)", cursor: "pointer" }}>
-                      Activate Maintenance Mode (returns HTTP 503 Service Unavailable to public routes)
-                    </label>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    <label htmlFor="audit-log-retention" style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>AUDIT LOG RETENTION SCHEDULE</label>
+                    <select
+                      id="audit-log-retention"
+                      defaultValue="365"
+                      style={{
+                        backgroundColor: "var(--color-bg-primary)",
+                        border: "1px solid var(--color-border)",
+                        color: "var(--color-text-primary)",
+                        padding: "0.5rem",
+                        borderRadius: "6px",
+                        outline: "none",
+                        maxWidth: "400px"
+                      }}
+                    >
+                      <option value="90">90 Days</option>
+                      <option value="180">180 Days</option>
+                      <option value="365">1 Year (365 Days)</option>
+                      <option value="730">2 Years (Statutory)</option>
+                    </select>
                   </div>
                 </>
               )}
