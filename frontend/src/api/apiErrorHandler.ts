@@ -13,8 +13,8 @@ export function handleApiError(error: any): ApiError {
   if (error.response) {
     // Server responded with status code outside 2xx range
     const data = error.response.data;
-    apiError.statusCode = error.response.status;
-    apiError.message = data?.message || data?.error || `Error: ${error.response.statusText}`;
+    apiError.statusCode = data?.status || error.response.status;
+    apiError.message = data?.message || data?.detail || data?.error || `Error: ${error.response.statusText}`;
     apiError.errors = data?.errors || undefined;
     apiError.code = data?.code || undefined;
   } else if (error.request) {

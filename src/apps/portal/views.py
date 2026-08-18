@@ -469,9 +469,19 @@ class TicketViewSet(
         )
 
 
+@extend_schema_view(
+    list=extend_schema(tags=['Client Portal (Projects)'], summary="List my projects"),
+    create=extend_schema(tags=['Client Portal (Projects)'], summary="Create a project"),
+    retrieve=extend_schema(tags=['Client Portal (Projects)'], summary="Get project details"),
+    update=extend_schema(tags=['Client Portal (Projects)'], summary="Update project"),
+    partial_update=extend_schema(tags=['Client Portal (Projects)'], summary="Partially update project"),
+    destroy=extend_schema(tags=['Client Portal (Projects)'], summary="Delete project"),
+)
 class ClientProjectViewSet(viewsets.ModelViewSet):
     authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
     serializer_class = ClientProjectSerializer
+    queryset = ClientProject.objects.none()
+    lookup_field = 'pk'
 
     def get_queryset(self):
         return ClientProject.objects.filter(client_user=self.request.user)
@@ -480,9 +490,19 @@ class ClientProjectViewSet(viewsets.ModelViewSet):
         serializer.save(client_user=self.request.user)
 
 
+@extend_schema_view(
+    list=extend_schema(tags=['Client Portal (Requests)'], summary="List my requests"),
+    create=extend_schema(tags=['Client Portal (Requests)'], summary="Create a request"),
+    retrieve=extend_schema(tags=['Client Portal (Requests)'], summary="Get request details"),
+    update=extend_schema(tags=['Client Portal (Requests)'], summary="Update request"),
+    partial_update=extend_schema(tags=['Client Portal (Requests)'], summary="Partially update request"),
+    destroy=extend_schema(tags=['Client Portal (Requests)'], summary="Delete request"),
+)
 class ClientRequestViewSet(viewsets.ModelViewSet):
     authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
     serializer_class = ClientRequestSerializer
+    queryset = ClientRequest.objects.none()
+    lookup_field = 'pk'
 
     def get_queryset(self):
         return ClientRequest.objects.filter(client_user=self.request.user)
@@ -491,9 +511,19 @@ class ClientRequestViewSet(viewsets.ModelViewSet):
         serializer.save(client_user=self.request.user)
 
 
+@extend_schema_view(
+    list=extend_schema(tags=['Client Portal (Documents)'], summary="List my documents"),
+    create=extend_schema(tags=['Client Portal (Documents)'], summary="Create a document"),
+    retrieve=extend_schema(tags=['Client Portal (Documents)'], summary="Get document details"),
+    update=extend_schema(tags=['Client Portal (Documents)'], summary="Update document"),
+    partial_update=extend_schema(tags=['Client Portal (Documents)'], summary="Partially update document"),
+    destroy=extend_schema(tags=['Client Portal (Documents)'], summary="Delete document"),
+)
 class ClientDocumentViewSet(viewsets.ModelViewSet):
     authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
     serializer_class = ClientDocumentSerializer
+    queryset = ClientDocument.objects.none()
+    lookup_field = 'pk'
 
     def get_queryset(self):
         return ClientDocument.objects.filter(client_user=self.request.user)

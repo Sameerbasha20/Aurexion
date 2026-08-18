@@ -12,11 +12,75 @@ import {
   MessageSquare,
   Building,
   CheckCircle2,
+  Calendar,
 } from "lucide-react";
+import crmService from "../../services/crmService";
 
 export const ContactForms: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { leads, isLoading, error, refetch } = useLeads({ page_size: 50 });
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+
+  // Meeting Schedule Modal State
+  const [selectedMeetingLead, setSelectedMeetingLead] = useState<any | null>(null);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [meetingType, setMeetingType] = useState("MEETING");
+  const [meetingLink, setMeetingLink] = useState("");
+  const [meetingNotes, setMeetingNotes] = useState("");
+  const [scheduling, setScheduling] = useState(false);
+
+  const handleScheduleMeeting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMeetingLead || !scheduledAt) return;
+    setScheduling(true);
+    try {
+      // datetime-local sends YYYY-MM-DDTHH:mm - add seconds for Django parse_datetime
+      const scheduledAtWithSeconds = scheduledAt.length === 16 ? scheduledAt + ":00" : scheduledAt;
+      await crmService.scheduleMeeting(selectedMeetingLead.id, {
+        scheduled_at: scheduledAtWithSeconds,
+        follow_up_type: meetingType,
+        meeting_link: meetingLink,
+        notes: meetingNotes,
+      });
+      setActionSuccess(`Meeting scheduled and notification email sent to ${selectedMeetingLead.email || selectedMeetingLead.name}!`);
+      setSelectedMeetingLead(null);
+      setScheduledAt("");
+      setMeetingLink("");
+      setMeetingNotes("");
+      refetch();
+    } catch (err: any) {
+      alert(err?.message || "Failed to schedule meeting.");
+    } finally {
+      setScheduling(false);
+    }
+  };
+
+  const handleMarkWon = async (leadId: number, leadName: string) => {
+    if (!window.confirm(`Mark ${leadName} as WON? This will generate client credentials (default password: client@2026) and email the client.`)) return;
+    try {
+      await crmService.markLeadWon(leadId);
+      setActionSuccess(`Lead marked WON! Client User account created (password: client@2026) & credentials email sent.`);
+      refetch();
+    } catch (err: any) {
+      alert(err?.message || "Failed to mark lead as won.");
+    }
+  };
+
+  const handleMarkLost = async (leadId: number) => {
+    const reason = window.prompt("Reason for declining/marking lost:");
+    if (reason === null) return;
+    if (!reason.trim()) {
+      alert("A reason is required to mark as lost.");
+      return;
+    }
+    try {
+      await crmService.markLeadLost(leadId, reason.trim());
+      setActionSuccess("Lead marked as lost/declined.");
+      refetch();
+    } catch (err: any) {
+      alert(err?.message || "Failed to mark lead as lost.");
+    }
+  };
 
   const contactLeads = leads.filter((lead) => {
     const isContactSource =
@@ -190,17 +254,161 @@ export const ContactForms: React.FC = () => {
                   <span style={{ fontSize: "0.75rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
                     Received on {new Date(lead.created_at).toLocaleDateString()}
                   </span>
-                  <Link href={`/crm/leads/${lead.id}`}>
-                    <Button glow style={{ fontSize: "0.78rem" }}>
-                      Open Desk &rarr;
+                  
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                    <Button
+                      glow
+                      size="sm"
+                      onClick={() => setSelectedMeetingLead(lead)}
+                      style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}
+                    >
+                      <Calendar size={13} style={{ marginRight: "0.3rem" }} /> Schedule Meeting
                     </Button>
-                  </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleMarkWon(lead.id, lead.name)}
+                      style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", borderColor: "rgba(74, 222, 128, 0.4)", color: "#4ade80" }}
+                    >
+                      <CheckCircle2 size={13} style={{ marginRight: "0.3rem" }} /> Won
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleMarkLost(lead.id)}
+                      style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", borderColor: "rgba(248, 113, 113, 0.4)", color: "#f87171" }}
+                    >
+                      Decline
+                    </Button>
+                    <Link href={`/crm/leads/${lead.id}`}>
+                      <Button variant="outline" style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}>
+                        Desk &rarr;
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </Card>
+
+      {/* Schedule Meeting Modal */}
+      {selectedMeetingLead && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+          <Card borderAccent style={{ width: "100%", maxWidth: "520px", padding: "2rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+              <div>
+                <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                  CLIENT MEETING CONFIRMATION
+                </span>
+                <h2 style={{ fontSize: "1.25rem", color: "#f8fafc", margin: "0.2rem 0 0 0" }}>
+                  Schedule Meeting & Email Client
+                </h2>
+              </div>
+              <button onClick={() => setSelectedMeetingLead(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", fontSize: "1.2rem" }}>
+                ✕
+              </button>
+            </div>
+
+            {/* Client Details */}
+            <div style={{ backgroundColor: "rgba(10, 17, 28, 0.6)", border: "1px solid rgba(140, 174, 187, 0.15)", padding: "1rem", borderRadius: "4px", marginBottom: "1.25rem" }}>
+              <p style={{ margin: 0, fontSize: "0.85rem", color: "#f8fafc", fontWeight: 600 }}>
+                {selectedMeetingLead.name} {selectedMeetingLead.company ? `(${selectedMeetingLead.company})` : ""}
+              </p>
+              <div style={{ display: "flex", gap: "1rem", marginTop: "0.4rem", fontSize: "0.78rem", color: "#94a3b8", flexWrap: "wrap" }}>
+                <span>Email: <strong style={{ color: "#63f5e8" }}>{selectedMeetingLead.email || "N/A"}</strong></span>
+                <span>Phone: <strong style={{ color: "#cbd5e1" }}>{selectedMeetingLead.phone || "N/A"}</strong></span>
+              </div>
+            </div>
+
+            <form onSubmit={handleScheduleMeeting} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING DATE & TIME *</label>
+                <input
+                  required
+                  type="datetime-local"
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                  style={{
+                    padding: "0.65rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140,174,187,0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                    fontSize: "0.88rem",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING TYPE</label>
+                <select
+                  value={meetingType}
+                  onChange={(e) => setMeetingType(e.target.value)}
+                  style={{
+                    padding: "0.65rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140,174,187,0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                    fontSize: "0.88rem",
+                  }}
+                >
+                  <option value="MEETING">Video Meeting</option>
+                  <option value="CALL">Phone Call</option>
+                  <option value="DEMO">Product Demo</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING LINK (Google Meet / Zoom)</label>
+                <input
+                  type="url"
+                  placeholder="https://meet.google.com/xyz-abc-123"
+                  value={meetingLink}
+                  onChange={(e) => setMeetingLink(e.target.value)}
+                  style={{
+                    padding: "0.65rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140,174,187,0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                    fontSize: "0.88rem",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>AGENDA / NOTES</label>
+                <textarea
+                  rows={3}
+                  placeholder="Discuss project requirements, scope, timeline, and pricing..."
+                  value={meetingNotes}
+                  onChange={(e) => setMeetingNotes(e.target.value)}
+                  style={{
+                    padding: "0.65rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140,174,187,0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                    fontSize: "0.85rem",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+                <Button type="button" variant="outline" onClick={() => setSelectedMeetingLead(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" glow disabled={scheduling || !scheduledAt}>
+                  {scheduling ? "Sending Email..." : "Send Meeting Email & Schedule"}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
