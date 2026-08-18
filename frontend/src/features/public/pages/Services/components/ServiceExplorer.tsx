@@ -45,7 +45,7 @@ export const ServiceExplorer: React.FC = () => {
               {serviceCategories.map((category: any) => {
                 const isActive = activeCategory === category.name;
                 return (
-                  <button
+                  <button type="button"
                     key={category.id}
                     onClick={() => setActiveCategory(category.name)}
                     className={`flex items-center justify-between p-4 text-left border rounded-lg transition-all duration-300 ${

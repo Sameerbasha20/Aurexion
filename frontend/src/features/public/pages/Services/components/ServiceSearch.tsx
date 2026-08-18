@@ -40,7 +40,7 @@ export const ServiceSearch: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-2 mt-6">
-            <button
+            <button type="button"
               onClick={() => setActiveFilter("All")}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 activeFilter === "All" 
@@ -51,7 +51,7 @@ export const ServiceSearch: React.FC = () => {
               All Categories
             </button>
             {serviceCategories.map((cat: any) => (
-              <button
+              <button type="button"
                 key={cat.id}
                 onClick={() => setActiveFilter(cat.name)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
@@ -97,7 +97,7 @@ export const ServiceSearch: React.FC = () => {
             ) : (
               <div className="text-center py-12 bg-card/10 border border-border/20 rounded-lg">
                 <p className="text-muted-foreground">No services found matching your criteria.</p>
-                <button 
+                <button type="button" 
                   onClick={() => { setQuery(""); setActiveFilter("All"); }}
                   className="mt-4 text-primary hover:underline"
                 >

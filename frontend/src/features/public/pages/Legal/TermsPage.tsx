@@ -116,6 +116,8 @@ export const TermsPage: React.FC = () => {
                 style={{ color: "#8da5ae", fontSize: ".85rem", textDecoration: "none", padding: ".3rem 0" }}
                 onMouseOver={e => (e.currentTarget.style.color = "#63f5e8")}
                 onMouseOut={e => (e.currentTarget.style.color = "#8da5ae")}
+                onFocus={e => (e.currentTarget.style.color = "#63f5e8")}
+                onBlur={e => (e.currentTarget.style.color = "#8da5ae")}
               >
                 {s.title}
               </a>

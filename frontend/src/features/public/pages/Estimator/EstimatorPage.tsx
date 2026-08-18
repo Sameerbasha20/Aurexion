@@ -160,7 +160,7 @@ export const EstimatorPage: React.FC = () => {
                   </h3>
                   <div className="estimator-options">
                     {s.options.map((opt, j) => (
-                      <button
+                      <button type="button"
                         key={j}
                         className={`estimator-opt ${selections[i] === j ? "selected" : ""}`}
                         onClick={() => select(j)}
@@ -181,11 +181,11 @@ export const EstimatorPage: React.FC = () => {
                 </div>
                 <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
                   {step > 0 && (
-                    <button className="estimator-back" onClick={() => setStep(step - 1)}>
+                    <button type="button" className="estimator-back" onClick={() => setStep(step - 1)}>
                       ← BACK
                     </button>
                   )}
-                  <button
+                  <button type="button"
                     className="signal-button"
                     style={{ opacity: canAdvance ? 1 : 0.4, cursor: canAdvance ? "pointer" : "default" }}
                     onClick={() => canAdvance && advance()}
@@ -219,10 +219,10 @@ export const EstimatorPage: React.FC = () => {
                 <Link href="/rfp" className="signal-button inline-flex items-center gap-2">
                   SUBMIT FORMAL RFP <ArrowUpRight size={16} />
                 </Link>
-                <button className="text-button" onClick={reset}>
+                <button type="button" className="text-button" onClick={reset}>
                   RECALCULATE ESTIMATE
                 </button>
-                <button 
+                <button type="button" 
                   className="outline-button inline-flex items-center gap-2" 
                   onClick={() => setShowFollowUp(true)}
                   style={{ background: "transparent", border: "1px solid rgba(99,245,232,.3)", color: "#63f5e8" }}
@@ -375,7 +375,7 @@ export const EstimatorPage: React.FC = () => {
                     <p style={{ color: "#8da5ae", marginBottom: "2rem", fontSize: ".9rem", lineHeight: 1.6 }}>
                       Our Business Development Manager will review your estimate and contact you within 24 hours.
                     </p>
-                    <button
+                    <button type="button"
                       onClick={() => { setFollowUpSubmitted(false); setShowFollowUp(false); resetForm(); }}
                       style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", background: "none", border: "none", cursor: "pointer" }}
                     >

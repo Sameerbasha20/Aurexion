@@ -323,6 +323,8 @@ export const Applications: React.FC = () => {
                       style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
                       onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
                       onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                      onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                     >
                       <td style={{ padding: "1rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
                         <div>{app.tracking_code || `#APP-${app.id}`}</div>
@@ -414,7 +416,7 @@ export const Applications: React.FC = () => {
                   Tracking Code: {reviewApp.tracking_code} • Applied on {new Date(reviewApp.created_at).toLocaleString()}
                 </span>
               </div>
-              <button onClick={() => setReviewApp(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+              <button type="button" onClick={() => setReviewApp(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
                 <X size={20} />
               </button>
             </div>

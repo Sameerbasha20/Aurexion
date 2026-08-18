@@ -181,6 +181,7 @@ export const Permissions: React.FC = () => {
           <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
             {ROLES_LIST.map((role) => (
               <button
+                type="button"
                 key={role.code}
                 onClick={() => setSelectedRole(role.code)}
                 style={{

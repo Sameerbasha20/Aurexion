@@ -142,20 +142,28 @@ export const Modules: React.FC = () => {
                   <td style={{ padding: "1rem", textAlign: "right" }}>
                     <div style={{ display: "inline-flex", gap: "0.5rem" }}>
                       <button
+                        type="button"
+                        aria-label={mod.status === "ACTIVE" ? "Disable Module" : "Enable Module"}
                         onClick={() => handleToggleModule(mod.key)}
                         title={mod.status === "ACTIVE" ? "Disable Module" : "Enable Module"}
                         style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "0.25rem" }}
                         onMouseOver={(e) => e.currentTarget.style.color = mod.status === "ACTIVE" ? "#ef4444" : "#10b981"}
                         onMouseOut={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
+                        onFocus={(e) => e.currentTarget.style.color = mod.status === "ACTIVE" ? "#ef4444" : "#10b981"}
+                        onBlur={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
                       >
                         <Power size={16} />
                       </button>
                       <button
+                        type="button"
+                        aria-label="Edit Roles"
                         onClick={() => handleOpenEditDialog(mod)}
                         title="Edit Roles"
                         style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "0.25rem" }}
                         onMouseOver={(e) => e.currentTarget.style.color = "var(--color-cyan)"}
                         onMouseOut={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
+                        onFocus={(e) => e.currentTarget.style.color = "var(--color-cyan)"}
+                        onBlur={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
                       >
                         <Edit2 size={16} />
                       </button>

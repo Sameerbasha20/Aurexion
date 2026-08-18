@@ -1,6 +1,7 @@
 from django.db import connections
 from django.http import JsonResponse
 from django.views import View
+from django.views.decorators.http import require_GET
 import redis
 
 
@@ -43,6 +44,7 @@ class HealthCheckView(View):
         }, status=status_code)
 
 
+@require_GET
 def health_check(request):
     """Simple function-based health check endpoint."""
     from django.db import connections

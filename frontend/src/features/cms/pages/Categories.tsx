@@ -207,6 +207,8 @@ export const Categories: React.FC = () => {
                     style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
                     onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
                     onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                    onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                    onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                   >
                     <td style={{ padding: "1rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
                       <div>#{c.id}</div>
@@ -219,6 +221,7 @@ export const Categories: React.FC = () => {
 
                     <td style={{ padding: "1rem", textAlign: "right" }}>
                       <Button
+                        type="button"
                         variant="outline"
                         onClick={() => handleDelete(c)}
                         disabled={actionLoading}
@@ -244,7 +247,12 @@ export const Categories: React.FC = () => {
                 <p className="eyebrow" style={{ margin: 0 }}>NEW TAXONOMY NODE</p>
                 <h2 style={{ fontSize: "1.5rem", margin: "0.25rem 0 0 0" }}>Create Category</h2>
               </div>
-              <button onClick={() => setIsCreateOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+              <button
+                type="button"
+                aria-label="Close dialog"
+                onClick={() => setIsCreateOpen(false)}
+                style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}
+              >
                 <X size={20} />
               </button>
             </div>

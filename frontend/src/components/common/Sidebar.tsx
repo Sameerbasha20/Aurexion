@@ -108,6 +108,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ open }) => {
                 e.currentTarget.style.backgroundColor = "transparent";
               }
             }}
+            onFocus={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.color = "#63f5e8";
+                e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)";
+              }
+            }}
+            onBlur={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.color = "#cbd5e1";
+                e.currentTarget.style.backgroundColor = "transparent";
+              }
+            }}
             >
               <IconComponent size={18} />
               <span>{item.title}</span>

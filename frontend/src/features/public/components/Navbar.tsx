@@ -205,7 +205,7 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Mobile hamburger */}
-        <button
+        <button type="button"
           className="nav-mobile-toggle"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle menu"

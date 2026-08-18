@@ -73,7 +73,7 @@ export const ServerErrorPage: React.FC<ServerErrorPageProps> = ({ onRetry }) => 
 
         {/* CTAs */}
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-          <button
+          <button type="button"
             onClick={() => (onRetry ? onRetry() : window.location.reload())}
             className="signal-button inline-flex items-center gap-2"
           >

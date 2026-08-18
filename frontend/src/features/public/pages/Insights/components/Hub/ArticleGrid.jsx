@@ -21,7 +21,7 @@ export const ArticleGrid = ({ articles, clearFilters }) => {
             <p className="text-muted-foreground mb-8">
               We couldn't find any articles matching your current search and filter criteria.
             </p>
-            <button 
+            <button type="button" 
               onClick={clearFilters}
               className="px-6 py-2 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition-colors"
             >

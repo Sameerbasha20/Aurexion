@@ -109,6 +109,7 @@ function ProjectEstimator() {
               <div className="estimator-options">
                 {s.options.map((opt, j) => (
                   <button
+                    type="button"
                     key={j}
                     className={`estimator-opt ${selections[i] === j ? "selected" : ""}`}
                     onClick={() => select(j)}
@@ -127,9 +128,10 @@ function ProjectEstimator() {
             </div>
             <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
               {step > 0 && (
-                <button className="estimator-back" onClick={() => setStep(step - 1)}>← BACK</button>
+                <button type="button" className="estimator-back" onClick={() => setStep(step - 1)}>← BACK</button>
               )}
               <button
+                type="button"
                 className="signal-button"
                 style={{ opacity: canAdvance ? 1 : 0.4, cursor: canAdvance ? "pointer" : "default" }}
                 onClick={() => canAdvance && advance()}
@@ -153,7 +155,7 @@ function ProjectEstimator() {
             <Link href="/rfp" className="signal-button inline-flex items-center gap-2">
               SUBMIT FORMAL RFP <ArrowUpRight size={16} />
             </Link>
-            <button className="text-button" onClick={reset}>START OVER</button>
+            <button type="button" className="text-button" onClick={reset}>START OVER</button>
           </div>
         </div>
       )}
@@ -196,7 +198,7 @@ export default function Home() {
             <p className="hero-sub">AI. Software. Cloud. Data.<br />Engineered for the enterprise.</p>
             <div className="hero-ctas">
               <Link href="/rfp" className="signal-button inline-flex items-center">SUBMIT RFP <ArrowUpRight size={17} className="ml-1" /></Link>
-              <button className="text-button" onClick={() => scrollToId("estimator")}>ESTIMATE PROJECT <ArrowDown size={16} /></button>
+              <button type="button" className="text-button" onClick={() => scrollToId("estimator")}>ESTIMATE PROJECT <ArrowDown size={16} /></button>
             </div>
           </div>
           <div className="scroll-cue"><span>SCROLL TO EXPLORE</span><ArrowDown size={15} /></div>
@@ -356,7 +358,7 @@ export default function Home() {
           </div>
 
           <div style={{ textAlign: "center", marginTop: "3rem", display: "flex", gap: "1.5rem", justifyContent: "center" }}>
-            <button
+            <button type="button"
               onClick={() => setShowAllIndustries(!showAllIndustries)}
               className="signal-button inline-flex items-center gap-2"
             >

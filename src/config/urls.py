@@ -2,8 +2,10 @@ from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 from apps.core.views import health_check
 
+@require_GET
 def devtools_empty_view(request):
     return JsonResponse({}, status=200)
 

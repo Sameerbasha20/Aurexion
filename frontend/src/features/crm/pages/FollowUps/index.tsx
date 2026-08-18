@@ -146,7 +146,7 @@ export const FollowUps: React.FC = () => {
         ].map((tab) => {
           const isSelected = filterTab === tab.key;
           return (
-            <button
+            <button type="button"
               key={tab.key}
               onClick={() => setFilterTab(tab.key as any)}
               style={{

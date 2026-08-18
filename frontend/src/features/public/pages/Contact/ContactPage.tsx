@@ -180,7 +180,7 @@ export const ContactPage: React.FC = () => {
                   <p className="text-muted-foreground max-w-md text-sm leading-relaxed">
                     Thank you for reaching out. A member of our team will get back to you shortly.
                   </p>
-                  <button 
+                  <button type="button" 
                     onClick={() => {
                       setSuccess(false);
                       setSubmitError(null);

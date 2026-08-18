@@ -211,7 +211,7 @@ export const CareersPage: React.FC = () => {
 
           {/* Clear filters button */}
           {hasFilters && (
-            <button
+            <button type="button"
               onClick={clearFilters}
               style={{ display: "inline-flex", alignItems: "center", gap: ".4rem", background: "none", border: "1px solid rgba(255,80,80,0.3)", color: "#ff8080", padding: ".45rem .9rem", fontSize: ".78rem", fontFamily: "'IBM Plex Mono'", cursor: "pointer" }}
             >
@@ -241,7 +241,7 @@ export const CareersPage: React.FC = () => {
             {hasFilters ? (
               <>
                 <p className="text-[#8da5ae] mb-3">No positions match your current filters.</p>
-                <button onClick={clearFilters} style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".72rem", color: "#63f5e8", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+                <button type="button" onClick={clearFilters} style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".72rem", color: "#63f5e8", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
                   Clear filters to see all openings
                 </button>
               </>
