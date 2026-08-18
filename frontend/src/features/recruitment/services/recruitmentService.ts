@@ -149,16 +149,16 @@ export const recruitmentService = {
   /**
    * Fetch a single application
    */
-  getApplication: async (applicationId: number): Promise<CandidateApplication> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_DETAIL(applicationId));
+  getApplication: async (trackingCode: string): Promise<CandidateApplication> => {
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_DETAIL(trackingCode));
     return data;
   },
 
   /**
    * Update application candidate stage (APPLIED, SCREENING, SHORTLISTED, INTERVIEW, OFFER, HIRED, REJECTED)
    */
-  updateApplicationStage: async (applicationId: number, stage: string): Promise<CandidateApplication> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_DETAIL(applicationId), { stage });
+  updateApplicationStage: async (trackingCode: string, stage: string): Promise<CandidateApplication> => {
+    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_STAGE(trackingCode), { stage });
     return data;
   },
 

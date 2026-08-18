@@ -27,10 +27,10 @@ export const Dashboard: React.FC = () => {
   const [advancingId, setAdvancingId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const handleAdvanceStage = async (applicationId: number, nextStage: string) => {
+  const handleAdvanceStage = async (applicationId: number, trackingCode: string, nextStage: string) => {
     setAdvancingId(applicationId);
     try {
-      await recruitmentService.updateApplicationStage(applicationId, nextStage);
+      await recruitmentService.updateApplicationStage(trackingCode, nextStage);
       setSuccessMessage(`Candidate stage advanced to ${nextStage}.`);
       setTimeout(() => setSuccessMessage(null), 3000);
       refetch();
@@ -251,7 +251,7 @@ export const Dashboard: React.FC = () => {
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.78rem", color: "#94a3b8" }}>
             <span style={{ color: "#4ade80", fontWeight: 600 }}>{stats.hired_count} hired</span>
-            <span>&bull; {stats.offer_count} pending offers</span>
+            <span>� {stats.offer_count} pending offers</span>
           </div>
         </Card>
       </div>
@@ -355,7 +355,7 @@ export const Dashboard: React.FC = () => {
                       </span>
                     </div>
                     <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.2rem" }}>
-                      {job.department} &bull; {job.location} &bull; {job.experience}
+                      {job.department} � {job.location} � {job.experience}
                     </div>
                   </div>
 
@@ -435,7 +435,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: "0.25rem" }}>
-                      Role: <strong style={{ color: "#cbd5e1" }}>{app.job_title || `Job #${app.job_vacancy}`}</strong> &bull; {app.email} &bull; Applied: {new Date(app.created_at).toLocaleDateString()}
+                      Role: <strong style={{ color: "#cbd5e1" }}>{app.job_title || `Job #${app.job_vacancy}`}</strong> � {app.email} � Applied: {new Date(app.created_at).toLocaleDateString()}
                     </div>
                   </div>
 
@@ -444,7 +444,7 @@ export const Dashboard: React.FC = () => {
                       <Button
                         variant="outline"
                         disabled={advancingId === app.id}
-                        onClick={() => handleAdvanceStage(app.id, "SCREENING")}
+                        onClick={() => handleAdvanceStage(app.id, app.tracking_code, "SCREENING")}
                         style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}
                       >
                         {advancingId === app.id ? "..." : "Screen Candidate"}
@@ -454,7 +454,7 @@ export const Dashboard: React.FC = () => {
                       <Button
                         variant="outline"
                         disabled={advancingId === app.id}
-                        onClick={() => handleAdvanceStage(app.id, "SHORTLISTED")}
+                        onClick={() => handleAdvanceStage(app.id, app.tracking_code, "SHORTLISTED")}
                         style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", color: "#a855f7", borderColor: "rgba(168, 85, 247, 0.4)" }}
                       >
                         {advancingId === app.id ? "..." : "Shortlist"}

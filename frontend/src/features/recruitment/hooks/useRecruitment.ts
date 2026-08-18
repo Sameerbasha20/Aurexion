@@ -149,12 +149,12 @@ export function useApplications() {
     fetchApplications();
   }, [fetchApplications]);
 
-  const updateStage = async (applicationId: number, stage: string) => {
+  const updateStage = async (trackingCode: string, stage: string) => {
     setActionLoading(true);
     try {
-      const updated = await recruitmentService.updateApplicationStage(applicationId, stage);
+      const updated = await recruitmentService.updateApplicationStage(trackingCode, stage);
       setApplications((prev) =>
-        prev.map((app) => (app.id === applicationId ? { ...app, stage: updated.stage } : app))
+        prev.map((app) => (app.tracking_code === trackingCode ? { ...app, stage: updated.stage } : app))
       );
       return updated;
     } finally {
@@ -197,11 +197,11 @@ export function useCandidates() {
     fetchCandidates();
   }, [fetchCandidates]);
 
-  const updateCandidateStage = async (applicationId: number, stage: string) => {
+  const updateCandidateStage = async (trackingCode: string, stage: string) => {
     try {
-      const updated = await recruitmentService.updateApplicationStage(applicationId, stage);
+      const updated = await recruitmentService.updateApplicationStage(trackingCode, stage);
       setCandidates((prev) =>
-        prev.map((c) => (c.application_id === applicationId ? { ...c, stage: updated.stage } : c))
+        prev.map((c) => (c.tracking_code === trackingCode ? { ...c, stage: updated.stage } : c))
       );
       return updated;
     } catch (err) {

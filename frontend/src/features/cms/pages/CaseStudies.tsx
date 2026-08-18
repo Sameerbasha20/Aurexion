@@ -381,7 +381,7 @@ export const CaseStudies: React.FC = () => {
                           <span style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{cs.title}</span>
                         </div>
                         <div style={{ fontSize: "0.75rem", color: "#63f5e8", marginTop: "0.2rem" }}>
-                          Client: {cs.client} &bull; /{cs.slug}
+                          Client: {cs.client} • /{cs.slug}
                         </div>
                       </td>
 

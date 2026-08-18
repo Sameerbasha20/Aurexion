@@ -305,7 +305,7 @@ export const LeadDetail: React.FC = () => {
               {lead.company || lead.name}
             </h1>
             <p style={{ margin: 0, fontSize: "0.88rem", color: "#94a3b8" }}>
-              Primary Contact: <strong style={{ color: "#e2e8f0" }}>{lead.name}</strong> &bull; Established on{" "}
+              Primary Contact: <strong style={{ color: "#e2e8f0" }}>{lead.name}</strong> • Established on{" "}
               {new Date(lead.created_at).toLocaleDateString()}
             </p>
           </div>
@@ -425,7 +425,7 @@ export const LeadDetail: React.FC = () => {
               <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.6rem", borderBottom: "1px solid rgba(140, 174, 187, 0.1)" }}>
                 <span style={{ color: "#94a3b8" }}>Website:</span>
                 {lead.website ? (
-                  <a href={lead.website.startsWith("http") ? lead.website : `https://${lead.website}`} target="_blank" rel="noreferrer" style={{ color: "#63f5e8" }}>
+                  <a href={lead.website.startsWith("http") ? lead.website : `https://${lead.website}`} target="_blank" rel="noopener noreferrer" style={{ color: "#63f5e8" }}>
                     {lead.website}
                   </a>
                 ) : (

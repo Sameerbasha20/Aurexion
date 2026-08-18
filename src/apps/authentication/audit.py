@@ -1,5 +1,8 @@
+import logging
 from django.contrib.auth.models import AnonymousUser
 from apps.authentication.models import AuditLog
+
+logger = logging.getLogger(__name__)
 
 def get_client_ip(request):
     """
@@ -75,6 +78,6 @@ def get_model_state(instance):
                 state[field.name] = val
             else:
                 state[field.name] = str(val)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Failed to serialize field %s for audit log: %s", getattr(field, 'name', 'unknown'), exc)
     return state

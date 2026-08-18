@@ -36,7 +36,8 @@ export const API_ENDPOINTS = {
     ADMIN_JOBS: "/careers/admin/jobs/",
     ADMIN_JOB_DETAIL: (jobId: string) => `/careers/admin/jobs/${jobId}/`,
     ADMIN_APPLICATIONS: "/careers/admin/applications/",
-    ADMIN_APPLICATION_DETAIL: (id: number) => `/careers/admin/applications/${id}/`,
+    ADMIN_APPLICATION_DETAIL: (id: string) => `/careers/admin/applications/${id}/`,
+    ADMIN_APPLICATION_STAGE: (id: string) => `/careers/admin/applications/${id}/stage/`,
   },
   CMS: {
     ADMIN_SERVICES: "/cms/admin/services/",

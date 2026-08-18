@@ -48,11 +48,11 @@ export const Applications: React.FC = () => {
     return matchesSearch && matchesStage && matchesJob;
   });
 
-  const handleStageUpdate = async (applicationId: number, nextStage: string) => {
+  const handleStageUpdate = async (trackingCode: string, nextStage: string) => {
     try {
-      await updateStage(applicationId, nextStage);
+      await updateStage(trackingCode, nextStage);
       setActionSuccess(`Application stage updated to ${nextStage}.`);
-      if (reviewApp && reviewApp.id === applicationId) {
+      if (reviewApp && reviewApp.tracking_code === trackingCode) {
         setReviewApp({ ...reviewApp, stage: nextStage });
       }
       setTimeout(() => setActionSuccess(null), 3000);
@@ -339,7 +339,7 @@ export const Applications: React.FC = () => {
                           <a href={`mailto:${app.email}`} style={{ color: "#63f5e8", textDecoration: "none" }}>
                             {app.email}
                           </a>
-                          {app.phone && ` &bull; ${app.phone}`}
+                          {app.phone && ` • ${app.phone}`}
                         </div>
                       </td>
 
@@ -370,7 +370,7 @@ export const Applications: React.FC = () => {
                           <a
                             href={app.resume_storage_path}
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                             style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.78rem" }}
                           >
                             <Download size={13} /> Resume
@@ -411,7 +411,7 @@ export const Applications: React.FC = () => {
                   {reviewApp.first_name} {reviewApp.last_name}
                 </h2>
                 <span style={{ fontSize: "0.78rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace" }}>
-                  Tracking Code: {reviewApp.tracking_code} &bull; Applied on {new Date(reviewApp.created_at).toLocaleString()}
+                  Tracking Code: {reviewApp.tracking_code} • Applied on {new Date(reviewApp.created_at).toLocaleString()}
                 </span>
               </div>
               <button onClick={() => setReviewApp(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
@@ -443,7 +443,7 @@ export const Applications: React.FC = () => {
                     <a
                       href={reviewApp.resume_storage_path}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.85rem", textDecoration: "underline" }}
                     >
                       <Download size={14} /> Download File
@@ -468,7 +468,7 @@ export const Applications: React.FC = () => {
                 <Button
                   variant="outline"
                   disabled={actionLoading || reviewApp.stage === "SCREENING"}
-                  onClick={() => handleStageUpdate(reviewApp.id, "SCREENING")}
+                  onClick={() => handleStageUpdate(reviewApp.tracking_code, "SCREENING")}
                   style={{ fontSize: "0.75rem", color: "#38bdf8", borderColor: "rgba(56, 189, 248, 0.3)" }}
                 >
                   Advance to Screening
@@ -477,7 +477,7 @@ export const Applications: React.FC = () => {
                 <Button
                   variant="outline"
                   disabled={actionLoading || reviewApp.stage === "SHORTLISTED"}
-                  onClick={() => handleStageUpdate(reviewApp.id, "SHORTLISTED")}
+                  onClick={() => handleStageUpdate(reviewApp.tracking_code, "SHORTLISTED")}
                   style={{ fontSize: "0.75rem", color: "#a855f7", borderColor: "rgba(168, 85, 247, 0.3)" }}
                 >
                   Shortlist Candidate
@@ -486,7 +486,7 @@ export const Applications: React.FC = () => {
                 <Button
                   variant="outline"
                   disabled={actionLoading || reviewApp.stage === "INTERVIEW"}
-                  onClick={() => handleStageUpdate(reviewApp.id, "INTERVIEW")}
+                  onClick={() => handleStageUpdate(reviewApp.tracking_code, "INTERVIEW")}
                   style={{ fontSize: "0.75rem", color: "#818cf8", borderColor: "rgba(129, 140, 248, 0.3)" }}
                 >
                   Schedule Interview
@@ -495,7 +495,7 @@ export const Applications: React.FC = () => {
                 <Button
                   variant="outline"
                   disabled={actionLoading || reviewApp.stage === "OFFER"}
-                  onClick={() => handleStageUpdate(reviewApp.id, "OFFER")}
+                  onClick={() => handleStageUpdate(reviewApp.tracking_code, "OFFER")}
                   style={{ fontSize: "0.75rem", color: "#facc15", borderColor: "rgba(250, 204, 21, 0.3)" }}
                 >
                   Extend Offer
@@ -504,7 +504,7 @@ export const Applications: React.FC = () => {
                 <Button
                   variant="outline"
                   disabled={actionLoading || reviewApp.stage === "HIRED"}
-                  onClick={() => handleStageUpdate(reviewApp.id, "HIRED")}
+                  onClick={() => handleStageUpdate(reviewApp.tracking_code, "HIRED")}
                   style={{ fontSize: "0.75rem", color: "#4ade80", borderColor: "rgba(74, 222, 128, 0.3)" }}
                 >
                   Mark as Hired
@@ -513,7 +513,7 @@ export const Applications: React.FC = () => {
                 <Button
                   variant="outline"
                   disabled={actionLoading || reviewApp.stage === "REJECTED"}
-                  onClick={() => handleStageUpdate(reviewApp.id, "REJECTED")}
+                  onClick={() => handleStageUpdate(reviewApp.tracking_code, "REJECTED")}
                   style={{ fontSize: "0.75rem", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.3)" }}
                 >
                   Reject Application
