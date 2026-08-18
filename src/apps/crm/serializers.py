@@ -185,6 +185,7 @@ class LeadNoteSerializer(serializers.ModelSerializer):
 
 class PublicLeadCreateSerializer(serializers.ModelSerializer):
     """Public serializer for form submissions (estimator, RFP, contact forms)."""
+    subject = serializers.CharField(required=False, write_only=True, allow_blank=True)
 
     class Meta:
         model = Lead
@@ -197,6 +198,7 @@ class PublicLeadCreateSerializer(serializers.ModelSerializer):
             "industry",
             "source",
             "description",
+            "subject",
             "priority",
         ]
 
@@ -209,6 +211,13 @@ class PublicLeadCreateSerializer(serializers.ModelSerializer):
         if not value or not value.strip():
             raise serializers.ValidationError("Name is required.")
         return value.strip()
+
+    def validate(self, attrs):
+        subject = attrs.pop("subject", None)
+        if subject:
+            desc = attrs.get("description", "")
+            attrs["description"] = f"Subject: {subject}\n\n{desc}" if desc else f"Subject: {subject}"
+        return attrs
 
 
 class LeadActivitySerializer(serializers.ModelSerializer):

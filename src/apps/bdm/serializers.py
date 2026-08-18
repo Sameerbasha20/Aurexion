@@ -21,6 +21,7 @@ class BdmFormSubmissionSerializer(serializers.Serializer):
     reference_id = serializers.CharField()
     name = serializers.CharField()
     email = serializers.EmailField()
+    phone = serializers.CharField(allow_blank=True, default="")
     company = serializers.CharField(allow_blank=True)
     source = serializers.CharField()
     source_display = serializers.CharField()
@@ -28,6 +29,8 @@ class BdmFormSubmissionSerializer(serializers.Serializer):
     description = serializers.CharField(allow_blank=True)
     created_at = serializers.DateTimeField()
     status = serializers.CharField()
+    assigned_to = serializers.IntegerField(allow_null=True)
+    assigned_to_name = serializers.CharField(allow_null=True)
 
 
 class BdmDashboardSerializer(serializers.Serializer):
