@@ -191,8 +191,8 @@ export default function Home() {
           <HeroVideoBackground videoUrl="/videos/hero-bg.mp4" />
           <div className="hero-grid" />
           <div className="hero-copy reveal">
-            <p className="eyebrow"><Circle size={8} fill="currentColor" /> DIGITAL INTELLIGENCE / 001</p>
-            <h1>ENGINEERING<br /><em>WHAT COMES<br />NEXT.</em></h1>
+            <p className="eyebrow"><Circle size={8} fill="currentColor" /> 01 / DIGITAL INTELLIGENCE</p>
+            <h1>ENGINEERING<br /><em>WHAT COMES NEXT.</em></h1>
             <p className="hero-sub">AI. Software. Cloud. Data.<br />Engineered for the enterprise.</p>
             <div className="hero-ctas">
               <Link href="/rfp" className="signal-button inline-flex items-center">SUBMIT RFP <ArrowUpRight size={17} className="ml-1" /></Link>

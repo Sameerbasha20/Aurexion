@@ -17,7 +17,6 @@ const ServicesDropdown: React.FC<{ onClose: () => void }> = ({ onClose }) => (
               className="nav-mega-cat"
               onClick={onClose}
             >
-              <span className="nav-mega-num">{cat.id}</span>
               <span className="nav-mega-cat-title">{cat.name}</span>
             </Link>
             <ul>
@@ -57,7 +56,6 @@ const IndustriesDropdown: React.FC<{ onClose: () => void }> = ({ onClose }) => (
           className="nav-ind-item"
           onClick={onClose}
         >
-          <span className="nav-ind-num">{ind.id}</span>
           <span className="nav-ind-name">{ind.name}</span>
         </Link>
       ))}
@@ -228,7 +226,6 @@ export const Navbar: React.FC = () => {
                 className="nav-mobile-link"
                 onClick={closeAll}
               >
-                <span className="nav-mobile-num">{cat.id}</span>
                 {cat.name}
               </Link>
             ))}
@@ -242,7 +239,6 @@ export const Navbar: React.FC = () => {
                 className="nav-mobile-link"
                 onClick={closeAll}
               >
-                <span className="nav-mobile-num">{ind.id}</span>
                 {ind.name}
               </Link>
             ))}

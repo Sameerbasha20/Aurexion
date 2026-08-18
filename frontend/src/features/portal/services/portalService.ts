@@ -31,13 +31,37 @@ export const portalService = {
     return supportService.updateMyTicket(ticketId, ticketData);
   },
 
-  // Backward-compatible empty accessors retained for shared Admin dashboards.
-  getProjects: async (): Promise<{ id: string; title: string; deadline: string; completion: number }[]> => {
-    return [];
+  getProjects: async (): Promise<any[]> => {
+    try {
+      const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.PROJECTS);
+      return Array.isArray(data) ? data : (data.results || []);
+    } catch {
+      return [];
+    }
   },
-  getDocuments: async (): Promise<{ id: string; name: string; path: string }[]> => {
-    return [];
+
+  getRequests: async (): Promise<any[]> => {
+    try {
+      const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.REQUESTS);
+      return Array.isArray(data) ? data : (data.results || []);
+    } catch {
+      return [];
+    }
   },
+
+  createRequest: async (requestData: { title: string; category?: string; description?: string; priority?: string }): Promise<any> => {
+    return axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.REQUESTS, requestData);
+  },
+
+  getDocuments: async (): Promise<any[]> => {
+    try {
+      const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.DOCUMENTS);
+      return Array.isArray(data) ? data : (data.results || []);
+    } catch {
+      return [];
+    }
+  },
+
   getAllTickets: async (): Promise<SupportTicketItem[]> => {
     return supportService.getMyTickets();
   },

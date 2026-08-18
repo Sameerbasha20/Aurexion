@@ -1,0 +1,5946 @@
+openapi: 3.0.3
+info:
+  title: Aurexion Enterprise Platform API
+  version: 1.0.0
+  description: API documentation for Aurexion Technologies platform.
+paths:
+  /api/v1/audit-logs/:
+    get:
+      operationId: audit_logs_list
+      description: |-
+        Endpoint: /api/v1/audit-logs/
+        Allows Super Admins to view and search audit events.
+        Immutable log: read-only actions (list and retrieve) only.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - audit-logs
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditLog'
+          description: ''
+  /api/v1/audit-logs/{id}/:
+    get:
+      operationId: audit_logs_retrieve
+      description: |-
+        Endpoint: /api/v1/audit-logs/
+        Allows Super Admins to view and search audit events.
+        Immutable log: read-only actions (list and retrieve) only.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this audit log.
+        required: true
+      tags:
+      - audit-logs
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLog'
+          description: ''
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Endpoint: POST /api/v1/auth/login/
+        Allows users to log in and obtain JWT access and refresh tokens.
+        Implements a lockout after 5 failed attempts per user or per IP.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: ''
+  /api/v1/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      description: |-
+        Endpoint: GET /api/v1/auth/me/
+        Retrieves the current user's profile and role.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/bdm/dashboard/:
+    get:
+      operationId: bdm_dashboard_retrieve
+      description: Real-time pipeline metrics aggregated from PostgreSQL CRM data.
+      summary: BDM dashboard metrics
+      tags:
+      - BDM
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdmDashboard'
+          description: ''
+  /api/v1/careers/admin/applications/:
+    get:
+      operationId: careers_admin_applications_list
+      description: 'HR API: View and manage Candidate Applications.'
+      summary: List all applications
+      tags:
+      - Careers (HR Admin)
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminCandidateApplication'
+          description: ''
+  /api/v1/careers/admin/applications/{tracking_code}/:
+    get:
+      operationId: careers_admin_applications_retrieve
+      description: 'HR API: View and manage Candidate Applications.'
+      summary: Get application details
+      parameters:
+      - in: path
+        name: tracking_code
+        schema:
+          type: string
+        required: true
+      tags:
+      - Careers (HR Admin)
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCandidateApplication'
+          description: ''
+  /api/v1/careers/admin/applications/{tracking_code}/notes/:
+    get:
+      operationId: careers_admin_applications_notes_retrieve
+      description: 'HR API: Manage internal ATS notes'
+      summary: Manage internal ATS notes
+      parameters:
+      - in: path
+        name: tracking_code
+        schema:
+          type: string
+        required: true
+      tags:
+      - Careers (HR Admin)
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCandidateApplication'
+          description: ''
+    post:
+      operationId: careers_admin_applications_notes_create
+      description: 'HR API: Manage internal ATS notes'
+      summary: Manage internal ATS notes
+      parameters:
+      - in: path
+        name: tracking_code
+        schema:
+          type: string
+        required: true
+      tags:
+      - Careers (HR Admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationNote'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ApplicationNote'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApplicationNote'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCandidateApplication'
+          description: ''
+  /api/v1/careers/admin/applications/{tracking_code}/resume/:
+    get:
+      operationId: careers_admin_applications_resume_retrieve
+      description: 'HR API: Securely download resume via signed URL'
+      summary: Get secure resume download URL
+      parameters:
+      - in: path
+        name: tracking_code
+        schema:
+          type: string
+        required: true
+      tags:
+      - Careers (HR Admin)
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCandidateApplication'
+          description: ''
+  /api/v1/careers/admin/applications/{tracking_code}/stage/:
+    patch:
+      operationId: careers_admin_applications_stage_partial_update
+      description: 'HR API: Update application stage'
+      summary: Update application stage
+      parameters:
+      - in: path
+        name: tracking_code
+        schema:
+          type: string
+        required: true
+      tags:
+      - Careers (HR Admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedApplicationStageUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedApplicationStageUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedApplicationStageUpdate'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCandidateApplication'
+          description: ''
+  /api/v1/careers/admin/jobs/:
+    get:
+      operationId: careers_admin_jobs_list
+      description: 'HR API: CRUD operations for Job Vacancies.'
+      summary: List all jobs (including closed)
+      tags:
+      - Careers (HR Admin)
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminJobVacancy'
+          description: ''
+    post:
+      operationId: careers_admin_jobs_create
+      description: 'HR API: CRUD operations for Job Vacancies.'
+      summary: Create a new job vacancy
+      tags:
+      - Careers (HR Admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminJobVacancy'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminJobVacancy'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminJobVacancy'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminJobVacancy'
+          description: ''
+  /api/v1/careers/admin/jobs/{job_id}/:
+    get:
+      operationId: careers_admin_jobs_retrieve
+      description: 'HR API: CRUD operations for Job Vacancies.'
+      summary: Get job details
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Careers (HR Admin)
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminJobVacancy'
+          description: ''
+    put:
+      operationId: careers_admin_jobs_update
+      description: 'HR API: CRUD operations for Job Vacancies.'
+      summary: Update a job vacancy completely
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Careers (HR Admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminJobVacancy'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminJobVacancy'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminJobVacancy'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminJobVacancy'
+          description: ''
+    patch:
+      operationId: careers_admin_jobs_partial_update
+      description: 'HR API: CRUD operations for Job Vacancies.'
+      summary: Update a job vacancy partially
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Careers (HR Admin)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminJobVacancy'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminJobVacancy'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminJobVacancy'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminJobVacancy'
+          description: ''
+    delete:
+      operationId: careers_admin_jobs_destroy
+      description: 'HR API: CRUD operations for Job Vacancies.'
+      summary: Delete a job vacancy
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Careers (HR Admin)
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/careers/apply/:
+    post:
+      operationId: careers_apply_create
+      description: Submit a job application with a resume file upload (PDF/DOCX max
+        5MB).
+      summary: Submit Candidate Application
+      tags:
+      - Careers (Public)
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Apply'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Apply'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Apply'
+          description: ''
+  /api/v1/careers/jobs/:
+    get:
+      operationId: careers_jobs_list
+      description: Retrieves a list of all currently active job postings. Supports
+        filtering.
+      summary: List Active Job Vacancies
+      parameters:
+      - in: query
+        name: department
+        schema:
+          type: string
+        description: Filter by department name
+      - in: query
+        name: experience
+        schema:
+          type: string
+        description: Filter by experience level
+      - in: query
+        name: location
+        schema:
+          type: string
+        description: Filter by location
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by job title
+      tags:
+      - Careers (Public)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobVacancy'
+          description: ''
+  /api/v1/careers/jobs/{job_id}/:
+    get:
+      operationId: careers_jobs_retrieve
+      description: Retrieves full details for a specific active job posting by its
+        ID.
+      summary: Get Job Vacancy Details
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Careers (Public)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobVacancy'
+          description: ''
+  /api/v1/cms/admin/blog/:
+    get:
+      operationId: cms_admin_blog_list
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlogPost'
+          description: ''
+    post:
+      operationId: cms_admin_blog_create
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPost'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlogPost'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlogPost'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+          description: ''
+  /api/v1/cms/admin/blog/{slug}/:
+    get:
+      operationId: cms_admin_blog_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+          description: ''
+    put:
+      operationId: cms_admin_blog_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPost'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlogPost'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlogPost'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+          description: ''
+    patch:
+      operationId: cms_admin_blog_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBlogPost'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBlogPost'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBlogPost'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+          description: ''
+    delete:
+      operationId: cms_admin_blog_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cms/admin/case-studies/:
+    get:
+      operationId: cms_admin_case_studies_list
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseStudy'
+          description: ''
+    post:
+      operationId: cms_admin_case_studies_create
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseStudy'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseStudy'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseStudy'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseStudy'
+          description: ''
+  /api/v1/cms/admin/case-studies/{slug}/:
+    get:
+      operationId: cms_admin_case_studies_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseStudy'
+          description: ''
+    put:
+      operationId: cms_admin_case_studies_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseStudy'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseStudy'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseStudy'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseStudy'
+          description: ''
+    patch:
+      operationId: cms_admin_case_studies_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseStudy'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseStudy'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseStudy'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseStudy'
+          description: ''
+    delete:
+      operationId: cms_admin_case_studies_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cms/admin/categories/:
+    get:
+      operationId: cms_admin_categories_list
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+    post:
+      operationId: cms_admin_categories_create
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/cms/admin/categories/{slug}/:
+    get:
+      operationId: cms_admin_categories_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: cms_admin_categories_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: cms_admin_categories_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: cms_admin_categories_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cms/admin/industry/:
+    get:
+      operationId: cms_admin_industry_list
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Industry'
+          description: ''
+    post:
+      operationId: cms_admin_industry_create
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Industry'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Industry'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Industry'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+          description: ''
+  /api/v1/cms/admin/industry/{slug}/:
+    get:
+      operationId: cms_admin_industry_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+          description: ''
+    put:
+      operationId: cms_admin_industry_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Industry'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Industry'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Industry'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+          description: ''
+    patch:
+      operationId: cms_admin_industry_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedIndustry'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedIndustry'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedIndustry'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+          description: ''
+    delete:
+      operationId: cms_admin_industry_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cms/admin/service/:
+    get:
+      operationId: cms_admin_service_list
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+          description: ''
+    post:
+      operationId: cms_admin_service_create
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Service'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Service'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+  /api/v1/cms/admin/service/{slug}/:
+    get:
+      operationId: cms_admin_service_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+    put:
+      operationId: cms_admin_service_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Service'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Service'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+    patch:
+      operationId: cms_admin_service_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedService'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedService'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedService'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+    delete:
+      operationId: cms_admin_service_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - cms
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cms/public/blog/:
+    get:
+      operationId: cms_public_blog_list
+      description: |-
+        Public API: GET /api/v1/cms/public/blog/
+        List or retrieve published blog articles.
+        Supports tag filtering, categories, keyword search, and related suggestions.
+      parameters:
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - CMS (Public)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlogPost'
+          description: ''
+  /api/v1/cms/public/blog/{slug}/:
+    get:
+      operationId: cms_public_blog_retrieve
+      description: |-
+        Public API: GET /api/v1/cms/public/blog/
+        List or retrieve published blog articles.
+        Supports tag filtering, categories, keyword search, and related suggestions.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - CMS (Public)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+          description: ''
+  /api/v1/cms/public/blog/{slug}/related/:
+    get:
+      operationId: cms_public_blog_related_retrieve
+      description: |-
+        Public API: GET /api/v1/cms/public/blog/{slug}/related/
+        Suggests up to 3 blog posts within the same category.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - CMS (Public)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+          description: ''
+  /api/v1/cms/public/case-studies/:
+    get:
+      operationId: cms_public_case_studies_list
+      description: |-
+        Public API: GET /api/v1/cms/public/case-studies/
+        Retrieve list or detail of non-draft case studies.
+        Supports portfolio filters: ?tech_stack=Python
+      tags:
+      - CMS (Public)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseStudy'
+          description: ''
+  /api/v1/cms/public/case-studies/{slug}/:
+    get:
+      operationId: cms_public_case_studies_retrieve
+      description: |-
+        Public API: GET /api/v1/cms/public/case-studies/
+        Retrieve list or detail of non-draft case studies.
+        Supports portfolio filters: ?tech_stack=Python
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - CMS (Public)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseStudy'
+          description: ''
+  /api/v1/cms/public/industry/{slug}/:
+    get:
+      operationId: cms_public_industry_retrieve
+      description: |-
+        Public API: GET /api/v1/cms/public/industries/{slug}/
+        Queries and returns related challenges, solutions, services, and case studies.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - CMS (Public)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndustryPublic'
+          description: ''
+  /api/v1/cms/public/service/{slug}/:
+    get:
+      operationId: cms_public_service_retrieve
+      description: |-
+        Public API: GET /api/v1/cms/public/services/{slug}/
+        Resolves active services by slug.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - CMS (Public)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+          description: ''
+  /api/v1/documents/:
+    get:
+      operationId: documents_list
+      summary: List my documents
+      tags:
+      - Client Portal (Documents)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientDocument'
+          description: ''
+    post:
+      operationId: documents_create
+      summary: Create a document
+      tags:
+      - Client Portal (Documents)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDocument'
+          description: ''
+  /api/v1/documents/{id}/:
+    get:
+      operationId: documents_retrieve
+      summary: Get document details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client document.
+        required: true
+      tags:
+      - Client Portal (Documents)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDocument'
+          description: ''
+    put:
+      operationId: documents_update
+      summary: Update document
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client document.
+        required: true
+      tags:
+      - Client Portal (Documents)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDocument'
+          description: ''
+    patch:
+      operationId: documents_partial_update
+      summary: Partially update document
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client document.
+        required: true
+      tags:
+      - Client Portal (Documents)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClientDocument'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClientDocument'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClientDocument'
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDocument'
+          description: ''
+    delete:
+      operationId: documents_destroy
+      summary: Delete document
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client document.
+        required: true
+      tags:
+      - Client Portal (Documents)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/leads/:
+    get:
+      operationId: leads_list
+      description: |-
+        CRM Lead management.
+
+        - Roles: BDM/Administrator/Super Admin full access; Sales Executives see
+          only their assigned leads (object-level scoping enforced in get_queryset).
+        - Status is a controlled lifecycle; transitions happen through the
+          `transition`, `qualify`, `won`, `lost` actions (never free-form PATCH).
+        - All sensitive operations are written to the AuditLog (module='crm').
+      summary: List leads with filtering, search and pagination
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - CRM Leads
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLeadList'
+          description: ''
+    post:
+      operationId: leads_create
+      description: |-
+        CRM Lead management.
+
+        - Roles: BDM/Administrator/Super Admin full access; Sales Executives see
+          only their assigned leads (object-level scoping enforced in get_queryset).
+        - Status is a controlled lifecycle; transitions happen through the
+          `transition`, `qualify`, `won`, `lost` actions (never free-form PATCH).
+        - All sensitive operations are written to the AuditLog (module='crm').
+      summary: Create a lead
+      tags:
+      - CRM Leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeadCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeadCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadCreate'
+          description: ''
+  /api/v1/leads/{id}/:
+    get:
+      operationId: leads_retrieve
+      description: |-
+        CRM Lead management.
+
+        - Roles: BDM/Administrator/Super Admin full access; Sales Executives see
+          only their assigned leads (object-level scoping enforced in get_queryset).
+        - Status is a controlled lifecycle; transitions happen through the
+          `transition`, `qualify`, `won`, `lost` actions (never free-form PATCH).
+        - All sensitive operations are written to the AuditLog (module='crm').
+      summary: Retrieve a lead
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Leads
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+    put:
+      operationId: leads_update
+      description: |-
+        CRM Lead management.
+
+        - Roles: BDM/Administrator/Super Admin full access; Sales Executives see
+          only their assigned leads (object-level scoping enforced in get_queryset).
+        - Status is a controlled lifecycle; transitions happen through the
+          `transition`, `qualify`, `won`, `lost` actions (never free-form PATCH).
+        - All sensitive operations are written to the AuditLog (module='crm').
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeadUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeadUpdate'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadUpdate'
+          description: ''
+    patch:
+      operationId: leads_partial_update
+      description: |-
+        CRM Lead management.
+
+        - Roles: BDM/Administrator/Super Admin full access; Sales Executives see
+          only their assigned leads (object-level scoping enforced in get_queryset).
+        - Status is a controlled lifecycle; transitions happen through the
+          `transition`, `qualify`, `won`, `lost` actions (never free-form PATCH).
+        - All sensitive operations are written to the AuditLog (module='crm').
+      summary: Partially update a lead
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLeadUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLeadUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLeadUpdate'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadUpdate'
+          description: ''
+    delete:
+      operationId: leads_destroy
+      description: |-
+        CRM Lead management.
+
+        - Roles: BDM/Administrator/Super Admin full access; Sales Executives see
+          only their assigned leads (object-level scoping enforced in get_queryset).
+        - Status is a controlled lifecycle; transitions happen through the
+          `transition`, `qualify`, `won`, `lost` actions (never free-form PATCH).
+        - All sensitive operations are written to the AuditLog (module='crm').
+      summary: Delete a lead
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Leads
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/leads/{id}/activities/:
+    get:
+      operationId: leads_activities_list
+      description: Activity history for a lead (derived from the AuditLog).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - CRM Activities
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLeadActivityList'
+          description: ''
+  /api/v1/leads/{id}/assign/:
+    post:
+      operationId: leads_assign_create
+      description: Assign (or reassign) a lead to an active BDM/Sales user.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadAssign'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeadAssign'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeadAssign'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+  /api/v1/leads/{id}/follow-ups/:
+    get:
+      operationId: leads_follow_ups_retrieve
+      description: List or create follow-ups for a lead.
+      summary: List or create follow-ups for a lead
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Follow-ups
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadFollowUp'
+          description: ''
+    post:
+      operationId: leads_follow_ups_create
+      description: List or create follow-ups for a lead.
+      summary: List or create follow-ups for a lead
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Follow-ups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadFollowUpCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeadFollowUpCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeadFollowUpCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadFollowUp'
+          description: ''
+  /api/v1/leads/{id}/follow-ups/{followup_id}/:
+    patch:
+      operationId: leads_follow_ups_partial_update
+      description: Update or delete a specific follow-up.
+      summary: Update or delete a follow-up
+      parameters:
+      - in: path
+        name: followup_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Follow-ups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLeadFollowUpUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLeadFollowUpUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLeadFollowUpUpdate'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadFollowUp'
+          description: ''
+    delete:
+      operationId: leads_follow_ups_destroy
+      description: Update or delete a specific follow-up.
+      summary: Update or delete a follow-up
+      parameters:
+      - in: path
+        name: followup_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Follow-ups
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/leads/{id}/follow-ups/{followup_id}/complete/:
+    post:
+      operationId: leads_follow_ups_complete_create
+      description: Complete a follow-up and refresh the lead's last_contacted_at.
+      parameters:
+      - in: path
+        name: followup_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Follow-ups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Lead'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadFollowUp'
+          description: ''
+  /api/v1/leads/{id}/lost/:
+    post:
+      operationId: leads_lost_create
+      description: Mark a lead as LOST (a reason is required).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadLost'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeadLost'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeadLost'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+  /api/v1/leads/{id}/notes/:
+    get:
+      operationId: leads_notes_retrieve
+      description: List or create notes for a lead.
+      summary: List or create notes for a lead
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Notes
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadNote'
+          description: ''
+    post:
+      operationId: leads_notes_create
+      description: List or create notes for a lead.
+      summary: List or create notes for a lead
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadNote'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeadNote'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeadNote'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadNote'
+          description: ''
+  /api/v1/leads/{id}/notes/{note_id}/:
+    patch:
+      operationId: leads_notes_partial_update
+      description: Update or delete a note (author or administrator).
+      summary: Update or delete a note
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      - in: path
+        name: note_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - CRM Notes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLeadNote'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLeadNote'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLeadNote'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadNote'
+          description: ''
+    delete:
+      operationId: leads_notes_destroy
+      description: Update or delete a note (author or administrator).
+      summary: Update or delete a note
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      - in: path
+        name: note_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - CRM Notes
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/leads/{id}/qualify/:
+    post:
+      operationId: leads_qualify_create
+      description: Qualify a lead (valid from CONTACTED).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Lead'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+  /api/v1/leads/{id}/reopen/:
+    post:
+      operationId: leads_reopen_create
+      description: Reopen a LOST lead back into the active pipeline (status NEW).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Lead'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+  /api/v1/leads/{id}/schedule-meeting/:
+    post:
+      operationId: leads_schedule_meeting_create
+      description: Schedule a meeting with client, record follow-up, and dispatch
+        email notification.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Lead'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+  /api/v1/leads/{id}/transition/:
+    post:
+      operationId: leads_transition_create
+      description: Transition a lead to any valid lifecycle state (409 on invalid).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadStatusTransition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeadStatusTransition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeadStatusTransition'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+  /api/v1/leads/{id}/won/:
+    post:
+      operationId: leads_won_create
+      description: Mark a lead as WON.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - CRM Leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Lead'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+  /api/v1/leads/export/:
+    get:
+      operationId: leads_export_retrieve
+      description: Stream a CSV export of the currently filtered leads (audited).
+      summary: Export filtered leads as CSV
+      tags:
+      - CRM Leads
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+  /api/v1/projects/:
+    get:
+      operationId: projects_list
+      summary: List my projects
+      tags:
+      - Client Portal (Projects)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientProject'
+          description: ''
+    post:
+      operationId: projects_create
+      summary: Create a project
+      tags:
+      - Client Portal (Projects)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProject'
+          description: ''
+  /api/v1/projects/{id}/:
+    get:
+      operationId: projects_retrieve
+      summary: Get project details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client project.
+        required: true
+      tags:
+      - Client Portal (Projects)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProject'
+          description: ''
+    put:
+      operationId: projects_update
+      summary: Update project
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client project.
+        required: true
+      tags:
+      - Client Portal (Projects)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProject'
+          description: ''
+    patch:
+      operationId: projects_partial_update
+      summary: Partially update project
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client project.
+        required: true
+      tags:
+      - Client Portal (Projects)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClientProject'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClientProject'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClientProject'
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProject'
+          description: ''
+    delete:
+      operationId: projects_destroy
+      summary: Delete project
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client project.
+        required: true
+      tags:
+      - Client Portal (Projects)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/public/leads/:
+    post:
+      operationId: public_leads_create
+      description: |-
+        Public endpoint for form submissions (estimator, RFP, contact forms).
+        No authentication required. Creates a lead with status NEW and source from form.
+      summary: Submit a lead from public form
+      tags:
+      - Public Forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicLeadCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PublicLeadCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PublicLeadCreate'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+  /api/v1/requests/:
+    get:
+      operationId: requests_list
+      summary: List my requests
+      tags:
+      - Client Portal (Requests)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientRequest'
+          description: ''
+    post:
+      operationId: requests_create
+      summary: Create a request
+      tags:
+      - Client Portal (Requests)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRequest'
+          description: ''
+  /api/v1/requests/{id}/:
+    get:
+      operationId: requests_retrieve
+      summary: Get request details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client request.
+        required: true
+      tags:
+      - Client Portal (Requests)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRequest'
+          description: ''
+    put:
+      operationId: requests_update
+      summary: Update request
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client request.
+        required: true
+      tags:
+      - Client Portal (Requests)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRequest'
+          description: ''
+    patch:
+      operationId: requests_partial_update
+      summary: Partially update request
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client request.
+        required: true
+      tags:
+      - Client Portal (Requests)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClientRequest'
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRequest'
+          description: ''
+    delete:
+      operationId: requests_destroy
+      summary: Delete request
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client request.
+        required: true
+      tags:
+      - Client Portal (Requests)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/roles/:
+    get:
+      operationId: roles_list
+      tags:
+      - roles
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+          description: ''
+    post:
+      operationId: roles_create
+      tags:
+      - roles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Role'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Role'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+  /api/v1/roles/{id}/:
+    get:
+      operationId: roles_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - roles
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    put:
+      operationId: roles_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - roles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Role'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Role'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    patch:
+      operationId: roles_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - roles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRole'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRole'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRole'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    delete:
+      operationId: roles_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - roles
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/support/admin/tickets/:
+    get:
+      operationId: support_admin_tickets_list
+      description: |-
+        Administrator API: /api/v1/support/admin/tickets/
+
+        Authenticated Administrators (and Super Admins) can list, retrieve and
+        update any support ticket. Access is controlled via the existing RBAC
+        IsAdministrator permission (super_admin + administrator).
+      summary: List all support tickets
+      tags:
+      - Support (Administrator)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupportTicketList'
+          description: ''
+  /api/v1/support/admin/tickets/{id}/:
+    get:
+      operationId: support_admin_tickets_retrieve
+      description: |-
+        Administrator API: /api/v1/support/admin/tickets/
+
+        Authenticated Administrators (and Super Admins) can list, retrieve and
+        update any support ticket. Access is controlled via the existing RBAC
+        IsAdministrator permission (super_admin + administrator).
+      summary: Get any support ticket
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support (Administrator)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportTicketDetail'
+          description: ''
+    put:
+      operationId: support_admin_tickets_update
+      description: |-
+        Administrator API: /api/v1/support/admin/tickets/
+
+        Authenticated Administrators (and Super Admins) can list, retrieve and
+        update any support ticket. Access is controlled via the existing RBAC
+        IsAdministrator permission (super_admin + administrator).
+      summary: Update any support ticket
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support (Administrator)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdministratorTicketUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdministratorTicketUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdministratorTicketUpdate'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdministratorTicketUpdate'
+          description: ''
+    patch:
+      operationId: support_admin_tickets_partial_update
+      description: |-
+        Administrator API: /api/v1/support/admin/tickets/
+
+        Authenticated Administrators (and Super Admins) can list, retrieve and
+        update any support ticket. Access is controlled via the existing RBAC
+        IsAdministrator permission (super_admin + administrator).
+      summary: Update any support ticket
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support (Administrator)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdministratorTicketUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdministratorTicketUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdministratorTicketUpdate'
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdministratorTicketUpdate'
+          description: ''
+  /api/v1/support/my-tickets/:
+    get:
+      operationId: support_my_tickets_list
+      description: |-
+        Client Portal API: /api/v1/support/my-tickets/
+
+        Authenticated Client Users can create, list, retrieve and update only the
+        tickets that belong to them. All authorization is enforced server-side:
+
+        - View-level (RBAC): Client User role only.
+        - Object-level: the client is the owner of the ticket.
+        - List filtering: queryset is always scoped to the authenticated user, so
+          no other client's tickets are ever exposed.
+      summary: List my support tickets
+      tags:
+      - Support (Client Portal)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupportTicketList'
+          description: ''
+    post:
+      operationId: support_my_tickets_create
+      description: |-
+        Client Portal API: /api/v1/support/my-tickets/
+
+        Authenticated Client Users can create, list, retrieve and update only the
+        tickets that belong to them. All authorization is enforced server-side:
+
+        - View-level (RBAC): Client User role only.
+        - Object-level: the client is the owner of the ticket.
+        - List filtering: queryset is always scoped to the authenticated user, so
+          no other client's tickets are ever exposed.
+      summary: Create a support ticket
+      tags:
+      - Support (Client Portal)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientTicketCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientTicketCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientTicketCreate'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientTicketCreate'
+          description: ''
+  /api/v1/support/my-tickets/{id}/:
+    get:
+      operationId: support_my_tickets_retrieve
+      description: |-
+        Client Portal API: /api/v1/support/my-tickets/
+
+        Authenticated Client Users can create, list, retrieve and update only the
+        tickets that belong to them. All authorization is enforced server-side:
+
+        - View-level (RBAC): Client User role only.
+        - Object-level: the client is the owner of the ticket.
+        - List filtering: queryset is always scoped to the authenticated user, so
+          no other client's tickets are ever exposed.
+      summary: Get one of my support tickets
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support (Client Portal)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportTicketDetail'
+          description: ''
+    put:
+      operationId: support_my_tickets_update
+      description: |-
+        Client Portal API: /api/v1/support/my-tickets/
+
+        Authenticated Client Users can create, list, retrieve and update only the
+        tickets that belong to them. All authorization is enforced server-side:
+
+        - View-level (RBAC): Client User role only.
+        - Object-level: the client is the owner of the ticket.
+        - List filtering: queryset is always scoped to the authenticated user, so
+          no other client's tickets are ever exposed.
+      summary: Update one of my support tickets
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support (Client Portal)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientTicketUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientTicketUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientTicketUpdate'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientTicketUpdate'
+          description: ''
+    patch:
+      operationId: support_my_tickets_partial_update
+      description: |-
+        Client Portal API: /api/v1/support/my-tickets/
+
+        Authenticated Client Users can create, list, retrieve and update only the
+        tickets that belong to them. All authorization is enforced server-side:
+
+        - View-level (RBAC): Client User role only.
+        - Object-level: the client is the owner of the ticket.
+        - List filtering: queryset is always scoped to the authenticated user, so
+          no other client's tickets are ever exposed.
+      summary: Update one of my support tickets
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support (Client Portal)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClientTicketUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClientTicketUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClientTicketUpdate'
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientTicketUpdate'
+          description: ''
+  /api/v1/support/tickets/:
+    get:
+      operationId: support_tickets_list
+      description: |-
+        Support Executive API: /api/v1/support/tickets/
+
+        Authenticated Support Executives can list, retrieve and update only the
+        tickets assigned to them. Authorization is enforced server-side:
+
+        - View-level (RBAC): Support Executive role only.
+        - Object-level: the executive is the current assignee of the ticket.
+        - List filtering: the queryset is scoped to tickets assigned to the
+          authenticated executive, so tickets of other executives are never exposed.
+      summary: List tickets assigned to me
+      tags:
+      - Support (Executive)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupportTicketList'
+          description: ''
+  /api/v1/support/tickets/{id}/:
+    get:
+      operationId: support_tickets_retrieve
+      description: |-
+        Support Executive API: /api/v1/support/tickets/
+
+        Authenticated Support Executives can list, retrieve and update only the
+        tickets assigned to them. Authorization is enforced server-side:
+
+        - View-level (RBAC): Support Executive role only.
+        - Object-level: the executive is the current assignee of the ticket.
+        - List filtering: the queryset is scoped to tickets assigned to the
+          authenticated executive, so tickets of other executives are never exposed.
+      summary: Get a ticket assigned to me
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support (Executive)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportTicketDetail'
+          description: ''
+    put:
+      operationId: support_tickets_update
+      description: |-
+        Support Executive API: /api/v1/support/tickets/
+
+        Authenticated Support Executives can list, retrieve and update only the
+        tickets assigned to them. Authorization is enforced server-side:
+
+        - View-level (RBAC): Support Executive role only.
+        - Object-level: the executive is the current assignee of the ticket.
+        - List filtering: the queryset is scoped to tickets assigned to the
+          authenticated executive, so tickets of other executives are never exposed.
+      summary: Update a ticket assigned to me
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support (Executive)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupportExecutiveTicketUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SupportExecutiveTicketUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SupportExecutiveTicketUpdate'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportExecutiveTicketUpdate'
+          description: ''
+    patch:
+      operationId: support_tickets_partial_update
+      description: |-
+        Support Executive API: /api/v1/support/tickets/
+
+        Authenticated Support Executives can list, retrieve and update only the
+        tickets assigned to them. Authorization is enforced server-side:
+
+        - View-level (RBAC): Support Executive role only.
+        - Object-level: the executive is the current assignee of the ticket.
+        - List filtering: the queryset is scoped to tickets assigned to the
+          authenticated executive, so tickets of other executives are never exposed.
+      summary: Update a ticket assigned to me
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support (Executive)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSupportExecutiveTicketUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSupportExecutiveTicketUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSupportExecutiveTicketUpdate'
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportExecutiveTicketUpdate'
+          description: ''
+  /api/v1/tickets/:
+    get:
+      operationId: tickets_list
+      description: |-
+        Support REST API: /api/v1/tickets/
+
+        Unified resource for the Support module. Reuses the existing Authentication
+        (JWT), RBAC, Support model, serializers and service layer.
+
+        Operations:
+          POST   /api/v1/tickets/        create (Client Users; Super Admins bypass)
+          GET    /api/v1/tickets/        list (role-scoped)
+          GET    /api/v1/tickets/{id}/   retrieve (object-level authorization)
+          PATCH  /api/v1/tickets/{id}/   update (role-authorized fields only)
+
+        Authorization (enforced server-side):
+          - client_user:       own tickets; may create; may not change status/assignment
+          - support_executive: tickets assigned to them; may manage priority/status/notes
+          - administrator:     any ticket; may manage all role-authorized fields
+          - super_admin:       bypasses all checks (existing RBAC convention)
+      summary: List tickets
+      tags:
+      - Support Tickets API
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupportTicketList'
+          description: ''
+    post:
+      operationId: tickets_create
+      description: |-
+        Support REST API: /api/v1/tickets/
+
+        Unified resource for the Support module. Reuses the existing Authentication
+        (JWT), RBAC, Support model, serializers and service layer.
+
+        Operations:
+          POST   /api/v1/tickets/        create (Client Users; Super Admins bypass)
+          GET    /api/v1/tickets/        list (role-scoped)
+          GET    /api/v1/tickets/{id}/   retrieve (object-level authorization)
+          PATCH  /api/v1/tickets/{id}/   update (role-authorized fields only)
+
+        Authorization (enforced server-side):
+          - client_user:       own tickets; may create; may not change status/assignment
+          - support_executive: tickets assigned to them; may manage priority/status/notes
+          - administrator:     any ticket; may manage all role-authorized fields
+          - super_admin:       bypasses all checks (existing RBAC convention)
+      summary: Create a support ticket
+      tags:
+      - Support Tickets API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientTicketCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientTicketCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientTicketCreate'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientTicketCreate'
+          description: ''
+  /api/v1/tickets/{id}/:
+    get:
+      operationId: tickets_retrieve
+      description: |-
+        Support REST API: /api/v1/tickets/
+
+        Unified resource for the Support module. Reuses the existing Authentication
+        (JWT), RBAC, Support model, serializers and service layer.
+
+        Operations:
+          POST   /api/v1/tickets/        create (Client Users; Super Admins bypass)
+          GET    /api/v1/tickets/        list (role-scoped)
+          GET    /api/v1/tickets/{id}/   retrieve (object-level authorization)
+          PATCH  /api/v1/tickets/{id}/   update (role-authorized fields only)
+
+        Authorization (enforced server-side):
+          - client_user:       own tickets; may create; may not change status/assignment
+          - support_executive: tickets assigned to them; may manage priority/status/notes
+          - administrator:     any ticket; may manage all role-authorized fields
+          - super_admin:       bypasses all checks (existing RBAC convention)
+      summary: Get a support ticket
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support Tickets API
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportTicketDetail'
+          description: ''
+    patch:
+      operationId: tickets_partial_update
+      description: |-
+        Support REST API: /api/v1/tickets/
+
+        Unified resource for the Support module. Reuses the existing Authentication
+        (JWT), RBAC, Support model, serializers and service layer.
+
+        Operations:
+          POST   /api/v1/tickets/        create (Client Users; Super Admins bypass)
+          GET    /api/v1/tickets/        list (role-scoped)
+          GET    /api/v1/tickets/{id}/   retrieve (object-level authorization)
+          PATCH  /api/v1/tickets/{id}/   update (role-authorized fields only)
+
+        Authorization (enforced server-side):
+          - client_user:       own tickets; may create; may not change status/assignment
+          - support_executive: tickets assigned to them; may manage priority/status/notes
+          - administrator:     any ticket; may manage all role-authorized fields
+          - super_admin:       bypasses all checks (existing RBAC convention)
+      summary: Update a support ticket
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ticket primary key
+        required: true
+      tags:
+      - Support Tickets API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClientTicketUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClientTicketUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClientTicketUpdate'
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientTicketUpdate'
+          description: ''
+  /api/v1/users/:
+    get:
+      operationId: users_list
+      description: |-
+        Endpoint: /api/v1/users/
+        Handles User management and RBAC assignment.
+        Requires IsAdministrator (which covers Admin and Super Admin).
+        Prevents privilege escalation.
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: users_create
+      description: |-
+        Endpoint: /api/v1/users/
+        Handles User management and RBAC assignment.
+        Requires IsAdministrator (which covers Admin and Super Admin).
+        Prevents privilege escalation.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/users/{id}/:
+    get:
+      operationId: users_retrieve
+      description: |-
+        Endpoint: /api/v1/users/
+        Handles User management and RBAC assignment.
+        Requires IsAdministrator (which covers Admin and Super Admin).
+        Prevents privilege escalation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: users_update
+      description: |-
+        Endpoint: /api/v1/users/
+        Handles User management and RBAC assignment.
+        Requires IsAdministrator (which covers Admin and Super Admin).
+        Prevents privilege escalation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: users_partial_update
+      description: |-
+        Endpoint: /api/v1/users/
+        Handles User management and RBAC assignment.
+        Requires IsAdministrator (which covers Admin and Super Admin).
+        Prevents privilege escalation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: users_destroy
+      description: |-
+        Endpoint: /api/v1/users/
+        Handles User management and RBAC assignment.
+        Requires IsAdministrator (which covers Admin and Super Admin).
+        Prevents privilege escalation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AdminCandidateApplication:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        tracking_code:
+          type: string
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        resume_storage_path:
+          type: string
+          readOnly: true
+        stage:
+          $ref: '#/components/schemas/ApplicationStageEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        job_vacancy:
+          type: integer
+      required:
+      - created_at
+      - email
+      - first_name
+      - id
+      - job_vacancy
+      - last_name
+      - phone
+      - resume_storage_path
+      - tracking_code
+      - updated_at
+    AdminJobVacancy:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        job_id:
+          type: string
+          maxLength: 50
+        title:
+          type: string
+          maxLength: 200
+        department:
+          type: string
+          maxLength: 100
+        location:
+          type: string
+          maxLength: 100
+        experience:
+          type: string
+          maxLength: 100
+        skills:
+          type: string
+        responsibilities:
+          type: string
+        status:
+          $ref: '#/components/schemas/JobStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - department
+      - experience
+      - id
+      - job_id
+      - location
+      - responsibilities
+      - skills
+      - title
+      - updated_at
+    AdministratorTicketUpdate:
+      type: object
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityE88Enum'
+        status:
+          $ref: '#/components/schemas/StatusA61Enum'
+        assigned_to:
+          type: integer
+          nullable: true
+        resolution_notes:
+          type: string
+        client_user:
+          type: integer
+      required:
+      - client_user
+      - subject
+    ApplicationNote:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        note:
+          type: string
+        author_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - author_name
+      - created_at
+      - id
+      - note
+    ApplicationStageEnum:
+      enum:
+      - RECEIVED
+      - SHORTLISTED
+      - INTERVIEWED
+      - OFFERED
+      - REJECTED
+      type: string
+      description: |-
+        * `RECEIVED` - Received
+        * `SHORTLISTED` - Shortlisted
+        * `INTERVIEWED` - Interviewed
+        * `OFFERED` - Offered
+        * `REJECTED` - Rejected
+    Apply:
+      type: object
+      properties:
+        job_id:
+          type: string
+          maxLength: 50
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          maxLength: 20
+        resume:
+          type: string
+          format: uri
+      required:
+      - email
+      - first_name
+      - job_id
+      - last_name
+      - phone
+      - resume
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user_username:
+          type: string
+          readOnly: true
+        action:
+          type: string
+          maxLength: 50
+        module:
+          type: string
+          maxLength: 100
+        object_id:
+          type: string
+          nullable: true
+          maxLength: 255
+        repr:
+          type: string
+          nullable: true
+        previous_state:
+          nullable: true
+        updated_state:
+          nullable: true
+        ip_address:
+          type: string
+          nullable: true
+        user_agent:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: integer
+          nullable: true
+      required:
+      - action
+      - id
+      - module
+      - timestamp
+      - user_username
+    BdmDashboard:
+      type: object
+      description: Response shape of the BDM dashboard endpoint.
+      properties:
+        total_leads:
+          type: integer
+        assigned_leads:
+          type: integer
+        unassigned_leads:
+          type: integer
+        new_leads:
+          type: integer
+        qualified_leads:
+          type: integer
+        active_opportunities:
+          type: integer
+        overdue_follow_ups:
+          type: integer
+        won_leads:
+          type: integer
+        lost_leads:
+          type: integer
+        conversion_rate:
+          type: number
+          format: double
+        pipeline_summary:
+          type: array
+          items:
+            $ref: '#/components/schemas/BdmPipelineSummary'
+        recent_activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/BdmRecentActivity'
+        recent_form_submissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/BdmFormSubmission'
+      required:
+      - active_opportunities
+      - assigned_leads
+      - conversion_rate
+      - lost_leads
+      - new_leads
+      - overdue_follow_ups
+      - pipeline_summary
+      - qualified_leads
+      - recent_activities
+      - recent_form_submissions
+      - total_leads
+      - unassigned_leads
+      - won_leads
+    BdmFormSubmission:
+      type: object
+      properties:
+        id:
+          type: integer
+        reference_id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          default: ''
+        company:
+          type: string
+        source:
+          type: string
+        source_display:
+          type: string
+        industry:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+        assigned_to:
+          type: integer
+          nullable: true
+        assigned_to_name:
+          type: string
+          nullable: true
+      required:
+      - assigned_to
+      - assigned_to_name
+      - company
+      - created_at
+      - description
+      - email
+      - id
+      - industry
+      - name
+      - reference_id
+      - source
+      - source_display
+      - status
+    BdmPipelineSummary:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/LeadStatusEnum'
+        total:
+          type: integer
+      required:
+      - status
+      - total
+    BdmRecentActivity:
+      type: object
+      properties:
+        id:
+          type: integer
+        action:
+          type: string
+        repr:
+          type: string
+        actor:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+      required:
+      - action
+      - actor
+      - id
+      - repr
+      - timestamp
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        author_username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          readOnly: true
+        category_name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        content:
+          type: string
+        tags: {}
+        media:
+          type: string
+          nullable: true
+          maxLength: 255
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        meta_title:
+          type: string
+          nullable: true
+          maxLength: 200
+        meta_description:
+          type: string
+          nullable: true
+        meta_keywords:
+          type: string
+          nullable: true
+          maxLength: 255
+        status:
+          $ref: '#/components/schemas/BlogPostStatusEnum'
+        category:
+          type: integer
+        author:
+          type: integer
+      required:
+      - author
+      - author_username
+      - category
+      - category_name
+      - content
+      - created_at
+      - id
+      - slug
+      - title
+      - updated_at
+    BlogPostStatusEnum:
+      enum:
+      - draft
+      - published
+      - archived
+      - scheduled
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `published` - Published
+        * `archived` - Archived
+        * `scheduled` - Scheduled
+    CaseStudy:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        client:
+          type: string
+          maxLength: 200
+        context:
+          type: string
+        business_challenge:
+          type: string
+        proposed_architecture:
+          type: string
+        tech_stack: {}
+        development_approach:
+          type: string
+        modules_integration_security:
+          type: string
+        outcomes_performance:
+          type: string
+        confidential:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/StatusDaeEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - business_challenge
+      - client
+      - context
+      - created_at
+      - development_approach
+      - id
+      - modules_integration_security
+      - outcomes_performance
+      - proposed_architecture
+      - slug
+      - title
+      - updated_at
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        parent:
+          type: integer
+          nullable: true
+      required:
+      - id
+      - name
+      - slug
+    CategoryEnum:
+      enum:
+      - bug
+      - enhancement
+      - security
+      - infrastructure
+      - general
+      type: string
+      description: |-
+        * `bug` - Bug
+        * `enhancement` - Enhancement
+        * `security` - Security
+        * `infrastructure` - Infrastructure
+        * `general` - General
+    ClientDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        project:
+          type: integer
+          nullable: true
+        project_title:
+          type: string
+          readOnly: true
+          nullable: true
+        title:
+          type: string
+          maxLength: 255
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+        document_type_display:
+          type: string
+          readOnly: true
+        file_url:
+          type: string
+          maxLength: 500
+        file_size:
+          type: string
+          maxLength: 50
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - document_type_display
+      - id
+      - project_title
+      - title
+      - uploaded_at
+    ClientProject:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ClientProjectStatusEnum'
+        status_display:
+          type: string
+          readOnly: true
+        progress_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        target_completion_date:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - status_display
+      - title
+      - updated_at
+    ClientProjectStatusEnum:
+      enum:
+      - planning
+      - in_progress
+      - under_review
+      - completed
+      - on_hold
+      type: string
+      description: |-
+        * `planning` - Planning
+        * `in_progress` - In Progress
+        * `under_review` - Under Review
+        * `completed` - Completed
+        * `on_hold` - On Hold
+    ClientRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        priority:
+          $ref: '#/components/schemas/LeadPriorityEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ClientRequestStatusEnum'
+          readOnly: true
+        status_display:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - status
+      - status_display
+      - title
+      - updated_at
+    ClientRequestStatusEnum:
+      enum:
+      - submitted
+      - under_review
+      - approved
+      - in_progress
+      - completed
+      - rejected
+      type: string
+      description: |-
+        * `submitted` - Submitted
+        * `under_review` - Under Review
+        * `approved` - Approved
+        * `in_progress` - In Progress
+        * `completed` - Completed
+        * `rejected` - Rejected
+    ClientTicketCreate:
+      type: object
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityE88Enum'
+      required:
+      - subject
+    ClientTicketUpdate:
+      type: object
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityE88Enum'
+        resolution_notes:
+          type: string
+      required:
+      - subject
+    DocumentTypeEnum:
+      enum:
+      - contract
+      - invoice
+      - deliverable
+      - specification
+      - other
+      type: string
+      description: |-
+        * `contract` - Contract
+        * `invoice` - Invoice
+        * `deliverable` - Deliverable
+        * `specification` - Specification
+        * `other` - Other
+    Industry:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        challenges:
+          type: string
+        target_solutions:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusDaeEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        services:
+          type: array
+          items:
+            type: integer
+        case_studies:
+          type: array
+          items:
+            type: integer
+      required:
+      - challenges
+      - created_at
+      - id
+      - name
+      - slug
+      - target_solutions
+      - updated_at
+    IndustryPublic:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        challenges:
+          type: string
+        target_solutions:
+          type: string
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
+          readOnly: true
+        case_studies:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseStudy'
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusDaeEnum'
+      required:
+      - case_studies
+      - challenges
+      - id
+      - name
+      - services
+      - slug
+      - target_solutions
+    JobStatusEnum:
+      enum:
+      - ACTIVE
+      - CLOSED
+      type: string
+      description: |-
+        * `ACTIVE` - Active
+        * `CLOSED` - Closed
+    JobVacancy:
+      type: object
+      properties:
+        job_id:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        department:
+          type: string
+          readOnly: true
+        location:
+          type: string
+          readOnly: true
+        experience:
+          type: string
+          readOnly: true
+        skills:
+          type: string
+          readOnly: true
+        responsibilities:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/JobStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - department
+      - experience
+      - job_id
+      - location
+      - responsibilities
+      - skills
+      - status
+      - title
+    Lead:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        reference_id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        phone:
+          type: string
+          maxLength: 30
+        company:
+          type: string
+          maxLength: 255
+        website:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 255
+          - type: string
+            maxLength: 0
+        industry:
+          type: string
+          maxLength: 100
+        source:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/LeadStatusEnum'
+          readOnly: true
+        status_display:
+          type: string
+          readOnly: true
+        priority:
+          $ref: '#/components/schemas/LeadPriorityEnum'
+        priority_display:
+          type: string
+          readOnly: true
+        lost_reason:
+          type: string
+          description: Business reason captured when a lead is marked as lost.
+          maxLength: 255
+        assigned_to:
+          type: integer
+          nullable: true
+        assigned_to_name:
+          type: string
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_by_name:
+          type: string
+          readOnly: true
+        last_contacted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        next_follow_up_at:
+          type: string
+          format: date-time
+          nullable: true
+        follow_up_count:
+          type: integer
+          readOnly: true
+          default: 0
+        note_count:
+          type: integer
+          readOnly: true
+          default: 0
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assigned_to_name
+      - created_at
+      - created_by
+      - created_by_name
+      - follow_up_count
+      - id
+      - last_contacted_at
+      - name
+      - note_count
+      - priority_display
+      - reference_id
+      - status
+      - status_display
+      - updated_at
+    LeadActivity:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        action:
+          type: string
+          readOnly: true
+        module:
+          type: string
+          readOnly: true
+        object_id:
+          type: string
+          readOnly: true
+          nullable: true
+        repr:
+          type: string
+          readOnly: true
+          nullable: true
+        actor:
+          type: string
+          readOnly: true
+        ip_address:
+          type: string
+          readOnly: true
+          nullable: true
+        user_agent:
+          type: string
+          readOnly: true
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - action
+      - actor
+      - id
+      - ip_address
+      - module
+      - object_id
+      - repr
+      - timestamp
+      - user_agent
+    LeadAssign:
+      type: object
+      properties:
+        assigned_to:
+          type: integer
+      required:
+      - assigned_to
+    LeadCreate:
+      type: object
+      description: Write serializer for creating leads (status/reference are server-managed).
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        phone:
+          type: string
+          maxLength: 30
+        company:
+          type: string
+          maxLength: 255
+        website:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 255
+          - type: string
+            maxLength: 0
+        industry:
+          type: string
+          maxLength: 100
+        source:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        priority:
+          $ref: '#/components/schemas/LeadPriorityEnum'
+        assigned_to:
+          type: integer
+          nullable: true
+        next_follow_up_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - name
+    LeadFollowUp:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        lead:
+          type: integer
+          readOnly: true
+        assigned_to:
+          type: integer
+          nullable: true
+        assigned_to_name:
+          type: string
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_by_name:
+          type: string
+          readOnly: true
+        follow_up_type:
+          $ref: '#/components/schemas/LeadFollowUpTypeEnum'
+        follow_up_type_display:
+          type: string
+          readOnly: true
+        scheduled_at:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/LeadFollowUpStatusEnum'
+        status_display:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assigned_to_name
+      - completed_at
+      - created_at
+      - created_by
+      - created_by_name
+      - follow_up_type_display
+      - id
+      - lead
+      - scheduled_at
+      - status_display
+      - updated_at
+    LeadFollowUpCreate:
+      type: object
+      properties:
+        assigned_to:
+          type: integer
+          nullable: true
+        follow_up_type:
+          type: string
+          default: email
+        scheduled_at:
+          type: string
+          format: date-time
+        notes:
+          type: string
+      required:
+      - scheduled_at
+    LeadFollowUpStatusEnum:
+      enum:
+      - pending
+      - in_progress
+      - completed
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `in_progress` - In Progress
+        * `completed` - Completed
+        * `cancelled` - Cancelled
+    LeadFollowUpTypeEnum:
+      enum:
+      - phone
+      - email
+      - meeting
+      - whatsapp
+      - linkedin
+      - other
+      type: string
+      description: |-
+        * `phone` - Phone Call
+        * `email` - Email
+        * `meeting` - Meeting
+        * `whatsapp` - WhatsApp
+        * `linkedin` - LinkedIn
+        * `other` - Other
+    LeadLost:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 255
+      required:
+      - reason
+    LeadNote:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        content:
+          type: string
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_by_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - content
+      - created_at
+      - created_by
+      - created_by_name
+      - id
+      - updated_at
+    LeadPriorityEnum:
+      enum:
+      - low
+      - medium
+      - high
+      - urgent
+      type: string
+      description: |-
+        * `low` - Low
+        * `medium` - Medium
+        * `high` - High
+        * `urgent` - Urgent
+    LeadStatusEnum:
+      enum:
+      - new
+      - under_review
+      - contacted
+      - qualified
+      - proposal_submitted
+      - negotiation
+      - won
+      - lost
+      type: string
+      description: |-
+        * `new` - New
+        * `under_review` - Under Review
+        * `contacted` - Contacted
+        * `qualified` - Qualified
+        * `proposal_submitted` - Proposal Submitted
+        * `negotiation` - Negotiation
+        * `won` - Won
+        * `lost` - Lost
+    LeadStatusTransition:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/LeadStatusEnum'
+      required:
+      - status
+    LeadUpdate:
+      type: object
+      description: Write serializer for updating leads (status/assignment via dedicated
+        actions).
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        phone:
+          type: string
+          maxLength: 30
+        company:
+          type: string
+          maxLength: 255
+        website:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 255
+          - type: string
+            maxLength: 0
+        industry:
+          type: string
+          maxLength: 100
+        source:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        priority:
+          $ref: '#/components/schemas/LeadPriorityEnum'
+        next_follow_up_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - name
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    ModuleEnum:
+      enum:
+      - authentication
+      - recruitment
+      - cms
+      - crm
+      - portal
+      - administration
+      type: string
+      description: |-
+        * `authentication` - Authentication & User Management
+        * `recruitment` - Recruitment & ATS
+        * `cms` - Content Management System
+        * `crm` - Customer Relationship Management
+        * `portal` - Client Portal
+        * `administration` - Administration & Role Management
+    ModulePermission:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        module:
+          $ref: '#/components/schemas/ModuleEnum'
+        can_create:
+          type: boolean
+        can_read:
+          type: boolean
+        can_update:
+          type: boolean
+        can_delete:
+          type: boolean
+      required:
+      - id
+      - module
+    PaginatedLeadActivityList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeadActivity'
+    PaginatedLeadList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lead'
+    PatchedAdminJobVacancy:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        job_id:
+          type: string
+          maxLength: 50
+        title:
+          type: string
+          maxLength: 200
+        department:
+          type: string
+          maxLength: 100
+        location:
+          type: string
+          maxLength: 100
+        experience:
+          type: string
+          maxLength: 100
+        skills:
+          type: string
+        responsibilities:
+          type: string
+        status:
+          $ref: '#/components/schemas/JobStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedAdministratorTicketUpdate:
+      type: object
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityE88Enum'
+        status:
+          $ref: '#/components/schemas/StatusA61Enum'
+        assigned_to:
+          type: integer
+          nullable: true
+        resolution_notes:
+          type: string
+        client_user:
+          type: integer
+    PatchedApplicationStageUpdate:
+      type: object
+      properties:
+        stage:
+          $ref: '#/components/schemas/ApplicationStageEnum'
+    PatchedBlogPost:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        author_username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          readOnly: true
+        category_name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        content:
+          type: string
+        tags: {}
+        media:
+          type: string
+          nullable: true
+          maxLength: 255
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        meta_title:
+          type: string
+          nullable: true
+          maxLength: 200
+        meta_description:
+          type: string
+          nullable: true
+        meta_keywords:
+          type: string
+          nullable: true
+          maxLength: 255
+        status:
+          $ref: '#/components/schemas/BlogPostStatusEnum'
+        category:
+          type: integer
+        author:
+          type: integer
+    PatchedCaseStudy:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        client:
+          type: string
+          maxLength: 200
+        context:
+          type: string
+        business_challenge:
+          type: string
+        proposed_architecture:
+          type: string
+        tech_stack: {}
+        development_approach:
+          type: string
+        modules_integration_security:
+          type: string
+        outcomes_performance:
+          type: string
+        confidential:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/StatusDaeEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        parent:
+          type: integer
+          nullable: true
+    PatchedClientDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        project:
+          type: integer
+          nullable: true
+        project_title:
+          type: string
+          readOnly: true
+          nullable: true
+        title:
+          type: string
+          maxLength: 255
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+        document_type_display:
+          type: string
+          readOnly: true
+        file_url:
+          type: string
+          maxLength: 500
+        file_size:
+          type: string
+          maxLength: 50
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedClientProject:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ClientProjectStatusEnum'
+        status_display:
+          type: string
+          readOnly: true
+        progress_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        target_completion_date:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedClientRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        priority:
+          $ref: '#/components/schemas/LeadPriorityEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ClientRequestStatusEnum'
+          readOnly: true
+        status_display:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedClientTicketUpdate:
+      type: object
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityE88Enum'
+        resolution_notes:
+          type: string
+    PatchedIndustry:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        challenges:
+          type: string
+        target_solutions:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusDaeEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        services:
+          type: array
+          items:
+            type: integer
+        case_studies:
+          type: array
+          items:
+            type: integer
+    PatchedLeadFollowUpUpdate:
+      type: object
+      properties:
+        follow_up_type:
+          type: string
+          default: email
+        scheduled_at:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/LeadFollowUpStatusEnum'
+        notes:
+          type: string
+    PatchedLeadNote:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        content:
+          type: string
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_by_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedLeadUpdate:
+      type: object
+      description: Write serializer for updating leads (status/assignment via dedicated
+        actions).
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        phone:
+          type: string
+          maxLength: 30
+        company:
+          type: string
+          maxLength: 255
+        website:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 255
+          - type: string
+            maxLength: 0
+        industry:
+          type: string
+          maxLength: 100
+        source:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        priority:
+          $ref: '#/components/schemas/LeadPriorityEnum'
+        next_follow_up_at:
+          type: string
+          format: date-time
+          nullable: true
+    PatchedRole:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          maxLength: 50
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          nullable: true
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModulePermission'
+    PatchedService:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        problem:
+          type: string
+        solution:
+          type: string
+        tech_stack: {}
+        meta_title:
+          type: string
+          nullable: true
+          maxLength: 200
+        meta_description:
+          type: string
+          nullable: true
+        meta_keywords:
+          type: string
+          nullable: true
+          maxLength: 255
+        is_featured:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/StatusDaeEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedSupportExecutiveTicketUpdate:
+      type: object
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityE88Enum'
+        status:
+          $ref: '#/components/schemas/StatusA61Enum'
+        assigned_to:
+          type: integer
+          nullable: true
+        resolution_notes:
+          type: string
+    PatchedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/UserProfile'
+          readOnly: true
+        role:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+    PriorityE88Enum:
+      enum:
+      - low
+      - medium
+      - high
+      - critical
+      type: string
+      description: |-
+        * `low` - Low
+        * `medium` - Medium
+        * `high` - High
+        * `critical` - Critical
+    PublicLeadCreate:
+      type: object
+      description: Public serializer for form submissions (estimator, RFP, contact
+        forms).
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        phone:
+          type: string
+          maxLength: 30
+        company:
+          type: string
+          maxLength: 255
+        website:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 255
+          - type: string
+            maxLength: 0
+        industry:
+          type: string
+          maxLength: 100
+        source:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        subject:
+          type: string
+          writeOnly: true
+        priority:
+          $ref: '#/components/schemas/LeadPriorityEnum'
+      required:
+      - name
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          maxLength: 50
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          nullable: true
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModulePermission'
+      required:
+      - code
+      - id
+      - name
+    RoleEnum:
+      enum:
+      - super_admin
+      - administrator
+      - bdm
+      - sales_executive
+      - hr_manager
+      - content_manager
+      - support_executive
+      - client_user
+      type: string
+      description: |-
+        * `super_admin` - Super Admin
+        * `administrator` - Administrator
+        * `bdm` - Business Development Manager
+        * `sales_executive` - Sales Executive
+        * `hr_manager` - HR Manager
+        * `content_manager` - Content Manager
+        * `support_executive` - Support Executive
+        * `client_user` - Client User
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        problem:
+          type: string
+        solution:
+          type: string
+        tech_stack: {}
+        meta_title:
+          type: string
+          nullable: true
+          maxLength: 200
+        meta_description:
+          type: string
+          nullable: true
+        meta_keywords:
+          type: string
+          nullable: true
+          maxLength: 255
+        is_featured:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/StatusDaeEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - description
+      - id
+      - problem
+      - slug
+      - solution
+      - title
+      - updated_at
+    StatusA61Enum:
+      enum:
+      - open
+      - assigned
+      - in_progress
+      - awaiting_client
+      - resolved
+      - closed
+      type: string
+      description: |-
+        * `open` - Open
+        * `assigned` - Assigned
+        * `in_progress` - In Progress
+        * `awaiting_client` - Awaiting Client
+        * `resolved` - Resolved
+        * `closed` - Closed
+    StatusDaeEnum:
+      enum:
+      - draft
+      - published
+      - archived
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `published` - Published
+        * `archived` - Archived
+    SupportExecutiveTicketUpdate:
+      type: object
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityE88Enum'
+        status:
+          $ref: '#/components/schemas/StatusA61Enum'
+        assigned_to:
+          type: integer
+          nullable: true
+        resolution_notes:
+          type: string
+      required:
+      - subject
+    SupportTicketDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        ticket_id:
+          type: string
+          readOnly: true
+        client_user:
+          type: string
+          readOnly: true
+        client_user_id:
+          type: integer
+          readOnly: true
+        assigned_to:
+          type: string
+          readOnly: true
+          nullable: true
+        assigned_to_id:
+          type: integer
+          readOnly: true
+          nullable: true
+        subject:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityE88Enum'
+        status:
+          $ref: '#/components/schemas/StatusA61Enum'
+        resolution_notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        closed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - assigned_to
+      - assigned_to_id
+      - client_user
+      - client_user_id
+      - closed_at
+      - created_at
+      - id
+      - subject
+      - ticket_id
+      - updated_at
+    SupportTicketList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        ticket_id:
+          type: string
+          readOnly: true
+        subject:
+          type: string
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategoryEnum'
+          readOnly: true
+        priority:
+          allOf:
+          - $ref: '#/components/schemas/PriorityE88Enum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusA61Enum'
+          readOnly: true
+        client_username:
+          type: string
+          readOnly: true
+        assigned_username:
+          type: string
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assigned_username
+      - category
+      - client_username
+      - created_at
+      - id
+      - priority
+      - status
+      - subject
+      - ticket_id
+      - updated_at
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/UserProfile'
+          readOnly: true
+        role:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_joined
+      - id
+      - profile
+      - username
+    UserProfile:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    jwtAuthProfile:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

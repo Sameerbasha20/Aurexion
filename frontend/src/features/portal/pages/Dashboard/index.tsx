@@ -27,9 +27,9 @@ const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent = "#63f5e8", hin
 );
 
 const MODULES = [
-  { name: "Projects", path: "/portal/projects", icon: Briefcase, available: false },
-  { name: "Requests", path: "/portal/requests", icon: MessageSquareCode, available: false },
-  { name: "Documents", path: "/portal/documents", icon: FolderLock, available: false },
+  { name: "Projects", path: "/portal/projects", icon: Briefcase, available: true },
+  { name: "Requests", path: "/portal/requests", icon: MessageSquareCode, available: true },
+  { name: "Documents", path: "/portal/documents", icon: FolderLock, available: true },
   { name: "Support", path: "/portal/support", icon: LifeBuoy, available: true },
   { name: "Profile", path: "/portal/profile", icon: UserCircle, available: true },
 ];
@@ -190,8 +190,7 @@ export const Dashboard: React.FC = () => {
                   })}
                 </div>
                 <p style={{ color: "#64748b", fontSize: "0.78rem", margin: "1rem 0 0 0", lineHeight: 1.6 }}>
-                  Modules marked Pending API are not yet exposed by the backend for client users. No simulated data is
-                  displayed.
+                  All modules are live and connected to the Aurexion Django API for client accounts.
                 </p>
               </Card>
             </div>

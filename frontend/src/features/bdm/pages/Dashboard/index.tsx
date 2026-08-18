@@ -1,15 +1,17 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useBdmDashboard } from "../../hooks/useBdmDashboard";
+import bdmService, { FormSubmission } from "../../services/bdmService";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
+import Button from "../../../../components/ui/button";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   ChartLegend,
-  ChartLegendContent,
 } from "../../../../components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { Mail, Phone, UserCheck, XCircle, CheckCircle2, User, MessageSquare, AlertTriangle, X } from "lucide-react";
 
 const STATUS_LABELS: Record<string, string> = {
   new: "New",
@@ -19,7 +21,7 @@ const STATUS_LABELS: Record<string, string> = {
   proposal_submitted: "Proposal Submitted",
   negotiation: "Negotiation",
   won: "Won",
-  lost: "Lost",
+  lost: "Declined / Lost",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -102,6 +104,69 @@ interface ActivityItem {
 export const Dashboard: React.FC = () => {
   const { data, isLoading, error, refetch } = useBdmDashboard();
 
+  // Assign & Decline modal state
+  const [salesExecs, setSalesExecs] = useState<Array<{ id: number; username: string; name: string }>>([]);
+  const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
+  const [modalMode, setModalMode] = useState<"assign" | "decline" | null>(null);
+  const [targetExecId, setTargetExecId] = useState<number | "">("");
+  const [declineReason, setDeclineReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    bdmService.getAssignableUsers().then(setSalesExecs);
+  }, []);
+
+  const showFeedback = (type: "success" | "error", text: string) => {
+    setFeedback({ type, text });
+    setTimeout(() => setFeedback(null), 4000);
+  };
+
+  const handleOpenAssign = (submission: FormSubmission) => {
+    setSelectedSubmission(submission);
+    setTargetExecId(submission.assigned_to || "");
+    setModalMode("assign");
+  };
+
+  const handleOpenDecline = (submission: FormSubmission) => {
+    setSelectedSubmission(submission);
+    setDeclineReason("");
+    setModalMode("decline");
+  };
+
+  const handleAssignSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSubmission || !targetExecId) return;
+    setActionLoading(true);
+    try {
+      await bdmService.assignLead(selectedSubmission.id, Number(targetExecId));
+      showFeedback("success", `Contact form lead (${selectedSubmission.reference_id}) assigned to Sales Executive successfully.`);
+      setModalMode(null);
+      refetch();
+    } catch (err: any) {
+      showFeedback("error", err?.message || "Failed to assign lead.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeclineSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSubmission) return;
+    const reason = declineReason.trim() || "Declined by BDM";
+    setActionLoading(true);
+    try {
+      await bdmService.markLeadLost(selectedSubmission.id, reason);
+      showFeedback("success", `Contact form lead (${selectedSubmission.reference_id}) marked as Declined.`);
+      setModalMode(null);
+      refetch();
+    } catch (err: any) {
+      showFeedback("error", err?.message || "Failed to decline lead.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
@@ -119,12 +184,6 @@ export const Dashboard: React.FC = () => {
             </Card>
           ))}
         </div>
-        <style>{`
-          @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-          }
-        `}</style>
       </div>
     );
   }
@@ -165,12 +224,34 @@ export const Dashboard: React.FC = () => {
         </div>
         <button
           onClick={refetch}
-          className="px-4 py-2 bg-transparent border border-[#63f5e8] text-[#63f5e8] rounded font-medium hover:bg-[#63f5e8] hover:text-[#050811] transition-colors"
+          className="px-4 py-2 bg-transparent border border-[#63f5e8] text-[#63f5e8] rounded font-medium hover:bg-[#63f5e8] hover:text-[#050811] transition-colors cursor-pointer"
         >
           Refresh Data
         </button>
       </div>
 
+      {/* Action Notification Banner */}
+      {feedback && (
+        <div
+          style={{
+            padding: "0.75rem 1rem",
+            borderRadius: "4px",
+            fontSize: "0.85rem",
+            fontFamily: "IBM Plex Mono, monospace",
+            backgroundColor: feedback.type === "success" ? "rgba(74, 222, 128, 0.15)" : "rgba(239, 68, 68, 0.15)",
+            color: feedback.type === "success" ? "#4ade80" : "#ef4444",
+            border: feedback.type === "success" ? "1px solid rgba(74, 222, 128, 0.3)" : "1px solid rgba(239, 68, 68, 0.3)",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+          }}
+        >
+          {feedback.type === "success" ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
+          {feedback.text}
+        </div>
+      )}
+
+      {/* KPI Cards */}
       <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}>
         <MetricCard
           title="Total Leads"
@@ -210,6 +291,7 @@ export const Dashboard: React.FC = () => {
         />
       </div>
 
+      {/* Charts & Activity */}
       <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "1fr 1fr" }}>
         <Card>
           <CardHeader>
@@ -308,73 +390,237 @@ export const Dashboard: React.FC = () => {
         </Card>
       </div>
 
-      <style>{`
-        @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
-
-      {/* Recent Form Submissions (RFP, Contact, Quote, Estimator) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Form Submissions</CardTitle>
+      {/* DEDICATED SECTION: Contact Form & Public Inbound Submissions */}
+      <Card borderAccent>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <p className="eyebrow" style={{ margin: 0 }}>INBOUND PUBLIC FORM DESK</p>
+            <CardTitle className="text-xl mt-1">Contact Form & Inbound Submissions</CardTitle>
+          </div>
+          <Badge className="bg-primary/20 text-primary border-primary/30">
+            {data?.recent_form_submissions?.length || 0} Submissions
+          </Badge>
         </CardHeader>
+
         <CardContent>
           {data?.recent_form_submissions?.length ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              {data?.recent_form_submissions?.map((submission) => (
-                <div
-                  key={submission.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: "1rem",
-                    padding: "1rem",
-                    background: "rgba(99, 245, 232, 0.03)",
-                    border: "1px solid rgba(99, 245, 232, 0.1)",
-                    borderRadius: "0.5rem",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: "250px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
-                      <span style={{ fontFamily: "monospace", fontSize: "0.8rem", color: "#63f5e8" }}>
-                        {submission.reference_id}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {data?.recent_form_submissions?.map((submission) => {
+                const isLost = submission.status === "lost";
+                const isAssigned = !!submission.assigned_to;
+
+                return (
+                  <div
+                    key={submission.id}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.75rem",
+                      padding: "1.25rem",
+                      background: isLost
+                        ? "rgba(239, 68, 68, 0.04)"
+                        : isAssigned
+                        ? "rgba(56, 189, 248, 0.04)"
+                        : "rgba(99, 245, 232, 0.03)",
+                      border: isLost
+                        ? "1px solid rgba(239, 68, 68, 0.2)"
+                        : isAssigned
+                        ? "1px solid rgba(56, 189, 248, 0.2)"
+                        : "1px solid rgba(99, 245, 232, 0.2)",
+                      borderRadius: "0.5rem",
+                    }}
+                  >
+                    {/* Header Row: Ref ID, Source Badge, Status, Date */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                        <span style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.82rem", color: "#63f5e8", fontWeight: 600 }}>
+                          {submission.reference_id}
+                        </span>
+                        <Badge className={SOURCE_COLORS[submission.source] || "bg-gray-500/20 text-gray-400"}>
+                          {SOURCE_LABELS[submission.source] || submission.source_display}
+                        </Badge>
+                        <Badge className={STATUS_COLORS[submission.status] || "bg-gray-500/20 text-gray-400"}>
+                          {STATUS_LABELS[submission.status] || submission.status}
+                        </Badge>
+                      </div>
+
+                      <span style={{ fontSize: "0.75rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
+                        Submitted on {new Date(submission.created_at).toLocaleString()}
                       </span>
-                      <Badge className={SOURCE_COLORS[submission.source] || "bg-gray-500/20 text-gray-400"}>
-                        {SOURCE_LABELS[submission.source] || submission.source_display}
-                      </Badge>
                     </div>
-                    <p style={{ fontWeight: 500, color: "#f8fafc", margin: "0 0 0.25rem 0" }}>
-                      {submission.name}
-                    </p>
-                    <p style={{ fontSize: "0.875rem", color: "#94a3b8", margin: "0 0 0.25rem 0" }}>
-                      {submission.company || "—"}
-                    </p>
-                    <p style={{ fontSize: "0.875rem", color: "#64748b", margin: 0 }}>
-                      {submission.email}
-                    </p>
+
+                    {/* Contact Details & Message Grid */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "1rem" }}>
+                      {/* Left: Contact Info */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.85rem" }}>
+                        <p style={{ fontWeight: 600, color: "#f8fafc", margin: 0, fontSize: "1rem" }}>
+                          {submission.name}
+                        </p>
+                        {submission.company && (
+                          <p style={{ color: "#cbd5e1", margin: 0, fontSize: "0.82rem" }}>
+                            Company: <strong style={{ color: "#f8fafc" }}>{submission.company}</strong>
+                          </p>
+                        )}
+                        <a href={`mailto:${submission.email}`} style={{ color: "#63f5e8", display: "flex", alignItems: "center", gap: "0.35rem", textDecoration: "none", fontSize: "0.82rem" }}>
+                          <Mail size={13} /> {submission.email}
+                        </a>
+                        {submission.phone && (
+                          <a href={`tel:${submission.phone}`} style={{ color: "#cbd5e1", display: "flex", alignItems: "center", gap: "0.35rem", textDecoration: "none", fontSize: "0.82rem" }}>
+                            <Phone size={13} color="#64748b" /> {submission.phone}
+                          </a>
+                        )}
+
+                        {isAssigned && (
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: "0.4rem", color: "#38bdf8", fontSize: "0.8rem", fontWeight: 500 }}>
+                            <User size={13} /> Assigned to: {submission.assigned_to_name}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right: Message / Description */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                        <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
+                          <MessageSquare size={12} style={{ display: "inline", marginRight: "0.3rem" }} /> INQUIRY / MESSAGE BRIEF
+                        </span>
+                        <p style={{ margin: 0, color: "#cbd5e1", fontSize: "0.85rem", lineHeight: 1.5, backgroundColor: "rgba(5, 8, 17, 0.6)", padding: "0.6rem 0.75rem", borderRadius: "4px", whiteSpace: "pre-wrap" }}>
+                          {submission.description || "No message body provided."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Action Bar: BDM Assign / Decline Buttons */}
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.6rem", borderTop: "1px solid rgba(140, 174, 187, 0.1)", paddingTop: "0.75rem" }}>
+                      {!isLost ? (
+                        <>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleOpenDecline(submission)}
+                            style={{ fontSize: "0.78rem", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.3)" }}
+                          >
+                            <XCircle size={14} style={{ marginRight: "0.35rem" }} /> Decline / Reject
+                          </Button>
+                          <Button
+                            glow
+                            onClick={() => handleOpenAssign(submission)}
+                            style={{ fontSize: "0.78rem" }}
+                          >
+                            <UserCheck size={14} style={{ marginRight: "0.35rem" }} />
+                            {isAssigned ? "Reassign Executive" : "Assign to Sales Executive"}
+                          </Button>
+                        </>
+                      ) : (
+                        <span style={{ fontSize: "0.78rem", color: "#f87171", fontFamily: "IBM Plex Mono, monospace" }}>
+                          DECLINED / REJECTED
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem", whiteSpace: "nowrap" }}>
-                    <Badge className={STATUS_COLORS[submission.status] || "bg-gray-500/20 text-gray-400"}>
-                      {STATUS_LABELS[submission.status] || submission.status}
-                    </Badge>
-                    <p style={{ fontSize: "0.75rem", color: "#64748b", margin: 0, fontFamily: "IBM Plex Mono, monospace" }}>
-                      {new Date(submission.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p style={{ color: "#64748b", textAlign: "center", padding: "2rem" }}>
-              No recent form submissions
+              No contact form or public submissions recorded yet.
             </p>
           )}
         </CardContent>
       </Card>
+
+      {/* Assign Sales Executive Modal */}
+      {modalMode === "assign" && selectedSubmission && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+          <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+              <h2 style={{ fontSize: "1.3rem", color: "#63f5e8", margin: 0 }}>Assign Lead to Sales Executive</h2>
+              <button onClick={() => setModalMode(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: "0 0 1.25rem 0" }}>
+              Assigning contact form lead <strong>{selectedSubmission.reference_id}</strong> ({selectedSubmission.name}) will transfer it to the selected Sales Executive's dashboard.
+            </p>
+
+            <form onSubmit={handleAssignSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SELECT SALES EXECUTIVE *</label>
+                <select
+                  required
+                  value={targetExecId}
+                  onChange={(e) => setTargetExecId(Number(e.target.value))}
+                  style={{
+                    padding: "0.65rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140, 174, 187, 0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                    fontSize: "0.88rem",
+                  }}
+                >
+                  <option value="">-- Choose Sales Executive --</option>
+                  {salesExecs.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name} ({user.username})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem" }}>
+                <Button type="button" variant="outline" onClick={() => setModalMode(null)}>Cancel</Button>
+                <Button type="submit" glow disabled={actionLoading || !targetExecId}>
+                  {actionLoading ? "Assigning..." : "Assign Lead"}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Decline Lead Modal */}
+      {modalMode === "decline" && selectedSubmission && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+          <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+              <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: 0 }}>Decline Contact Submission</h2>
+              <button onClick={() => setModalMode(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: "0 0 1rem 0" }}>
+              Are you sure you want to decline submission <strong>{selectedSubmission.reference_id}</strong> from {selectedSubmission.name}?
+            </p>
+
+            <form onSubmit={handleDeclineSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DECLINE REASON</label>
+                <textarea
+                  rows={3}
+                  placeholder="e.g. Spam submission, Out of scope, Invalid contact details..."
+                  value={declineReason}
+                  onChange={(e) => setDeclineReason(e.target.value)}
+                  style={{
+                    padding: "0.65rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140, 174, 187, 0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                    fontSize: "0.85rem",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+                <Button type="button" variant="outline" onClick={() => setModalMode(null)}>Cancel</Button>
+                <Button type="submit" style={{ backgroundColor: "#ef4444", color: "#ffffff" }} disabled={actionLoading}>
+                  {actionLoading ? "Declining..." : "Decline Submission"}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
 
       <style>{`
         @keyframes shimmer {

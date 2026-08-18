@@ -71,9 +71,10 @@ class LoginView(APIView):
     """
     permission_classes = [AllowAny]
     authentication_classes = []
+    serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         
         username = serializer.validated_data['username']
@@ -167,6 +168,7 @@ class UserProfileView(APIView):
     Retrieves the current user's profile and role.
     """
     permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
         user = request.user

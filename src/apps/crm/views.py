@@ -46,6 +46,7 @@ from apps.crm.services import (
     qualify_lead,
     reopen_lost_lead,
     schedule_followup,
+    schedule_meeting_and_notify,
     update_followup,
     update_note,
 )
@@ -337,10 +338,40 @@ class LeadViewSet(viewsets.ModelViewSet):
     @extend_schema(tags=["CRM Leads"], responses=LeadSerializer)
     @action(detail=True, methods=["post"])
     def won(self, request, pk=None):
-        """Mark a lead as WON (valid from NEGOTIATION)."""
+        """Mark a lead as WON."""
         lead = self.get_object()
         lead = mark_lead_won(lead=lead, actor=request.user, request=request)
         return Response(LeadSerializer(lead, context=self.get_serializer_context()).data)
+
+    @action(detail=True, methods=["post"], url_path="schedule-meeting")
+    def schedule_meeting(self, request, pk=None):
+        """Schedule a meeting with client, record follow-up, and dispatch email notification."""
+        lead = self.get_object()
+        scheduled_at = request.data.get("scheduled_at")
+        follow_up_type = request.data.get("follow_up_type", "meeting")
+        meeting_link = request.data.get("meeting_link", "")
+        notes = request.data.get("notes", "")
+
+        if not scheduled_at:
+            return Response({"scheduled_at": ["A scheduled date and time is required."]}, status=status.HTTP_400_BAD_REQUEST)
+
+        followup = schedule_meeting_and_notify(
+            lead=lead,
+            scheduled_at=scheduled_at,
+            follow_up_type=follow_up_type,
+            meeting_link=meeting_link,
+            notes=notes,
+            actor=request.user,
+            request=request,
+        )
+
+        return Response({
+            "message": f"Meeting scheduled and email dispatched to {lead.email or lead.name}.",
+            "followup_id": followup.id,
+            "scheduled_at": followup.scheduled_at,
+            "meeting_link": meeting_link,
+            "lead": LeadSerializer(lead, context=self.get_serializer_context()).data,
+        })
 
     @extend_schema(tags=["CRM Leads"], request=LeadLostSerializer, responses=LeadSerializer)
     @action(detail=True, methods=["post"])
@@ -497,6 +528,7 @@ class PublicLeadCreateView(APIView):
         summary="Submit a lead from public form",
         request=PublicLeadCreateSerializer,
         responses={201: LeadSerializer},
+        auth=[]
     )
     def post(self, request):
         serializer = PublicLeadCreateSerializer(data=request.data)

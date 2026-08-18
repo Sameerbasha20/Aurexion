@@ -27,6 +27,7 @@ export const SIDEBAR_NAV: Record<string, NavItem[]> = {
   ],
   BDM: [
     { title: "Dashboard", path: "/bdm/dashboard", icon: "LayoutDashboard" },
+    { title: "Contact Forms", path: "/bdm/contact-forms", icon: "MessageSquareCode" },
     { title: "Leads Funnel", path: "/bdm/leads", icon: "Contact2" },
     { title: "Opportunities", path: "/bdm/opportunities", icon: "TrendingUp" },
     { title: "RFP Engine", path: "/bdm/rfp", icon: "FileText" },
@@ -39,6 +40,7 @@ export const SIDEBAR_NAV: Record<string, NavItem[]> = {
   ],
   SALES_EXECUTIVE: [
     { title: "CRM Dashboard", path: "/crm/dashboard", icon: "LayoutDashboard" },
+    { title: "Contact Forms", path: "/crm/contact-forms", icon: "MessageSquareCode" },
     { title: "Leads Funnel", path: "/crm/leads", icon: "Contact2" },
     { title: "Opportunities", path: "/crm/opportunities", icon: "TrendingUp" },
     { title: "Follow-ups", path: "/crm/follow-ups", icon: "Calculator" },

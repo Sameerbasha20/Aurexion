@@ -161,6 +161,23 @@ class LeadFollowUpCreateSerializer(serializers.ModelSerializer):
     assigned_to = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), required=False, allow_null=True
     )
+    follow_up_type = serializers.CharField(required=False, default="email")
+
+    def validate_follow_up_type(self, value):
+        if not value:
+            return "email"
+        val = str(value).lower()
+        if "email" in val:
+            return "email"
+        if "meet" in val:
+            return "meeting"
+        if "phone" in val or "call" in val:
+            return "phone"
+        if "whatsapp" in val:
+            return "whatsapp"
+        if "linkedin" in val:
+            return "linkedin"
+        return "other"
 
     class Meta:
         model = LeadFollowUp
@@ -169,6 +186,24 @@ class LeadFollowUpCreateSerializer(serializers.ModelSerializer):
 
 
 class LeadFollowUpUpdateSerializer(serializers.ModelSerializer):
+    follow_up_type = serializers.CharField(required=False, default="email")
+
+    def validate_follow_up_type(self, value):
+        if not value:
+            return "email"
+        val = str(value).lower()
+        if "email" in val:
+            return "email"
+        if "meet" in val:
+            return "meeting"
+        if "phone" in val or "call" in val:
+            return "phone"
+        if "whatsapp" in val:
+            return "whatsapp"
+        if "linkedin" in val:
+            return "linkedin"
+        return "other"
+
     class Meta:
         model = LeadFollowUp
         fields = ["follow_up_type", "scheduled_at", "status", "notes"]
@@ -185,6 +220,7 @@ class LeadNoteSerializer(serializers.ModelSerializer):
 
 class PublicLeadCreateSerializer(serializers.ModelSerializer):
     """Public serializer for form submissions (estimator, RFP, contact forms)."""
+    subject = serializers.CharField(required=False, write_only=True, allow_blank=True)
 
     class Meta:
         model = Lead
@@ -197,6 +233,7 @@ class PublicLeadCreateSerializer(serializers.ModelSerializer):
             "industry",
             "source",
             "description",
+            "subject",
             "priority",
         ]
 
@@ -209,6 +246,13 @@ class PublicLeadCreateSerializer(serializers.ModelSerializer):
         if not value or not value.strip():
             raise serializers.ValidationError("Name is required.")
         return value.strip()
+
+    def validate(self, attrs):
+        subject = attrs.pop("subject", None)
+        if subject:
+            desc = attrs.get("description", "")
+            attrs["description"] = f"Subject: {subject}\n\n{desc}" if desc else f"Subject: {subject}"
+        return attrs
 
 
 class LeadActivitySerializer(serializers.ModelSerializer):

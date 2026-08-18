@@ -31,30 +31,44 @@ STATUS_TRANSITIONS = {
     Lead.Status.NEW: {
         Lead.Status.UNDER_REVIEW,
         Lead.Status.CONTACTED,
+        Lead.Status.QUALIFIED,
+        Lead.Status.PROPOSAL_SUBMITTED,
+        Lead.Status.NEGOTIATION,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.UNDER_REVIEW: {
         Lead.Status.CONTACTED,
+        Lead.Status.QUALIFIED,
+        Lead.Status.PROPOSAL_SUBMITTED,
+        Lead.Status.NEGOTIATION,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.CONTACTED: {
         Lead.Status.QUALIFIED,
+        Lead.Status.PROPOSAL_SUBMITTED,
+        Lead.Status.NEGOTIATION,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.QUALIFIED: {
         Lead.Status.PROPOSAL_SUBMITTED,
+        Lead.Status.NEGOTIATION,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.PROPOSAL_SUBMITTED: {
         Lead.Status.NEGOTIATION,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.NEGOTIATION: {
         Lead.Status.WON,
         Lead.Status.LOST,
     },
-    Lead.Status.WON: set(),
-    Lead.Status.LOST: set(),
+    Lead.Status.WON: {Lead.Status.LOST},
+    Lead.Status.LOST: {Lead.Status.NEW},
 }
 
 
@@ -572,3 +586,55 @@ def delete_note(*, note, actor, request=None):
         repr_str=f"Note deleted from lead {lead_ref}",
         request=request,
     )
+
+
+def schedule_meeting_and_notify(*, lead, scheduled_at, follow_up_type="meeting", meeting_link=None, notes="", actor=None, request=None):
+    """
+    Schedule a meeting with a lead, record the follow-up, and dispatch email notification.
+    """
+    if isinstance(scheduled_at, str):
+        parsed_dt = parse_datetime(scheduled_at)
+        if parsed_dt is None:
+            raise ValidationError("Invalid datetime format for scheduled_at.")
+        scheduled_at = parsed_dt
+
+    followup = LeadFollowUp.objects.create(
+        lead=lead,
+        assigned_to=actor or lead.assigned_to,
+        follow_up_type=follow_up_type,
+        scheduled_at=scheduled_at,
+        notes=notes or f"Meeting scheduled with client. Link: {meeting_link or 'N/A'}",
+        status=LeadFollowUp.Status.PENDING,
+    )
+
+    _sync_lead_next_follow_up(lead)
+
+    # Transition lead to contacted if new/under_review
+    if lead.status in (Lead.Status.NEW, Lead.Status.UNDER_REVIEW):
+        lead.status = Lead.Status.CONTACTED
+        lead.save(update_fields=["status", "updated_at"])
+
+    # Dispatch email if lead has an email address
+    if lead.email:
+        try:
+            send_meeting_scheduled_email(lead, followup, meeting_link)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send meeting scheduled email to {lead.email}: {e}")
+
+    log_audit_event(
+        user=actor,
+        action="MEETING_SCHEDULED",
+        module="crm",
+        object_id=followup.id,
+        repr_str=f"Meeting scheduled for lead {lead.reference_id} at {scheduled_at}",
+        updated_state={
+            "lead_id": lead.id,
+            "scheduled_at": scheduled_at.isoformat(),
+            "meeting_link": meeting_link,
+        },
+        request=request,
+    )
+
+    return followup
