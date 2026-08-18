@@ -497,6 +497,7 @@ class PublicLeadCreateView(APIView):
         summary="Submit a lead from public form",
         request=PublicLeadCreateSerializer,
         responses={201: LeadSerializer},
+        auth=[]
     )
     def post(self, request):
         serializer = PublicLeadCreateSerializer(data=request.data)

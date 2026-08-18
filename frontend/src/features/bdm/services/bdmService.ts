@@ -22,6 +22,7 @@ export interface FormSubmission {
   reference_id: string;
   name: string;
   email: string;
+  phone?: string;
   company: string;
   source: string;
   source_display: string;
@@ -29,6 +30,8 @@ export interface FormSubmission {
   description: string;
   created_at: string;
   status: string;
+  assigned_to?: number | null;
+  assigned_to_name?: string | null;
 }
 
 export interface Lead {

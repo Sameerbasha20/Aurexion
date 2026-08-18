@@ -13,19 +13,13 @@ export const ArticleHero = ({ article }) => {
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-7xl">
-        <a 
+        <Link 
           href="/insights"
-          onClick={(e) => {
-            if (window.history.length > 1) {
-              e.preventDefault();
-              window.history.back();
-            }
-          }}
-          className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors mb-6 font-mono cursor-pointer"
+          className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors mb-6 font-mono"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           BACK TO INSIGHTS
-        </a>
+        </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           

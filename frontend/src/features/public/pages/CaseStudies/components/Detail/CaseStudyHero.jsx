@@ -12,19 +12,10 @@ export const CaseStudyHero = ({ caseStudy }) => {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-7xl">
-        <a 
-          href="/case-studies" 
-          onClick={(e) => {
-            if (window.history.length > 1) {
-              e.preventDefault();
-              window.history.back();
-            }
-          }}
-          className="inline-flex items-center text-xs font-mono text-muted-foreground hover:text-primary transition-colors mb-6 cursor-pointer"
-        >
+        <Link href="/case-studies" className="inline-flex items-center text-xs font-mono text-muted-foreground hover:text-primary transition-colors mb-6">
           <ArrowLeft className="w-3.5 h-3.5 mr-2" />
           BACK TO CASE STUDIES
-        </a>
+        </Link>
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           

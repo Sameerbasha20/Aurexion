@@ -22,7 +22,7 @@ export const AppRouter: React.FC = () => {
       <Route path="/verify-email" component={AuthRoutes} />
 
       {/* Admin Protected scopes */}
-      <Route path="/admin/:subpath*">
+      <Route path="/admin/*">
         <ProtectedRoute>
           <RoleRoute allowedRoles={["ADMIN"]}>
             <AdminRoutes />
@@ -31,7 +31,7 @@ export const AppRouter: React.FC = () => {
       </Route>
 
       {/* BDM Protected scopes */}
-      <Route path="/bdm/:subpath*">
+      <Route path="/bdm/*">
         <ProtectedRoute>
           <RoleRoute allowedRoles={["BDM"]}>
             <BdmRoutes />
@@ -47,7 +47,7 @@ export const AppRouter: React.FC = () => {
           </RoleRoute>
         </ProtectedRoute>
       </Route>
-      <Route path="/client/:subpath*">
+      <Route path="/client/*">
         <ProtectedRoute>
           <RoleRoute allowedRoles={["CLIENT"]}>
             <ClientRoutes />
@@ -56,14 +56,14 @@ export const AppRouter: React.FC = () => {
       </Route>
 
       {/* CRM Sales Executive Protected scopes */}
-      <Route path="/crm/:subpath*">
+      <Route path="/crm/*">
         <ProtectedRoute>
           <RoleRoute allowedRoles={["SALES_EXECUTIVE", "ADMIN"]}>
             <CrmRoutes />
           </RoleRoute>
         </ProtectedRoute>
       </Route>
-      <Route path="/sales/:subpath*">
+      <Route path="/sales/*">
         <ProtectedRoute>
           <RoleRoute allowedRoles={["SALES_EXECUTIVE", "ADMIN"]}>
             <CrmRoutes />
@@ -72,14 +72,14 @@ export const AppRouter: React.FC = () => {
       </Route>
 
       {/* Recruitment HR Manager Protected scopes */}
-      <Route path="/recruitment/:subpath*">
+      <Route path="/recruitment/*">
         <ProtectedRoute>
           <RoleRoute allowedRoles={["HR_MANAGER", "ADMIN"]}>
             <RecruitmentRoutes />
           </RoleRoute>
         </ProtectedRoute>
       </Route>
-      <Route path="/hr/:subpath*">
+      <Route path="/hr/*">
         <ProtectedRoute>
           <RoleRoute allowedRoles={["HR_MANAGER", "ADMIN"]}>
             <RecruitmentRoutes />
@@ -88,7 +88,7 @@ export const AppRouter: React.FC = () => {
       </Route>
 
       {/* Support Executive Protected scopes */}
-      <Route path="/support/:subpath*">
+      <Route path="/support/*">
         <ProtectedRoute>
           <RoleRoute allowedRoles={["SUPPORT_EXECUTIVE", "ADMIN"]}>
             <SupportRoutes />
@@ -97,14 +97,14 @@ export const AppRouter: React.FC = () => {
       </Route>
 
       {/* CMS Content Manager Protected scopes */}
-      <Route path="/cms/:subpath*">
+      <Route path="/cms/*">
         <ProtectedRoute>
           <RoleRoute allowedRoles={["CONTENT_MANAGER", "ADMIN"]}>
             <CmsConsoleRoutes />
           </RoleRoute>
         </ProtectedRoute>
       </Route>
-      <Route path="/content/:subpath*">
+      <Route path="/content/*">
         <ProtectedRoute>
           <RoleRoute allowedRoles={["CONTENT_MANAGER", "ADMIN"]}>
             <CmsConsoleRoutes />

@@ -113,13 +113,16 @@ class BdmDashboardView(APIView):
                     "reference_id": lead.reference_id,
                     "name": lead.name,
                     "email": lead.email,
+                    "phone": lead.phone,
                     "company": lead.company,
                     "source": lead.source,
                     "source_display": lead.source.replace("_", " ").title(),
                     "industry": lead.industry,
-                    "description": lead.description[:200] if lead.description else "",
+                    "description": lead.description if lead.description else "",
                     "created_at": lead.created_at,
                     "status": lead.status,
+                    "assigned_to": lead.assigned_to_id,
+                    "assigned_to_name": lead.assigned_to.username if lead.assigned_to else None,
                 }
                 for lead in recent_form_submissions
             ],

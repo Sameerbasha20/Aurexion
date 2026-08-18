@@ -10,6 +10,7 @@ import Activities from "../features/crm/pages/Activities";
 import Contacts from "../features/crm/pages/Contacts";
 import Companies from "../features/crm/pages/Companies";
 import Quotations from "../features/crm/pages/Quotations";
+import ContactForms from "../features/crm/pages/ContactForms";
 
 export const CrmRoutes: React.FC = () => {
   return (
@@ -17,6 +18,7 @@ export const CrmRoutes: React.FC = () => {
       <Switch>
         {/* Core CRM / Sales Executive Routes */}
         <Route path="/crm/dashboard" component={Dashboard} />
+        <Route path="/crm/contact-forms" component={ContactForms} />
         <Route path="/crm/leads" component={Leads} />
         <Route path="/crm/leads/" component={Leads} />
         <Route path="/crm/leads/:id" component={LeadDetail} />

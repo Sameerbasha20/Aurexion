@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
-import { useSalesDashboard } from "../../hooks/useCrm";
+import { useSalesDashboard, useLeads } from "../../hooks/useCrm";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import crmService from "../../services/crmService";
@@ -21,10 +21,15 @@ import {
   Activity,
   FileText,
   Building,
+  Inbox,
 } from "lucide-react";
 
 export const Dashboard: React.FC = () => {
   const { data, isLoading, error, refetch } = useSalesDashboard();
+  const { leads: assignedLeads, isLoading: leadsLoading } = useLeads({ page_size: 10 });
+  const approvedAssignedLeads = assignedLeads.filter(
+    (lead) => !!lead.assigned_to && lead.status !== "lost" && lead.status !== "LOST"
+  );
   const [completingId, setCompletingId] = useState<number | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
@@ -387,6 +392,126 @@ export const Dashboard: React.FC = () => {
           )}
         </Card>
       </div>
+
+      {/* DEDICATED SECTION: Assigned Contact Forms & Inbound Leads */}
+      <Card style={{ padding: "1.5rem" }} borderAccent>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", flexWrap: "wrap", gap: "1rem" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <p className="eyebrow" style={{ margin: 0 }}>ASSIGNED DESK</p>
+              <span style={{
+                fontSize: "0.7rem",
+                fontFamily: "IBM Plex Mono, monospace",
+                color: "#63f5e8",
+                backgroundColor: "rgba(99, 245, 232, 0.1)",
+                padding: "0.15rem 0.5rem",
+                borderRadius: "2px",
+              }}>
+                {approvedAssignedLeads.length} Approved & Assigned Leads
+              </span>
+            </div>
+            <h3 style={{ fontSize: "1.2rem", margin: "0.25rem 0 0 0", color: "#f8fafc" }}>
+              Assigned Contact Forms & Inbound Leads
+            </h3>
+          </div>
+          <Link href="/crm/leads">
+            <Button variant="outline" style={{ fontSize: "0.78rem" }}>
+              View Pipeline Desk &rarr;
+            </Button>
+          </Link>
+        </div>
+
+        {approvedAssignedLeads.length === 0 ? (
+          <div style={{ padding: "2rem", textAlign: "center", color: "#94a3b8" }}>
+            <Inbox size={32} color="#64748b" style={{ margin: "0 auto 0.5rem" }} />
+            <p style={{ margin: 0 }}>No approved contact forms or inbound leads assigned to you yet.</p>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+            {approvedAssignedLeads.slice(0, 6).map((lead) => (
+              <div
+                key={lead.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: "1rem",
+                  padding: "1rem 1.25rem",
+                  backgroundColor: "rgba(10, 17, 28, 0.6)",
+                  border: "1px solid rgba(140, 174, 187, 0.15)",
+                  borderRadius: "6px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div style={{ flex: 1, minWidth: "240px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.35rem" }}>
+                    <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontWeight: 600 }}>
+                      {lead.reference_id || `#LD-${lead.id}`}
+                    </span>
+                    <span
+                      style={{
+                        padding: "0.15rem 0.45rem",
+                        borderRadius: "2px",
+                        fontSize: "0.68rem",
+                        fontFamily: "IBM Plex Mono, monospace",
+                        backgroundColor: "rgba(99, 245, 232, 0.12)",
+                        color: "#63f5e8",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {lead.source ? lead.source.replace("_", " ") : "Contact Form"}
+                    </span>
+                    <span
+                      style={{
+                        padding: "0.15rem 0.45rem",
+                        borderRadius: "2px",
+                        fontSize: "0.68rem",
+                        fontFamily: "IBM Plex Mono, monospace",
+                        backgroundColor: "rgba(56, 189, 248, 0.12)",
+                        color: "#38bdf8",
+                      }}
+                    >
+                      {lead.status_display || lead.status}
+                    </span>
+                  </div>
+
+                  <h4 style={{ margin: "0 0 0.25rem 0", fontSize: "0.98rem", color: "#f8fafc" }}>
+                    {lead.company ? `${lead.company} (${lead.name})` : lead.name}
+                  </h4>
+
+                  <div style={{ display: "flex", gap: "1rem", fontSize: "0.8rem", color: "#94a3b8", flexWrap: "wrap" }}>
+                    <a href={`mailto:${lead.email}`} style={{ color: "#cbd5e1", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                      <Mail size={12} color="#63f5e8" /> {lead.email}
+                    </a>
+                    {lead.phone && (
+                      <a href={`tel:${lead.phone}`} style={{ color: "#cbd5e1", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                        <Phone size={12} color="#64748b" /> {lead.phone}
+                      </a>
+                    )}
+                  </div>
+
+                  {lead.description && (
+                    <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.8rem", color: "#94a3b8", backgroundColor: "rgba(5, 8, 17, 0.5)", padding: "0.5rem 0.6rem", borderRadius: "4px", lineHeight: 1.4 }}>
+                      {lead.description.length > 150 ? `${lead.description.slice(0, 150)}...` : lead.description}
+                    </p>
+                  )}
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
+                  <span style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
+                    {new Date(lead.created_at).toLocaleDateString()}
+                  </span>
+                  <Link href={`/crm/leads/${lead.id}`}>
+                    <Button variant="outline" style={{ fontSize: "0.75rem", padding: "0.35rem 0.75rem" }}>
+                      Open Desk &rarr;
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
 
       {/* Activity Timeline & Audit Feed */}
       <Card style={{ padding: "1.5rem" }}>

@@ -18,7 +18,6 @@ import ContactPage from "../features/public/pages/Contact/ContactPage";
 import RequestQuotePage from "../features/public/pages/RequestQuote/RequestQuotePage";
 import RfpPage from "../features/public/pages/Rfp/RfpPage";
 import EstimatorPage from "../features/public/pages/Estimator/EstimatorPage";
-import PartnerWithUsPage from "../features/public/pages/Partner/PartnerWithUsPage";
 import NotFoundPage from "../features/public/pages/NotFound/NotFoundPage";
 import PrivacyPolicyPage from "../features/public/pages/Legal/PrivacyPolicyPage";
 import TermsPage from "../features/public/pages/Legal/TermsPage";
@@ -55,8 +54,6 @@ export const PublicRoutes: React.FC = () => {
         <Route path="/request-quote" component={RequestQuotePage} />
         <Route path="/rfp" component={RfpPage} />
         <Route path="/estimator" component={EstimatorPage} />
-        <Route path="/partner" component={PartnerWithUsPage} />
-        <Route path="/partner-with-us" component={PartnerWithUsPage} />
 
         {/* Legal & Utility Pages */}
         <Route path="/privacy-policy" component={PrivacyPolicyPage} />

@@ -2,6 +2,7 @@ import React from "react";
 import { Route, Switch } from "wouter";
 import BdmLayout from "../layouts/BdmLayout";
 import Dashboard from "../features/bdm/pages/Dashboard";
+import ContactForms from "../features/bdm/pages/ContactForms";
 import Leads from "../features/bdm/pages/Leads";
 import Opportunities from "../features/bdm/pages/Opportunities";
 import RFP from "../features/bdm/pages/RFP";
@@ -12,6 +13,7 @@ export const BdmRoutes: React.FC = () => {
     <BdmLayout>
       <Switch>
         <Route path="/bdm/dashboard" component={Dashboard} />
+        <Route path="/bdm/contact-forms" component={ContactForms} />
         <Route path="/bdm/leads" component={Leads} />
         <Route path="/bdm/opportunities" component={Opportunities} />
         <Route path="/bdm/rfp" component={RFP} />

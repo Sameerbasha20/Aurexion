@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 from apps.authentication.audit import log_audit_event
 from apps.administration.permissions import IsAdministrator
-from apps.portal.models import SupportTicket
+from apps.portal.models import SupportTicket, ClientProject, ClientRequest, ClientDocument
 from apps.portal.authentication import ProfileJWTAuthentication
 from apps.portal.permissions import (
     IsClientTicketOwner,
@@ -22,6 +22,9 @@ from apps.portal.serializers import (
     ClientTicketUpdateSerializer,
     SupportExecutiveTicketUpdateSerializer,
     AdministratorTicketUpdateSerializer,
+    ClientProjectSerializer,
+    ClientRequestSerializer,
+    ClientDocumentSerializer,
 )
 from apps.portal.services import SupportTicketService
 
@@ -464,3 +467,36 @@ class TicketViewSet(
             },
             request=self.request,
         )
+
+
+class ClientProjectViewSet(viewsets.ModelViewSet):
+    authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
+    serializer_class = ClientProjectSerializer
+
+    def get_queryset(self):
+        return ClientProject.objects.filter(client_user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(client_user=self.request.user)
+
+
+class ClientRequestViewSet(viewsets.ModelViewSet):
+    authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
+    serializer_class = ClientRequestSerializer
+
+    def get_queryset(self):
+        return ClientRequest.objects.filter(client_user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(client_user=self.request.user)
+
+
+class ClientDocumentViewSet(viewsets.ModelViewSet):
+    authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
+    serializer_class = ClientDocumentSerializer
+
+    def get_queryset(self):
+        return ClientDocument.objects.filter(client_user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(client_user=self.request.user)

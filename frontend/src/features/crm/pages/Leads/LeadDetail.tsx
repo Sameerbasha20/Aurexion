@@ -26,7 +26,9 @@ import {
 } from "lucide-react";
 
 export const LeadDetail: React.FC = () => {
-  const [, params] = useRoute("/crm/leads/:id");
+  const [, crmParams] = useRoute("/crm/leads/:id");
+  const [, salesParams] = useRoute("/sales/leads/:id");
+  const params = crmParams || salesParams;
   const leadId = Number(params?.id);
 
   const {
