@@ -251,7 +251,7 @@ export const Dashboard: React.FC = () => {
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.78rem", color: "#94a3b8" }}>
             <span style={{ color: "#4ade80", fontWeight: 600 }}>{stats.hired_count} hired</span>
-            <span>&bull; {stats.offer_count} pending offers</span>
+            <span>• {stats.offer_count} pending offers</span>
           </div>
         </Card>
       </div>
@@ -355,7 +355,7 @@ export const Dashboard: React.FC = () => {
                       </span>
                     </div>
                     <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.2rem" }}>
-                      {job.department} &bull; {job.location} &bull; {job.experience}
+                      {job.department} • {job.location} • {job.experience}
                     </div>
                   </div>
 
@@ -435,7 +435,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: "0.25rem" }}>
-                      Role: <strong style={{ color: "#cbd5e1" }}>{app.job_title || `Job #${app.job_vacancy}`}</strong> &bull; {app.email} &bull; Applied: {new Date(app.created_at).toLocaleDateString()}
+                      Role: <strong style={{ color: "#cbd5e1" }}>{app.job_title || `Job #${app.job_vacancy}`}</strong> • {app.email} • Applied: {new Date(app.created_at).toLocaleDateString()}
                     </div>
                   </div>
 

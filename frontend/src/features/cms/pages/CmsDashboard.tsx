@@ -144,7 +144,7 @@ export const CmsDashboard: React.FC = () => {
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.78rem", color: "#94a3b8" }}>
             <span style={{ color: "#63f5e8", fontWeight: 500 }}>{stats.published_services} published</span>
-            <span>&bull; {stats.draft_services} draft</span>
+            <span>• {stats.draft_services} draft</span>
           </div>
         </Card>
 
@@ -193,7 +193,7 @@ export const CmsDashboard: React.FC = () => {
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.78rem", color: "#94a3b8" }}>
             <span style={{ color: "#4ade80", fontWeight: 600 }}>{stats.published_blog_posts} live</span>
-            <span>&bull; {stats.draft_blog_posts} drafts</span>
+            <span>• {stats.draft_blog_posts} drafts</span>
           </div>
         </Card>
       </div>
@@ -414,7 +414,7 @@ export const CmsDashboard: React.FC = () => {
                   </div>
 
                   <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: "0.25rem" }}>
-                    Category: <strong style={{ color: "#cbd5e1" }}>{post.category_name || "General"}</strong> &bull; Author: {post.author_username} &bull; Created: {new Date(post.created_at).toLocaleDateString()}
+                    Category: <strong style={{ color: "#cbd5e1" }}>{post.category_name || "General"}</strong> • Author: {post.author_username} • Created: {new Date(post.created_at).toLocaleDateString()}
                   </div>
                 </div>
 
