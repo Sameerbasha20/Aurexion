@@ -56,7 +56,7 @@ export const Candidates: React.FC = () => {
     setActionLoading(true);
 
     try {
-      await updateCandidateStage(selectedCandidate.application_id, newStage);
+      await updateCandidateStage(selectedCandidate.tracking_code, newStage);
       setIsStageModalOpen(false);
       setSelectedCandidate(null);
       setActionSuccess("Candidate stage updated successfully.");
@@ -272,7 +272,7 @@ export const Candidates: React.FC = () => {
                       <td style={{ padding: "1rem" }}>
                         <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{candidate.name}</div>
                         <div style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
-                          Ref: {candidate.tracking_code || `#APP-${candidate.id}`} • Applied: {new Date(candidate.applied_date).toLocaleDateString()}
+                          Ref: {candidate.tracking_code || `#APP-${candidate.id}`} ï¿½ Applied: {new Date(candidate.applied_date).toLocaleDateString()}
                         </div>
                       </td>
 

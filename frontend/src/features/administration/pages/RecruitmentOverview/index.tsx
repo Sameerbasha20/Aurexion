@@ -34,13 +34,13 @@ export const RecruitmentOverview: React.FC = () => {
     fetchRecruitmentData();
   }, []);
 
-  const handleStageChange = async (appId: number, newStage: string) => {
+  const handleStageChange = async (trackingCode: string, newStage: string) => {
     try {
-      await recruitmentService.updateApplicationStage(appId, newStage);
-      setApplications(applications.map(app => app.id === appId ? { ...app, stage: newStage } : app));
+      await recruitmentService.updateApplicationStage(trackingCode, newStage);
+      setApplications(applications.map(app => app.tracking_code === trackingCode ? { ...app, stage: newStage } : app));
     } catch (err) {
       // Direct UI update fallback
-      setApplications(applications.map(app => app.id === appId ? { ...app, stage: newStage } : app));
+      setApplications(applications.map(app => app.tracking_code === trackingCode ? { ...app, stage: newStage } : app));
     }
   };
 
@@ -147,7 +147,7 @@ export const RecruitmentOverview: React.FC = () => {
                     <td style={{ padding: "1rem", textAlign: "right" }}>
                       <select
                         value={app.stage}
-                        onChange={(e) => handleStageChange(app.id, e.target.value)}
+                        onChange={(e) => handleStageChange(app.tracking_code, e.target.value)}
                         style={{
                           backgroundColor: "var(--color-bg-secondary)",
                           border: "1px solid var(--color-border)",
