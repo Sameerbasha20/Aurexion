@@ -17,7 +17,7 @@ export const API_ENDPOINTS = {
     LEAD_ASSIGN: (leadId: number) => `/leads/${leadId}/assign/`,
     LEAD_TRANSITION: (leadId: number) => `/leads/${leadId}/transition/`,
     LEAD_QUALIFY: (leadId: number) => `/leads/${leadId}/qualify/`,
-    LEAD_WON: (leadId: number) => `/leads/${leadId}/won/`,
+    LEAD_WON: (leadId: number) => `/leads/${leadId}/won/`, 
     LEAD_LOST: (leadId: number) => `/leads/${leadId}/lost/`,
     LEAD_EXPORT: "/leads/export/",
   },
@@ -25,6 +25,9 @@ export const API_ENDPOINTS = {
     MY_TICKETS: "/support/my-tickets/",
     TICKETS: "/support/tickets/",
     ADMIN_TICKETS: "/support/admin/tickets/",
+    PROJECTS: "/projects/",
+    REQUESTS: "/requests/",
+    DOCUMENTS: "/documents/",
   },
   RECRUITMENT: {
     PUBLIC_JOBS: "/careers/jobs/",

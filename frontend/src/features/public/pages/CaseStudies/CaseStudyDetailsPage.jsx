@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useParams, Redirect } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { caseStudiesData } from "../../../../data/caseStudies";
 
 import { CaseStudyHero } from "./components/Detail/CaseStudyHero";
@@ -24,6 +24,7 @@ import { CaseStudyCTA } from "./components/Detail/CaseStudyCTA";
 
 export const CaseStudyDetailsPage = () => {
   const params = useParams();
+  const [, setLocation] = useLocation();
   const slug = params.slug;
 
   const caseStudy = caseStudiesData.find(cs => cs.slug === slug);
@@ -33,7 +34,8 @@ export const CaseStudyDetailsPage = () => {
   }, [slug]);
 
   if (!caseStudy) {
-    return <Redirect to="/case-studies" />;
+    setLocation("/case-studies");
+    return null;
   }
 
   return (
