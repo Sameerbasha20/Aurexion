@@ -267,6 +267,16 @@ export const crmService = {
   },
 
   /**
+   * Schedule a meeting with client and send automated email notification
+   */
+  scheduleMeeting: async (
+    leadId: number,
+    payload: { scheduled_at: string; follow_up_type?: string; meeting_link?: string; notes?: string }
+  ): Promise<any> => {
+    return axiosClient.post<any, any>(`/leads/${leadId}/schedule-meeting/`, payload);
+  },
+
+  /**
    * Fetch follow-ups for a specific lead
    */
   getFollowUps: async (leadId: number): Promise<LeadFollowUp[]> => {

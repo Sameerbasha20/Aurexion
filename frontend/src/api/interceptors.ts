@@ -16,7 +16,22 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
 
   // Response Interceptor
   axiosInstance.interceptors.response.use(
-    (response: AxiosResponse) => response.data,
+    (response: AxiosResponse) => {
+      const res = response.data;
+      if (res && typeof res === "object" && "status" in res && "data" in res) {
+        const payload = res.data;
+        if (payload !== null && payload !== undefined) {
+          if (Array.isArray(payload)) {
+            if ("count" in res) (payload as any).count = res.count;
+            if ("next" in res) (payload as any).next = res.next;
+            if ("previous" in res) (payload as any).previous = res.previous;
+            (payload as any).results = payload;
+          }
+          return payload;
+        }
+      }
+      return res;
+    },
     (error) => {
       const formattedError = handleApiError(error);
       return Promise.reject(formattedError);

@@ -161,6 +161,23 @@ class LeadFollowUpCreateSerializer(serializers.ModelSerializer):
     assigned_to = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), required=False, allow_null=True
     )
+    follow_up_type = serializers.CharField(required=False, default="email")
+
+    def validate_follow_up_type(self, value):
+        if not value:
+            return "email"
+        val = str(value).lower()
+        if "email" in val:
+            return "email"
+        if "meet" in val:
+            return "meeting"
+        if "phone" in val or "call" in val:
+            return "phone"
+        if "whatsapp" in val:
+            return "whatsapp"
+        if "linkedin" in val:
+            return "linkedin"
+        return "other"
 
     class Meta:
         model = LeadFollowUp
@@ -169,6 +186,24 @@ class LeadFollowUpCreateSerializer(serializers.ModelSerializer):
 
 
 class LeadFollowUpUpdateSerializer(serializers.ModelSerializer):
+    follow_up_type = serializers.CharField(required=False, default="email")
+
+    def validate_follow_up_type(self, value):
+        if not value:
+            return "email"
+        val = str(value).lower()
+        if "email" in val:
+            return "email"
+        if "meet" in val:
+            return "meeting"
+        if "phone" in val or "call" in val:
+            return "phone"
+        if "whatsapp" in val:
+            return "whatsapp"
+        if "linkedin" in val:
+            return "linkedin"
+        return "other"
+
     class Meta:
         model = LeadFollowUp
         fields = ["follow_up_type", "scheduled_at", "status", "notes"]
