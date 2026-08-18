@@ -604,6 +604,7 @@ def schedule_meeting_and_notify(*, lead, scheduled_at, follow_up_type="meeting",
         follow_up_type=follow_up_type,
         scheduled_at=scheduled_at,
         notes=notes or f"Meeting scheduled with client. Link: {meeting_link or 'N/A'}",
+        meeting_link=meeting_link or "",
         status=LeadFollowUp.Status.PENDING,
     )
 

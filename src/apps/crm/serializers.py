@@ -139,6 +139,7 @@ class LeadFollowUpSerializer(serializers.ModelSerializer):
             "status",
             "status_display",
             "notes",
+            "meeting_link",
             "completed_at",
             "created_at",
             "updated_at",
@@ -162,6 +163,7 @@ class LeadFollowUpCreateSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(), required=False, allow_null=True
     )
     follow_up_type = serializers.CharField(required=False, default="email")
+    meeting_link = serializers.URLField(required=False, allow_blank=True)
 
     def validate_follow_up_type(self, value):
         if not value:
@@ -179,14 +181,22 @@ class LeadFollowUpCreateSerializer(serializers.ModelSerializer):
             return "linkedin"
         return "other"
 
+    def validate(self, attrs):
+        follow_up_type = attrs.get("follow_up_type", "")
+        meeting_link = attrs.get("meeting_link", "")
+        if "meet" in follow_up_type.lower() and not meeting_link:
+            raise serializers.ValidationError({"meeting_link": "Meeting link is required for meeting type follow-ups."})
+        return attrs
+
     class Meta:
         model = LeadFollowUp
-        fields = ["assigned_to", "follow_up_type", "scheduled_at", "notes"]
+        fields = ["assigned_to", "follow_up_type", "scheduled_at", "notes", "meeting_link"]
         read_only_fields = []
 
 
 class LeadFollowUpUpdateSerializer(serializers.ModelSerializer):
     follow_up_type = serializers.CharField(required=False, default="email")
+    meeting_link = serializers.URLField(required=False, allow_blank=True)
 
     def validate_follow_up_type(self, value):
         if not value:
@@ -204,9 +214,17 @@ class LeadFollowUpUpdateSerializer(serializers.ModelSerializer):
             return "linkedin"
         return "other"
 
+    def validate(self, attrs):
+        follow_up_type = attrs.get("follow_up_type", "")
+        meeting_link = attrs.get("meeting_link", "")
+        if "meet" in follow_up_type.lower() and not meeting_link:
+            raise serializers.ValidationError({"meeting_link": "Meeting link is required for meeting type follow-ups."})
+        return attrs
+
     class Meta:
         model = LeadFollowUp
-        fields = ["follow_up_type", "scheduled_at", "status", "notes"]
+        fields = ["follow_up_type", "scheduled_at", "status", "notes", "meeting_link"]
+        read_only_fields = []
 
 
 class LeadNoteSerializer(serializers.ModelSerializer):

@@ -79,6 +79,7 @@ export const LeadDetail: React.FC = () => {
     follow_up_type: "CALL",
     scheduled_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
     notes: "",
+    meeting_link: "",
   });
 
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -168,6 +169,7 @@ export const LeadDetail: React.FC = () => {
         follow_up_type: "CALL",
         scheduled_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
         notes: "",
+        meeting_link: "",
       });
       showFeedback("success", "Follow-up scheduled successfully.");
     } catch (err: any) {
@@ -884,6 +886,20 @@ export const LeadDetail: React.FC = () => {
                   style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
                 />
               </div>
+
+              {followUpForm.follow_up_type === "MEETING" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING LINK (Google Meet / Zoom / Teams) *</label>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://meet.google.com/xyz-abc-123"
+                    value={followUpForm.meeting_link}
+                    onChange={(e) => setFollowUpForm({ ...followUpForm, meeting_link: e.target.value })}
+                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  />
+                </div>
+              )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>AGENDA / NOTES</label>

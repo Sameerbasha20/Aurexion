@@ -245,6 +245,13 @@ class LeadFollowUp(models.Model):
         blank=True,
     )
 
+    meeting_link = models.URLField(
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="Meeting link (Google Meet, Zoom, Teams, etc.)",
+    )
+
     completed_at = models.DateTimeField(
         null=True,
         blank=True,
