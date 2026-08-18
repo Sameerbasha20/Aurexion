@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://aurexion.io/sitemap.xml
+
+# Disallow admin and authenticated areas
+Disallow: /admin/
+Disallow: /portal/
+Disallow: /bdm/
+Disallow: /crm/
+Disallow: /cms/
+Disallow: /content/
+Disallow: /recruitment/
+Disallow: /hr/
+Disallow: /support/
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
