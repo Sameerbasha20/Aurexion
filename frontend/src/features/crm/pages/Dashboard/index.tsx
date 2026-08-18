@@ -33,6 +33,9 @@ export const Dashboard: React.FC = () => {
   const [completingId, setCompletingId] = useState<number | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
+  // Lead Detail Modal State
+  const [selectedLeadDetail, setSelectedLeadDetail] = useState<any | null>(null);
+
   // Meeting Schedule Modal State
   const [selectedMeetingLead, setSelectedMeetingLead] = useState<any | null>(null);
   const [scheduledAt, setScheduledAt] = useState("");
@@ -106,6 +109,10 @@ export const Dashboard: React.FC = () => {
     } finally {
       setCompletingId(null);
     }
+  };
+
+  const handleOpenLeadDetail = (lead: any) => {
+    setSelectedLeadDetail(lead);
   };
 
   if (isLoading) {
@@ -565,6 +572,14 @@ export const Dashboard: React.FC = () => {
                   
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
                     <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenLeadDetail(lead)}
+                      style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}
+                    >
+                      <ArrowUpRight size={13} style={{ marginRight: "0.3rem" }} /> Details
+                    </Button>
+                    <Button
                       glow
                       size="sm"
                       onClick={() => setSelectedMeetingLead(lead)}
@@ -800,6 +815,110 @@ export const Dashboard: React.FC = () => {
                 </Button>
               </div>
             </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Lead Detail Modal */}
+      {selectedLeadDetail && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+          <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <div>
+                <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                  LEAD DETAIL VIEW
+                </span>
+                <h2 style={{ fontSize: "1.5rem", color: "#f8fafc", margin: "0.2rem 0 0 0" }}>
+                  {selectedLeadDetail.company || selectedLeadDetail.name}
+                </h2>
+              </div>
+              <button onClick={() => setSelectedLeadDetail(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", fontSize: "1.5rem" }}>
+                ✕
+              </button>
+            </div>
+
+            {/* Lead Header */}
+            <div style={{ backgroundColor: "rgba(10, 17, 28, 0.6)", border: "1px solid rgba(140, 174, 187, 0.15)", padding: "1.25rem", borderRadius: "6px", marginBottom: "1.5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
+                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                  REF: {selectedLeadDetail.reference_id || `#LD-${selectedLeadDetail.id}`}
+                </span>
+                <span style={{ padding: "0.2rem 0.6rem", borderRadius: "4px", fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", fontWeight: 600, backgroundColor: "rgba(99, 245, 232, 0.15)", color: "#63f5e8", border: "1px solid rgba(99, 245, 232, 0.3)" }}>
+                  {selectedLeadDetail.status_display || selectedLeadDetail.status}
+                </span>
+                <span style={{ padding: "0.2rem 0.5rem", borderRadius: "4px", fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", backgroundColor: "rgba(148, 163, 184, 0.12)", color: "#94a3b8" }}>
+                  PRIORITY: {selectedLeadDetail.priority_display || selectedLeadDetail.priority || "MEDIUM"}
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", fontSize: "0.85rem", color: "#94a3b8" }}>
+                <span>Created: <strong style={{ color: "#f8fafc" }}>{new Date(selectedLeadDetail.created_at).toLocaleDateString()}</strong></span>
+                <span>Source: <strong style={{ color: "#f8fafc" }}>{selectedLeadDetail.source || "Contact Form"}</strong></span>
+              </div>
+            </div>
+
+            {/* Contact Details */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.4)", border: "1px solid rgba(140, 174, 187, 0.1)", padding: "1rem", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PRIMARY CONTACT</span>
+                <p style={{ margin: "0.5rem 0 0 0", fontSize: "1rem", fontWeight: 600, color: "#f8fafc" }}>{selectedLeadDetail.name}</p>
+                <p style={{ margin: "0.25rem 0 0 0", color: "#cbd5e1" }}>{selectedLeadDetail.company || "Direct Individual"}</p>
+              </div>
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.4)", border: "1px solid rgba(140, 174, 187, 0.1)", padding: "1rem", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EMAIL</span>
+                <a href={`mailto:${selectedLeadDetail.email}`} style={{ marginTop: "0.5rem", display: "block", color: "#63f5e8" }}>{selectedLeadDetail.email}</a>
+              </div>
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.4)", border: "1px solid rgba(140, 174, 187, 0.1)", padding: "1rem", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PHONE</span>
+                <a href={`tel:${selectedLeadDetail.phone}`} style={{ marginTop: "0.5rem", display: "block", color: "#cbd5e1" }}>{selectedLeadDetail.phone || "Not provided"}</a>
+              </div>
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.4)", border: "1px solid rgba(140, 174, 187, 0.1)", padding: "1rem", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>INDUSTRY</span>
+                <p style={{ margin: "0.5rem 0 0 0", color: "#f8fafc" }}>{selectedLeadDetail.industry || "General"}</p>
+              </div>
+            </div>
+
+            {/* Requirement Brief */}
+            {selectedLeadDetail.description && (
+              <div style={{ marginBottom: "1.5rem", padding: "1rem", backgroundColor: "rgba(5, 8, 17, 0.6)", border: "1px solid rgba(140, 174, 187, 0.1)", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>REQUIREMENT BRIEF</span>
+                <p style={{ margin: "0.5rem 0 0 0", color: "#cbd5e1", lineHeight: 1.6 }}>{selectedLeadDetail.description}</p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginBottom: "1.5rem" }}>
+              <Button
+                glow
+                onClick={() => {
+                  setSelectedLeadDetail(null);
+                  setSelectedMeetingLead(selectedLeadDetail);
+                }}
+                style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
+              >
+                <Calendar size={14} /> Schedule Meeting
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleMarkWon(selectedLeadDetail.id, selectedLeadDetail.name)}
+                style={{ display: "flex", alignItems: "center", gap: "0.4rem", borderColor: "rgba(74, 222, 128, 0.4)", color: "#4ade80" }}
+              >
+                <CheckCircle2 size={14} /> Mark Won
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleMarkLost(selectedLeadDetail.id)}
+                style={{ display: "flex", alignItems: "center", gap: "0.4rem", borderColor: "rgba(248, 113, 113, 0.4)", color: "#f87171" }}
+              >
+                <XCircle size={14} /> Mark Lost
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => { window.open(`/crm/leads/${selectedLeadDetail.id}`, '_blank'); setSelectedLeadDetail(null); }}
+                style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
+              >
+                <ArrowUpRight size={14} /> Full Lead Desk
+              </Button>
+            </div>
           </Card>
         </div>
       )}

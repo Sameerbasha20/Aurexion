@@ -4770,6 +4770,14 @@ components:
           readOnly: true
         notes:
           type: string
+        meeting_link:
+          description: Meeting link (Google Meet, Zoom, Teams, etc.)
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         completed_at:
           type: string
           format: date-time
@@ -4809,6 +4817,12 @@ components:
           format: date-time
         notes:
           type: string
+        meeting_link:
+          oneOf:
+          - type: string
+            format: uri
+          - type: string
+            maxLength: 0
       required:
       - scheduled_at
     LeadFollowUpStatusEnum:
@@ -5383,6 +5397,12 @@ components:
           $ref: '#/components/schemas/LeadFollowUpStatusEnum'
         notes:
           type: string
+        meeting_link:
+          oneOf:
+          - type: string
+            format: uri
+          - type: string
+            maxLength: 0
     PatchedLeadNote:
       type: object
       properties:
