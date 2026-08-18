@@ -1415,6 +1415,159 @@ paths:
               schema:
                 $ref: '#/components/schemas/Service'
           description: ''
+  /api/v1/documents/:
+    get:
+      operationId: documents_list
+      summary: List my documents
+      tags:
+      - Client Portal (Documents)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientDocument'
+          description: ''
+    post:
+      operationId: documents_create
+      summary: Create a document
+      tags:
+      - Client Portal (Documents)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDocument'
+          description: ''
+  /api/v1/documents/{id}/:
+    get:
+      operationId: documents_retrieve
+      summary: Get document details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client document.
+        required: true
+      tags:
+      - Client Portal (Documents)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDocument'
+          description: ''
+    put:
+      operationId: documents_update
+      summary: Update document
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client document.
+        required: true
+      tags:
+      - Client Portal (Documents)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientDocument'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDocument'
+          description: ''
+    patch:
+      operationId: documents_partial_update
+      summary: Partially update document
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client document.
+        required: true
+      tags:
+      - Client Portal (Documents)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClientDocument'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClientDocument'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClientDocument'
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDocument'
+          description: ''
+    delete:
+      operationId: documents_destroy
+      summary: Delete document
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client document.
+        required: true
+      tags:
+      - Client Portal (Documents)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/leads/:
     get:
       operationId: leads_list
@@ -2116,6 +2269,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/Lead'
           description: ''
+  /api/v1/leads/{id}/schedule-meeting/:
+    post:
+      operationId: leads_schedule_meeting_create
+      description: Schedule a meeting with client, record follow-up, and dispatch
+        email notification.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this lead.
+        required: true
+      tags:
+      - leads
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Lead'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
   /api/v1/leads/{id}/transition/:
     post:
       operationId: leads_transition_create
@@ -2154,7 +2343,7 @@ paths:
   /api/v1/leads/{id}/won/:
     post:
       operationId: leads_won_create
-      description: Mark a lead as WON (valid from NEGOTIATION).
+      description: Mark a lead as WON.
       parameters:
       - in: path
         name: id
@@ -2203,6 +2392,159 @@ paths:
               schema:
                 $ref: '#/components/schemas/Lead'
           description: ''
+  /api/v1/projects/:
+    get:
+      operationId: projects_list
+      summary: List my projects
+      tags:
+      - Client Portal (Projects)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientProject'
+          description: ''
+    post:
+      operationId: projects_create
+      summary: Create a project
+      tags:
+      - Client Portal (Projects)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProject'
+          description: ''
+  /api/v1/projects/{id}/:
+    get:
+      operationId: projects_retrieve
+      summary: Get project details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client project.
+        required: true
+      tags:
+      - Client Portal (Projects)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProject'
+          description: ''
+    put:
+      operationId: projects_update
+      summary: Update project
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client project.
+        required: true
+      tags:
+      - Client Portal (Projects)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientProject'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProject'
+          description: ''
+    patch:
+      operationId: projects_partial_update
+      summary: Partially update project
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client project.
+        required: true
+      tags:
+      - Client Portal (Projects)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClientProject'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClientProject'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClientProject'
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientProject'
+          description: ''
+    delete:
+      operationId: projects_destroy
+      summary: Delete project
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client project.
+        required: true
+      tags:
+      - Client Portal (Projects)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/public/leads/:
     post:
       operationId: public_leads_create
@@ -2231,6 +2573,159 @@ paths:
               schema:
                 $ref: '#/components/schemas/Lead'
           description: ''
+  /api/v1/requests/:
+    get:
+      operationId: requests_list
+      summary: List my requests
+      tags:
+      - Client Portal (Requests)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientRequest'
+          description: ''
+    post:
+      operationId: requests_create
+      summary: Create a request
+      tags:
+      - Client Portal (Requests)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRequest'
+          description: ''
+  /api/v1/requests/{id}/:
+    get:
+      operationId: requests_retrieve
+      summary: Get request details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client request.
+        required: true
+      tags:
+      - Client Portal (Requests)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRequest'
+          description: ''
+    put:
+      operationId: requests_update
+      summary: Update request
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client request.
+        required: true
+      tags:
+      - Client Portal (Requests)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientRequest'
+        required: true
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRequest'
+          description: ''
+    patch:
+      operationId: requests_partial_update
+      summary: Partially update request
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client request.
+        required: true
+      tags:
+      - Client Portal (Requests)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClientRequest'
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRequest'
+          description: ''
+    delete:
+      operationId: requests_destroy
+      summary: Delete request
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client request.
+        required: true
+      tags:
+      - Client Portal (Requests)
+      security:
+      - jwtAuthProfile: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/roles/:
     get:
       operationId: roles_list
@@ -3714,6 +4209,153 @@ components:
         * `security` - Security
         * `infrastructure` - Infrastructure
         * `general` - General
+    ClientDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        project:
+          type: integer
+          nullable: true
+        project_title:
+          type: string
+          readOnly: true
+          nullable: true
+        title:
+          type: string
+          maxLength: 255
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+        document_type_display:
+          type: string
+          readOnly: true
+        file_url:
+          type: string
+          maxLength: 500
+        file_size:
+          type: string
+          maxLength: 50
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - document_type_display
+      - id
+      - project_title
+      - title
+      - uploaded_at
+    ClientProject:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ClientProjectStatusEnum'
+        status_display:
+          type: string
+          readOnly: true
+        progress_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        target_completion_date:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - status_display
+      - title
+      - updated_at
+    ClientProjectStatusEnum:
+      enum:
+      - planning
+      - in_progress
+      - under_review
+      - completed
+      - on_hold
+      type: string
+      description: |-
+        * `planning` - Planning
+        * `in_progress` - In Progress
+        * `under_review` - Under Review
+        * `completed` - Completed
+        * `on_hold` - On Hold
+    ClientRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        priority:
+          $ref: '#/components/schemas/LeadPriorityEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ClientRequestStatusEnum'
+          readOnly: true
+        status_display:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - status
+      - status_display
+      - title
+      - updated_at
+    ClientRequestStatusEnum:
+      enum:
+      - submitted
+      - under_review
+      - approved
+      - in_progress
+      - completed
+      - rejected
+      type: string
+      description: |-
+        * `submitted` - Submitted
+        * `under_review` - Under Review
+        * `approved` - Approved
+        * `in_progress` - In Progress
+        * `completed` - Completed
+        * `rejected` - Rejected
     ClientTicketCreate:
       type: object
       properties:
@@ -3740,6 +4382,20 @@ components:
           type: string
       required:
       - subject
+    DocumentTypeEnum:
+      enum:
+      - contract
+      - invoice
+      - deliverable
+      - specification
+      - other
+      type: string
+      description: |-
+        * `contract` - Contract
+        * `invoice` - Invoice
+        * `deliverable` - Deliverable
+        * `specification` - Specification
+        * `other` - Other
     Industry:
       type: object
       properties:
@@ -4146,7 +4802,8 @@ components:
           type: integer
           nullable: true
         follow_up_type:
-          $ref: '#/components/schemas/LeadFollowUpTypeEnum'
+          type: string
+          default: email
         scheduled_at:
           type: string
           format: date-time
@@ -4568,6 +5225,104 @@ components:
         parent:
           type: integer
           nullable: true
+    PatchedClientDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        project:
+          type: integer
+          nullable: true
+        project_title:
+          type: string
+          readOnly: true
+          nullable: true
+        title:
+          type: string
+          maxLength: 255
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+        document_type_display:
+          type: string
+          readOnly: true
+        file_url:
+          type: string
+          maxLength: 500
+        file_size:
+          type: string
+          maxLength: 50
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedClientProject:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ClientProjectStatusEnum'
+        status_display:
+          type: string
+          readOnly: true
+        progress_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        target_completion_date:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedClientRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        priority:
+          $ref: '#/components/schemas/LeadPriorityEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ClientRequestStatusEnum'
+          readOnly: true
+        status_display:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedClientTicketUpdate:
       type: object
       properties:
@@ -4619,7 +5374,8 @@ components:
       type: object
       properties:
         follow_up_type:
-          $ref: '#/components/schemas/LeadFollowUpTypeEnum'
+          type: string
+          default: email
         scheduled_at:
           type: string
           format: date-time

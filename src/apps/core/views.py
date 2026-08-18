@@ -36,7 +36,11 @@ class HealthCheckView(View):
             health_status["status"] = "degraded"
         
         status_code = 200 if health_status["status"] == "healthy" else 503
-        return JsonResponse(health_status, status=status_code)
+        return JsonResponse({
+            "status": status_code,
+            "message": "Health Check Status",
+            "data": health_status,
+        }, status=status_code)
 
 
 def health_check(request):
@@ -54,13 +58,17 @@ def health_check(request):
     
     # Get project info
     project_name = getattr(settings, 'PROJECT_NAME', 'Aurexion Enterprise Platform')
-    # Last updated - could be from git, env, or a file
     last_updated = getattr(settings, 'LAST_UPDATED', datetime.now().strftime('%Y-%m-%d'))
+    status_code = 200 if db_status == "ok" else 503
     
     return JsonResponse({
-        "status": "healthy" if db_status == "ok" else "unhealthy",
-        "project_name": project_name,
-        "last_updated": last_updated,
-        "database": db_status,
-        "api": "v1",
-    }, status=200 if db_status == "ok" else 503)
+        "status": status_code,
+        "message": "API System Status",
+        "data": {
+            "health": "healthy" if db_status == "ok" else "unhealthy",
+            "project_name": project_name,
+            "last_updated": last_updated,
+            "database": db_status,
+            "api": "v1",
+        }
+    }, status=status_code)
