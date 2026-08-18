@@ -75,6 +75,14 @@ class BdmDashboardView(APIView):
             .order_by("-timestamp")[:10]
         )
 
+        # Recent public form submissions (RFP, contact, estimator, quote)
+        form_sources = ["rfp_form", "contact_form", "request_quote", "estimator", "website_form"]
+        recent_form_submissions = (
+            Lead.objects.filter(source__in=form_sources)
+            .select_related("assigned_to")
+            .order_by("-created_at")[:10]
+        )
+
         return Response({
             "total_leads": agg["total_leads"],
             "assigned_leads": agg["assigned_leads"],
@@ -98,5 +106,21 @@ class BdmDashboardView(APIView):
                     "timestamp": item.timestamp,
                 }
                 for item in recent_activities
+            ],
+            "recent_form_submissions": [
+                {
+                    "id": lead.id,
+                    "reference_id": lead.reference_id,
+                    "name": lead.name,
+                    "email": lead.email,
+                    "company": lead.company,
+                    "source": lead.source,
+                    "source_display": lead.source.replace("_", " ").title(),
+                    "industry": lead.industry,
+                    "description": lead.description[:200] if lead.description else "",
+                    "created_at": lead.created_at,
+                    "status": lead.status,
+                }
+                for lead in recent_form_submissions
             ],
         })

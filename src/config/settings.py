@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'apps.portal',
     'apps.recruitment',
     'apps.bdm',
+    'apps.core',
 ]
 
 MIDDLEWARE = [
@@ -208,3 +209,20 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'src' / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Email Configuration
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@aurexion.com')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+
+# Client Portal Configuration
+CLIENT_PORTAL_LOGIN_URL = os.getenv('CLIENT_PORTAL_LOGIN_URL', 'http://localhost:3000/login')
+DEFAULT_CLIENT_PASSWORD = os.getenv('DEFAULT_CLIENT_PASSWORD', 'Aurexion@123')
+
+# Project Info
+PROJECT_NAME = os.getenv('PROJECT_NAME', 'Aurexion Enterprise Platform')
+LAST_UPDATED = os.getenv('LAST_UPDATED', '2026-08-17')
