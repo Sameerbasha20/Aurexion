@@ -249,7 +249,7 @@ export const FollowUps: React.FC = () => {
                       <div style={{ fontSize: "0.78rem", color: isOverdue ? "#f87171" : "#94a3b8", fontFamily: "IBM Plex Mono, monospace", marginTop: "0.25rem" }}>
                         Scheduled: {new Date(fu.scheduled_at).toLocaleDateString()} at{" "}
                         {new Date(fu.scheduled_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        {fu.assigned_to_name && ` &bull; Assigned: ${fu.assigned_to_name}`}
+                        {fu.assigned_to_name && ` • Assigned: ${fu.assigned_to_name}`}
                       </div>
 
                       {fu.notes && (

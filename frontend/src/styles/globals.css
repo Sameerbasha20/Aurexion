@@ -65,7 +65,7 @@ h1 { max-width: 970px; margin: 1.4rem 0 1.6rem; font-size: clamp(4.4rem, 10vw, 9
 h1 em, h2 em, h3 em { font-style: normal; color: #b7c4c5; }
 .hero-sub { color: #bbc9cb; font-size: 1.1rem; line-height: 1.5; }
 .hero-ctas { display: flex; align-items: center; gap: 1.5rem; margin-top: 2.6rem; flex-wrap: wrap; }
-.signal-button { border: 1px solid #63f5e8; background: #63f5e8; color: #041014; padding: .9rem 1rem; font: 600 .68rem 'IBM Plex Mono', monospace; letter-spacing: .08em; transition: transform .16s ease, box-shadow .2s ease; }
+.signal-button { display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid #63f5e8; background: #63f5e8; color: #041014; padding: .9rem 1rem; font: 600 .68rem 'IBM Plex Mono', monospace; letter-spacing: .08em; transition: transform .16s ease, box-shadow .2s ease; }
 .signal-button:hover { background: #93fff5; color: #041014; box-shadow: 0 0 34px rgba(99,245,232,.23); transform: translateY(-2px); }
 .text-button { display: inline-flex; align-items: center; gap: .55rem; border: 0; background: transparent; padding: .5rem 0; color: #dbe5e5; font: 500 .68rem 'IBM Plex Mono', monospace; letter-spacing: .1em; cursor: pointer; }
 .text-button:hover { color: #63f5e8; }

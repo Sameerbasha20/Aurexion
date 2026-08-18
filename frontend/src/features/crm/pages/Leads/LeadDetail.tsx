@@ -303,7 +303,7 @@ export const LeadDetail: React.FC = () => {
               {lead.company || lead.name}
             </h1>
             <p style={{ margin: 0, fontSize: "0.88rem", color: "#94a3b8" }}>
-              Primary Contact: <strong style={{ color: "#e2e8f0" }}>{lead.name}</strong> &bull; Established on{" "}
+              Primary Contact: <strong style={{ color: "#e2e8f0" }}>{lead.name}</strong> • Established on{" "}
               {new Date(lead.created_at).toLocaleDateString()}
             </p>
           </div>
