@@ -183,6 +183,34 @@ class LeadNoteSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_by", "created_by_name", "created_at", "updated_at"]
 
 
+class PublicLeadCreateSerializer(serializers.ModelSerializer):
+    """Public serializer for form submissions (estimator, RFP, contact forms)."""
+
+    class Meta:
+        model = Lead
+        fields = [
+            "name",
+            "email",
+            "phone",
+            "company",
+            "website",
+            "industry",
+            "source",
+            "description",
+            "priority",
+        ]
+
+    def validate_email(self, value):
+        if not value:
+            raise serializers.ValidationError("Email is required for form submissions.")
+        return value
+
+    def validate_name(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Name is required.")
+        return value.strip()
+
+
 class LeadActivitySerializer(serializers.ModelSerializer):
     actor = serializers.CharField(source="user.username", read_only=True, default=None)
 

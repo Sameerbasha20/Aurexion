@@ -16,6 +16,20 @@ class BdmRecentActivitySerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
 
 
+class BdmFormSubmissionSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    reference_id = serializers.CharField()
+    name = serializers.CharField()
+    email = serializers.EmailField()
+    company = serializers.CharField(allow_blank=True)
+    source = serializers.CharField()
+    source_display = serializers.CharField()
+    industry = serializers.CharField(allow_blank=True)
+    description = serializers.CharField(allow_blank=True)
+    created_at = serializers.DateTimeField()
+    status = serializers.CharField()
+
+
 class BdmDashboardSerializer(serializers.Serializer):
     """Response shape of the BDM dashboard endpoint."""
 
@@ -31,3 +45,4 @@ class BdmDashboardSerializer(serializers.Serializer):
     conversion_rate = serializers.FloatField()
     pipeline_summary = BdmPipelineSummarySerializer(many=True)
     recent_activities = BdmRecentActivitySerializer(many=True)
+    recent_form_submissions = BdmFormSubmissionSerializer(many=True)
