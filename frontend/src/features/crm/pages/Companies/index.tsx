@@ -153,7 +153,7 @@ export const Companies: React.FC = () => {
                   {company.website && (
                     <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#94a3b8" }}>
                       <Globe size={13} color="#64748b" />
-                      <a href={company.website.startsWith("http") ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer" style={{ color: "#63f5e8" }}>
+                      <a href={company.website.startsWith("http") ? company.website : `https://${company.website}`} target="_blank" rel="noopener noreferrer" style={{ color: "#63f5e8" }}>
                         {company.website}
                       </a>
                     </div>

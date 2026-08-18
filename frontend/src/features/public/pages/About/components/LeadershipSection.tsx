@@ -53,7 +53,7 @@ export const LeadershipSection: React.FC = () => {
                     <a
                       href={leader.linkedin}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       aria-label={`${leader.name} LinkedIn Profile`}
                       className="p-2 rounded-md bg-[#132337] text-gray-400 hover:text-[#63f5e8] hover:bg-[#18304c] transition-colors"
                     >

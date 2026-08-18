@@ -370,7 +370,7 @@ export const Applications: React.FC = () => {
                           <a
                             href={app.resume_storage_path}
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                             style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.78rem" }}
                           >
                             <Download size={13} /> Resume
@@ -443,7 +443,7 @@ export const Applications: React.FC = () => {
                     <a
                       href={reviewApp.resume_storage_path}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.85rem", textDecoration: "underline" }}
                     >
                       <Download size={14} /> Download File
