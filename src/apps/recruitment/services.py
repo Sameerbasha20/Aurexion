@@ -1,11 +1,11 @@
-import random
+import secrets
 import string
 from django.db import IntegrityError, transaction
 from .models import CandidateApplication
 
 def generate_tracking_code():
-    """Generates a tracking code suffix (AUR-APP-XXXX)."""
-    suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+    """Generates a tracking code suffix (AUR-APP-XXXX) using cryptographically secure secrets."""
+    suffix = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(4))
     return f"AUR-APP-{suffix}"
 
 def create_candidate_application(job_vacancy, first_name, last_name, email, phone, resume_storage_path):

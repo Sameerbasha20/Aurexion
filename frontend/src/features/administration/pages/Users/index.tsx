@@ -105,7 +105,7 @@ export const Users: React.FC = () => {
     e.preventDefault();
     if (dialogMode === "add") {
       const newUser: ExtendedUser = {
-        id: `usr_${Math.floor(100 + Math.random() * 900)}`,
+        id: `usr_${window.crypto ? window.crypto.getRandomValues(new Uint32Array(1))[0] % 900 + 100 : Date.now()}`,
         name: formName,
         email: formEmail,
         role: formRole,

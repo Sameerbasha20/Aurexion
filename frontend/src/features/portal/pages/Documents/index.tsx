@@ -102,7 +102,7 @@ export const Documents: React.FC = () => {
                 </span>
 
                 {doc.file_url ? (
-                  <a href={doc.file_url} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                  <a href={doc.file_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
                     <Button variant="outline" size="sm" style={{ fontSize: "0.75rem" }}>
                       <Download size={13} style={{ marginRight: "0.3rem" }} /> View / Download
                     </Button>

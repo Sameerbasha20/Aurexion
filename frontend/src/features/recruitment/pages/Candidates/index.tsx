@@ -322,7 +322,7 @@ export const Candidates: React.FC = () => {
                           <a
                             href={candidate.resume_url}
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                             style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.78rem", textDecoration: "underline" }}
                           >
                             <Download size={13} /> View Resume
