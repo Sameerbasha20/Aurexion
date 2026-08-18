@@ -73,13 +73,7 @@ class SupportTicket(models.Model):
 
     @staticmethod
     def generate_ticket_id():
-        from django.db import connection
         year = timezone.now().year
         prefix = f"TKT-{year}-"
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT COUNT(*) FROM portal_supportticket WHERE ticket_id LIKE %s",
-                [f"{prefix}%"]
-            )
-            count = cursor.fetchone()[0] + 1
-        return f"{prefix}{count:05d}"
+        count = SupportTicket.objects.filter(ticket_id__startswith=prefix).count()
+        return f"{prefix}{count + 1:05d}"

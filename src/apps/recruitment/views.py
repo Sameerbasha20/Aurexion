@@ -128,7 +128,8 @@ class ApplyForJobView(APIView):
                 file_bytes = resume_file.read()
                 upload_resume(storage_path, file_bytes, resume_file.content_type)
             except Exception as e:
-                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                logger.error("Resume upload to storage failed for application", exc_info=e)
+                return Response({'error': 'Resume upload failed. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
             # 2. Persist Application in PostgreSQL Database
             try:
@@ -220,7 +221,8 @@ class AdminCandidateApplicationViewSet(viewsets.ReadOnlyModelViewSet):
             url = generate_signed_url(application.resume_storage_path, expires_in=60)
             return Response({'download_url': url})
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.error("Failed to generate signed resume URL", exc_info=e)
+            return Response({'error': 'Could not generate a download link. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @extend_schema(tags=['Careers (HR Admin)'], summary="Manage internal ATS notes", request=ApplicationNoteSerializer)
     @action(detail=True, methods=['get', 'post'])

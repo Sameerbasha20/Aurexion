@@ -4,6 +4,10 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    env:
+      # No .env exists in CI; DEBUG=True uses the development-only SECRET_KEY
+      # fallback so the suite runs without a real secret being committed.
+      DEBUG: 'True'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
