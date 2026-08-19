@@ -21,29 +21,20 @@ def _env_flag(name, default=False):
     return value.strip().lower() in ('1', 'true', 'yes', 'on')
 
 
-# Fail-safe default: DEBUG is opt-in and defaults to OFF. A misconfigured
-# production deployment therefore can never silently fall back into debug
-# mode, which would expose stack traces and configuration through Django's
-# technical error pages. Supports both DEBUG and DJANGO_DEBUG env names.
 DEBUG = _env_flag('DEBUG') or _env_flag('DJANGO_DEBUG')
 
 
 def _resolve_secret_key(debug=False):
     """
     SECRET_KEY must come from the environment — never from a hardcoded value.
-
-    In DEBUG mode a clearly-marked development key is acceptable so local
-    development works without a .env file. In production (DEBUG off) the
-    server refuses to start rather than signing tokens with a guessable key.
     """
-    key = os.getenv('SECRET_KEY')
+    key = os.getenv('SECRET_KEY') or os.getenv('DJANGO_SECRET_KEY')
     if key:
         return key
     if debug:
         return 'dev-only-insecure-secret-key-do-not-use-in-production'
     raise ImproperlyConfigured(
-        'SECRET_KEY is not set. Set SECRET_KEY in the environment or .env '
-        'before starting the server.'
+        "DJANGO_SECRET_KEY environment variable is mandatory for non-DEBUG environments!"
     )
 
 
@@ -212,8 +203,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '60/min',
-        'user': '1000/min',
+        'anon': '1000/min' if DEBUG else '60/minute',
+        'user': '1000/day',
     },
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'config.exceptions.exception_handler',

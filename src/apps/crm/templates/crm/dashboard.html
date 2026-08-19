@@ -1,1 +1,11 @@
-<!-- CRM dashboard placeholder -->
+{% extends "base.html" %}
+
+{% block title %}CRM Dashboard{% endblock %}
+
+{% block content %}
+<h2>CRM Dashboard</h2>
+<div class="stats-container">
+    <p>Total Leads: {{ total_leads|default:0 }}</p>
+    <p>Opportunities: {{ total_opportunities|default:0 }}</p>
+</div>
+{% endblock %}

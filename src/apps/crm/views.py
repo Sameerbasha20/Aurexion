@@ -603,3 +603,30 @@ class EstimatorCalculateView(APIView):
             "disclaimer": "This estimate represents a preliminary requirement assessment and does not constitute a binding legal proposal."
         }, status=status.HTTP_201_CREATED)
 
+
+from rest_framework.throttling import AnonRateThrottle
+from apps.crm.serializers import RFPEnquirySerializer
+
+class RFPSubmitView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [AnonRateThrottle]
+
+    @extend_schema(
+        tags=["Public Forms"],
+        summary="Submit Request for Proposal (RFP)",
+        request=RFPEnquirySerializer,
+        responses={201: dict},
+        auth=[]
+    )
+    def post(self, request):
+        serializer = RFPEnquirySerializer(data=request.data)
+        if serializer.is_valid():
+            rfp = serializer.save()
+            return Response({
+                "message": "RFP submitted successfully.",
+                "reference_id": rfp.reference_id
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+

@@ -357,3 +357,28 @@ class EstimatorSubmission(models.Model):
     def __str__(self):
         return f"EstimatorSubmission #{self.id} ({self.engineering_effort_hours} hrs)"
 
+
+class RFPEnquiry(models.Model):
+    reference_id = models.CharField(max_length=30, unique=True, editable=False)
+    full_name = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255)
+    work_email = models.EmailField()
+    phone = models.CharField(max_length=50)
+    designation = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    project_type = models.CharField(max_length=100)
+    budget_range = models.CharField(max_length=100)
+    project_description = models.TextField()
+    document_attachment = models.FileField(upload_to='rfps/%Y/%m/', null=True, blank=True)
+    nda_required = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.reference_id:
+            import datetime
+            year = datetime.datetime.now().year
+            count = RFPEnquiry.objects.filter(created_at__year=year).count() + 1
+            self.reference_id = f"AUR-RFP-{year}-{count:05d}"
+        super().save(*args, **kwargs)
+
+

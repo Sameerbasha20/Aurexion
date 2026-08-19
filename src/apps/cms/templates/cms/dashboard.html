@@ -1,1 +1,11 @@
-<!-- CMS dashboard placeholder -->
+{% extends "base.html" %}
+
+{% block title %}CMS Dashboard{% endblock %}
+
+{% block content %}
+<h2>CMS Dashboard</h2>
+<div class="stats-container">
+    <p>Total Services: {{ total_services|default:0 }}</p>
+    <p>Total Industries: {{ total_industries|default:0 }}</p>
+</div>
+{% endblock %}
