@@ -32,7 +32,7 @@ export const AssociatedServices = ({ industry }) => {
                   <h3 className="font-bold text-lg group-hover:text-primary transition-colors line-clamp-2">{title}</h3>
                 </div>
                 <div className="flex justify-end">
-                  <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary-foreground group-hover:translate-x-1 transition-all" />
+                  <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 </div>
               </Link>
             )

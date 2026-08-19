@@ -41,9 +41,9 @@ export const IndustryCard = ({ industry }) => {
         </div>
       </div>
       
-      <div className="px-6 md:px-8 py-4 border-t border-border/10 bg-card/5 flex items-center justify-between group-hover:bg-primary/5 transition-colors mt-auto">
-        <span className="text-sm font-bold text-primary group-hover:text-primary-foreground transition-colors">Explore Industry</span>
-        <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary-foreground group-hover:translate-x-1 transition-all" />
+      <div className="px-6 md:px-8 py-4 border-t border-border/10 bg-card/5 flex items-center justify-between group-hover:bg-primary/10 transition-colors mt-auto">
+        <span className="text-sm font-bold text-primary group-hover:text-[#63f5e8] group-hover:drop-shadow-[0_0_8px_rgba(99,245,232,0.6)] transition-all">Explore Industry</span>
+        <ArrowRight className="w-5 h-5 text-primary/70 group-hover:text-primary group-hover:translate-x-1.5 transition-all" />
       </div>
     </Link>
   );
