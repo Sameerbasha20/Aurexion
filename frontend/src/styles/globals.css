@@ -9,6 +9,7 @@
   --popover: #0a111c; --popover-foreground: #eef4f3; --primary: #63f5e8; --primary-foreground: #041014;
   --secondary: #0e1826; --secondary-foreground: #e8efef; --muted: #0b131f; --muted-foreground: #8b9aa4;
   --accent: #63f5e8; --accent-foreground: #041014; --border: rgba(140,174,187,.2); --input: rgba(140,174,187,.25);
+  --destructive: #ef4444; --destructive-foreground: #ffffff;
   --ring: #63f5e8; --radius: 0px;
   --site-pad: max(5vw, 2rem);
 }

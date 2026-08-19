@@ -5,48 +5,105 @@ import * as z from "zod";
 import { publicService } from "../../services/publicService";
 import { Mail, Phone, MapPin, Clock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 
+interface CountryCodeOption {
+  code: string;
+  name: string;
+  flag: string;
+  digitsMin: number;
+  digitsMax: number;
+  placeholder: string;
+}
+
+export const COUNTRY_CODES: CountryCodeOption[] = [
+  { code: "+1", name: "United States / Canada", flag: "🇺🇸", digitsMin: 10, digitsMax: 10, placeholder: "555 123 4567" },
+  { code: "+91", name: "India", flag: "🇮🇳", digitsMin: 10, digitsMax: 10, placeholder: "98765 43210" },
+  { code: "+44", name: "United Kingdom", flag: "🇬🇧", digitsMin: 10, digitsMax: 11, placeholder: "7911 123456" },
+  { code: "+61", name: "Australia", flag: "🇦🇺", digitsMin: 9, digitsMax: 9, placeholder: "412 345 678" },
+  { code: "+971", name: "UAE", flag: "🇦🇪", digitsMin: 9, digitsMax: 9, placeholder: "50 123 4567" },
+  { code: "+65", name: "Singapore", flag: "🇸🇬", digitsMin: 8, digitsMax: 8, placeholder: "8123 4567" },
+  { code: "+49", name: "Germany", flag: "🇩🇪", digitsMin: 10, digitsMax: 11, placeholder: "151 12345678" },
+  { code: "+33", name: "France", flag: "🇫🇷", digitsMin: 9, digitsMax: 9, placeholder: "6 12 34 56 78" },
+  { code: "+81", name: "Japan", flag: "🇯🇵", digitsMin: 10, digitsMax: 10, placeholder: "90 1234 5678" },
+  { code: "+41", name: "Switzerland", flag: "🇨🇭", digitsMin: 9, digitsMax: 9, placeholder: "78 123 45 67" },
+  { code: "+966", name: "Saudi Arabia", flag: "🇸🇦", digitsMin: 9, digitsMax: 9, placeholder: "50 123 4567" },
+  { code: "+86", name: "China", flag: "🇨🇳", digitsMin: 11, digitsMax: 11, placeholder: "138 1234 5678" },
+  { code: "+353", name: "Ireland", flag: "🇮🇪", digitsMin: 9, digitsMax: 9, placeholder: "87 123 4567" },
+  { code: "+31", name: "Netherlands", flag: "🇳🇱", digitsMin: 9, digitsMax: 9, placeholder: "6 12345678" },
+  { code: "+other", name: "Other (International)", flag: "🌐", digitsMin: 7, digitsMax: 15, placeholder: "Enter complete phone number" },
+];
+
+export const validatePhoneNumber = (phone: string, countryCode: string): string => {
+  const rawDigits = phone.replace(/\D/g, "");
+  const country = COUNTRY_CODES.find((c) => c.code === countryCode) || COUNTRY_CODES[0];
+
+  if (!rawDigits) {
+    return "Phone number is required.";
+  }
+
+  if (country.code === "+other") {
+    if (rawDigits.length < 7 || rawDigits.length > 15) {
+      return "Please enter a valid international phone number (7 to 15 digits).";
+    }
+    return "";
+  }
+
+  if (country.digitsMin === country.digitsMax) {
+    if (rawDigits.length !== country.digitsMin) {
+      return `${country.name} phone number must be exactly ${country.digitsMin} digits (${rawDigits.length}/${country.digitsMin}).`;
+    }
+  } else {
+    if (rawDigits.length < country.digitsMin || rawDigits.length > country.digitsMax) {
+      return `${country.name} phone number must be between ${country.digitsMin} and ${country.digitsMax} digits (${rawDigits.length} entered).`;
+    }
+  }
+
+  return "";
+};
+
+export const clampPhoneNumber = (phone: string, countryCode: string): string => {
+  const raw = phone.replace(/\D/g, "");
+  const country = COUNTRY_CODES.find((c) => c.code === countryCode) || COUNTRY_CODES[0];
+  return raw.slice(0, country.digitsMax);
+};
+
 const nameRegex = /^[a-zA-Z\s'-]+$/;
-const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\./0-9]*$/;
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const contactSchema = z.object({
   firstName: z
     .string()
-    .transform((v) => v.trim())
-    .refine((v) => v.length > 0, { message: "First name is required." })
-    .refine((v) => v.length >= 2, { message: "First name must be at least 2 characters." })
-    .refine((v) => nameRegex.test(v), { message: "First name contains invalid characters." }),
+    .min(1, "First name is required.")
+    .min(2, "First name must be at least 2 characters.")
+    .regex(nameRegex, "First name contains invalid characters."),
   lastName: z
     .string()
-    .transform((v) => v.trim())
-    .refine((v) => v.length > 0, { message: "Last name is required." })
-    .refine((v) => nameRegex.test(v), { message: "Last name contains invalid characters." }),
+    .min(1, "Last name is required.")
+    .regex(nameRegex, "Last name contains invalid characters."),
   email: z
     .string()
-    .transform((v) => v.trim())
-    .refine((v) => v.length > 0, { message: "Please enter a valid work email." })
-    .refine((v) => emailRegex.test(v), { message: "Please enter a valid work email address." }),
-  phone: z
-    .string()
-    .transform((v) => v.trim())
-    .refine((v) => v.length > 0, { message: "Please enter a valid phone number." })
-    .refine((v) => phoneRegex.test(v), { message: "Phone number contains invalid characters." })
-    .refine((v) => {
-      const digits = v.replace(/\D/g, "");
-      return digits.length >= 7 && digits.length <= 15;
-    }, { message: "Please enter a valid phone number." }),
+    .min(1, "Please enter a valid work email.")
+    .regex(emailRegex, "Please enter a valid work email address."),
+  countryCode: z.string(),
+  phone: z.string(),
   subject: z
     .string()
-    .transform((v) => v.trim())
-    .refine((v) => v.length > 0, { message: "Subject is required." })
-    .refine((v) => v.length >= 3, { message: "Subject must be at least 3 characters." })
-    .refine((v) => v.length <= 100, { message: "Subject cannot exceed 100 characters." }),
+    .min(1, "Subject is required.")
+    .min(3, "Subject must be at least 3 characters.")
+    .max(100, "Subject cannot exceed 100 characters."),
   message: z
     .string()
-    .transform((v) => v.trim())
-    .refine((v) => v.length > 0, { message: "Please enter your message." })
-    .refine((v) => v.length >= 10, { message: "Message must be at least 10 characters." })
-    .refine((v) => v.length <= 2000, { message: "Message cannot exceed 2000 characters." }),
+    .min(1, "Please enter your message.")
+    .min(10, "Message must be at least 10 characters.")
+    .max(2000, "Message cannot exceed 2000 characters."),
+}).superRefine((data, ctx) => {
+  const phoneErr = validatePhoneNumber(data.phone || "", data.countryCode || "+1");
+  if (phoneErr) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: phoneErr,
+      path: ["phone"],
+    });
+  }
 });
 
 type ContactFormValues = z.infer<typeof contactSchema>;
@@ -55,15 +112,24 @@ export const ContactPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [selectedCountryCode, setSelectedCountryCode] = useState<string>("+1");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+
+  const currentCountry = COUNTRY_CODES.find((c) => c.code === selectedCountryCode) || COUNTRY_CODES[0];
 
   const {
     register,
     handleSubmit,
+    setValue,
     reset,
     formState: { errors },
   } = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
     mode: "onTouched",
+    defaultValues: {
+      countryCode: "+1",
+      phone: "",
+    },
   });
 
   const onSubmit = async (data: ContactFormValues) => {
@@ -71,16 +137,22 @@ export const ContactPage: React.FC = () => {
     setIsSubmitting(true);
     setSubmitError(null);
 
+    const formattedPhone = selectedCountryCode === "+other"
+      ? data.phone.trim()
+      : `${selectedCountryCode} ${data.phone.replace(/\D/g, "")}`;
+
     try {
       await publicService.submitContactForm({
         name: `${data.firstName} ${data.lastName}`.trim(),
         email: data.email,
-        phone: data.phone,
+        phone: formattedPhone,
         subject: data.subject,
         message: data.message,
       });
       setSuccess(true);
       reset();
+      setPhoneNumber("");
+      setSelectedCountryCode("+1");
     } catch (err: any) {
       setSubmitError(err?.message || "Failed to send message. Please check your network connection and try again.");
     } finally {
@@ -269,19 +341,57 @@ export const ContactPage: React.FC = () => {
 
                       <div className="space-y-2">
                         <label htmlFor="phone" className="block text-sm font-medium text-muted-foreground">
-                          Phone <span className="text-destructive">*</span>
+                          Phone Number <span className="text-destructive">*</span>
                         </label>
-                        <input 
-                          id="phone" 
-                          type="tel"
-                          {...register("phone")} 
-                          aria-invalid={!!errors.phone}
-                          className={`w-full h-11 px-3.5 py-2.5 rounded-md bg-background border ${errors.phone ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground transition-colors`} 
-                          placeholder="+1 (555) 123-4567"
-                        />
+                        <div className="flex gap-2">
+                          <select
+                            id="countryCode"
+                            value={selectedCountryCode}
+                            onChange={(e) => {
+                              const newCode = e.target.value;
+                              setSelectedCountryCode(newCode);
+                              setValue("countryCode", newCode, { shouldValidate: true });
+                              const clamped = clampPhoneNumber(phoneNumber, newCode);
+                              setPhoneNumber(clamped);
+                              setValue("phone", clamped, { shouldValidate: true });
+                            }}
+                            className="h-11 px-3 rounded-md bg-background border border-input focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground transition-colors cursor-pointer shrink-0 font-medium"
+                            style={{
+                              backgroundColor: "#050811",
+                              color: "#f8fafc",
+                              border: "1px solid rgba(140, 174, 187, 0.25)",
+                              minWidth: "140px",
+                              maxWidth: "155px",
+                            }}
+                          >
+                            {COUNTRY_CODES.map((c) => (
+                              <option key={c.code} value={c.code} style={{ backgroundColor: "#050811", color: "#f8fafc" }}>
+                                {c.flag} {c.code}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="flex-1">
+                            <input 
+                              id="phone" 
+                              type="tel"
+                              value={phoneNumber}
+                              maxLength={currentCountry.digitsMax}
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(/\D/g, "");
+                                const clamped = raw.slice(0, currentCountry.digitsMax);
+                                setPhoneNumber(clamped);
+                                setValue("phone", clamped, { shouldValidate: true });
+                              }}
+                              aria-invalid={!!errors.phone}
+                              className={`w-full h-11 px-3.5 py-2.5 rounded-md bg-background border ${errors.phone ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground font-mono transition-colors`} 
+                              placeholder={currentCountry.placeholder}
+                            />
+                          </div>
+                        </div>
                         {errors.phone && (
                           <p className="text-xs text-destructive mt-1 flex items-center gap-1">
-                            {errors.phone.message}
+                            <AlertCircle size={13} className="shrink-0" />
+                            <span>{errors.phone.message}</span>
                           </p>
                         )}
                       </div>
