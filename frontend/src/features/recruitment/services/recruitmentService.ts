@@ -1,5 +1,6 @@
 import axiosClient from "../../../api/axiosClient";
 import API_ENDPOINTS from "../../../api/endpoints";
+import APP_CONFIG from "../../../app/config/app.config";
 
 export interface JobVacancy {
   id: number;
@@ -159,6 +160,14 @@ export const recruitmentService = {
    */
   updateApplicationStage: async (trackingCode: string, stage: string): Promise<CandidateApplication> => {
     const data = await axiosClient.patch<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_STAGE(trackingCode), { stage });
+    return data;
+  },
+
+  /**
+   * Get signed URL for downloading a candidate's resume
+   */
+  getApplicationResumeUrl: async (trackingCode: string): Promise<{ download_url: string }> => {
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_RESUME(trackingCode));
     return data;
   },
 
