@@ -19,10 +19,10 @@ interface KpiCardProps {
 }
 
 const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent = "#63f5e8", hint }) => (
-  <Card glowOnHover>
-    <h3 style={{ margin: 0, fontSize: "0.9rem", color: "#94a3b8" }}>{label}</h3>
-    <p style={{ fontSize: "2.25rem", fontWeight: 600, color: accent, margin: "0.5rem 0 0 0" }}>{value}</p>
-    {hint && <span style={{ color: "#64748b", fontSize: "0.8rem" }}>{hint}</span>}
+  <Card glowOnHover style={{ padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", gap: "0.35rem", boxSizing: "border-box" }}>
+    <h3 style={{ margin: 0, fontSize: "0.85rem", color: "#94a3b8", fontWeight: 500, lineHeight: 1.2 }}>{label}</h3>
+    <p style={{ fontSize: "2.25rem", fontWeight: 600, color: accent, margin: "0.25rem 0", lineHeight: 1.1 }}>{value}</p>
+    {hint && <span style={{ color: "#64748b", fontSize: "0.78rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{hint}</span>}
   </Card>
 );
 
@@ -35,7 +35,7 @@ const MODULES = [
 ];
 
 const PortalKpiGrid: React.FC<{ stats: any }> = ({ stats }) => (
-  <div style={{ display: "grid", gap: "1.5rem" }} className="grid-responsive">
+  <div style={{ display: "grid", gap: "1.25rem", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", width: "100%" }}>
     <KpiCard label="Open Tickets" value={stats.open} hint="Open or assigned" />
     <KpiCard label="In Progress" value={stats.inProgress} accent="#63f5e8" hint="Currently being worked on" />
     <KpiCard label="Awaiting Client" value={stats.awaitingClient} accent="#c4b5fd" hint="Waiting on your input" />
@@ -253,8 +253,6 @@ export const Dashboard: React.FC = () => {
       ) : (
         <EmptyState title="No dashboard data" />
       )}
-
-      <PortalAccountSummaryCard profile={profile} />
     </div>
   );
 };

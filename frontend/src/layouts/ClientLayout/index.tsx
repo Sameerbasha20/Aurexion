@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, LifeBuoy, UserCircle } from "lucide-react";
+import { LayoutDashboard, Briefcase, MessageSquareCode, FolderLock, LifeBuoy, UserCircle } from "lucide-react";
 import Header from "../../components/common/Header";
 import Sidebar from "../../components/common/Sidebar";
 import Footer from "../../components/common/Footer";
@@ -12,6 +12,9 @@ interface ClientLayoutProps {
 
 const MOBILE_NAV = [
   { title: "Dashboard", path: "/portal/dashboard", icon: LayoutDashboard },
+  { title: "Projects", path: "/portal/projects", icon: Briefcase },
+  { title: "Requests", path: "/portal/requests", icon: MessageSquareCode },
+  { title: "Documents", path: "/portal/documents", icon: FolderLock },
   { title: "Support", path: "/portal/support", icon: LifeBuoy },
   { title: "Profile", path: "/portal/profile", icon: UserCircle },
 ];
