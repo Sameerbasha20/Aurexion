@@ -1,0 +1,58 @@
+@keyframes pulse-cyan {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--color-cyan-glow), inset 0 0 2px var(--color-cyan-glow);
+  }
+  50% {
+    box-shadow: 0 0 15px var(--color-cyan), inset 0 0 5px var(--color-cyan);
+  }
+}
+
+@keyframes signal-drift {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse-slow {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-pulse-cyan {
+  animation: pulse-cyan 3s infinite ease-in-out;
+}
+
+.animate-drift {
+  animation: signal-drift 6s infinite ease-in-out;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s infinite linear;
+}
+
+.animate-spin-reverse-slow {
+  animation: spin-reverse-slow 25s infinite linear;
+}
+
+.transition-all {
+  transition: all var(--transition-normal);
+}

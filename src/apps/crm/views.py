@@ -6,11 +6,14 @@ import django.db.models
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 from apps.authentication.audit import get_model_state, log_audit_event
 from apps.authentication.models import AuditLog
@@ -28,6 +31,7 @@ from apps.crm.serializers import (
     LeadSerializer,
     LeadStatusTransitionSerializer,
     LeadUpdateSerializer,
+    PublicLeadCreateSerializer,
 )
 from apps.crm.services import (
     add_note,
@@ -42,6 +46,7 @@ from apps.crm.services import (
     qualify_lead,
     reopen_lost_lead,
     schedule_followup,
+    schedule_meeting_and_notify,
     update_followup,
     update_note,
 )
@@ -333,10 +338,40 @@ class LeadViewSet(viewsets.ModelViewSet):
     @extend_schema(tags=["CRM Leads"], responses=LeadSerializer)
     @action(detail=True, methods=["post"])
     def won(self, request, pk=None):
-        """Mark a lead as WON (valid from NEGOTIATION)."""
+        """Mark a lead as WON."""
         lead = self.get_object()
         lead = mark_lead_won(lead=lead, actor=request.user, request=request)
         return Response(LeadSerializer(lead, context=self.get_serializer_context()).data)
+
+    @action(detail=True, methods=["post"], url_path="schedule-meeting")
+    def schedule_meeting(self, request, pk=None):
+        """Schedule a meeting with client, record follow-up, and dispatch email notification."""
+        lead = self.get_object()
+        scheduled_at = request.data.get("scheduled_at")
+        follow_up_type = request.data.get("follow_up_type", "meeting")
+        meeting_link = request.data.get("meeting_link", "")
+        notes = request.data.get("notes", "")
+
+        if not scheduled_at:
+            return Response({"scheduled_at": ["A scheduled date and time is required."]}, status=status.HTTP_400_BAD_REQUEST)
+
+        followup = schedule_meeting_and_notify(
+            lead=lead,
+            scheduled_at=scheduled_at,
+            follow_up_type=follow_up_type,
+            meeting_link=meeting_link,
+            notes=notes,
+            actor=request.user,
+            request=request,
+        )
+
+        return Response({
+            "message": f"Meeting scheduled and email dispatched to {lead.email or lead.name}.",
+            "followup_id": followup.id,
+            "scheduled_at": followup.scheduled_at,
+            "meeting_link": meeting_link,
+            "lead": LeadSerializer(lead, context=self.get_serializer_context()).data,
+        })
 
     @extend_schema(tags=["CRM Leads"], request=LeadLostSerializer, responses=LeadSerializer)
     @action(detail=True, methods=["post"])
@@ -478,3 +513,38 @@ class LeadViewSet(viewsets.ModelViewSet):
         response = StreamingHttpResponse(_lead_csv_rows(queryset), content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="leads_export.csv"'
         return response
+
+
+class PublicLeadCreateView(APIView):
+    """
+    Public endpoint for form submissions (estimator, RFP, contact forms).
+    No authentication required. Creates a lead with status NEW and source from form.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    @extend_schema(
+        tags=["Public Forms"],
+        summary="Submit a lead from public form",
+        request=PublicLeadCreateSerializer,
+        responses={201: LeadSerializer},
+        auth=[]
+    )
+    def post(self, request):
+        serializer = PublicLeadCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Create lead with system user as creator (or None)
+        from django.contrib.auth.models import User
+        system_user = User.objects.filter(is_superuser=True).first()
+
+        # Pass validated_data directly - source is already in it
+        lead = create_lead(
+            actor=system_user,
+            request=request,
+            **serializer.validated_data,
+        )
+
+        # Notify BDM (in a real app, this could be a signal or async task)
+        # For now, we just return the created lead
+        return Response(LeadSerializer(lead, context={'request': request}).data, status=status.HTTP_201_CREATED)

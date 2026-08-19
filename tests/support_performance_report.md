@@ -1,16 +1,16 @@
 # Support Module Performance Report
 
-- **Date:** 2026-08-13 15:12:55 UTC
-- **Backend:** PostgreSQL (postgresql)
+- **Date:** 2026-08-17 13:09:46 UTC
+- **Backend:** PostgreSQL (sqlite)
 - **Target:** average response < 500 ms
 - **Iterations:** 50 per endpoint
 - **N+1 check:** {1: 2, 5: 2, 15: 2}
 
 | Endpoint | Avg | Min | Max | P50 | P95 | P99 | DB time avg | Query avg | Result |
 |---|---|---|---|---|---|---|---|---|---|
-| POST /api/v1/tickets/ | 217.10 ms | 211.74 ms | 225.91 ms | 217.01 ms | 222.03 ms | 224.54 ms | 210.54 ms | 4.0 | **PASS** |
-| GET /api/v1/tickets/ | 120.51 ms | 114.51 ms | 167.54 ms | 119.02 ms | 128.00 ms | 148.84 ms | 108.32 ms | 2.0 | **PASS** |
-| GET /api/v1/tickets/{id}/ | 117.38 ms | 107.32 ms | 366.99 ms | 112.31 ms | 116.72 ms | 247.57 ms | 110.58 ms | 2.0 | **PASS** |
-| PATCH /api/v1/tickets/{id}/ | 220.83 ms | 214.67 ms | 230.88 ms | 220.69 ms | 224.35 ms | 230.45 ms | 212.70 ms | 4.0 | **PASS** |
+| POST /api/v1/tickets/ | 11.87 ms | 9.99 ms | 16.39 ms | 11.52 ms | 15.32 ms | 16.35 ms | 2.12 ms | 4.0 | **PASS** |
+| GET /api/v1/tickets/ | 9.47 ms | 6.48 ms | 22.42 ms | 8.73 ms | 13.75 ms | 19.11 ms | 0.00 ms | 2.0 | **PASS** |
+| GET /api/v1/tickets/{id}/ | 5.18 ms | 2.87 ms | 8.76 ms | 4.79 ms | 8.21 ms | 8.61 ms | 0.02 ms | 2.0 | **PASS** |
+| PATCH /api/v1/tickets/{id}/ | 12.75 ms | 9.63 ms | 19.63 ms | 11.69 ms | 18.40 ms | 19.53 ms | 4.72 ms | 4.0 | **PASS** |
 
 **Overall: PASS**

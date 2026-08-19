@@ -2,12 +2,17 @@ from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from apps.core.views import health_check
 
+@require_GET
 def devtools_empty_view(request):
     return JsonResponse({}, status=200)
 
+
 urlpatterns = [
     path('.well-known/appspecific/com.chrome.devtools.json', devtools_empty_view),
+    path('', health_check, name='health-check'),
     path('admin/', admin.site.urls),
     path('api/v1/', include('apps.authentication.urls')),
     path('api/v1/', include('apps.administration.urls')),
@@ -19,4 +24,9 @@ urlpatterns = [
     path('api/v1/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
+
+handler400 = 'config.views.error_400'
+handler403 = 'config.views.error_403'
+handler404 = 'config.views.error_404'
+handler500 = 'config.views.error_500'
 
