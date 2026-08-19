@@ -33,8 +33,8 @@ const contactSchema = z.object({
     .refine((v) => phoneRegex.test(v), { message: "Phone number contains invalid characters." })
     .refine((v) => {
       const digits = v.replace(/\D/g, "");
-      return digits.length >= 7 && digits.length <= 15;
-    }, { message: "Please enter a valid phone number." }),
+      return digits.length >= 10 && digits.length <= 11;
+    }, { message: "Please enter a valid phone number (10 to 11 digits)." }),
   subject: z
     .string()
     .transform((v) => v.trim())
@@ -150,8 +150,8 @@ export const ContactPage: React.FC = () => {
                 <div>
                   <h3 className="font-semibold text-foreground text-sm sm:text-base mb-0.5">Office</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    123 Innovation Street<br />
-                    San Francisco, CA 94102
+                    100 Innovation Way, Suite 400<br />
+                    San Francisco, CA 94105
                   </p>
                 </div>
               </div>

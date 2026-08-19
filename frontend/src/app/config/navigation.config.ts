@@ -35,7 +35,10 @@ export const SIDEBAR_NAV: Record<string, NavItem[]> = {
   ],
   CLIENT: [
     { title: "Dashboard", path: "/portal/dashboard", icon: "LayoutDashboard" },
-    { title: "Support Tickets", path: "/portal/support", icon: "MessageSquareCode" },
+    { title: "Projects", path: "/portal/projects", icon: "Briefcase" },
+    { title: "Requests", path: "/portal/requests", icon: "MessageSquareCode" },
+    { title: "Documents", path: "/portal/documents", icon: "FolderLock" },
+    { title: "Support Tickets", path: "/portal/support", icon: "LifeBuoy" },
     { title: "User Profile", path: "/portal/profile", icon: "UserCircle" },
   ],
   SALES_EXECUTIVE: [
