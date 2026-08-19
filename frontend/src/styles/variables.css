@@ -16,6 +16,9 @@
   --color-cyan-glow: rgba(99, 245, 232, 0.4);
   --color-cyan-dark: #0f9e93;
 
+  --color-destructive: #ef4444;
+  --color-destructive-dim: rgba(239, 68, 68, 0.15);
+
   /* Typography Fonts */
   --font-display: 'Space Grotesk', 'Outfit', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
