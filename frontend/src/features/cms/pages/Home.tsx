@@ -189,12 +189,12 @@ export default function Home() {
     <div className="aurexion">
       <main>
 
-        {/* ── 01 HERO ──────────────────────────────────────────────────── */}
+        {/* ── HERO ──────────────────────────────────────────────────────── */}
         <section id="top" className="hero section-dark">
           <HeroVideoBackground videoUrl="/videos/hero-bg.mp4" />
           <div className="hero-grid" />
           <div className="hero-copy reveal">
-            <p className="eyebrow"><Circle size={8} fill="currentColor" /> 01 / DIGITAL INTELLIGENCE</p>
+            <p className="eyebrow"><Circle size={8} fill="currentColor" /> DIGITAL INTELLIGENCE</p>
             <h1>ENGINEERING<br /><em>WHAT COMES NEXT.</em></h1>
             <p className="hero-sub">AI. Software. Cloud. Data.<br />Engineered for the enterprise.</p>
             <div className="hero-ctas">
@@ -205,9 +205,9 @@ export default function Home() {
           <div className="scroll-cue"><span>SCROLL TO EXPLORE</span><ArrowDown size={15} /></div>
         </section>
 
-        {/* ── 02 STATS ─────────────────────────────────────────────────── */}
+        {/* ── STATS ─────────────────────────────────────────────────────── */}
         <section className="stats-section section-dark">
-          <div className="section-index">02 / IMPACT METRICS</div>
+          <div className="section-index">IMPACT METRICS</div>
           <div className="stats-grid">
             {STATS.map((s) => (
               <div key={s.label} className="stat-item">
@@ -219,9 +219,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── 03 STATEMENT ─────────────────────────────────────────────── */}
+        {/* ── STATEMENT ─────────────────────────────────────────────────── */}
         <section id="about" className="statement section-dark section-padding">
-          <div className="section-index">03 / THE SHIFT</div>
+          <div className="section-index">THE SHIFT</div>
           <div className="statement-copy">
             <p>Complex problems.</p>
             <h2>Intelligent systems.</h2>
@@ -231,9 +231,9 @@ export default function Home() {
           <div className="orbital-orb"><span /><span /><span /></div>
         </section>
 
-        {/* ── 04 SERVICES — 6 GROUPED CATEGORIES ──────────────────────── */}
+        {/* ── SERVICES — 6 GROUPED CATEGORIES ──────────────────────────── */}
         <section id="services" className="services-grouped section-dark">
-          <div className="section-index">04 / WHAT WE ENGINEER</div>
+          <div className="section-index">WHAT WE ENGINEER</div>
           <div className="section-heading split-heading">
             <div>
               <p className="eyebrow">SERVICES & CAPABILITIES</p>
@@ -294,9 +294,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── 05 AI IMMERSIVE ──────────────────────────────────────────── */}
+        {/* ── AI IMMERSIVE ──────────────────────────────────────────────── */}
         <section id="ai" className="immersive-section ai-section section-dark" style={{ backgroundImage: "url(/manus-storage/aurexion-neural_ae3aae0d.png)" }}>
-          <div className="section-index">05 / AI & INTELLIGENCE</div>
+          <div className="section-index">AI & INTELLIGENCE</div>
           <div className="immersive-overlay" />
           <div className="immersive-content">
             <p className="eyebrow">AI & INTELLIGENCE</p>
@@ -311,9 +311,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── 06 INDUSTRIES — ALL 18 ───────────────────────────────────── */}
+        {/* ── INDUSTRIES — ALL 18 ───────────────────────────────────────── */}
         <section id="industries" className="section-dark section-padding">
-          <div className="section-index">06 / INDUSTRIES</div>
+          <div className="section-index">INDUSTRIES</div>
           <div className="section-heading split-heading">
             <div>
               <p className="eyebrow">BUILT FOR COMPLEX INDUSTRIES</p>
@@ -371,9 +371,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── 07 CASE STUDIES ──────────────────────────────────────────── */}
+        {/* ── CASE STUDIES ──────────────────────────────────────────────── */}
         <section id="work" className="work-section section-dark section-padding">
-          <div className="section-index">07 / ENGINEERED IN THE REAL WORLD</div>
+          <div className="section-index">ENGINEERED IN THE REAL WORLD</div>
           <div className="work-header">
             <div>
               <p className="eyebrow">SELECTED WORK</p>
@@ -441,9 +441,9 @@ export default function Home() {
           )}
         </section>
 
-        {/* ── 08 WHY AUREXION ──────────────────────────────────────────── */}
+        {/* ── WHY AUREXION ──────────────────────────────────────────────── */}
         <section className="principles section-dark section-padding">
-          <div className="section-index">08 / WHY AUREXION</div>
+          <div className="section-index">WHY AUREXION</div>
           <div className="principles-heading">
             <p className="eyebrow">THE DIFFERENCE</p>
             <h2>We don't just<br />implement technology.</h2>
@@ -461,9 +461,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── 09 INTERACTIVE ESTIMATOR ─────────────────────────────────── */}
+        {/* ── INTERACTIVE ESTIMATOR ─────────────────────────────────────── */}
         <section id="estimator" className="estimator-section section-dark">
-          <div className="section-index">09 / ESTIMATE YOUR PROJECT</div>
+          <div className="section-index">ESTIMATE YOUR PROJECT</div>
           <div className="estimator-wrap">
             <div className="section-heading" style={{ margin: 0 }}>
               <p className="eyebrow">INTERACTIVE REQUIREMENT ESTIMATOR</p>
@@ -481,9 +481,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── 10 INSIGHTS ──────────────────────────────────────────────── */}
+        {/* ── INSIGHTS ──────────────────────────────────────────────────── */}
         <section id="insights" className="insights section-dark section-padding">
-          <div className="section-index">10 / INSIGHTS</div>
+          <div className="section-index">INSIGHTS</div>
           <div className="work-header">
             <div>
               <p className="eyebrow">THOUGHTS ON WHAT'S NEXT</p>
