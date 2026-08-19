@@ -336,3 +336,24 @@ class LeadNote(models.Model):
 
     def __str__(self):
         return f"Note for {self.lead.name}"
+
+
+class EstimatorSubmission(models.Model):
+    """
+    Model for storing requirement calculation estimates submitted via the Interactive Estimator tool.
+    """
+    project_scope = models.JSONField(default=list)
+    platform_scale = models.CharField(max_length=50, default="medium")
+    user_scale = models.CharField(max_length=50, default="10k")
+    compliance_requirements = models.JSONField(default=list)
+    engineering_effort_hours = models.IntegerField(default=0)
+    indicative_budget_min = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    indicative_budget_max = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"EstimatorSubmission #{self.id} ({self.engineering_effort_hours} hrs)"
+

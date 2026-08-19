@@ -27,7 +27,7 @@ import {
 
 export const Dashboard: React.FC = () => {
   const { data, isLoading, error, refetch } = useSalesDashboard();
-  const { leads: assignedLeads, isLoading: leadsLoading } = useLeads({ page_size: 10 });
+  const { leads: assignedLeads, isLoading: leadsLoading } = useLeads({ page_size: 100 });
   const approvedAssignedLeads = assignedLeads.filter(
     (lead) => !!lead.assigned_to && lead.status !== "lost" && lead.status !== "LOST"
   );

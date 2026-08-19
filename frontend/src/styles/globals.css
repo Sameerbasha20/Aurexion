@@ -225,7 +225,7 @@ h1 em, h2 em, h3 em { font-style: normal; color: #b7c4c5; }
 .nav-logo { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
 .nav-logo-mark { width: 26px; height: 26px; object-fit: contain; }
 .nav-logo-text { font: 700 .88rem 'Space Grotesk', sans-serif; letter-spacing: .2em; color: #eef4f3; }
-.nav-desktop { display: flex; align-items: center; gap: .3rem; margin-left: auto; }
+.nav-desktop { display: flex; align-items: center; justify-content: flex-end; gap: .5rem; margin-left: auto; }
 .nav-item-wrap { position: relative; }
 .nav-link {
   display: inline-flex; align-items: center; gap: .35rem;

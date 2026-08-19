@@ -171,7 +171,8 @@ export const crmService = {
    * Fetch leads with optional query parameters (search, status, priority, ordering, pagination)
    */
   getLeads: async (params?: LeadQueryParams): Promise<LeadItem[]> => {
-    const response = await axiosClient.get<any, any>(API_ENDPOINTS.CRM.LEADS, { params });
+    const queryParams = { page_size: 500, ...params };
+    const response = await axiosClient.get<any, any>(API_ENDPOINTS.CRM.LEADS, { params: queryParams });
     if (Array.isArray(response)) {
       return response;
     }
