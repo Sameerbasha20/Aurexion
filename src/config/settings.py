@@ -196,6 +196,7 @@ else:
 # DRF Configuration
 
 REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.StandardResultsSetPagination',
     'DEFAULT_RENDERER_CLASSES': (
         'apps.core.renderers.StandardResponseJSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
