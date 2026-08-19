@@ -7,9 +7,9 @@ from apps.cms.views import (
 
 router = DefaultRouter()
 # Admin routes
-router.register(r'cms/admin/service', AdminServiceViewSet, basename='admin-service')
+router.register(r'cms/admin/services', AdminServiceViewSet, basename='admin-service')
 router.register(r'cms/admin/case-studies', AdminCaseStudyViewSet, basename='admin-case-studies')
-router.register(r'cms/admin/industry', AdminIndustryViewSet, basename='admin-industry')
+router.register(r'cms/admin/industries', AdminIndustryViewSet, basename='admin-industry')
 router.register(r'cms/admin/categories', AdminCategoryViewSet, basename='admin-categories')
 router.register(r'cms/admin/blog', AdminBlogPostViewSet, basename='admin-blog')
 
