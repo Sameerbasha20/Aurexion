@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.portal.models import SupportTicket
+from apps.portal.models import SupportTicket, ClientProject, ClientRequest, ClientDocument
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -202,3 +202,41 @@ class AdministratorTicketUpdateSerializer(serializers.ModelSerializer):
         if new_status == 'closed' and attrs.get('resolution_notes', '') == '':
             raise serializers.ValidationError("Resolution notes are required to close a ticket.")
         return attrs
+
+
+class ClientProjectSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = ClientProject
+        fields = (
+            'id', 'title', 'description', 'status', 'status_display',
+            'progress_percentage', 'start_date', 'target_completion_date',
+            'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+
+class ClientRequestSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = ClientRequest
+        fields = (
+            'id', 'title', 'category', 'description', 'priority', 'status', 'status_display',
+            'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'status', 'created_at', 'updated_at')
+
+
+class ClientDocumentSerializer(serializers.ModelSerializer):
+    document_type_display = serializers.CharField(source='get_document_type_display', read_only=True)
+    project_title = serializers.CharField(source='project.title', read_only=True, allow_null=True)
+
+    class Meta:
+        model = ClientDocument
+        fields = (
+            'id', 'project', 'project_title', 'title', 'document_type',
+            'document_type_display', 'file_url', 'file_size', 'uploaded_at'
+        )
+        read_only_fields = ('id', 'uploaded_at')

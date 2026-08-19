@@ -1,7 +1,11 @@
+import logging
 from django.db import models
 from django.contrib.auth import get_user_model
 from apps.portal.models import SupportTicket
 from apps.authentication.audit import log_audit_event
+from apps.core.services import send_ticket_resolved_email
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -148,6 +152,12 @@ class SupportTicketService:
                 updated_state={'status': 'closed', 'resolution_notes': resolution_notes},
                 request=request
             )
+
+        # Send ticket resolved email to client
+        try:
+            send_ticket_resolved_email(ticket)
+        except Exception:
+            logger.exception(f"Failed to send ticket resolved email for ticket {ticket.ticket_id}")
 
         return ticket
 
