@@ -10,14 +10,13 @@ from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 
 from apps.authentication.audit import get_model_state, log_audit_event
 from apps.authentication.models import AuditLog
-from apps.crm.models import Lead, LeadFollowUp, LeadNote
+from apps.crm.models import Lead, LeadFollowUp, LeadNote, EstimatorSubmission
 from apps.crm.permissions import CanAccessLead, CanAssignLead, CanCreateLead, CanDeleteLead
 from apps.crm.serializers import (
     LeadActivitySerializer,
@@ -88,12 +87,6 @@ def _lead_csv_rows(queryset):
         yield buffer.getvalue()
 
 
-class LeadPagination(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = "page_size"
-    max_page_size = 100
-
-
 def _open_overdue_followup_subquery():
     return LeadFollowUp.objects.filter(
         lead=OuterRef("pk"),
@@ -144,7 +137,6 @@ class LeadViewSet(viewsets.ModelViewSet):
     - All sensitive operations are written to the AuditLog (module='crm').
     """
 
-    pagination_class = LeadPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["reference_id", "name", "company", "email", "phone"]
     ordering_fields = [
@@ -176,21 +168,18 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        from django.db.models import Count, Subquery, OuterRef, IntegerField
-        
-        follow_up_subq = LeadFollowUp.objects.filter(lead=OuterRef("pk")).values("lead").annotate(c=Count("*")).values("c")[:1]
-        note_subq = LeadNote.objects.filter(lead=OuterRef("pk")).values("lead").annotate(c=Count("*")).values("c")[:1]
+        from django.db.models import Count
         
         queryset = Lead.objects.select_related("created_by", "assigned_to").annotate(
-            follow_up_count=Subquery(follow_up_subq, output_field=IntegerField()),
-            note_count=Subquery(note_subq, output_field=IntegerField()),
+            follow_up_count=Count("follow_ups", distinct=True),
+            note_count=Count("notes", distinct=True),
         )
 
         role = getattr(getattr(user, "profile", None), "role", None)
-        if user.is_superuser or role in ("super_admin", "administrator", "bdm"):
-            pass
-        elif role == "sales_executive":
+        if role == "sales_executive":
             queryset = queryset.filter(assigned_to=user)
+        elif user.is_superuser or role in ("super_admin", "administrator", "bdm"):
+            pass
         else:
             queryset = queryset.none()
 
@@ -548,3 +537,58 @@ class PublicLeadCreateView(APIView):
         # Notify BDM (in a real app, this could be a signal or async task)
         # For now, we just return the created lead
         return Response(LeadSerializer(lead, context={'request': request}).data, status=status.HTTP_201_CREATED)
+
+
+class EstimatorCalculateView(APIView):
+    """
+    BUG-05 Fix: Interactive Requirement Estimator calculation API endpoint.
+    Accepts project scope, platform scale, user scale, and compliance requirements,
+    calculates effort hours and budget range, and saves EstimatorSubmission record.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    @extend_schema(
+        tags=["Estimator"],
+        summary="Calculate interactive project requirement estimate and create submission record",
+        responses={201: dict},
+        auth=[]
+    )
+    def post(self, request):
+        data = request.data or {}
+        scope = data.get("project_scope", [])
+        if isinstance(scope, str):
+            scope = [scope]
+        platform = data.get("platform_scale", "medium")
+        user_scale = data.get("user_scale", "10k")
+        compliance = data.get("compliance_requirements", [])
+        if isinstance(compliance, str):
+            compliance = [compliance]
+
+        base_hours = max(len(scope), 1) * 80
+        multiplier = 1.5 if str(platform).lower() == "large" else 1.0
+        if any(str(c).lower() in [str(x).lower() for x in compliance] for c in ["hipaa", "soc2", "gdpr"]):
+            multiplier += 0.3
+        
+        hours = int(base_hours * multiplier)
+        min_budget = hours * 65
+        max_budget = hours * 95
+
+        submission = EstimatorSubmission.objects.create(
+            project_scope=scope,
+            platform_scale=platform,
+            user_scale=user_scale,
+            compliance_requirements=compliance,
+            engineering_effort_hours=hours,
+            indicative_budget_min=min_budget,
+            indicative_budget_max=max_budget
+        )
+
+        return Response({
+            "submission_id": submission.id,
+            "engineering_effort_hours": hours,
+            "indicative_budget_min": str(min_budget),
+            "indicative_budget_max": str(max_budget),
+            "disclaimer": "This estimate represents a preliminary requirement assessment and does not constitute a binding legal proposal."
+        }, status=status.HTTP_201_CREATED)
+

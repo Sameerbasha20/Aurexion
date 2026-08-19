@@ -132,6 +132,8 @@ def create_lead(*, actor, request=None, **data):
     handled with bounded retries inside an atomic savepoint.
     """
     assignee = data.pop("assigned_to", None)
+    if assignee is None and actor and get_user_role(actor) == "sales_executive":
+        assignee = actor
     if assignee is not None:
         validate_assignable_user(assignee)
 

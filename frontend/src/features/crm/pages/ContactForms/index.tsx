@@ -84,9 +84,13 @@ export const ContactForms: React.FC = () => {
 
   const contactLeads = leads.filter((lead) => {
     const isContactSource =
+      !lead.source ||
       lead.source === "contact_form" ||
       lead.source === "website_form" ||
-      lead.source === "website";
+      lead.source === "website" ||
+      lead.source === "rfp_form" ||
+      lead.source === "request_quote" ||
+      lead.source === "estimator";
 
     const matchesSearch =
       !searchTerm ||
@@ -295,7 +299,7 @@ export const ContactForms: React.FC = () => {
 
       {/* Schedule Meeting Modal */}
       {selectedMeetingLead && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
           <Card borderAccent style={{ width: "100%", maxWidth: "520px", padding: "2rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
               <div>

@@ -105,6 +105,7 @@ class LoginView(APIView):
         user = authenticate(username=username, password=password)
 
         if user is not None:
+            user = User.objects.select_related('profile').get(id=user.id)
             if user.is_active:
                 clear_failed_attempts(username, ip)
                 refresh = RefreshToken.for_user(user)

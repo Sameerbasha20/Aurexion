@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "wouter";
 
 export const Footer: React.FC = () => {
   return (
@@ -26,9 +27,15 @@ export const Footer: React.FC = () => {
           <span style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 500, color: "#f8fafc" }}>AUREXION</span>
         </div>
         <div style={{ display: "flex", gap: "1.5rem" }}>
-          <span>Privacy Policy</span>
-          <span>Terms of Service</span>
-          <span>Support</span>
+          <Link href="/privacy-policy">
+            <span style={{ color: "#94a3b8", cursor: "pointer", transition: "color 150ms" }} onMouseOver={(e) => e.currentTarget.style.color = "#63f5e8"} onMouseOut={(e) => e.currentTarget.style.color = "#94a3b8"}>Privacy Policy</span>
+          </Link>
+          <Link href="/terms">
+            <span style={{ color: "#94a3b8", cursor: "pointer", transition: "color 150ms" }} onMouseOver={(e) => e.currentTarget.style.color = "#63f5e8"} onMouseOut={(e) => e.currentTarget.style.color = "#94a3b8"}>Terms of Service</span>
+          </Link>
+          <Link href="/portal/support">
+            <span style={{ color: "#94a3b8", cursor: "pointer", transition: "color 150ms" }} onMouseOver={(e) => e.currentTarget.style.color = "#63f5e8"} onMouseOut={(e) => e.currentTarget.style.color = "#94a3b8"}>Support</span>
+          </Link>
         </div>
       </div>
       <div style={{

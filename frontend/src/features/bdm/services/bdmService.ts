@@ -92,11 +92,12 @@ export const bdmService = {
     return axiosClient.get<any, any>(API_ENDPOINTS.BDM.DASHBOARD);
   },
 
-  getLeads: async (params?: { page?: number; status?: string; search?: string }): Promise<LeadsResponse> => {
+  getLeads: async (params?: { page?: number; status?: string; search?: string; source?: string }): Promise<LeadsResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.status) queryParams.append("status", params.status);
     if (params?.search) queryParams.append("search", params.search);
+    if (params?.source) queryParams.append("source", params.source);
     const url = `${API_ENDPOINTS.CRM.LEADS}?${queryParams.toString()}`;
     return axiosClient.get<any, any>(url);
   },

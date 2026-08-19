@@ -78,6 +78,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',
+    'config.middleware.SecurityHeadersMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'config.middleware.RequestBodySizeLimitMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -150,6 +152,8 @@ if os.getenv('DB_ENGINE'):
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST'),
             'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 60,
+            'CONN_HEALTH_CHECKS': True,
         }
     }
 else:
@@ -159,6 +163,14 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+PASSWORD_HASHERS = [
+    'apps.authentication.hashers.FastPBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -214,6 +226,7 @@ else:
 # DRF Configuration
 
 REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.StandardResultsSetPagination',
     'DEFAULT_RENDERER_CLASSES': (
         'apps.core.renderers.StandardResponseJSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
@@ -260,6 +273,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Aurexion Enterprise Platform API',
     'DESCRIPTION': 'API documentation for Aurexion Technologies platform.',
     'VERSION': '1.0.0',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
     'SERVE_INCLUDE_SCHEMA': False,
     'ENUM_NAME_OVERRIDES': {
         'LeadStatusEnum': 'apps.crm.models.LeadStatus',

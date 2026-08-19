@@ -17,9 +17,9 @@ export const ServiceCardGrid: React.FC<ServiceCardGridProps> = ({ serviceSlugs }
         const title = service
           ? service.name
           : slug
-              .split("-")
-              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-              .join(" ");
+            .split("-")
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(" ");
 
         return (
           <Link

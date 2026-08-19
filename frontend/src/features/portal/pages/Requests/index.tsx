@@ -33,7 +33,7 @@ export const Requests: React.FC = () => {
 
   // Form state
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("General Request");
+  const [category, setCategory] = useState("Feature Enhancement");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
   const [submitting, setSubmitting] = useState(false);
@@ -67,6 +67,9 @@ export const Requests: React.FC = () => {
         priority,
       });
       setFeedback({ type: "success", text: "Request submitted successfully!" });
+      setTimeout(() => {
+        setFeedback(null);
+      }, 4000);
       setTitle("");
       setDescription("");
       setIsModalOpen(false);
@@ -85,16 +88,10 @@ export const Requests: React.FC = () => {
         title="Custom Service & Feature Requests"
         description="Submit custom scope additions, feature enhancements, or technical inquiries."
         actions={
-          <div style={{ display: "flex", gap: "0.75rem" }}>
-            <Button variant="outline" size="sm" onClick={fetchRequests}>
-              <RefreshCw size={14} style={{ marginRight: "0.35rem" }} />
-              Refresh
-            </Button>
-            <Button glow size="sm" onClick={() => setIsModalOpen(true)}>
-              <Plus size={14} style={{ marginRight: "0.35rem" }} />
-              Submit Request
-            </Button>
-          </div>
+          <Button glow size="sm" onClick={() => { setFeedback(null); setIsModalOpen(true); }}>
+            <Plus size={14} style={{ marginRight: "0.35rem" }} />
+            Submit Request
+          </Button>
         }
       />
 
@@ -107,11 +104,17 @@ export const Requests: React.FC = () => {
           borderRadius: "4px",
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between",
           gap: "0.5rem",
           fontSize: "0.85rem",
         }}>
-          {feedback.type === "success" ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
-          {feedback.text}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            {feedback.type === "success" ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
+            {feedback.text}
+          </div>
+          <button type="button" onClick={() => setFeedback(null)} style={{ background: "none", border: 0, color: "inherit", cursor: "pointer", display: "flex", alignItems: "center" }}>
+            <X size={16} />
+          </button>
         </div>
       )}
 
@@ -166,9 +169,9 @@ export const Requests: React.FC = () => {
 
       {/* New Request Modal */}
       {isModalOpen && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
+          <Card borderAccent style={{ width: "100%", maxWidth: "480px", maxHeight: "85vh", overflowY: "auto", padding: "1.75rem", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
               <h2 style={{ fontSize: "1.25rem", color: "#63f5e8", margin: 0 }}>Submit Custom Request</h2>
               <button type="button" onClick={() => setIsModalOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
                 <X size={20} />
@@ -176,7 +179,7 @@ export const Requests: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>REQUEST TITLE *</label>
                 <input
                   required
@@ -185,46 +188,52 @@ export const Requests: React.FC = () => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   style={{
-                    padding: "0.65rem",
+                    padding: "0.65rem 0.75rem",
                     backgroundColor: "#050811",
                     border: "1px solid rgba(140,174,187,0.25)",
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.88rem",
+                    outline: "none",
                   }}
                 />
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>CATEGORY</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Feature Request, Infrastructure, Customization"
+                <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   style={{
-                    padding: "0.65rem",
+                    padding: "0.65rem 0.75rem",
                     backgroundColor: "#050811",
                     border: "1px solid rgba(140,174,187,0.25)",
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.88rem",
+                    outline: "none",
                   }}
-                />
+                >
+                  <option value="Feature Enhancement">Feature Enhancement</option>
+                  <option value="Custom Scope Addition">Custom Scope Addition</option>
+                  <option value="Technical Inquiry">Technical Inquiry</option>
+                  <option value="SLA Upgrade">SLA Upgrade</option>
+                </select>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PRIORITY</label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
                   style={{
-                    padding: "0.65rem",
+                    padding: "0.65rem 0.75rem",
                     backgroundColor: "#050811",
                     border: "1px solid rgba(140,174,187,0.25)",
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.88rem",
+                    outline: "none",
                   }}
                 >
                   <option value="low">Low</option>
@@ -234,7 +243,7 @@ export const Requests: React.FC = () => {
                 </select>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DESCRIPTION</label>
                 <textarea
                   rows={4}
@@ -242,17 +251,19 @@ export const Requests: React.FC = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   style={{
-                    padding: "0.65rem",
+                    padding: "0.65rem 0.75rem",
                     backgroundColor: "#050811",
                     border: "1px solid rgba(140,174,187,0.25)",
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.85rem",
+                    outline: "none",
+                    resize: "vertical",
                   }}
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.75rem", flexShrink: 0 }}>
                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
                 <Button type="submit" glow disabled={submitting || !title.trim()}>
                   {submitting ? "Submitting..." : "Submit Request"}
