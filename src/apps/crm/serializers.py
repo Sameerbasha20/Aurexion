@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from apps.authentication.models import AuditLog
 from apps.crm.models import Lead, LeadFollowUp, LeadNote
+from django.utils.html import strip_tags
 
 
 class LeadSerializer(serializers.ModelSerializer):
@@ -57,6 +58,12 @@ class LeadSerializer(serializers.ModelSerializer):
             "updated_at",
             "last_contacted_at",
         ]
+
+    def validate(self, attrs):
+        for field in ['name', 'description', 'company', 'website', 'industry', 'source', 'subject']:
+            if field in attrs and isinstance(attrs[field], str):
+                attrs[field] = strip_tags(attrs[field])
+        return super().validate(attrs)
 
 
 class LeadCreateSerializer(LeadSerializer):

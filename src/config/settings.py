@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'config.middleware.SecurityHeadersMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -188,6 +189,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Aurexion Enterprise Platform API',
     'DESCRIPTION': 'API documentation for Aurexion Technologies platform.',
     'VERSION': '1.0.0',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
     'SERVE_INCLUDE_SCHEMA': False,
     'ENUM_NAME_OVERRIDES': {
         'LeadStatusEnum': 'apps.crm.models.LeadStatus',
