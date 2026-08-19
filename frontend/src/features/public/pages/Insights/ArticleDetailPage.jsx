@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, Link } from "wouter";
 import { blogPosts } from "../../../../data/blogPosts";
 import { ArticleHero } from "./components/Detail/ArticleHero";
 import { ReadingProgress } from "./components/Detail/ReadingProgress";
@@ -21,7 +21,7 @@ export const ArticleDetailPage = () => {
   }, [params.slug]);
 
   if (!article) {
-    setLocation("/not-found");
+    setLocation("/not-found", { replace: true });
     return null;
   }
 
@@ -54,12 +54,12 @@ export const ArticleDetailPage = () => {
               <p className="text-xs text-[#8da5ae] leading-relaxed mb-5">
                 Schedule a 1-on-1 architecture review with our principal engineers to evaluate your infrastructure.
               </p>
-              <a
+              <Link
                 href="/contact"
                 className="inline-flex items-center justify-center w-full py-2.5 px-4 bg-[#63f5e8] text-[#041014] text-xs font-mono font-bold rounded hover:bg-[#86f8ee] transition-colors"
               >
                 BOOK ARCHITECTURE REVIEW
-              </a>
+              </Link>
             </div>
           </aside>
 

@@ -16,6 +16,29 @@
 *, *::before, *::after {
   box-sizing: border-box;
 }
+
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 80rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
 html {
   scroll-behavior: smooth;
   background: #050811;
@@ -268,24 +291,32 @@ h1 em, h2 em, h3 em { font-style: normal; color: #b7c4c5; }
   display: grid; grid-template-columns: repeat(6, 1fr);
   gap: 0; padding: 2rem max(4vw, 1.5rem);
   max-width: 1600px; margin: 0 auto;
+  align-items: stretch;
 }
 .nav-mega-col {
-  padding: 0 1rem; border-right: 1px solid rgba(99,245,232,.08);
+  padding: 0 1.1rem; border-right: 1px solid rgba(99,245,232,.08);
+}
+.nav-mega-col:last-child {
+  border-right: none;
 }
 .nav-mega-cat {
   display: flex !important;
-  align-items: center;
-  gap: 0.65rem;
-  margin: 0 0 1rem;
-  font: 600 .75rem 'IBM Plex Mono', monospace;
-  letter-spacing: .12em;
+  align-items: flex-start;
+  min-height: 2.85rem;
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(99,245,232,.12);
+  font: 600 .72rem 'IBM Plex Mono', monospace;
+  letter-spacing: .08em;
+  line-height: 1.3;
   color: #63f5e8;
   text-decoration: none;
   cursor: pointer;
-  transition: color .15s;
+  transition: color .15s, border-color .15s;
 }
 .nav-mega-cat:hover {
   color: #ffffff;
+  border-bottom-color: rgba(99,245,232,.4);
 }
 .nav-mega-num {
   color: #63f5e8;
@@ -1011,4 +1042,271 @@ h1 em, h2 em, h3 em { font-style: normal; color: #b7c4c5; }
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   UNIVERSAL MULTI-DEVICE RESPONSIVE SYSTEM
+   Supports: Wearables / Smartwatches (<360px), Mobile (360px-640px),
+   Tablets (641px-1024px), Laptops (1025px-1440px), Desktops (>1440px)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Universal Fluid Asset & Text Boundary Safeguards */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  -webkit-text-size-adjust: 100%;
+}
+
+img, video, iframe, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+pre, code {
+  max-width: 100%;
+  overflow-x: auto;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Base Container Gutter Fluid Scaling */
+:root {
+  --site-pad: clamp(1rem, 4vw, 3rem);
+}
+
+/* ── 1. Extra Small / Smartwatches / Mini Mobile (< 380px) ─── */
+@media (max-width: 380px) {
+  :root {
+    --site-pad: 0.75rem;
+  }
+  
+  .aurexion-nav-inner {
+    padding: 0.75rem 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .nav-logo-text {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+  }
+  
+  .hero-copy h1 {
+    font-size: clamp(2rem, 11vw, 2.75rem) !important;
+    line-height: 1.05 !important;
+  }
+  
+  .hero-sub {
+    font-size: 0.82rem !important;
+  }
+  
+  .hero-ctas, .subpage-hero-ctas {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 0.6rem !important;
+  }
+  
+  .signal-button, .text-button, .nav-cta-primary, .nav-cta-secondary {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 0.75rem 1rem !important;
+  }
+  
+  .stat-number {
+    font-size: 2.5rem !important;
+  }
+  
+  .statement-copy p:first-child,
+  .statement-copy h2 {
+    font-size: clamp(2rem, 10vw, 2.75rem) !important;
+  }
+  
+  .subpage-hero-title {
+    font-size: clamp(1.85rem, 9vw, 2.5rem) !important;
+  }
+  
+  .estimator-step, .estimator-nav, .estimator-result {
+    padding: 1.25rem 0.75rem !important;
+  }
+}
+
+/* ── 2. Standard Mobile Devices (381px - 640px) ─── */
+@media (max-width: 640px) {
+  .section-padding {
+    padding-top: 4.5rem !important;
+    padding-bottom: 4.5rem !important;
+  }
+
+  .hero {
+    min-height: 85vh !important;
+    padding-top: 6.5rem !important;
+    padding-bottom: 3rem !important;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(2.4rem, 12vw, 3.75rem);
+    line-height: 1.08;
+  }
+
+  .hero-ctas {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 360px;
+    gap: 0.75rem;
+  }
+
+  .hero-ctas .signal-button,
+  .hero-ctas .text-button {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .services-cat-grid,
+  .industries-18-grid,
+  .insight-grid,
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+
+  .case-study {
+    grid-template-columns: 1fr !important;
+  }
+
+  .case-visual {
+    height: 240px !important;
+  }
+
+  .case-copy {
+    padding: 1.5rem 1.25rem !important;
+  }
+
+  .principles-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .estimator-wrap {
+    grid-template-columns: 1fr !important;
+    gap: 2.5rem !important;
+  }
+
+  .estimator-options {
+    grid-template-columns: 1fr !important;
+  }
+
+  .estimator-nav {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .estimator-nav > div {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .subpage-immersive-hero {
+    padding-top: 6.5rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+
+  .subpage-hero-title {
+    font-size: clamp(2rem, 9vw, 3.25rem) !important;
+  }
+
+  .subpage-hero-ctas {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .subpage-hero-ctas a,
+  .subpage-hero-ctas button {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .footer-top {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+
+  .footer-bottom {
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    text-align: center;
+  }
+}
+
+/* ── 3. Tablets & Small Laptops (641px - 1024px) ─── */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .hero-copy h1 {
+    font-size: clamp(3.2rem, 7.5vw, 4.8rem);
+  }
+
+  .services-cat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.5rem !important;
+  }
+
+  .industries-18-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+
+  .insight-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.5rem !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .principles-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .subpage-hero-grid-split {
+    grid-template-columns: 1fr !important;
+    gap: 2.5rem !important;
+  }
+
+  .estimator-wrap {
+    grid-template-columns: 1fr !important;
+    gap: 3rem !important;
+  }
+}
+
+/* ── 4. Large Laptops & Desktops (> 1025px) ─── */
+@media (min-width: 1025px) {
+  .container {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ── 5. Ultrawide Monitors & 4K Displays (> 1800px) ─── */
+@media (min-width: 1800px) {
+  .aurexion {
+    font-size: 17px;
+  }
+  
+  .aurexion-nav-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+}
+
 
