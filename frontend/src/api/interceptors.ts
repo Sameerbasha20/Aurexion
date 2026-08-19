@@ -1,6 +1,29 @@
 import { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from "axios";
 import handleApiError from "./apiErrorHandler";
 
+function attachPaginationMetadata(payload: any[], res: Record<string, any>): any[] {
+  const result: any = payload;
+  if ("count" in res) result.count = res.count;
+  if ("next" in res) result.next = res.next;
+  if ("previous" in res) result.previous = res.previous;
+  result.results = payload;
+  return result;
+}
+
+function unpackApiResponse(res: any): any {
+  if (!res || typeof res !== "object" || !("status" in res) || !("data" in res)) {
+    return res;
+  }
+  const payload = res.data;
+  if (payload === null || payload === undefined) {
+    return res;
+  }
+  if (Array.isArray(payload)) {
+    return attachPaginationMetadata(payload, res);
+  }
+  return payload;
+}
+
 export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
   // Request Interceptor
   axiosInstance.interceptors.request.use(
@@ -16,22 +39,7 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
 
   // Response Interceptor
   axiosInstance.interceptors.response.use(
-    (response: AxiosResponse) => {
-      const res = response.data;
-      if (res && typeof res === "object" && "status" in res && "data" in res) {
-        const payload = res.data;
-        if (payload !== null && payload !== undefined) {
-          if (Array.isArray(payload)) {
-            if ("count" in res) (payload as any).count = res.count;
-            if ("next" in res) (payload as any).next = res.next;
-            if ("previous" in res) (payload as any).previous = res.previous;
-            (payload as any).results = payload;
-          }
-          return payload;
-        }
-      }
-      return res;
-    },
+    (response: AxiosResponse) => unpackApiResponse(response.data),
     (error) => {
       const formattedError = handleApiError(error);
       return Promise.reject(formattedError);
@@ -42,3 +50,4 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
 }
 
 export default setupInterceptors;
+

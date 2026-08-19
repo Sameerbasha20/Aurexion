@@ -1,5 +1,8 @@
+import logging
 import secrets
 import string
+
+logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -31,44 +34,30 @@ STATUS_TRANSITIONS = {
     Lead.Status.NEW: {
         Lead.Status.UNDER_REVIEW,
         Lead.Status.CONTACTED,
-        Lead.Status.QUALIFIED,
-        Lead.Status.PROPOSAL_SUBMITTED,
-        Lead.Status.NEGOTIATION,
-        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.UNDER_REVIEW: {
         Lead.Status.CONTACTED,
-        Lead.Status.QUALIFIED,
-        Lead.Status.PROPOSAL_SUBMITTED,
-        Lead.Status.NEGOTIATION,
-        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.CONTACTED: {
         Lead.Status.QUALIFIED,
-        Lead.Status.PROPOSAL_SUBMITTED,
-        Lead.Status.NEGOTIATION,
-        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.QUALIFIED: {
         Lead.Status.PROPOSAL_SUBMITTED,
-        Lead.Status.NEGOTIATION,
-        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.PROPOSAL_SUBMITTED: {
         Lead.Status.NEGOTIATION,
-        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.NEGOTIATION: {
         Lead.Status.WON,
         Lead.Status.LOST,
     },
-    Lead.Status.WON: {Lead.Status.LOST},
-    Lead.Status.LOST: {Lead.Status.NEW},
+    Lead.Status.WON: set(),
+    Lead.Status.LOST: set(),
 }
 
 
@@ -232,10 +221,8 @@ def mark_lead_won(*, lead, actor, request=None):
     if lead.email:
         try:
             create_client_user_and_send_credentials(lead, actor, request)
-        except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to create client user for lead {lead.reference_id}: {e}")
+        except Exception:
+            logger.exception(f"Failed to create client user for lead {lead.reference_id}")
 
     return lead
 
@@ -439,11 +426,9 @@ def schedule_followup(*, lead, actor, scheduled_at, follow_up_type, notes="", as
     if follow_up_type == LeadFollowUp.FollowUpType.MEETING and lead.email:
         try:
             send_meeting_scheduled_email(lead, followup)
-        except Exception as e:
+        except Exception:
             # Log but don't fail the follow-up creation
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to send meeting email for lead {lead.reference_id}: {e}")
+            logger.exception(f"Failed to send meeting email for lead {lead.reference_id}")
 
     return followup
 
@@ -619,10 +604,8 @@ def schedule_meeting_and_notify(*, lead, scheduled_at, follow_up_type="meeting",
     if lead.email:
         try:
             send_meeting_scheduled_email(lead, followup, meeting_link)
-        except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to send meeting scheduled email to {lead.email}: {e}")
+        except Exception:
+            logger.exception(f"Failed to send meeting scheduled email to {lead.email}")
 
     log_audit_event(
         user=actor,

@@ -1,7 +1,5 @@
 import React from "react";
-import { Link } from "wouter";
-import { Code, ArrowRight } from "lucide-react";
-import { servicesData } from "../../../../../../data/services";
+import ServiceCardGrid from "../../../../components/ServiceCardGrid";
 
 export const RelatedServices = ({ caseStudy }) => {
   if (!caseStudy.services || caseStudy.services.length === 0) return null;
@@ -13,6 +11,7 @@ export const RelatedServices = ({ caseStudy }) => {
           <span className="text-2xl font-bold text-primary font-mono opacity-50">10</span>
           <h2 className="text-2xl font-bold">Services Used</h2>
         </div>
+<<<<<<< Updated upstream
         
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {caseStudy.services.map((slug, idx) => {
@@ -38,6 +37,9 @@ export const RelatedServices = ({ caseStudy }) => {
             )
           })}
         </div>
+=======
+        <ServiceCardGrid serviceSlugs={caseStudy.services} />
+>>>>>>> Stashed changes
       </div>
     </section>
   );

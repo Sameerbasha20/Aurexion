@@ -34,6 +34,63 @@ const COUNTRY_CODES: CountryCodeOption[] = [
   { code: "+other", name: "Other (International)", flag: "🌐", digitsMin: 7, digitsMax: 15, placeholder: "Enter complete phone number" },
 ];
 
+export const validatePhoneNumber = (phone: string, countryCode: string): string => {
+  const rawDigits = phone.replace(/\D/g, "");
+  const country = COUNTRY_CODES.find((c) => c.code === countryCode) || COUNTRY_CODES[0];
+
+  if (!rawDigits) {
+    return "Phone number is required";
+  }
+
+  if (country.code === "+other") {
+    if (rawDigits.length < 7 || rawDigits.length > 15) {
+      return "Please enter a valid international phone number (7 to 15 digits)";
+    }
+    return "";
+  }
+
+  if (country.digitsMin === country.digitsMax) {
+    if (rawDigits.length !== country.digitsMin) {
+      return `${country.name} phone number must be exactly ${country.digitsMin} digits (${rawDigits.length}/${country.digitsMin})`;
+    }
+  } else {
+    if (rawDigits.length < country.digitsMin || rawDigits.length > country.digitsMax) {
+      return `${country.name} phone number must be between ${country.digitsMin} and ${country.digitsMax} digits (${rawDigits.length} entered)`;
+    }
+  }
+
+  return "";
+};
+
+export const clampPhoneNumber = (phone: string, countryCode: string): string => {
+  const raw = phone.replace(/\D/g, "");
+  const country = COUNTRY_CODES.find((c) => c.code === countryCode) || COUNTRY_CODES[0];
+  return raw.slice(0, country.digitsMax);
+};
+
+export const validateResumeFile = (file: File): { isValid: boolean; error: string } => {
+  const fileName = file.name.toLowerCase();
+  const validExtensions = [".pdf", ".doc", ".docx"];
+  const isValidExtension = validExtensions.some((ext) => fileName.endsWith(ext));
+
+  if (!isValidExtension) {
+    return {
+      isValid: false,
+      error: "Invalid file format. Only PDF and Word documents (.pdf, .doc, .docx) are accepted.",
+    };
+  }
+
+  if (file.size > 5 * 1024 * 1024) { // 5MB limit
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    return {
+      isValid: false,
+      error: `File size (${sizeMb} MB) exceeds the 5MB maximum limit. Please upload a smaller file.`,
+    };
+  }
+
+  return { isValid: true, error: "" };
+};
+
 const applySchema = z.object({
   name: z.string().min(2, "Full name is required"),
   email: z.string().email("Valid email address is required"),
@@ -58,95 +115,37 @@ export const ApplyPage: React.FC = () => {
   const [selectedCountryCode, setSelectedCountryCode] = useState<string>("+91");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [phoneError, setPhoneError] = useState<string>("");
-
   const currentCountry = COUNTRY_CODES.find((c) => c.code === selectedCountryCode) || COUNTRY_CODES[0];
 
   const { register, handleSubmit, formState: { errors } } = useForm<ApplyFormValues>({
     resolver: zodResolver(applySchema)
   });
 
-  const validatePhoneNumber = (phone: string, countryCode: string): string => {
-    const rawDigits = phone.replace(/\D/g, "");
-    const country = COUNTRY_CODES.find((c) => c.code === countryCode) || COUNTRY_CODES[0];
-
-    if (!rawDigits) {
-      return "Phone number is required";
-    }
-
-    if (country.code === "+other") {
-      if (rawDigits.length < 7 || rawDigits.length > 15) {
-        return "Please enter a valid international phone number (7 to 15 digits)";
-      }
-      return "";
-    }
-
-    if (country.digitsMin === country.digitsMax) {
-      if (rawDigits.length !== country.digitsMin) {
-        return `${country.name} phone number must be exactly ${country.digitsMin} digits (${rawDigits.length}/${country.digitsMin})`;
-      }
-    } else {
-      if (rawDigits.length < country.digitsMin || rawDigits.length > country.digitsMax) {
-        return `${country.name} phone number must be between ${country.digitsMin} and ${country.digitsMax} digits (${rawDigits.length} entered)`;
-      }
-    }
-
-    return "";
-  };
-
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, "");
-    const country = COUNTRY_CODES.find((c) => c.code === selectedCountryCode) || COUNTRY_CODES[0];
-    
-    // Hard restrict: User cannot enter more than the allowed digits
-    const clampedDigits = raw.slice(0, country.digitsMax);
+    const clampedDigits = clampPhoneNumber(e.target.value, selectedCountryCode);
     setPhoneNumber(clampedDigits);
-
-    if (clampedDigits.length > 0) {
-      setPhoneError(validatePhoneNumber(clampedDigits, selectedCountryCode));
-    } else {
-      setPhoneError("");
-    }
+    setPhoneError(clampedDigits.length > 0 ? validatePhoneNumber(clampedDigits, selectedCountryCode) : "");
   };
 
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCode = e.target.value;
     setSelectedCountryCode(newCode);
-    const country = COUNTRY_CODES.find((c) => c.code === newCode) || COUNTRY_CODES[0];
-
-    // Re-clamp existing digits to the new country's maximum limit
-    const raw = phoneNumber.replace(/\D/g, "");
-    const clampedDigits = raw.slice(0, country.digitsMax);
+    const clampedDigits = clampPhoneNumber(phoneNumber, newCode);
     setPhoneNumber(clampedDigits);
-
-    if (clampedDigits.length > 0) {
-      setPhoneError(validatePhoneNumber(clampedDigits, newCode));
-    } else {
-      setPhoneError("");
-    }
+    setPhoneError(clampedDigits.length > 0 ? validatePhoneNumber(clampedDigits, newCode) : "");
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      const fileName = selectedFile.name.toLowerCase();
-      const validExtensions = [".pdf", ".doc", ".docx"];
-      const isValidExtension = validExtensions.some((ext) => fileName.endsWith(ext));
-
-      if (!isValidExtension) {
-        setFileError("Invalid file format. Only PDF and Word documents (.pdf, .doc, .docx) are accepted.");
+      const validation = validateResumeFile(selectedFile);
+      if (!validation.isValid) {
+        setFileError(validation.error);
         setFile(null);
-        return;
+      } else {
+        setFileError("");
+        setFile(selectedFile);
       }
-
-      if (selectedFile.size > 5 * 1024 * 1024) { // 5MB limit
-        const sizeMb = (selectedFile.size / (1024 * 1024)).toFixed(1);
-        setFileError(`File size (${sizeMb} MB) exceeds the 5MB maximum limit. Please upload a smaller file.`);
-        setFile(null);
-        return;
-      }
-
-      setFileError("");
-      setFile(selectedFile);
     }
   };
 

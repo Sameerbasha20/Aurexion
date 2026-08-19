@@ -5,6 +5,61 @@ import Card from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 
+const ROLE_DASHBOARD_ROUTES: Record<string, string> = {
+  ADMIN: "/admin/dashboard",
+  BDM: "/bdm/dashboard",
+  CLIENT: "/portal/dashboard",
+  SALES: "/crm/dashboard",
+  HR: "/recruitment/dashboard",
+  CONTENT: "/cms/dashboard",
+  SUPPORT: "/support/dashboard",
+};
+
+export const getRoleDashboardPath = (role: string): string => {
+  return ROLE_DASHBOARD_ROUTES[role.toUpperCase()] || "/";
+};
+
+export const extractAuthErrorMessage = (err: any): string => {
+  const status = err?.response?.status;
+  const resData = err?.response?.data;
+
+  if (resData?.detail) {
+    return resData.detail;
+  }
+  if (resData?.non_field_errors) {
+    return Array.isArray(resData.non_field_errors)
+      ? resData.non_field_errors.join(", ")
+      : String(resData.non_field_errors);
+  }
+  if (resData?.error) {
+    return resData.error;
+  }
+  if (resData?.message) {
+    return resData.message;
+  }
+  if (typeof resData === "string") {
+    return resData;
+  }
+  if (status === 400 || status === 401) {
+    return "Invalid username or password. Please verify your credentials and selected role.";
+  }
+  if (err?.code === "ERR_NETWORK" || err?.message?.includes("Network Error")) {
+    return "Unable to connect to the authentication server. Please ensure the backend is running.";
+  }
+  return "Invalid username or password. Please verify your credentials and selected role.";
+};
+
+export const validateLoginCredentials = (username: string, password: string): { username?: string; password?: string } => {
+  const errors: { username?: string; password?: string } = {};
+  if (!username.trim()) {
+    errors.username = "Please enter your username or email address.";
+  }
+  if (!password) {
+    errors.password = "Please enter your password.";
+  }
+  return errors;
+};
+
 export const Login: React.FC = () => {
   const { login, isLoading } = useAuth();
   const [username, setUsername] = useState("administrator");
@@ -19,14 +74,7 @@ export const Login: React.FC = () => {
     e.preventDefault();
     setError("");
 
-    const errors: { username?: string; password?: string } = {};
-    if (!username.trim()) {
-      errors.username = "Please enter your username or email address.";
-    }
-    if (!password) {
-      errors.password = "Please enter your password.";
-    }
-
+    const errors = validateLoginCredentials(username, password);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -36,51 +84,9 @@ export const Login: React.FC = () => {
 
     try {
       await login(username, password);
-      
-      // Redirect based on role
-      const upperRole = role.toUpperCase();
-      if (upperRole === "ADMIN") {
-        setLocation("/admin/dashboard");
-      } else if (upperRole === "BDM") {
-        setLocation("/bdm/dashboard");
-      } else if (upperRole === "CLIENT") {
-        setLocation("/portal/dashboard");
-      } else if (upperRole === "SALES") {
-        setLocation("/crm/dashboard");
-      } else if (upperRole === "HR") {
-        setLocation("/recruitment/dashboard");
-      } else if (upperRole === "CONTENT") {
-        setLocation("/cms/dashboard");
-      } else if (upperRole === "SUPPORT") {
-        setLocation("/support/dashboard");
-      } else {
-        setLocation("/");
-      }
+      setLocation(getRoleDashboardPath(role));
     } catch (err: any) {
-      const status = err?.response?.status;
-      const resData = err?.response?.data;
-      
-      let errorMsg = "Invalid username or password. Please verify your credentials and selected role.";
-
-      if (resData?.detail) {
-        errorMsg = resData.detail;
-      } else if (resData?.non_field_errors) {
-        errorMsg = Array.isArray(resData.non_field_errors)
-          ? resData.non_field_errors.join(", ")
-          : String(resData.non_field_errors);
-      } else if (resData?.error) {
-        errorMsg = resData.error;
-      } else if (resData?.message) {
-        errorMsg = resData.message;
-      } else if (typeof resData === "string") {
-        errorMsg = resData;
-      } else if (status === 400 || status === 401) {
-        errorMsg = "Invalid username or password. Please verify your credentials and selected role.";
-      } else if (err?.code === "ERR_NETWORK" || err?.message?.includes("Network Error")) {
-        errorMsg = "Unable to connect to the authentication server. Please ensure the backend is running.";
-      }
-
-      setError(errorMsg);
+      setError(extractAuthErrorMessage(err));
     }
   };
 

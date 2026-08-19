@@ -272,10 +272,12 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 
 # Client Portal Configuration
+
 CLIENT_PORTAL_LOGIN_URL = os.getenv(
     'CLIENT_PORTAL_LOGIN_URL',
     'http://localhost:3000/login'
 )
+
 
 DEFAULT_CLIENT_PASSWORD = os.getenv('DEFAULT_CLIENT_PASSWORD', '')
 # Project Info
