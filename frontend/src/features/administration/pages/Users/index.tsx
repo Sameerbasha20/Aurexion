@@ -377,41 +377,41 @@ export const Users: React.FC = () => {
 
       {/* Add / Edit / View Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent style={{ backgroundColor: "var(--color-bg-secondary)", border: "1px solid var(--color-border)", color: "var(--color-text-primary)", maxWidth: "480px" }}>
-          <DialogHeader style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--color-border)", paddingBottom: "1rem" }}>
-            <DialogTitle style={{ fontSize: "1.25rem", fontFamily: "var(--font-display)", fontWeight: 600 }}>
+        <DialogContent style={{ backgroundColor: "#0a111c", border: "1px solid #1e293b", color: "#f8fafc", maxWidth: "520px", maxHeight: "85vh", overflowY: "auto", padding: "1.75rem", zIndex: 100, boxSizing: "border-box" }}>
+          <DialogHeader style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1e293b", paddingBottom: "1rem" }}>
+            <DialogTitle style={{ fontSize: "1.25rem", fontFamily: "var(--font-display)", fontWeight: 600, color: "#63f5e8" }}>
               {dialogMode === "add" ? "Register New Operator" : dialogMode === "edit" ? "Modify Operator Profile" : "Operator Detailed Metadata"}
             </DialogTitle>
           </DialogHeader>
 
           {dialogMode === "view" && selectedUser ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", margin: "1rem 0" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "0.5rem", fontSize: "0.9rem" }}>
-                <span style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>OPERATOR ID:</span>
-                <span style={{ color: "var(--color-cyan)", fontFamily: "var(--font-mono)" }}>{selectedUser.id}</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem", margin: "1rem 0" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: "0.75rem 1rem", fontSize: "0.88rem", alignItems: "center" }}>
+                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>OPERATOR ID:</span>
+                <span style={{ color: "#63f5e8", fontFamily: "IBM Plex Mono, monospace", fontWeight: 600 }}>{selectedUser.id}</span>
                 
-                <span style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>FULL NAME:</span>
-                <span style={{ fontWeight: 600 }}>{selectedUser.name}</span>
+                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>FULL NAME:</span>
+                <span style={{ fontWeight: 600, color: "#f8fafc" }}>{selectedUser.name}</span>
 
-                <span style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>EMAIL ADDRESS:</span>
-                <span>{selectedUser.email}</span>
+                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>EMAIL ADDRESS:</span>
+                <span style={{ color: "#cbd5e1" }}>{selectedUser.email}</span>
 
-                <span style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>ROLE SCOPE:</span>
-                <span>{selectedUser.role}</span>
+                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>ROLE SCOPE:</span>
+                <span style={{ color: "#cbd5e1" }}>{selectedUser.role}</span>
 
-                <span style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>DEPARTMENT:</span>
-                <span>{selectedUser.department}</span>
+                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>DEPARTMENT:</span>
+                <span style={{ color: "#cbd5e1" }}>{selectedUser.department}</span>
 
-                <span style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>STATUS STATUS:</span>
+                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>STATUS:</span>
                 <span style={{ color: selectedUser.status === "ACTIVE" ? "#10b981" : "#ef4444", fontWeight: 600 }}>{selectedUser.status}</span>
 
-                <span style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>LAST LOGGED IN:</span>
-                <span>{selectedUser.lastLogin}</span>
+                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>LAST LOGGED IN:</span>
+                <span style={{ color: "#cbd5e1" }}>{selectedUser.lastLogin}</span>
 
-                <span style={{ color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>CREATED DATE:</span>
-                <span>{selectedUser.createdDate}</span>
+                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>CREATED DATE:</span>
+                <span style={{ color: "#cbd5e1" }}>{selectedUser.createdDate}</span>
               </div>
-              <DialogFooter style={{ borderTop: "1px solid var(--color-border)", paddingTop: "1rem", marginTop: "1rem" }}>
+              <DialogFooter style={{ borderTop: "1px solid #1e293b", paddingTop: "1rem", marginTop: "0.5rem" }}>
                 <Button variant="outline" onClick={() => setDialogOpen(false)} style={{ width: "100%" }}>CLOSE METADATA</Button>
               </DialogFooter>
             </div>
