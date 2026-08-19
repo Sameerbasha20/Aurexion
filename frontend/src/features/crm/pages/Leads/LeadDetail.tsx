@@ -339,11 +339,7 @@ export const LeadDetail: React.FC = () => {
               {lead.company || lead.name}
             </h1>
             <p style={{ margin: 0, fontSize: "0.88rem", color: "#94a3b8" }}>
-<<<<<<< HEAD
-              Primary Contact: <strong style={{ color: "#e2e8f0" }}>{lead.name}</strong>  Established on{" "}
-=======
               Primary Contact: <strong style={{ color: "#e2e8f0" }}>{lead.name}</strong> � Established on{" "}
->>>>>>> 1f81263e55bb34f7176387db5105d98af57dc4df
               {new Date(lead.created_at).toLocaleDateString()}
             </p>
           </div>
@@ -618,178 +614,6 @@ export const LeadDetail: React.FC = () => {
         onAssign={handleAssign}
       />
 
-<<<<<<< HEAD
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PRIORITY</label>
-                  <select
-                    value={editForm.priority}
-                    onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
-                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                  >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                    <option value="URGENT">Urgent</option>
-                  </select>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>INDUSTRY</label>
-                  <input
-                    type="text"
-                    value={editForm.industry}
-                    onChange={(e) => setEditForm({ ...editForm, industry: e.target.value })}
-                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DESCRIPTION</label>
-                <textarea
-                  rows={3}
-                  value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                />
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem" }}>
-                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                <Button type="submit" glow disabled={actionLoading}>Save Changes</Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
-
-      {/* Mark Lost Modal */}
-      {isLostOpen && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
-            <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: "0 0 1rem 0" }}>Mark Lead as Lost</h2>
-            <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: "0 0 1rem 0" }}>
-              Please state why this lead was lost (e.g. Budget constraints, Competitor chosen, Project cancelled).
-            </p>
-            <form onSubmit={handleMarkLost} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <textarea
-                rows={3}
-                required
-                placeholder="Enter specific lost rationale..."
-                value={lostReason}
-                onChange={(e) => setLostReason(e.target.value)}
-                style={{ padding: "0.75rem", backgroundColor: "#050811", border: "1px solid rgba(248, 113, 113, 0.4)", color: "#f8fafc", borderRadius: "4px" }}
-              />
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
-                <Button type="button" variant="outline" onClick={() => setIsLostOpen(false)}>Cancel</Button>
-                <Button type="submit" disabled={actionLoading} style={{ backgroundColor: "#f87171", color: "#000" }}>
-                  Confirm Lost
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
-
-      {/* Assign Modal */}
-      {isAssignOpen && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
-            <h2 style={{ fontSize: "1.3rem", margin: "0 0 1rem 0" }}>Assign Lead to Executive</h2>
-            <form onSubmit={handleAssign} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <select
-                required
-                value={assignUserId}
-                onChange={(e) => setAssignUserId(Number(e.target.value))}
-                style={{ padding: "0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-              >
-                <option value="">Select Team Member...</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name || u.username} ({u.role || "Executive"})
-                  </option>
-                ))}
-              </select>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
-                <Button type="button" variant="outline" onClick={() => setIsAssignOpen(false)}>Cancel</Button>
-                <Button type="submit" glow disabled={actionLoading || !assignUserId}>Assign Lead</Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
-
-      {/* Schedule Follow-up Modal */}
-      {isFollowUpOpen && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "500px", padding: "2rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <h2 style={{ fontSize: "1.3rem", margin: 0 }}>Schedule Client Follow-up</h2>
-              <button type="button" onClick={() => setIsFollowUpOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
-                <X size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleScheduleFollowUp} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>FOLLOW-UP TYPE</label>
-                <select
-                  value={followUpForm.follow_up_type}
-                  onChange={(e) => setFollowUpForm({ ...followUpForm, follow_up_type: e.target.value })}
-                  style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                >
-                  <option value="CALL">Phone Call</option>
-                  <option value="MEETING">Video / In-person Meeting</option>
-                  <option value="EMAIL">Email Outreach</option>
-                  <option value="DEMO">Product Demo</option>
-                </select>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DATE & TIME</label>
-                <input
-                  type="datetime-local"
-                  required
-                  value={followUpForm.scheduled_at}
-                  onChange={(e) => setFollowUpForm({ ...followUpForm, scheduled_at: e.target.value })}
-                  style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                />
-              </div>
-
-              {true && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING LINK (Google Meet / Zoom / Teams) *</label>
-                  <input
-                    type="url"
-                    required
-                    placeholder="https://meet.google.com/xyz-abc-123"
-                    value={followUpForm.meeting_link}
-                    onChange={(e) => setFollowUpForm({ ...followUpForm, meeting_link: e.target.value })}
-                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                  />
-                </div>
-              )}
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>AGENDA / NOTES</label>
-                <textarea
-                  rows={3}
-                  placeholder="Outline meeting objective or agenda..."
-                  value={followUpForm.notes}
-                  onChange={(e) => setFollowUpForm({ ...followUpForm, notes: e.target.value })}
-                  style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                />
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
-                <Button type="button" variant="outline" onClick={() => setIsFollowUpOpen(false)}>Cancel</Button>
-                <Button type="submit" glow disabled={actionLoading}>Schedule Follow-up</Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
-=======
       <LeadScheduleFollowUpModal
         isOpen={isFollowUpOpen}
         followUpForm={followUpForm}
@@ -798,7 +622,6 @@ export const LeadDetail: React.FC = () => {
         onFormChange={setFollowUpForm}
         onSubmit={handleScheduleFollowUp}
       />
->>>>>>> 1f81263e55bb34f7176387db5105d98af57dc4df
     </div>
   );
 };

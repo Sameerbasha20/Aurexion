@@ -17,7 +17,7 @@ from rest_framework.permissions import AllowAny
 
 from apps.authentication.audit import get_model_state, log_audit_event
 from apps.authentication.models import AuditLog
-from apps.crm.models import Lead, LeadFollowUp, LeadNote
+from apps.crm.models import Lead, LeadFollowUp, LeadNote, EstimatorSubmission
 from apps.crm.permissions import CanAccessLead, CanAssignLead, CanCreateLead, CanDeleteLead
 from apps.crm.serializers import (
     LeadActivitySerializer,
@@ -548,3 +548,58 @@ class PublicLeadCreateView(APIView):
         # Notify BDM (in a real app, this could be a signal or async task)
         # For now, we just return the created lead
         return Response(LeadSerializer(lead, context={'request': request}).data, status=status.HTTP_201_CREATED)
+
+
+class EstimatorCalculateView(APIView):
+    """
+    BUG-05 Fix: Interactive Requirement Estimator calculation API endpoint.
+    Accepts project scope, platform scale, user scale, and compliance requirements,
+    calculates effort hours and budget range, and saves EstimatorSubmission record.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    @extend_schema(
+        tags=["Estimator"],
+        summary="Calculate interactive project requirement estimate and create submission record",
+        responses={201: dict},
+        auth=[]
+    )
+    def post(self, request):
+        data = request.data or {}
+        scope = data.get("project_scope", [])
+        if isinstance(scope, str):
+            scope = [scope]
+        platform = data.get("platform_scale", "medium")
+        user_scale = data.get("user_scale", "10k")
+        compliance = data.get("compliance_requirements", [])
+        if isinstance(compliance, str):
+            compliance = [compliance]
+
+        base_hours = max(len(scope), 1) * 80
+        multiplier = 1.5 if str(platform).lower() == "large" else 1.0
+        if any(str(c).lower() in [str(x).lower() for x in compliance] for c in ["hipaa", "soc2", "gdpr"]):
+            multiplier += 0.3
+        
+        hours = int(base_hours * multiplier)
+        min_budget = hours * 65
+        max_budget = hours * 95
+
+        submission = EstimatorSubmission.objects.create(
+            project_scope=scope,
+            platform_scale=platform,
+            user_scale=user_scale,
+            compliance_requirements=compliance,
+            engineering_effort_hours=hours,
+            indicative_budget_min=min_budget,
+            indicative_budget_max=max_budget
+        )
+
+        return Response({
+            "submission_id": submission.id,
+            "engineering_effort_hours": hours,
+            "indicative_budget_min": str(min_budget),
+            "indicative_budget_max": str(max_budget),
+            "disclaimer": "This estimate represents a preliminary requirement assessment and does not constitute a binding legal proposal."
+        }, status=status.HTTP_201_CREATED)
+
