@@ -2539,11 +2539,19 @@ h3 em {
 }
 
 .nav-mobile-panel {
-  border-top: 1px solid rgba(99, 245, 232, .1);
-  max-height: 80vh;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(100dvh - 60px);
+  max-height: calc(100dvh - 60px);
   overflow-y: auto;
-  background: #060c18;
-  padding: 1rem 0 2rem;
+  -webkit-overflow-scrolling: touch;
+  background: #050811;
+  border-top: 1px solid rgba(99, 245, 232, .15);
+  padding: 0.5rem 0 3rem;
+  z-index: 999;
 }
 
 .nav-mobile-section {

@@ -18,6 +18,7 @@ import {
   Key,
   Database
 } from "lucide-react";
+import { useIsMobile } from "../../../../hooks/useMobile";
 import {
   AreaChart,
   Area,
@@ -54,6 +55,7 @@ const leadsData = [
 ];
 
 export const Dashboard: React.FC = () => {
+  const isMobile = useIsMobile();
   const [usersCount, setUsersCount] = useState({ total: 1424, active: 1382 });
   const [leadsCount, setLeadsCount] = useState({ total: 642, unassignedRfps: 12 });
   const [supportTicketsCount, setSupportTicketsCount] = useState({ open: 18, critical: 6 });
@@ -235,15 +237,15 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Main Grid: Data Feeds & Quick Actions */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1.5rem" }} className="grid-responsive">
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: "1.5rem" }} className="grid-responsive">
         
         {/* Left Side: Recent Tables */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           
           {/* Recent Leads */}
           <Card>
-            <CardHeader style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <CardTitle style={{ fontSize: "1.1rem" }}>Pipeline Targets (Leads)</CardTitle>
+            <CardHeader style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+              <CardTitle style={{ fontSize: isMobile ? "0.95rem" : "1.1rem" }}>Pipeline Targets (Leads)</CardTitle>
               <Link href="/admin/crm">
                 <span style={{ fontSize: "0.8rem", color: "var(--color-cyan)", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.25rem" }}>
                   CRM Funnel <ArrowRight size={14} />
@@ -252,12 +254,12 @@ export const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent style={{ padding: "0 1.25rem 1.25rem 1.25rem" }}>
               <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
+                <table style={{ width: "100%", minWidth: isMobile ? "280px" : "auto", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
-                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.7rem" }}>LEAD/COMPANY</th>
-                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.7rem" }}>VALUE</th>
-                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.7rem" }}>STATUS</th>
+                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.68rem", whiteSpace: "nowrap" }}>LEAD/COMPANY</th>
+                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.68rem", whiteSpace: "nowrap" }}>VALUE</th>
+                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.68rem", whiteSpace: "nowrap" }}>STATUS</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -286,8 +288,8 @@ export const Dashboard: React.FC = () => {
 
           {/* Open Tickets */}
           <Card>
-            <CardHeader style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <CardTitle style={{ fontSize: "1.1rem" }}>Active Support Queue</CardTitle>
+            <CardHeader style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+              <CardTitle style={{ fontSize: isMobile ? "0.95rem" : "1.1rem" }}>Active Support Queue</CardTitle>
               <Link href="/admin/support">
                 <span style={{ fontSize: "0.8rem", color: "var(--color-cyan)", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.25rem" }}>
                   Support Center <ArrowRight size={14} />
@@ -296,12 +298,12 @@ export const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent style={{ padding: "0 1.25rem 1.25rem 1.25rem" }}>
               <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
+                <table style={{ width: "100%", minWidth: isMobile ? "280px" : "auto", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
-                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.7rem" }}>TICKET ID</th>
-                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.7rem" }}>SUBJECT</th>
-                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.7rem" }}>PRIORITY</th>
+                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.68rem", whiteSpace: "nowrap" }}>TICKET ID</th>
+                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.68rem", whiteSpace: "nowrap" }}>SUBJECT</th>
+                      <th style={{ padding: "0.75rem 0.5rem", fontFamily: "var(--font-mono)", fontSize: "0.68rem", whiteSpace: "nowrap" }}>PRIORITY</th>
                     </tr>
                   </thead>
                   <tbody>
