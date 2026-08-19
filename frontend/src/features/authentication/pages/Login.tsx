@@ -62,9 +62,9 @@ export const validateLoginCredentials = (username: string, password: string): { 
 
 export const Login: React.FC = () => {
   const { login, isLoading } = useAuth();
-  const [username, setUsername] = useState("administrator");
-  const [password, setPassword] = useState("Admin@2026");
-  const [role, setRole] = useState("ADMIN");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [, setLocation] = useLocation();
   const [error, setError] = useState("");
