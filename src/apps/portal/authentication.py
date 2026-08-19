@@ -1,10 +1,10 @@
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidToken
 from rest_framework_simplejwt.settings import api_settings
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
+from apps.authentication.authentication import CookieJWTAuthentication
 
 
-class ProfileJWTAuthentication(JWTAuthentication):
+class ProfileJWTAuthentication(CookieJWTAuthentication):
     """
     JWT authentication for the Support module.
 

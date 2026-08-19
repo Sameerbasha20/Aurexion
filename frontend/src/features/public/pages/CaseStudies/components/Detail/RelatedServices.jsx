@@ -37,4 +37,4 @@ export const RelatedServices = ({ caseStudy }) => {
   );
 };
 
-export default RelatedServices;
+export default RelatedServices;

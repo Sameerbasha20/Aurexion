@@ -1,14 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../components/common/Header";
 import Sidebar from "../../components/common/Sidebar";
 import Footer from "../../components/common/Footer";
+import { useIsMobile } from "../../hooks/useMobile";
 
 interface BdmLayoutProps {
   children: React.ReactNode;
 }
 
 export const BdmLayout: React.FC<BdmLayoutProps> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
 
   return (
     <div style={{
@@ -19,18 +25,19 @@ export const BdmLayout: React.FC<BdmLayoutProps> = ({ children }) => {
       overflow: "hidden",
       backgroundColor: "#050811",
     }}>
-      <Header showToggle onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <Header showToggle onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
       <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
-        <Sidebar open={sidebarOpen} />
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main style={{
           flex: 1,
-          padding: "2rem",
+          padding: isMobile ? "1rem 0.75rem" : "2rem",
           display: "flex",
           flexDirection: "column",
-          gap: "2rem",
+          gap: isMobile ? "1.25rem" : "2rem",
           overflowY: "auto",
           overflowX: "hidden",
           minWidth: 0,
+          width: "100%",
         }}>
           {children}
           <Footer />
@@ -41,3 +48,4 @@ export const BdmLayout: React.FC<BdmLayoutProps> = ({ children }) => {
 };
 
 export default BdmLayout;
+
