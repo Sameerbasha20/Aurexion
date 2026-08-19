@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useParams, useLocation, Link } from "wouter";
+import { useBlogPostDetails, useRelatedBlogPosts } from "../../hooks/usePublicContent";
 import { blogPosts } from "../../../../data/blogPosts";
 import { ArticleHero } from "./components/Detail/ArticleHero";
 import { ReadingProgress } from "./components/Detail/ReadingProgress";
@@ -13,12 +14,107 @@ import { InsightsCTA } from "./components/Hub/InsightsCTA";
 export const ArticleDetailPage = () => {
   const params = useParams();
   const [, setLocation] = useLocation();
-  
-  const article = blogPosts.find(p => p.slug === params.slug);
+  const slug = params.slug || "";
+
+  // Query details and related posts from database
+  const { data: apiArticle, loading } = useBlogPostDetails(slug);
+  const { data: apiRelated } = useRelatedBlogPosts(slug);
+
+  const staticArticle = blogPosts.find(p => p.slug === slug);
+
+  // Safe mapping of DB instance to expected component structure
+  const article = apiArticle ? {
+    id: String(apiArticle.id),
+    slug: apiArticle.slug,
+    title: apiArticle.title,
+    excerpt: apiArticle.summary || apiArticle.content.substring(0, 150) + "...",
+    content: apiArticle.content,
+    category: apiArticle.category_name || apiArticle.category,
+    tags: Array.isArray(apiArticle.tags) ? apiArticle.tags : [],
+    authorId: "auth-001",
+    publishedAt: apiArticle.published_at || apiArticle.created_at,
+    relatedServices: staticArticle?.relatedServices || [],
+    relatedIndustries: staticArticle?.relatedIndustries || [],
+    relatedCaseStudies: staticArticle?.relatedCaseStudies || [],
+    meta_title: apiArticle.meta_title,
+    meta_description: apiArticle.meta_description,
+    meta_keywords: apiArticle.meta_keywords
+  } : staticArticle;
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [params.slug]);
+  }, [slug]);
+
+  // SEO & Schema Mapping (PRD 4.11)
+  useEffect(() => {
+    if (article) {
+      document.title = `${article.meta_title || article.title} | Aurexion Insights`;
+
+      // Meta Description
+      const descText = article.meta_description || article.excerpt || article.content.substring(0, 150);
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute("content", descText);
+      } else {
+        const meta = document.createElement("meta");
+        meta.name = "description";
+        meta.content = descText;
+        document.head.appendChild(meta);
+      }
+
+      // Meta Keywords
+      const keywordsText = article.meta_keywords || article.tags.join(", ") || "aurexion, insights, engineering";
+      let metaKeywords = document.querySelector('meta[name="keywords"]');
+      if (metaKeywords) {
+        metaKeywords.setAttribute("content", keywordsText);
+      } else {
+        const meta = document.createElement("meta");
+        meta.name = "keywords";
+        meta.content = keywordsText;
+        document.head.appendChild(meta);
+      }
+
+      // Inject JSON-LD Schema
+      const schemaId = "jsonld-blog-post-schema";
+      let script = document.getElementById(schemaId);
+      if (!script) {
+        script = document.createElement("script");
+        script.id = schemaId;
+        script.type = "application/ld+json";
+        document.head.appendChild(script);
+      }
+      
+      const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": article.title,
+        "description": descText,
+        "datePublished": article.publishedAt,
+        "author": {
+          "@type": "Organization",
+          "name": "Aurexion Technologies"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Aurexion Technologies",
+          "url": window.location.origin
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": window.location.href
+        }
+      };
+      script.text = JSON.stringify(jsonLd);
+    }
+  }, [article]);
+
+  if (loading && !apiArticle && !staticArticle) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center">
+        <div className="text-primary font-mono text-sm">RETRIEVING ARTICLE METADATA...</div>
+      </div>
+    );
+  }
 
   if (!article) {
     setLocation("/not-found", { replace: true });

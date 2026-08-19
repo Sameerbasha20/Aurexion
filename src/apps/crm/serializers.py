@@ -287,3 +287,27 @@ class LeadActivitySerializer(serializers.ModelSerializer):
         model = AuditLog
         fields = ["id", "action", "module", "object_id", "repr", "actor", "ip_address", "user_agent", "timestamp"]
         read_only_fields = fields
+
+
+from apps.crm.models import RFPEnquiry
+
+class RFPEnquirySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RFPEnquiry
+        fields = '__all__'
+
+    def validate_document_attachment(self, value):
+        if value:
+            if value.size > 10 * 1024 * 1024:
+                raise serializers.ValidationError("File size cannot exceed 10MB.")
+            ext = value.name.split('.')[-1].lower()
+            if ext not in ['pdf', 'docx', 'zip']:
+                raise serializers.ValidationError("Only PDF, DOCX, and ZIP files are allowed.")
+            
+            from apps.crm.validators import validate_magic_bytes
+            try:
+                validate_magic_bytes(value)
+            except Exception as e:
+                raise serializers.ValidationError(str(e))
+        return value
+

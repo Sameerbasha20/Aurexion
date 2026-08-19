@@ -19,8 +19,18 @@ export const publicService = {
     return (response as any) || [];
   },
 
-  getBlogPosts: async (): Promise<BlogPost[]> => {
-    const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_BLOG);
+  getBlogPosts: async (params?: { category?: string; tag?: string; search?: string }): Promise<BlogPost[]> => {
+    const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_BLOG, { params });
+    return (response as any) || [];
+  },
+
+  getBlogPostBySlug: async (slug: string): Promise<BlogPost> => {
+    const response = await axiosClient.get(`${API_ENDPOINTS.CMS.PUBLIC_BLOG}${slug}/`);
+    return response as any;
+  },
+
+  getRelatedBlogPosts: async (slug: string): Promise<BlogPost[]> => {
+    const response = await axiosClient.get(`${API_ENDPOINTS.CMS.PUBLIC_BLOG}${slug}/related/`);
     return (response as any) || [];
   },
 
