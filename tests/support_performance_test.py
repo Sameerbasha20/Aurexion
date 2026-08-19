@@ -65,10 +65,11 @@ def db_time_taken(start_idx):
     queries = connection.queries[start_idx:]
     total = 0.0
     for q in queries:
+        raw_time = q.get('time', 0)
         try:
-            total += float(q.get('time', 0))
+            total += float(raw_time) if raw_time is not None else 0.0
         except (TypeError, ValueError):
-            pass
+            continue
     return total
 
 

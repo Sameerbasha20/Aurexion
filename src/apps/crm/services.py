@@ -1,6 +1,11 @@
+import logging
 import secrets
 import string
 
+logger = logging.getLogger(__name__)
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -8,7 +13,11 @@ from rest_framework import status
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 
 from apps.authentication.audit import get_model_state, log_audit_event
+from apps.authentication.models import UserProfile
 from apps.crm.models import Lead, LeadFollowUp, LeadNote
+from apps.core.services import send_meeting_scheduled_email, send_welcome_credentials_email
+
+User = get_user_model()
 
 REFERENCE_PREFIX = "AUR-LEAD-"
 REFERENCE_ALPHABET = string.ascii_uppercase + string.digits
@@ -123,6 +132,8 @@ def create_lead(*, actor, request=None, **data):
     handled with bounded retries inside an atomic savepoint.
     """
     assignee = data.pop("assigned_to", None)
+    if assignee is None and actor and get_user_role(actor) == "sales_executive":
+        assignee = actor
     if assignee is not None:
         validate_assignable_user(assignee)
 
@@ -201,12 +212,76 @@ def qualify_lead(*, lead, actor, request=None):
 
 def mark_lead_won(*, lead, actor, request=None):
     """Mark a lead as WON (valid only from NEGOTIATION)."""
-    return change_lead_stage(
+    lead = change_lead_stage(
         lead=lead,
         new_status=Lead.Status.WON,
         actor=actor,
         request=request,
     )
+
+    # Create client user and send welcome credentials
+    if lead.email:
+        try:
+            create_client_user_and_send_credentials(lead, actor, request)
+        except Exception:
+            logger.exception(f"Failed to create client user for lead {lead.reference_id}")
+
+    return lead
+
+
+def create_client_user_and_send_credentials(lead, actor, request=None):
+    """
+    Create a client user for the won lead and send welcome credentials email.
+    Uses the lead's email as username and a default password.
+    """
+    from django.conf import settings
+
+    default_password = getattr(settings, 'DEFAULT_CLIENT_PASSWORD', '') or secrets.token_urlsafe(12)
+    login_url = getattr(settings, 'CLIENT_PORTAL_LOGIN_URL', 'http://localhost:3000/login')
+
+    # Check if user already exists with this email
+    user, created = User.objects.get_or_create(
+        email=lead.email,
+        defaults={
+            'username': lead.email,
+            'first_name': lead.name.split(' ')[0] if lead.name else 'Client',
+            'last_name': ' '.join(lead.name.split(' ')[1:]) if lead.name and len(lead.name.split(' ')) > 1 else '',
+            'is_active': True,
+        }
+    )
+
+    if created:
+        user.set_password(default_password)
+        user.save()
+
+        # Create or update user profile with client_user role
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.role = 'client_user'
+        profile.save()
+    else:
+        # User exists, update password to default (they can change it later)
+        user.set_password(default_password)
+        user.save()
+
+        # Ensure profile has client_user role
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.role = 'client_user'
+        profile.save()
+
+    # Send welcome credentials email
+    send_welcome_credentials_email(user, default_password, login_url)
+
+    log_audit_event(
+        user=actor,
+        action="CLIENT_USER_CREATED",
+        module="crm",
+        object_id=user.id,
+        repr_str=f"Client user created for lead {lead.reference_id}: {user.email}",
+        updated_state={"user_id": user.id, "email": user.email, "role": "client_user"},
+        request=request,
+    )
+
+    return user
 
 
 def mark_lead_lost(*, lead, actor, reason, request=None):
@@ -319,6 +394,7 @@ def assign_lead(*, lead, target_user, actor, request=None):
 def schedule_followup(*, lead, actor, scheduled_at, follow_up_type, notes="", assigned_to=None, request=None):
     """
     Create a follow-up and refresh the lead's next_follow_up_at.
+    If follow_up_type is MEETING, send email notification to lead.
     """
     if assigned_to is not None:
         validate_assignable_user(assigned_to)
@@ -347,6 +423,15 @@ def schedule_followup(*, lead, actor, scheduled_at, follow_up_type, notes="", as
         updated_state=get_model_state(followup),
         request=request,
     )
+
+    # Send email notification if this is a meeting
+    if follow_up_type == LeadFollowUp.FollowUpType.MEETING and lead.email:
+        try:
+            send_meeting_scheduled_email(lead, followup)
+        except Exception:
+            # Log but don't fail the follow-up creation
+            logger.exception(f"Failed to send meeting email for lead {lead.reference_id}")
+
     return followup
 
 
@@ -488,3 +573,54 @@ def delete_note(*, note, actor, request=None):
         repr_str=f"Note deleted from lead {lead_ref}",
         request=request,
     )
+
+
+def schedule_meeting_and_notify(*, lead, scheduled_at, follow_up_type="meeting", meeting_link=None, notes="", actor=None, request=None):
+    """
+    Schedule a meeting with a lead, record the follow-up, and dispatch email notification.
+    """
+    if isinstance(scheduled_at, str):
+        parsed_dt = parse_datetime(scheduled_at)
+        if parsed_dt is None:
+            raise ValidationError("Invalid datetime format for scheduled_at.")
+        scheduled_at = parsed_dt
+
+    followup = LeadFollowUp.objects.create(
+        lead=lead,
+        assigned_to=actor or lead.assigned_to,
+        follow_up_type=follow_up_type,
+        scheduled_at=scheduled_at,
+        notes=notes or f"Meeting scheduled with client. Link: {meeting_link or 'N/A'}",
+        meeting_link=meeting_link or "",
+        status=LeadFollowUp.Status.PENDING,
+    )
+
+    _sync_lead_next_follow_up(lead)
+
+    # Transition lead to contacted if new/under_review
+    if lead.status in (Lead.Status.NEW, Lead.Status.UNDER_REVIEW):
+        lead.status = Lead.Status.CONTACTED
+        lead.save(update_fields=["status", "updated_at"])
+
+    # Dispatch email if lead has an email address
+    if lead.email:
+        try:
+            send_meeting_scheduled_email(lead, followup, meeting_link)
+        except Exception:
+            logger.exception(f"Failed to send meeting scheduled email to {lead.email}")
+
+    log_audit_event(
+        user=actor,
+        action="MEETING_SCHEDULED",
+        module="crm",
+        object_id=followup.id,
+        repr_str=f"Meeting scheduled for lead {lead.reference_id} at {scheduled_at}",
+        updated_state={
+            "lead_id": lead.id,
+            "scheduled_at": scheduled_at.isoformat(),
+            "meeting_link": meeting_link,
+        },
+        request=request,
+    )
+
+    return followup

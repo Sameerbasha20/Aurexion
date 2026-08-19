@@ -39,7 +39,8 @@ class ApplyRateThrottle(AnonRateThrottle):
             OpenApiParameter('location', type=OpenApiTypes.STR, description='Filter by location'),
             OpenApiParameter('experience', type=OpenApiTypes.STR, description='Filter by experience level'),
             OpenApiParameter('search', type=OpenApiTypes.STR, description='Search by job title'),
-        ]
+        ],
+        auth=[]
     )
 )
 @method_decorator(cache_page(60 * 15), name='dispatch')
@@ -75,9 +76,11 @@ class PublicJobVacancyListView(generics.ListAPIView):
     get=extend_schema(
         tags=['Careers (Public)'],
         summary="Get Job Vacancy Details",
-        description="Retrieves full details for a specific active job posting by its ID."
+        description="Retrieves full details for a specific active job posting by its ID.",
+        auth=[]
     )
 )
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class PublicJobVacancyDetailView(generics.RetrieveAPIView):
     """
     Public API: GET /api/v1/careers/jobs/{id}/
@@ -94,6 +97,7 @@ class PublicJobVacancyDetailView(generics.RetrieveAPIView):
         summary="Submit Candidate Application",
         description="Submit a job application with a resume file upload (PDF/DOCX max 5MB).",
         request=ApplySerializer,
+        auth=[]
     )
 )
 class ApplyForJobView(APIView):
@@ -104,9 +108,10 @@ class ApplyForJobView(APIView):
     permission_classes = [AllowAny]
     parser_classes = (MultiPartParser, FormParser)
     throttle_classes = [ApplyRateThrottle]
+    serializer_class = ApplySerializer
     
     def post(self, request):
-        serializer = ApplySerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         
         if serializer.is_valid():
             job_id = serializer.validated_data['job_id']
@@ -127,8 +132,9 @@ class ApplyForJobView(APIView):
                 # Read the actual bytes from the InMemoryUploadedFile
                 file_bytes = resume_file.read()
                 upload_resume(storage_path, file_bytes, resume_file.content_type)
-            except Exception as e:
-                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            except Exception:
+                logger.exception("Resume upload to storage failed for application")
+                return Response({'error': 'Resume upload failed. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
             # 2. Persist Application in PostgreSQL Database
             try:
@@ -143,13 +149,18 @@ class ApplyForJobView(APIView):
                 
                 logger.info(f"AUDIT_EVENT: action=APPLICATION_RECEIVED target={application.tracking_code} actor=CANDIDATE job_id={job.job_id}")
                 
-                # Trigger the asynchronous email acknowledgement task
-                send_application_acknowledgement.delay(application.tracking_code)
+                # Trigger the asynchronous email acknowledgement task (non-blocking)
+                try:
+                    send_application_acknowledgement.delay(application.tracking_code)
+                except Exception as task_err:
+                    # Celery/broker may not be running in dev — log and continue
+                    logger.warning(f"TASK_SKIPPED: Could not queue acknowledgement email: {task_err}")
                 
                 return Response({
                     'message': 'Application submitted successfully.',
                     'tracking_code': application.tracking_code
                 }, status=status.HTTP_201_CREATED)
+
                 
             except Exception as e:
                 # 3. Cleanup orphaned storage object if database persistence fails
@@ -214,8 +225,9 @@ class AdminCandidateApplicationViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             url = generate_signed_url(application.resume_storage_path, expires_in=60)
             return Response({'download_url': url})
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception:
+            logger.exception("Failed to generate signed resume URL")
+            return Response({'error': 'Could not generate a download link. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @extend_schema(tags=['Careers (HR Admin)'], summary="Manage internal ATS notes", request=ApplicationNoteSerializer)
     @action(detail=True, methods=['get', 'post'])

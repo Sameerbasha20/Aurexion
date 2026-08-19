@@ -1,4 +1,5 @@
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count, Exists, OuterRef, Case, When, IntegerField, Sum
+from django.db import models
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
@@ -7,20 +8,13 @@ from rest_framework.views import APIView
 from apps.authentication.models import AuditLog
 from apps.bdm.serializers import BdmDashboardSerializer
 from apps.crm.models import Lead, LeadFollowUp
-from apps.rbac.permissions import BaseRolePermission
+from apps.administration.permissions import BaseRolePermission
 
 
 class CanViewBdmDashboard(BaseRolePermission):
     """BDM dashboard is available to BDM, Administrator and Super Admin roles."""
     allowed_roles = ["super_admin", "administrator", "bdm"]
 
-
-def _open_overdue_followup_subquery():
-    return LeadFollowUp.objects.filter(
-        lead=OuterRef("pk"),
-        status__in=LeadFollowUp.OPEN_STATUSES,
-        scheduled_at__lt=timezone.now(),
-    )
 
 
 @extend_schema(
@@ -33,44 +27,68 @@ class BdmDashboardView(APIView):
     """
     BDM dashboard: every metric is computed from the live Lead/FollowUp tables.
     No static or mock values are returned.
+    Optimized with conditional aggregation to reduce query count.
     """
 
     permission_classes = [CanViewBdmDashboard]
     serializer_class = BdmDashboardSerializer
 
     def get(self, request):
-        lead_base = Lead.objects.all()
         now = timezone.now()
 
-        closed = lead_base.filter(status__in=(Lead.Status.WON, Lead.Status.LOST)).count()
-        won = lead_base.filter(status=Lead.Status.WON).count()
-        lost = lead_base.filter(status=Lead.Status.LOST).count()
-        conversion_rate = round((won / closed) * 100, 2) if closed else 0.0
+        # Single query with conditional aggregation for all lead metrics
+        agg = Lead.objects.aggregate(
+            total_leads=Count("id"),
+            assigned_leads=Count("id", filter=models.Q(assigned_to__isnull=False)),
+            unassigned_leads=Count("id", filter=models.Q(assigned_to__isnull=True)),
+            new_leads=Count("id", filter=models.Q(status=Lead.Status.NEW)),
+            qualified_leads=Count("id", filter=models.Q(status=Lead.Status.QUALIFIED)),
+            active_opportunities=Count("id", filter=models.Q(status__in=Lead.OPPORTUNITY_STATUSES)),
+            won_leads=Count("id", filter=models.Q(status=Lead.Status.WON)),
+            lost_leads=Count("id", filter=models.Q(status=Lead.Status.LOST)),
+        )
 
-        overdue_followups = lead_base.filter(Exists(_open_overdue_followup_subquery())).count()
+        closed = agg["won_leads"] + agg["lost_leads"]
+        conversion_rate = round((agg["won_leads"] / closed) * 100, 2) if closed else 0.0
 
+        # Overdue follow-ups - single fast lookup on the LeadFollowUp table
+        overdue_followups = LeadFollowUp.objects.filter(
+            status__in=LeadFollowUp.OPEN_STATUSES,
+            scheduled_at__lt=now
+        ).values("lead_id").distinct().count()
+
+        # Pipeline summary - single grouped query
         pipeline_summary = (
-            lead_base.values("status")
+            Lead.objects.values("status")
             .annotate(total=Count("id"))
             .order_by("status")
         )
 
+        # Recent activities - limited to 10
         recent_activities = (
             AuditLog.objects.filter(module="crm")
             .select_related("user")
             .order_by("-timestamp")[:10]
         )
 
+        # Recent public form submissions (RFP, contact, estimator, quote)
+        form_sources = ["rfp_form", "contact_form", "request_quote", "estimator", "website_form"]
+        recent_form_submissions = (
+            Lead.objects.filter(source__in=form_sources)
+            .select_related("assigned_to")
+            .order_by("-created_at")[:50]
+        )
+
         return Response({
-            "total_leads": lead_base.count(),
-            "assigned_leads": lead_base.filter(assigned_to__isnull=False).count(),
-            "unassigned_leads": lead_base.filter(assigned_to__isnull=True).count(),
-            "new_leads": lead_base.filter(status=Lead.Status.NEW).count(),
-            "qualified_leads": lead_base.filter(status=Lead.Status.QUALIFIED).count(),
-            "active_opportunities": lead_base.filter(status__in=Lead.OPPORTUNITY_STATUSES).count(),
+            "total_leads": agg["total_leads"],
+            "assigned_leads": agg["assigned_leads"],
+            "unassigned_leads": agg["unassigned_leads"],
+            "new_leads": agg["new_leads"],
+            "qualified_leads": agg["qualified_leads"],
+            "active_opportunities": agg["active_opportunities"],
             "overdue_follow_ups": overdue_followups,
-            "won_leads": won,
-            "lost_leads": lost,
+            "won_leads": agg["won_leads"],
+            "lost_leads": agg["lost_leads"],
             "conversion_rate": conversion_rate,
             "pipeline_summary": [
                 {"status": item["status"], "total": item["total"]} for item in pipeline_summary
@@ -84,5 +102,24 @@ class BdmDashboardView(APIView):
                     "timestamp": item.timestamp,
                 }
                 for item in recent_activities
+            ],
+            "recent_form_submissions": [
+                {
+                    "id": lead.id,
+                    "reference_id": lead.reference_id,
+                    "name": lead.name,
+                    "email": lead.email,
+                    "phone": lead.phone,
+                    "company": lead.company,
+                    "source": lead.source,
+                    "source_display": lead.source.replace("_", " ").title(),
+                    "industry": lead.industry,
+                    "description": lead.description if lead.description else "",
+                    "created_at": lead.created_at,
+                    "status": lead.status,
+                    "assigned_to": lead.assigned_to_id,
+                    "assigned_to_name": lead.assigned_to.username if lead.assigned_to else None,
+                }
+                for lead in recent_form_submissions
             ],
         })

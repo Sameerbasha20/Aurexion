@@ -7,9 +7,9 @@ from apps.cms.views import (
 
 router = DefaultRouter()
 # Admin routes
-router.register(r'cms/admin/services', AdminServiceViewSet, basename='admin-services')
+router.register(r'cms/admin/services', AdminServiceViewSet, basename='admin-service')
 router.register(r'cms/admin/case-studies', AdminCaseStudyViewSet, basename='admin-case-studies')
-router.register(r'cms/admin/industries', AdminIndustryViewSet, basename='admin-industries')
+router.register(r'cms/admin/industries', AdminIndustryViewSet, basename='admin-industry')
 router.register(r'cms/admin/categories', AdminCategoryViewSet, basename='admin-categories')
 router.register(r'cms/admin/blog', AdminBlogPostViewSet, basename='admin-blog')
 
@@ -19,8 +19,8 @@ router.register(r'cms/public/blog', PublicBlogPostViewSet, basename='public-blog
 
 urlpatterns = [
     # Public detail views
-    path('cms/public/services/<slug:slug>/', PublicServiceDetailView.as_view(), name='public-services-detail'),
-    path('cms/public/industries/<slug:slug>/', PublicIndustryDetailView.as_view(), name='public-industries-detail'),
+    path('cms/public/service/<slug:slug>/', PublicServiceDetailView.as_view(), name='public-service-detail'),
+    path('cms/public/industry/<slug:slug>/', PublicIndustryDetailView.as_view(), name='public-industry-detail'),
     
     path('', include(router.urls)),
 ]

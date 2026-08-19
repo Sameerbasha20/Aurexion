@@ -59,7 +59,7 @@ MODULE_ADMINS = [
         "email": config.ADMINISTRATOR_EMAIL,
         "role": "administrator",
         "is_staff": True,
-        "is_superuser": False,
+        "is_superuser": True,
     },
     {
         "module": "Business Development Manager",
@@ -94,8 +94,8 @@ MODULE_ADMINS = [
         "password": config.CONTENT_MANAGER_PASSWORD,
         "email": config.CONTENT_MANAGER_EMAIL,
         "role": "content_manager",
-        "is_staff": False,
-        "is_superuser": False,
+        "is_staff": True,
+        "is_superuser": True,
     },
     {
         "module": "Support Executive",

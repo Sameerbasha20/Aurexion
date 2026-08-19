@@ -25,10 +25,12 @@ class JobVacancy(models.Model):
 
 class CandidateApplication(models.Model):
     class Stage(models.TextChoices):
-        RECEIVED = 'RECEIVED', _('Received')
+        APPLIED = 'APPLIED', _('Applied')
+        SCREENING = 'SCREENING', _('Screening')
         SHORTLISTED = 'SHORTLISTED', _('Shortlisted')
-        INTERVIEWED = 'INTERVIEWED', _('Interviewed')
-        OFFERED = 'OFFERED', _('Offered')
+        INTERVIEW = 'INTERVIEW', _('Interview')
+        OFFER = 'OFFER', _('Offer')
+        HIRED = 'HIRED', _('Hired')
         REJECTED = 'REJECTED', _('Rejected')
 
     tracking_code = models.CharField(max_length=50, unique=True, db_index=True)
@@ -41,7 +43,7 @@ class CandidateApplication(models.Model):
     
     resume_storage_path = models.CharField(max_length=500)
     
-    stage = models.CharField(max_length=20, choices=Stage.choices, default=Stage.RECEIVED, db_index=True)
+    stage = models.CharField(max_length=20, choices=Stage.choices, default=Stage.APPLIED, db_index=True)
     
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)

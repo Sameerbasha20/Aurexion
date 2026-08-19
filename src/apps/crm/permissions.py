@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from apps.rbac.permissions import BaseRolePermission
+from apps.administration.permissions import BaseRolePermission
 
 
 class CanAccessLead(BaseRolePermission):
@@ -16,7 +16,7 @@ class CanAccessLead(BaseRolePermission):
 
 class CanCreateLead(BaseRolePermission):
     """Roles that may create leads in the CRM."""
-    allowed_roles = ["super_admin", "administrator", "bdm"]
+    allowed_roles = ["super_admin", "administrator", "bdm", "sales_executive"]
 
 
 class CanAssignLead(BaseRolePermission):

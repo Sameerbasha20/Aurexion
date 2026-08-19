@@ -1,0 +1,35 @@
+:root {
+  /* Color Palette - Midnight Signal */
+  --color-bg-primary: #050811;
+  --color-bg-secondary: #0c1222;
+  --color-bg-tertiary: #161f38;
+  
+  --color-border: #1e293b;
+  --color-border-hover: #334155;
+  
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  
+  --color-cyan: #63f5e8;
+  --color-cyan-dim: rgba(99, 245, 232, 0.15);
+  --color-cyan-glow: rgba(99, 245, 232, 0.4);
+  --color-cyan-dark: #0f9e93;
+
+  --color-destructive: #ef4444;
+  --color-destructive-dim: rgba(239, 68, 68, 0.15);
+
+  /* Typography Fonts */
+  --font-display: 'Space Grotesk', 'Outfit', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'Outfit', 'Inter', sans-serif;
+
+  /* Layout Constants */
+  --sidebar-width: 260px;
+  --header-height: 70px;
+  --max-width: 1400px;
+
+  /* Transitions */
+  --transition-fast: 160ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
