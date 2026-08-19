@@ -78,6 +78,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',
     'config.middleware.SecurityHeadersMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'config.middleware.RequestBodySizeLimitMiddleware',
@@ -132,6 +133,8 @@ if os.getenv('DB_ENGINE'):
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST'),
             'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 60,
+            'CONN_HEALTH_CHECKS': True,
         }
     }
 else:
@@ -141,6 +144,14 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+PASSWORD_HASHERS = [
+    'apps.authentication.hashers.FastPBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {

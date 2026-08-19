@@ -351,7 +351,7 @@ export const crmService = {
    */
   getAllFollowUps: async (leads?: LeadItem[]): Promise<LeadFollowUp[]> => {
     const leadList = leads || await crmService.getLeads();
-    const followUpsPromises = leadList.slice(0, 30).map(async (lead) => {
+    const followUpsPromises = leadList.slice(0, 5).map(async (lead) => {
       try {
         const items = await crmService.getFollowUps(lead.id);
         return items.map((f) => ({
@@ -406,8 +406,8 @@ export const crmService = {
       }
     });
 
-    // Fetch notes & follow-ups for active leads to build rich activity feed
-    const detailPromises = leadList.slice(0, 15).map(async (lead) => {
+    // Fetch notes & follow-ups for top 3 leads to build rich activity feed without network lag
+    const detailPromises = leadList.slice(0, 3).map(async (lead) => {
       try {
         const [notes, followUps] = await Promise.all([
           crmService.getNotes(lead.id),
