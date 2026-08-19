@@ -646,7 +646,7 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
 }) => {
   if (!isOpen) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
       <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "1.4rem", margin: 0 }}>Edit Lead Information</h2>
@@ -764,7 +764,7 @@ const LeadLostModal: React.FC<LeadLostModalProps> = ({
 }) => {
   if (!isOpen) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
       <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
         <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: "0 0 1rem 0" }}>Mark Lead as Lost</h2>
         <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: "0 0 1rem 0" }}>
@@ -812,7 +812,7 @@ const LeadAssignModal: React.FC<LeadAssignModalProps> = ({
 }) => {
   if (!isOpen) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
       <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
         <h2 style={{ fontSize: "1.3rem", margin: "0 0 1rem 0" }}>Assign Lead to Executive</h2>
         <form onSubmit={onAssign} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -858,7 +858,7 @@ const LeadScheduleFollowUpModal: React.FC<LeadScheduleFollowUpModalProps> = ({
 }) => {
   if (!isOpen) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
       <Card borderAccent style={{ width: "100%", maxWidth: "500px", padding: "2rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "1.3rem", margin: 0 }}>Schedule Client Follow-up</h2>

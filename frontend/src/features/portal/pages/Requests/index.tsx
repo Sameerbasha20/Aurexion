@@ -169,7 +169,7 @@ export const Requests: React.FC = () => {
 
       {/* New Request Modal */}
       {isModalOpen && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
           <Card borderAccent style={{ width: "100%", maxWidth: "480px", maxHeight: "85vh", overflowY: "auto", padding: "1.75rem", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
               <h2 style={{ fontSize: "1.25rem", color: "#63f5e8", margin: 0 }}>Submit Custom Request</h2>

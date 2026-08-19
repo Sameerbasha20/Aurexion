@@ -539,7 +539,7 @@ export const Dashboard: React.FC = () => {
 
       {/* Modal: Assign Submission */}
       {modalMode === "assign" && selectedSubmission && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1rem" }}>
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1rem" }}>
           <Card borderAccent style={{ width: "100%", maxWidth: "500px", padding: "1.5rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <div>
@@ -597,7 +597,7 @@ export const Dashboard: React.FC = () => {
 
       {/* Modal: Decline Submission */}
       {modalMode === "decline" && selectedSubmission && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1rem" }}>
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1rem" }}>
           <Card style={{ width: "100%", maxWidth: "500px", padding: "1.5rem", borderColor: "rgba(239, 68, 68, 0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <div>
@@ -645,7 +645,7 @@ export const Dashboard: React.FC = () => {
 
       {/* Modal: BDM Lead Detail View */}
       {selectedLeadDetail && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
           <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <div>
