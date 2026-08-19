@@ -74,8 +74,10 @@ class AuthenticationAPITestCase(APITestCase):
             'password': 'ClientP@ss10'
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
+        self.assertIn('access_token', response.cookies)
+        self.assertIn('refresh_token', response.cookies)
+        self.assertNotIn('access', response.data)
+        self.assertNotIn('refresh', response.data)
         self.assertEqual(response.data['user']['role'], 'client_user')
 
         # Check that LOGIN_SUCCESS audit log was created

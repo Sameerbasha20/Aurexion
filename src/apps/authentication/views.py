@@ -1,6 +1,7 @@
 import time
+from django.conf import settings
 from django.core.cache import cache
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from rest_framework import status, viewsets, filters
@@ -8,6 +9,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from apps.authentication.models import AuditLog
 from apps.authentication.serializers import (
@@ -114,17 +118,42 @@ class LoginView(APIView):
                     request=request
                 )
 
+                # Prevent session fixation by cycling session key / rotating session ID
+                django_login(request, user)
+
                 role = user.profile.role if hasattr(user, 'profile') else 'client_user'
-                return Response({
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
+                response_data = {
                     'user': {
                         'id': user.id,
                         'username': user.username,
                         'email': user.email,
                         'role': role
                     }
-                }, status=status.HTTP_200_OK)
+                }
+                response = Response(response_data, status=status.HTTP_200_OK)
+
+                # Set secure HttpOnly cookies
+                access_token_lifetime = api_settings.ACCESS_TOKEN_LIFETIME.total_seconds()
+                refresh_token_lifetime = api_settings.REFRESH_TOKEN_LIFETIME.total_seconds()
+
+                response.set_cookie(
+                    'access_token',
+                    str(refresh.access_token),
+                    max_age=int(access_token_lifetime),
+                    httponly=True,
+                    secure=settings.SESSION_COOKIE_SECURE,
+                    samesite='Lax'
+                )
+                response.set_cookie(
+                    'refresh_token',
+                    str(refresh),
+                    max_age=int(refresh_token_lifetime),
+                    httponly=True,
+                    secure=settings.SESSION_COOKIE_SECURE,
+                    samesite='Lax'
+                )
+
+                return response
             else:
                 # User exists but is inactive
                 record_failed_attempt(username, ip)
@@ -182,6 +211,74 @@ class UserProfileView(APIView):
             'role': role,
             'date_joined': user.date_joined
         }, status=status.HTTP_200_OK)
+
+
+class LogoutView(APIView):
+    """
+    Endpoint: POST /api/v1/auth/logout/
+    Clears cookies and invalidates the session.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        response = Response({"success": True}, status=status.HTTP_200_OK)
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        
+        # Invalidate active Django session
+        if request.user and request.user.is_authenticated:
+            django_logout(request)
+            
+        return response
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    """
+    Endpoint: POST /api/v1/auth/token/refresh/
+    Re-issues access (and rotated refresh) tokens via HttpOnly cookies.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
+            return Response({"detail": "Refresh token is missing."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(data={'refresh': refresh_token})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+            
+        access = serializer.validated_data.get('access')
+        refresh = serializer.validated_data.get('refresh')
+        
+        response = Response({"success": True}, status=status.HTTP_200_OK)
+        
+        access_token_lifetime = api_settings.ACCESS_TOKEN_LIFETIME.total_seconds()
+        response.set_cookie(
+            'access_token',
+            access,
+            max_age=int(access_token_lifetime),
+            httponly=True,
+            secure=settings.SESSION_COOKIE_SECURE,
+            samesite='Lax'
+        )
+        
+        if refresh:
+            refresh_token_lifetime = api_settings.REFRESH_TOKEN_LIFETIME.total_seconds()
+            response.set_cookie(
+                'refresh_token',
+                refresh,
+                max_age=int(refresh_token_lifetime),
+                httponly=True,
+                secure=settings.SESSION_COOKIE_SECURE,
+                samesite='Lax'
+            )
+            
+        return response
 
 
 # --- User Management Views (RBAC Protected) ---

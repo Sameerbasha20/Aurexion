@@ -9,8 +9,6 @@ export interface UserResponse {
 }
 
 export interface LoginResponse {
-  refresh: string;
-  access: string;
   user: UserResponse;
 }
 
@@ -23,7 +21,12 @@ export const authService = {
     return data;
   },
 
-  logout: async () => {
+  logout: async (): Promise<{ success: boolean }> => {
+    try {
+      await axiosClient.post("/auth/logout/");
+    } catch {
+      // Ignore
+    }
     return { success: true };
   },
 
