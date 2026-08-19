@@ -187,8 +187,9 @@ export const EstimatorPage: React.FC = () => {
                   )}
                   <button type="button"
                     className="signal-button"
-                    style={{ opacity: canAdvance ? 1 : 0.4, cursor: canAdvance ? "pointer" : "default" }}
-                    onClick={() => canAdvance && advance()}
+                    style={{ opacity: canAdvance ? 1 : 0.4, cursor: canAdvance ? "pointer" : "not-allowed" }}
+                    disabled={!canAdvance}
+                    onClick={advance}
                   >
                     {step === ESTIMATOR_STEPS.length - 1 ? "GET ESTIMATE" : "NEXT →"}
                   </button>

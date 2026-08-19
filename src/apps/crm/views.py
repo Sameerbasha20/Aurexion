@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -88,12 +87,6 @@ def _lead_csv_rows(queryset):
         yield buffer.getvalue()
 
 
-class LeadPagination(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = "page_size"
-    max_page_size = 100
-
-
 def _open_overdue_followup_subquery():
     return LeadFollowUp.objects.filter(
         lead=OuterRef("pk"),
@@ -144,7 +137,6 @@ class LeadViewSet(viewsets.ModelViewSet):
     - All sensitive operations are written to the AuditLog (module='crm').
     """
 
-    pagination_class = LeadPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["reference_id", "name", "company", "email", "phone"]
     ordering_fields = [
@@ -176,14 +168,11 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        from django.db.models import Count, Subquery, OuterRef, IntegerField
-        
-        follow_up_subq = LeadFollowUp.objects.filter(lead=OuterRef("pk")).values("lead").annotate(c=Count("*")).values("c")[:1]
-        note_subq = LeadNote.objects.filter(lead=OuterRef("pk")).values("lead").annotate(c=Count("*")).values("c")[:1]
+        from django.db.models import Count
         
         queryset = Lead.objects.select_related("created_by", "assigned_to").annotate(
-            follow_up_count=Subquery(follow_up_subq, output_field=IntegerField()),
-            note_count=Subquery(note_subq, output_field=IntegerField()),
+            follow_up_count=Count("follow_ups", distinct=True),
+            note_count=Count("notes", distinct=True),
         )
 
         role = getattr(getattr(user, "profile", None), "role", None)

@@ -30,7 +30,7 @@ class AdminCaseStudyViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
 class AdminIndustryViewSet(viewsets.ModelViewSet):
-    queryset = Industry.objects.all().order_by('-created_at')
+    queryset = Industry.objects.all().prefetch_related('services', 'case_studies').order_by('-created_at')
     serializer_class = IndustrySerializer
     permission_classes = [IsContentManager]
     lookup_field = 'slug'
@@ -42,7 +42,7 @@ class AdminCategoryViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
 class AdminBlogPostViewSet(viewsets.ModelViewSet):
-    queryset = BlogPost.objects.all().order_by('-created_at')
+    queryset = BlogPost.objects.all().select_related('author', 'category').order_by('-created_at')
     serializer_class = BlogPostSerializer
     permission_classes = [IsContentManager]
     lookup_field = 'slug'

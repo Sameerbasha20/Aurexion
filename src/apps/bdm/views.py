@@ -16,13 +16,6 @@ class CanViewBdmDashboard(BaseRolePermission):
     allowed_roles = ["super_admin", "administrator", "bdm"]
 
 
-def _open_overdue_followup_subquery():
-    return LeadFollowUp.objects.filter(
-        lead=OuterRef("pk"),
-        status__in=LeadFollowUp.OPEN_STATUSES,
-        scheduled_at__lt=timezone.now(),
-    )
-
 
 @extend_schema(
     tags=["BDM"],
@@ -58,8 +51,11 @@ class BdmDashboardView(APIView):
         closed = agg["won_leads"] + agg["lost_leads"]
         conversion_rate = round((agg["won_leads"] / closed) * 100, 2) if closed else 0.0
 
-        # Overdue follow-ups - single query with Exists
-        overdue_followups = Lead.objects.filter(Exists(_open_overdue_followup_subquery())).count()
+        # Overdue follow-ups - single fast lookup on the LeadFollowUp table
+        overdue_followups = LeadFollowUp.objects.filter(
+            status__in=LeadFollowUp.OPEN_STATUSES,
+            scheduled_at__lt=now
+        ).values("lead_id").distinct().count()
 
         # Pipeline summary - single grouped query
         pipeline_summary = (
@@ -80,7 +76,7 @@ class BdmDashboardView(APIView):
         recent_form_submissions = (
             Lead.objects.filter(source__in=form_sources)
             .select_related("assigned_to")
-            .order_by("-created_at")[:50]
+            .order_by("-created_at")[:10]
         )
 
         return Response({

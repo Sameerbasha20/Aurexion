@@ -705,7 +705,7 @@ export const Dashboard: React.FC = () => {
       </Card>
       {/* Schedule Meeting Modal */}
       {selectedMeetingLead && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
           <Card borderAccent style={{ width: "100%", maxWidth: "520px", padding: "2rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
               <div>
@@ -822,7 +822,7 @@ export const Dashboard: React.FC = () => {
 
       {/* Lead Detail Modal */}
       {selectedLeadDetail && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
           <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <div>
