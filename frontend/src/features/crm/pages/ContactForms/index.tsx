@@ -84,9 +84,13 @@ export const ContactForms: React.FC = () => {
 
   const contactLeads = leads.filter((lead) => {
     const isContactSource =
+      !lead.source ||
       lead.source === "contact_form" ||
       lead.source === "website_form" ||
-      lead.source === "website";
+      lead.source === "website" ||
+      lead.source === "rfp_form" ||
+      lead.source === "request_quote" ||
+      lead.source === "estimator";
 
     const matchesSearch =
       !searchTerm ||

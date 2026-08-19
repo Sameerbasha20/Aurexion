@@ -51,18 +51,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ open }) => {
   const navItems = SIDEBAR_NAV[role] || [];
 
   return (
-    <aside className="max-md:absolute max-md:left-0 max-md:top-[70px] max-md:z-50" style={{
+    <aside className="max-md:fixed max-md:left-0 max-md:top-[70px] max-md:z-50" style={{
       width: "260px",
+      minWidth: "260px",
       backgroundColor: "#0c1222",
       borderRight: "1px solid #1e293b",
-      height: "calc(100vh - 70px)",
-      position: "sticky",
-      top: "70px",
+      height: "100%",
+      maxHeight: "calc(100vh - 70px)",
+      position: "relative",
+      flexShrink: 0,
       padding: "1.5rem 1rem",
       display: "flex",
       flexDirection: "column",
       gap: "0.5rem",
       overflowY: "auto",
+      zIndex: 40,
     }}>
       <div style={{
         fontFamily: "IBM Plex Mono, monospace",

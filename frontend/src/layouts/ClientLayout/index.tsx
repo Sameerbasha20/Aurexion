@@ -28,7 +28,9 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
       style={{
         display: "flex",
         flexDirection: "column",
-        minHeight: "100vh",
+        height: "100vh",
+        maxHeight: "100vh",
+        overflow: "hidden",
         backgroundColor: "#050811",
       }}
     >
@@ -43,6 +45,7 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
             borderBottom: "1px solid #1e293b",
             backgroundColor: "#0a111c",
             overflowX: "auto",
+            flexShrink: 0,
           }}
           aria-label="Client navigation"
         >
@@ -75,7 +78,7 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
         </nav>
       )}
 
-      <div style={{ display: "flex", flex: 1 }}>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
         <Sidebar open={showSidebar} />
         <main
           style={{
@@ -84,6 +87,7 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
             display: "flex",
             flexDirection: "column",
             gap: "2rem",
+            overflowY: "auto",
             overflowX: "hidden",
             minWidth: 0,
           }}

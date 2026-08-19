@@ -23,7 +23,7 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "../../../../components/ui/dialog";
-import { AlertCircle, CheckCircle, UserCheck, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, UserCheck, XCircle, Eye, ArrowUpRight, Mail, Phone } from "lucide-react";
 import type { Lead } from "../../services/bdmService";
 import { bdmService } from "../../services/bdmService";
 
@@ -48,11 +48,13 @@ const PRIORITY_COLORS: Record<string, string> = {
 export const RFP: React.FC = () => {
   const [search, setSearch] = useState("");
 
-  const { leads, totalCount, isLoading, error, refetch, currentPage, totalPages, nextPage, prevPage, hasNext, hasPrev } = useLeads({
+  const { leads: rfpLeads, totalCount, isLoading, error, refetch, currentPage, totalPages, nextPage, prevPage, hasNext, hasPrev } = useLeads({
     search: search || undefined,
+    source: "rfp_form",
   });
 
-  const rfpLeads = leads.filter((lead) => lead.source === "rfp_form");
+  // Lead Detail View modal state
+  const [selectedLeadDetail, setSelectedLeadDetail] = useState<Lead | null>(null);
 
   // Accept/Decline modals state
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -300,36 +302,47 @@ export const RFP: React.FC = () => {
                       </TableCell>
                       <TableCell>{formatDate(lead.created_at)}</TableCell>
                       <TableCell>
-                        {lead.status === "new" && !lead.assigned_to ? (
-                          <div style={{ display: "flex", gap: "0.5rem" }}>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleAcceptClick(lead)}
-                              disabled={isLoadingUsers || isActionLoading}
-                              className="text-green-400 border-green-400 hover:bg-green-400/10"
-                            >
-                              <UserCheck className="h-4 w-4 mr-1" /> Accept
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDeclineClick(lead)}
-                              disabled={isActionLoading}
-                              className="text-red-400 border-red-400 hover:bg-red-400/10"
-                            >
-                              <XCircle className="h-4 w-4 mr-1" /> Decline
-                            </Button>
-                          </div>
-                        ) : lead.assigned_to ? (
-                          <span style={{ color: "#60a5fa", fontSize: "0.8rem" }}>
-                            Assigned to {lead.assigned_to_name}
-                          </span>
-                        ) : lead.status === "lost" ? (
-                          <span style={{ color: "#ef4444", fontSize: "0.8rem" }}>Declined</span>
-                        ) : (
-                          <span style={{ color: "#fbbf24", fontSize: "0.8rem" }}>{lead.status.replace(/_/g, " ")}</span>
-                        )}
+                        <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedLeadDetail(lead)}
+                            style={{ fontSize: "0.78rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)" }}
+                          >
+                            <Eye className="h-3.5 w-3.5 mr-1" /> View Detail
+                          </Button>
+
+                          {lead.status === "new" && !lead.assigned_to ? (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleAcceptClick(lead)}
+                                disabled={isLoadingUsers || isActionLoading}
+                                className="text-green-400 border-green-400 hover:bg-green-400/10"
+                              >
+                                <UserCheck className="h-3.5 w-3.5 mr-1" /> Accept
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeclineClick(lead)}
+                                disabled={isActionLoading}
+                                className="text-red-400 border-red-400 hover:bg-red-400/10"
+                              >
+                                <XCircle className="h-3.5 w-3.5 mr-1" /> Decline
+                              </Button>
+                            </>
+                          ) : lead.assigned_to ? (
+                            <span style={{ color: "#60a5fa", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                              Assigned: {lead.assigned_to_name}
+                            </span>
+                          ) : lead.status === "lost" ? (
+                            <span style={{ color: "#ef4444", fontSize: "0.8rem" }}>Declined</span>
+                          ) : (
+                            <span style={{ color: "#fbbf24", fontSize: "0.8rem" }}>{lead.status.replace(/_/g, " ")}</span>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -443,6 +456,111 @@ export const RFP: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Modal: BDM RFP / Lead Detail View */}
+      {selectedLeadDetail && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+          <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <div>
+                <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                  RFP INQUIRY DETAIL VIEW
+                </span>
+                <h2 style={{ fontSize: "1.5rem", color: "#f8fafc", margin: "0.2rem 0 0 0" }}>
+                  {selectedLeadDetail.company || selectedLeadDetail.name}
+                </h2>
+              </div>
+              <button onClick={() => setSelectedLeadDetail(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", fontSize: "1.5rem" }}>
+                ✕
+              </button>
+            </div>
+
+            {/* Lead Header Info */}
+            <div style={{ backgroundColor: "rgba(10, 17, 28, 0.6)", border: "1px solid rgba(140, 174, 187, 0.15)", padding: "1.25rem", borderRadius: "6px", marginBottom: "1.5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
+                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontWeight: 600 }}>
+                  REF: {selectedLeadDetail.reference_id || `#LD-${selectedLeadDetail.id}`}
+                </span>
+                {getStatusBadge(selectedLeadDetail.status)}
+                {getPriorityBadge(selectedLeadDetail.priority)}
+              </div>
+              <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", fontSize: "0.85rem", color: "#94a3b8" }}>
+                <span>Submitted: <strong style={{ color: "#f8fafc" }}>{formatDate(selectedLeadDetail.created_at)}</strong></span>
+                <span>Assigned To: <strong style={{ color: selectedLeadDetail.assigned_to_name ? "#38bdf8" : "#fbbf24" }}>{selectedLeadDetail.assigned_to_name || "Unassigned"}</strong></span>
+              </div>
+            </div>
+
+            {/* Contact Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.4)", border: "1px solid rgba(140, 174, 187, 0.1)", padding: "1rem", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PRIMARY CONTACT</span>
+                <p style={{ margin: "0.5rem 0 0 0", fontSize: "1rem", fontWeight: 600, color: "#f8fafc" }}>{selectedLeadDetail.name}</p>
+                <p style={{ margin: "0.25rem 0 0 0", color: "#cbd5e1" }}>{selectedLeadDetail.company || "Direct Individual"}</p>
+              </div>
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.4)", border: "1px solid rgba(140, 174, 187, 0.1)", padding: "1rem", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EMAIL</span>
+                <a href={`mailto:${selectedLeadDetail.email}`} style={{ marginTop: "0.5rem", display: "flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", textDecoration: "none" }}>
+                  <Mail size={13} /> {selectedLeadDetail.email}
+                </a>
+              </div>
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.4)", border: "1px solid rgba(140, 174, 187, 0.1)", padding: "1rem", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PHONE</span>
+                <a href={`tel:${selectedLeadDetail.phone}`} style={{ marginTop: "0.5rem", display: "flex", alignItems: "center", gap: "0.3rem", color: "#cbd5e1", textDecoration: "none" }}>
+                  <Phone size={13} /> {selectedLeadDetail.phone || "Not provided"}
+                </a>
+              </div>
+            </div>
+
+            {/* Requirement Brief */}
+            {selectedLeadDetail.description && (
+              <div style={{ marginBottom: "1.5rem", padding: "1rem", backgroundColor: "rgba(5, 8, 17, 0.6)", border: "1px solid rgba(140, 174, 187, 0.1)", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>RFP REQUIREMENT BRIEF</span>
+                <p style={{ margin: "0.5rem 0 0 0", color: "#cbd5e1", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{selectedLeadDetail.description}</p>
+              </div>
+            )}
+
+            {/* BDM Action Buttons */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", justifyContent: "flex-end" }}>
+              {selectedLeadDetail.status !== "lost" && !selectedLeadDetail.assigned_to && (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const item = selectedLeadDetail;
+                      setSelectedLeadDetail(null);
+                      handleDeclineClick(item);
+                    }}
+                    style={{ fontSize: "0.82rem", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.3)" }}
+                  >
+                    <XCircle size={14} style={{ marginRight: "0.35rem" }} /> Decline RFP
+                  </Button>
+                  <Button
+                    glow
+                    onClick={() => {
+                      const item = selectedLeadDetail;
+                      setSelectedLeadDetail(null);
+                      handleAcceptClick(item);
+                    }}
+                    style={{ fontSize: "0.82rem" }}
+                  >
+                    <UserCheck size={14} style={{ marginRight: "0.35rem" }} /> Accept & Assign Executive
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  window.open(`/crm/leads/${selectedLeadDetail.id}`, '_blank');
+                  setSelectedLeadDetail(null);
+                }}
+                style={{ fontSize: "0.82rem" }}
+              >
+                <ArrowUpRight size={14} style={{ marginRight: "0.35rem" }} /> Open Full Lead Workspace
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

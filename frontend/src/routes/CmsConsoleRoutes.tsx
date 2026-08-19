@@ -20,7 +20,14 @@ export const CmsConsoleRoutes: React.FC = () => {
         <Route path="/cms/blog" component={Blog} />
         <Route path="/cms/categories" component={Categories} />
 
-        {/* /admin/cms & /admin/content Aliases */}
+        {/* /content & /admin/content Aliases */}
+        <Route path="/content/dashboard" component={CmsDashboard} />
+        <Route path="/content/services" component={Services} />
+        <Route path="/content/case-studies" component={CaseStudies} />
+        <Route path="/content/industries" component={Industries} />
+        <Route path="/content/blog" component={Blog} />
+        <Route path="/content/categories" component={Categories} />
+
         <Route path="/admin/cms" component={CmsDashboard} />
         <Route path="/admin/content" component={CmsDashboard} />
         <Route path="/admin/content/services" component={Services} />

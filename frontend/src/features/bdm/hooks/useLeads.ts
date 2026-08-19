@@ -4,6 +4,7 @@ import { bdmService, Lead, LeadsResponse } from "../services/bdmService";
 interface UseLeadsOptions {
   status?: string;
   search?: string;
+  source?: string;
 }
 
 export function useLeads(options: UseLeadsOptions = {}) {
@@ -20,6 +21,7 @@ export function useLeads(options: UseLeadsOptions = {}) {
         page: pageNum,
         status: options.status,
         search: options.search,
+        source: options.source,
       });
       setData(response);
       setPage(pageNum);
@@ -28,7 +30,7 @@ export function useLeads(options: UseLeadsOptions = {}) {
     } finally {
       setIsLoading(false);
     }
-  }, [options.status, options.search]);
+  }, [options.status, options.search, options.source]);
 
   useEffect(() => {
     fetchLeads(1);
