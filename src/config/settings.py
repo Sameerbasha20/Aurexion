@@ -78,6 +78,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'config.middleware.SecurityHeadersMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'config.middleware.RequestBodySizeLimitMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -195,6 +196,7 @@ else:
 # DRF Configuration
 
 REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.StandardResultsSetPagination',
     'DEFAULT_RENDERER_CLASSES': (
         'apps.core.renderers.StandardResponseJSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
@@ -241,6 +243,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Aurexion Enterprise Platform API',
     'DESCRIPTION': 'API documentation for Aurexion Technologies platform.',
     'VERSION': '1.0.0',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
     'SERVE_INCLUDE_SCHEMA': False,
     'ENUM_NAME_OVERRIDES': {
         'LeadStatusEnum': 'apps.crm.models.LeadStatus',

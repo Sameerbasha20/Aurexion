@@ -12,7 +12,6 @@ export const AssociatedServices = ({ industry }) => {
         <h2 className="text-3xl font-bold mb-12">
           Technology Services for {industry.name}
         </h2>
-
         <ServiceCardGrid serviceSlugs={industry.relatedServices} />
       </div>
     </section>
