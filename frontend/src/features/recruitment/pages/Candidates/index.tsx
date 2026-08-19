@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
 import { useCandidates } from "../../hooks/useRecruitment";
-import { CandidateItem } from "../../services/recruitmentService";
+import recruitmentService, { CandidateItem } from "../../services/recruitmentService";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import {
@@ -48,6 +48,17 @@ export const Candidates: React.FC = () => {
     setSelectedCandidate(candidate);
     setNewStage(candidate.stage || "SCREENING");
     setIsStageModalOpen(true);
+  };
+
+  const handleViewResume = async (trackingCode: string) => {
+    try {
+      const response = await recruitmentService.getApplicationResumeUrl(trackingCode);
+      if (response.download_url) {
+        window.open(response.download_url, "_blank");
+      }
+    } catch (err: any) {
+      alert("Failed to load resume URL");
+    }
   };
 
   const handleSaveStage = async (e: React.FormEvent) => {
@@ -321,14 +332,12 @@ export const Candidates: React.FC = () => {
 
                       <td style={{ padding: "1rem" }}>
                         {candidate.resume_url ? (
-                          <a
-                            href={candidate.resume_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.78rem", textDecoration: "underline" }}
+                          <button
+                            onClick={() => handleViewResume(candidate.tracking_code)}
+                            style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.78rem", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                           >
                             <Download size={13} /> View Resume
-                          </a>
+                          </button>
                         ) : (
                           <span style={{ color: "#64748b", fontSize: "0.75rem" }}>Attached</span>
                         )}
