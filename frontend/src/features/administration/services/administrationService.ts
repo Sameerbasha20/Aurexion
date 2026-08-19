@@ -47,10 +47,25 @@ export const administrationService = {
     const roles = Array.isArray(data) ? data : (data.results || []);
     return roles.map((r: any) => ({
       id: String(r.id),
-      code: r.code,
+      code: r.code || r.name,
       name: r.name,
       description: r.description,
-      permissions: r.permissions || [],
+      permissions: (r.permissions || r.module_permissions || []).map((rule: any) => {
+        if (typeof rule === "string") return rule;
+        if (rule && typeof rule === "object") {
+          if (rule.module) {
+            const actions = [
+              rule.can_read && "read",
+              rule.can_create && "create",
+              rule.can_update && "update",
+              rule.can_delete && "delete",
+            ].filter(Boolean).join(",");
+            return actions ? `${rule.module}: ${actions}` : rule.module;
+          }
+          return JSON.stringify(rule);
+        }
+        return String(rule || "");
+      }),
     }));
   },
 

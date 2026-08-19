@@ -1,6 +1,5 @@
 from django.http import JsonResponse
 
-
 def error_400(request, exception=None):
     return JsonResponse({"detail": "Bad request."}, status=400)
 

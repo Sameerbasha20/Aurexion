@@ -16,10 +16,11 @@ export const AppRouter: React.FC = () => {
   return (
     <Switch>
       {/* Auth routes */}
+      <Route path="/login*" component={AuthRoutes} />
       <Route path="/login" component={AuthRoutes} />
-      <Route path="/forgot-password" component={AuthRoutes} />
-      <Route path="/reset-password" component={AuthRoutes} />
-      <Route path="/verify-email" component={AuthRoutes} />
+      <Route path="/forgot-password*" component={AuthRoutes} />
+      <Route path="/reset-password*" component={AuthRoutes} />
+      <Route path="/verify-email*" component={AuthRoutes} />
 
       {/* Admin Protected scopes */}
       <Route path="/admin/*">

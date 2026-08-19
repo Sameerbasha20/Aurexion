@@ -80,6 +80,7 @@ class PublicJobVacancyListView(generics.ListAPIView):
         auth=[]
     )
 )
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class PublicJobVacancyDetailView(generics.RetrieveAPIView):
     """
     Public API: GET /api/v1/careers/jobs/{id}/

@@ -13,6 +13,7 @@ export const Footer: React.FC = () => {
           {/* Col 1: Brand & Description */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
+              <img src="/logo.svg" alt="Aurexion" className="h-7 w-7 object-contain" />
               <span className="text-2xl font-bold tracking-tighter text-primary">AUREXION</span>
             </Link>
             <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
