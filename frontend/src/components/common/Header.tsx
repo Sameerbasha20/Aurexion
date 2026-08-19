@@ -138,9 +138,23 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
             </button>
           </div>
         ) : (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <Link href="/login">
-              <span style={{ fontSize: "0.85rem", color: "#cbd5e1", cursor: "pointer" }}>Login</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <Link href="/">
+              <span
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#94a3b8",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                  transition: "color 150ms ease",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.color = "#63f5e8")}
+                onMouseOut={(e) => (e.currentTarget.style.color = "#94a3b8")}
+              >
+                ← Back to Home
+              </span>
             </Link>
             <Link href="/login?role=client">
               <span
