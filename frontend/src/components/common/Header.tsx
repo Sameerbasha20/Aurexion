@@ -29,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
       position: "sticky",
       top: 0,
       zIndex: 100,
+      flexShrink: 0,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
         {showToggle && onToggleSidebar && (

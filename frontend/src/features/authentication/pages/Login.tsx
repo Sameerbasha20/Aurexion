@@ -295,7 +295,7 @@ export const Login: React.FC = () => {
         </div>
 
         <Button type="submit" glow style={{ width: "100%", height: "46px", marginTop: "8px" }} disabled={isLoading}>
-          {isLoading ? "ESTABLISHING SECURE PORT..." : "ESTABLISH SESSION"}
+          {isLoading ? "Logging in..." : "Login"}
         </Button>
       </form>
     </Card>
