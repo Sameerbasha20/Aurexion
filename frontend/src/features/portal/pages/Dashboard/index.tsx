@@ -14,16 +14,71 @@ import useMyTickets from "../../hooks/useMyTickets";
 interface KpiCardProps {
   label: string;
   value: number;
+  icon: React.ReactNode;
   accent?: string;
   hint?: string;
+  path?: string;
 }
 
-const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent = "#63f5e8", hint }) => (
-  <Card glowOnHover>
-    <h3 style={{ margin: 0, fontSize: "0.9rem", color: "#94a3b8" }}>{label}</h3>
-    <p style={{ fontSize: "2.25rem", fontWeight: 600, color: accent, margin: "0.5rem 0 0 0" }}>{value}</p>
-    {hint && <span style={{ color: "#64748b", fontSize: "0.8rem" }}>{hint}</span>}
-  </Card>
+const KpiCard: React.FC<KpiCardProps> = ({ label, value, icon, accent = "#63f5e8", hint, path = "/portal/support/tickets" }) => (
+  <Link href={path}>
+    <Card
+      glowOnHover
+      style={{
+        cursor: "pointer",
+        height: "100%",
+        padding: "1.5rem",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+        <span
+          style={{
+            fontSize: "0.75rem",
+            fontFamily: "IBM Plex Mono, monospace",
+            color: "#64748b",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
+        >
+          {label}
+        </span>
+        <div
+          style={{
+            color: accent,
+            backgroundColor: "rgba(99, 245, 232, 0.06)",
+            padding: "6px",
+            borderRadius: "6px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {icon}
+        </div>
+      </div>
+      <div>
+        <div
+          style={{
+            fontSize: "2rem",
+            fontWeight: 600,
+            color: "#f8fafc",
+            fontFamily: "Space Grotesk, sans-serif",
+            lineHeight: 1.1,
+          }}
+        >
+          {value}
+        </div>
+        {hint && (
+          <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.35rem" }}>
+            {hint}
+          </div>
+        )}
+      </div>
+    </Card>
+  </Link>
 );
 
 const MODULES = [
@@ -69,11 +124,41 @@ export const Dashboard: React.FC = () => {
         <ErrorState error={tickets.error} onRetry={tickets.refetch} title="Unable to load dashboard statistics" />
       ) : stats && tickets.data ? (
         <>
-          <div style={{ display: "grid", gap: "1.5rem" }} className="grid-responsive">
-            <KpiCard label="Open Tickets" value={stats.open} hint="Open or assigned" />
-            <KpiCard label="In Progress" value={stats.inProgress} accent="#63f5e8" hint="Currently being worked on" />
-            <KpiCard label="Awaiting Client" value={stats.awaitingClient} accent="#c4b5fd" hint="Waiting on your input" />
-            <KpiCard label="Resolved" value={stats.resolved} accent="#4ade80" hint="Resolution delivered" />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "1.25rem",
+            }}
+          >
+            <KpiCard
+              label="Open Tickets"
+              value={stats.open}
+              icon={<LifeBuoy size={16} />}
+              accent="#63f5e8"
+              hint="Open or assigned"
+            />
+            <KpiCard
+              label="In Progress"
+              value={stats.inProgress}
+              icon={<Clock size={16} />}
+              accent="#fbbf24"
+              hint="Currently being worked on"
+            />
+            <KpiCard
+              label="Awaiting Client"
+              value={stats.awaitingClient}
+              icon={<MessageSquareCode size={16} />}
+              accent="#c4b5fd"
+              hint="Waiting on your input"
+            />
+            <KpiCard
+              label="Resolved"
+              value={stats.resolved}
+              icon={<CheckCircle2 size={16} />}
+              accent="#4ade80"
+              hint="Resolution delivered"
+            />
           </div>
 
           {stats.total === 0 ? (

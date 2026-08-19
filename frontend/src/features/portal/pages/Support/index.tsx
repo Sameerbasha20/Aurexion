@@ -34,28 +34,119 @@ export const SupportHome: React.FC = () => {
         <ErrorState error={tickets.error} onRetry={tickets.refetch} title="Unable to load support tickets" />
       ) : stats ? (
         <>
-          <div style={{ display: "grid", gap: "1.5rem" }} className="grid-responsive">
-            <Card glowOnHover>
-              <h3 style={{ margin: 0, fontSize: "0.9rem", color: "#94a3b8" }}>Total Tickets</h3>
-              <p style={{ fontSize: "2.25rem", fontWeight: 600, color: "#63f5e8", margin: "0.5rem 0 0 0" }}>{stats.total}</p>
-              <span style={{ color: "#64748b", fontSize: "0.8rem" }}>All your submitted tickets</span>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "1.25rem",
+            }}
+          >
+            <Card
+              glowOnHover
+              style={{
+                padding: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Total Tickets
+                </span>
+                <div style={{ color: "#63f5e8", backgroundColor: "rgba(99, 245, 232, 0.06)", padding: "6px", borderRadius: "6px", display: "flex" }}>
+                  <LifeBuoy size={16} />
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: "2rem", fontWeight: 600, color: "#f8fafc", fontFamily: "Space Grotesk, sans-serif", lineHeight: 1.1 }}>
+                  {stats.total}
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.35rem" }}>
+                  All your submitted tickets
+                </div>
+              </div>
             </Card>
-            <Card glowOnHover>
-              <h3 style={{ margin: 0, fontSize: "0.9rem", color: "#94a3b8" }}>Active</h3>
-              <p style={{ fontSize: "2.25rem", fontWeight: 600, color: "#fbbf24", margin: "0.5rem 0 0 0" }}>
-                {stats.open + stats.inProgress + stats.awaitingClient}
-              </p>
-              <span style={{ color: "#64748b", fontSize: "0.8rem" }}>Open / in progress / awaiting client</span>
+
+            <Card
+              glowOnHover
+              style={{
+                padding: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Active
+                </span>
+                <div style={{ color: "#fbbf24", backgroundColor: "rgba(251, 191, 36, 0.06)", padding: "6px", borderRadius: "6px", display: "flex" }}>
+                  <ListChecks size={16} />
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: "2rem", fontWeight: 600, color: "#f8fafc", fontFamily: "Space Grotesk, sans-serif", lineHeight: 1.1 }}>
+                  {stats.open + stats.inProgress + stats.awaitingClient}
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.35rem" }}>
+                  Open / in progress / awaiting
+                </div>
+              </div>
             </Card>
-            <Card glowOnHover>
-              <h3 style={{ margin: 0, fontSize: "0.9rem", color: "#94a3b8" }}>Resolved</h3>
-              <p style={{ fontSize: "2.25rem", fontWeight: 600, color: "#4ade80", margin: "0.5rem 0 0 0" }}>{stats.resolved}</p>
-              <span style={{ color: "#64748b", fontSize: "0.8rem" }}>Resolution delivered</span>
+
+            <Card
+              glowOnHover
+              style={{
+                padding: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Resolved
+                </span>
+                <div style={{ color: "#4ade80", backgroundColor: "rgba(74, 222, 128, 0.06)", padding: "6px", borderRadius: "6px", display: "flex" }}>
+                  <ListChecks size={16} />
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: "2rem", fontWeight: 600, color: "#f8fafc", fontFamily: "Space Grotesk, sans-serif", lineHeight: 1.1 }}>
+                  {stats.resolved}
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.35rem" }}>
+                  Resolution delivered
+                </div>
+              </div>
             </Card>
-            <Card glowOnHover>
-              <h3 style={{ margin: 0, fontSize: "0.9rem", color: "#94a3b8" }}>Closed</h3>
-              <p style={{ fontSize: "2.25rem", fontWeight: 600, color: "#64748b", margin: "0.5rem 0 0 0" }}>{stats.closed}</p>
-              <span style={{ color: "#64748b", fontSize: "0.8rem" }}>Closed tickets</span>
+
+            <Card
+              glowOnHover
+              style={{
+                padding: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Closed
+                </span>
+                <div style={{ color: "#64748b", backgroundColor: "rgba(100, 116, 139, 0.06)", padding: "6px", borderRadius: "6px", display: "flex" }}>
+                  <ListChecks size={16} />
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: "2rem", fontWeight: 600, color: "#f8fafc", fontFamily: "Space Grotesk, sans-serif", lineHeight: 1.1 }}>
+                  {stats.closed}
+                </div>
+                <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.35rem" }}>
+                  Closed tickets
+                </div>
+              </div>
             </Card>
           </div>
 

@@ -14,11 +14,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     <div style={{
       display: "flex",
       flexDirection: "column",
-      minHeight: "100vh",
+      height: "100vh",
+      maxHeight: "100vh",
+      overflow: "hidden",
       backgroundColor: "#050811",
     }}>
       <Header showToggle onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-      <div style={{ display: "flex", flex: 1 }}>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
         <Sidebar open={sidebarOpen} />
         <main style={{
           flex: 1,
@@ -26,7 +28,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           display: "flex",
           flexDirection: "column",
           gap: "2rem",
+          overflowY: "auto",
           overflowX: "hidden",
+          minWidth: 0,
         }}>
           {children}
           <Footer />

@@ -12,8 +12,9 @@ function Card({ className, glowOnHover, borderAccent, ...props }: CardProps) {
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border p-6 shadow-sm",
         borderAccent ? "border-[#63f5e8]" : "",
+        glowOnHover ? "transition-all duration-200 hover:border-[#63f5e8]/50 hover:shadow-[0_0_25px_rgba(99,245,232,0.15)]" : "",
         className
       )}
       {...props}
