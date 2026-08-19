@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
 import { useApplications } from "../../hooks/useRecruitment";
-import { CandidateApplication } from "../../services/recruitmentService";
+import recruitmentService, { CandidateApplication } from "../../services/recruitmentService";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import {
@@ -47,6 +47,17 @@ export const Applications: React.FC = () => {
 
     return matchesSearch && matchesStage && matchesJob;
   });
+
+  const handleViewResume = async (trackingCode: string) => {
+    try {
+      const response = await recruitmentService.getApplicationResumeUrl(trackingCode);
+      if (response.download_url) {
+        window.open(response.download_url, "_blank");
+      }
+    } catch (err: any) {
+      alert("Failed to load resume URL");
+    }
+  };
 
   const handleStageUpdate = async (trackingCode: string, nextStage: string) => {
     try {
@@ -369,14 +380,12 @@ export const Applications: React.FC = () => {
 
                       <td style={{ padding: "1rem" }}>
                         {app.resume_storage_path ? (
-                          <a
-                            href={app.resume_storage_path}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.78rem" }}
+                          <button
+                            onClick={() => handleViewResume(app.tracking_code)}
+                            style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.78rem", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                           >
                             <Download size={13} /> Resume
-                          </a>
+                          </button>
                         ) : (
                           <span style={{ color: "#64748b", fontSize: "0.75rem" }}>Stored</span>
                         )}
@@ -442,14 +451,12 @@ export const Applications: React.FC = () => {
                 <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>RESUME DOCUMENT</span>
                 <div style={{ marginTop: "0.2rem" }}>
                   {reviewApp.resume_storage_path ? (
-                    <a
-                      href={reviewApp.resume_storage_path}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.85rem", textDecoration: "underline" }}
+                    <button
+                      onClick={() => handleViewResume(reviewApp.tracking_code)}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.85rem", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                     >
                       <Download size={14} /> Download File
-                    </a>
+                    </button>
                   ) : (
                     <span style={{ color: "#64748b", fontSize: "0.85rem" }}>Stored Securely</span>
                   )}

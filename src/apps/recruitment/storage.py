@@ -106,7 +106,10 @@ def generate_signed_url(file_path, expires_in=60):
     try:
         response = urllib.request.urlopen(req)
         response_data = json.loads(response.read().decode('utf-8'))
-        return f"{SUPABASE_URL}{response_data.get('signedURL')}"
+        signed_path = response_data.get('signedURL')
+        if not signed_path.startswith('/storage/v1'):
+            signed_path = f"/storage/v1{signed_path}" if signed_path.startswith('/') else f"/storage/v1/{signed_path}"
+        return f"{SUPABASE_URL}{signed_path}"
     except urllib.error.HTTPError as e:
         error_info = e.read().decode('utf-8')
         raise Exception(f"Failed to generate signed URL: {error_info}")

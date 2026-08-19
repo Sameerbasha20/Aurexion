@@ -25,6 +25,40 @@ import {
   UserCheck,
 } from "lucide-react";
 
+interface LeadStatusBadgeProps {
+  status: string;
+  statusDisplay?: string;
+}
+
+export const LeadStatusBadge: React.FC<LeadStatusBadgeProps> = ({ status, statusDisplay }) => {
+  const cleanStatus = status?.toUpperCase() || "NEW";
+  const colorMap: Record<string, { bg: string; color: string }> = {
+    WON: { bg: "rgba(74, 222, 128, 0.15)", color: "#4ade80" },
+    LOST: { bg: "rgba(248, 113, 113, 0.15)", color: "#f87171" },
+    QUALIFIED: { bg: "rgba(129, 140, 248, 0.15)", color: "#818cf8" },
+    NEW: { bg: "rgba(99, 245, 232, 0.15)", color: "#63f5e8" },
+  };
+
+  const styleConfig = colorMap[cleanStatus] || colorMap.NEW;
+
+  return (
+    <span
+      style={{
+        padding: "0.15rem 0.55rem",
+        borderRadius: "2px",
+        fontSize: "0.68rem",
+        fontFamily: "IBM Plex Mono, monospace",
+        fontWeight: 600,
+        backgroundColor: styleConfig.bg,
+        color: styleConfig.color,
+        border: "1px solid currentColor",
+      }}
+    >
+      {statusDisplay || cleanStatus}
+    </span>
+  );
+};
+
 export const LeadDetail: React.FC = () => {
   const [, crmParams] = useRoute("/crm/leads/:id");
   const [, salesParams] = useRoute("/sales/leads/:id");
@@ -305,7 +339,11 @@ export const LeadDetail: React.FC = () => {
               {lead.company || lead.name}
             </h1>
             <p style={{ margin: 0, fontSize: "0.88rem", color: "#94a3b8" }}>
+<<<<<<< HEAD
               Primary Contact: <strong style={{ color: "#e2e8f0" }}>{lead.name}</strong>  Established on{" "}
+=======
+              Primary Contact: <strong style={{ color: "#e2e8f0" }}>{lead.name}</strong> � Established on{" "}
+>>>>>>> 1f81263e55bb34f7176387db5105d98af57dc4df
               {new Date(lead.created_at).toLocaleDateString()}
             </p>
           </div>
@@ -536,220 +574,51 @@ export const LeadDetail: React.FC = () => {
 
           {/* Tab 1: Follow-ups Section */}
           {activeTab === "followups" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h3 style={{ fontSize: "1.05rem", margin: 0, color: "#f8fafc" }}>Scheduled Client Follow-ups</h3>
-                <Button variant="outline" onClick={() => setIsFollowUpOpen(true)} style={{ fontSize: "0.75rem" }}>
-                  <Plus size={14} style={{ marginRight: "0.3rem" }} /> Schedule
-                </Button>
-              </div>
-
-              {followUps.length === 0 ? (
-                <Card style={{ padding: "2rem", textAlign: "center", color: "#94a3b8" }}>
-                  <Clock size={32} color="#64748b" style={{ margin: "0 auto 0.5rem" }} />
-                  <p style={{ margin: 0 }}>No follow-ups recorded for this lead.</p>
-                  <Button variant="outline" onClick={() => setIsFollowUpOpen(true)} style={{ marginTop: "1rem" }}>
-                    Schedule Initial Call
-                  </Button>
-                </Card>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  {followUps.map((fu) => {
-                    const isCompleted = fu.status === "COMPLETED";
-                    const isOverdue = !isCompleted && new Date(fu.scheduled_at).getTime() < Date.now();
-                    return (
-                      <Card
-                        key={fu.id}
-                        style={{
-                          padding: "1rem 1.25rem",
-                          borderLeft: isCompleted ? "3px solid #4ade80" : isOverdue ? "3px solid #f87171" : "3px solid #63f5e8",
-                        }}
-                      >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                          <div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", fontWeight: 600, color: "#63f5e8" }}>
-                                {fu.follow_up_type_display || fu.follow_up_type}
-                              </span>
-                              <span
-                                style={{
-                                  fontSize: "0.65rem",
-                                  padding: "0.1rem 0.4rem",
-                                  borderRadius: "2px",
-                                  backgroundColor: isCompleted ? "rgba(74, 222, 128, 0.15)" : "rgba(56, 189, 248, 0.15)",
-                                  color: isCompleted ? "#4ade80" : "#38bdf8",
-                                }}
-                              >
-                                {fu.status_display || fu.status}
-                              </span>
-                            </div>
-                            <div style={{ fontSize: "0.78rem", color: "#cbd5e1", margin: "0.3rem 0" }}>
-                              Scheduled: <strong>{new Date(fu.scheduled_at).toLocaleString()}</strong>
-                            </div>
-                            {fu.notes && (
-                              <p style={{ fontSize: "0.82rem", color: "#94a3b8", margin: "0.3rem 0 0 0" }}>
-                                {fu.notes}
-                              </p>
-                            )}
-                          </div>
-
-                          {!isCompleted && (
-                            <Button
-                              glow
-                              disabled={actionLoading}
-                              onClick={() => handleCompleteFollowUpItem(fu.id)}
-                              style={{ padding: "0.35rem 0.75rem", fontSize: "0.75rem" }}
-                            >
-                              Mark Done
-                            </Button>
-                          )}
-                        </div>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            <LeadFollowUpsTab
+              followUps={followUps}
+              actionLoading={actionLoading}
+              onOpenSchedule={() => setIsFollowUpOpen(true)}
+              onCompleteItem={handleCompleteFollowUpItem}
+            />
           )}
 
           {/* Tab 2: Notes History */}
-          {activeTab === "notes" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {notes.length === 0 ? (
-                <Card style={{ padding: "2rem", textAlign: "center", color: "#94a3b8" }}>
-                  <FileText size={32} color="#64748b" style={{ margin: "0 auto 0.5rem" }} />
-                  <p style={{ margin: 0 }}>No notes recorded for this lead yet.</p>
-                </Card>
-              ) : (
-                notes.map((note) => (
-                  <Card key={note.id} style={{ padding: "1rem 1.25rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.4rem" }}>
-                      <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#63f5e8" }}>
-                        {note.created_by_name || "Sales Executive"}
-                      </span>
-                      <span style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
-                        {new Date(note.created_at).toLocaleString()}
-                      </span>
-                    </div>
-                    <p style={{ margin: 0, fontSize: "0.85rem", color: "#cbd5e1", lineHeight: 1.5 }}>
-                      {note.content}
-                    </p>
-                  </Card>
-                ))
-              )}
-            </div>
-          )}
+          {activeTab === "notes" && <LeadNotesTab notes={notes} />}
 
           {/* Tab 3: Timeline Audit */}
-          {activeTab === "timeline" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              <Card style={{ padding: "1.25rem" }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
-                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#63f5e8", marginTop: "0.4rem" }} />
-                  <div>
-                    <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#f8fafc" }}>Lead Established</div>
-                    <div style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
-                      {new Date(lead.created_at).toLocaleString()}
-                    </div>
-                    <p style={{ margin: "0.2rem 0 0 0", fontSize: "0.8rem", color: "#94a3b8" }}>
-                      Initial entry recorded via source: {lead.source || "Website"}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-
-              {notes.map((n) => (
-                <Card key={`tl-note-${n.id}`} style={{ padding: "1.25rem" }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
-                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#38bdf8", marginTop: "0.4rem" }} />
-                    <div>
-                      <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#f8fafc" }}>Note Appended</div>
-                      <div style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
-                        {new Date(n.created_at).toLocaleString()} by {n.created_by_name || "Sales Executive"}
-                      </div>
-                      <p style={{ margin: "0.2rem 0 0 0", fontSize: "0.8rem", color: "#94a3b8" }}>{n.content}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-
-              {followUps.map((f) => (
-                <Card key={`tl-fu-${f.id}`} style={{ padding: "1.25rem" }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
-                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: f.status === "COMPLETED" ? "#4ade80" : "#818cf8", marginTop: "0.4rem" }} />
-                    <div>
-                      <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#f8fafc" }}>
-                        {f.status === "COMPLETED" ? "Follow-up Completed" : "Follow-up Scheduled"} ({f.follow_up_type})
-                      </div>
-                      <div style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
-                        {new Date(f.scheduled_at).toLocaleString()}
-                      </div>
-                      <p style={{ margin: "0.2rem 0 0 0", fontSize: "0.8rem", color: "#94a3b8" }}>{f.notes}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
+          {activeTab === "timeline" && <LeadTimelineTab lead={lead} notes={notes} followUps={followUps} />}
         </div>
       </div>
 
-      {/* Edit Lead Modal */}
-      {isEditOpen && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <h2 style={{ fontSize: "1.4rem", margin: 0 }}>Edit Lead Information</h2>
-              <button type="button" onClick={() => setIsEditOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
-                <X size={20} />
-              </button>
-            </div>
+      <LeadEditModal
+        isOpen={isEditOpen}
+        editForm={editForm}
+        actionLoading={actionLoading}
+        onClose={() => setIsEditOpen(false)}
+        onFormChange={setEditForm}
+        onSave={handleSaveEdit}
+      />
 
-            <form onSubmit={handleSaveEdit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>NAME</label>
-                  <input
-                    type="text"
-                    required
-                    value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                  />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EMAIL</label>
-                  <input
-                    type="email"
-                    required
-                    value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                  />
-                </div>
-              </div>
+      <LeadLostModal
+        isOpen={isLostOpen}
+        lostReason={lostReason}
+        actionLoading={actionLoading}
+        onClose={() => setIsLostOpen(false)}
+        onReasonChange={setLostReason}
+        onConfirm={handleMarkLost}
+      />
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>COMPANY</label>
-                  <input
-                    type="text"
-                    value={editForm.company}
-                    onChange={(e) => setEditForm({ ...editForm, company: e.target.value })}
-                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                  />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PHONE</label>
-                  <input
-                    type="text"
-                    value={editForm.phone}
-                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                  />
-                </div>
-              </div>
+      <LeadAssignModal
+        isOpen={isAssignOpen}
+        assignUserId={assignUserId}
+        users={users}
+        actionLoading={actionLoading}
+        onClose={() => setIsAssignOpen(false)}
+        onUserChange={setAssignUserId}
+        onAssign={handleAssign}
+      />
 
+<<<<<<< HEAD
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PRIORITY</label>
@@ -920,8 +789,497 @@ export const LeadDetail: React.FC = () => {
           </Card>
         </div>
       )}
+=======
+      <LeadScheduleFollowUpModal
+        isOpen={isFollowUpOpen}
+        followUpForm={followUpForm}
+        actionLoading={actionLoading}
+        onClose={() => setIsFollowUpOpen(false)}
+        onFormChange={setFollowUpForm}
+        onSubmit={handleScheduleFollowUp}
+      />
+>>>>>>> 1f81263e55bb34f7176387db5105d98af57dc4df
     </div>
   );
 };
+
+
+interface LeadEditModalProps {
+  isOpen: boolean;
+  editForm: any;
+  actionLoading: boolean;
+  onClose: () => void;
+  onFormChange: (form: any) => void;
+  onSave: (e: React.FormEvent) => void;
+}
+
+const LeadEditModal: React.FC<LeadEditModalProps> = ({
+  isOpen,
+  editForm,
+  actionLoading,
+  onClose,
+  onFormChange,
+  onSave,
+}) => {
+  if (!isOpen) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+      <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "1.4rem", margin: 0 }}>Edit Lead Information</h2>
+          <button type="button" onClick={onClose} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={onSave} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>NAME</label>
+              <input
+                type="text"
+                required
+                value={editForm.name}
+                onChange={(e) => onFormChange({ ...editForm, name: e.target.value })}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EMAIL</label>
+              <input
+                type="email"
+                required
+                value={editForm.email}
+                onChange={(e) => onFormChange({ ...editForm, email: e.target.value })}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>COMPANY</label>
+              <input
+                type="text"
+                value={editForm.company}
+                onChange={(e) => onFormChange({ ...editForm, company: e.target.value })}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PHONE</label>
+              <input
+                type="text"
+                value={editForm.phone}
+                onChange={(e) => onFormChange({ ...editForm, phone: e.target.value })}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PRIORITY</label>
+              <select
+                value={editForm.priority}
+                onChange={(e) => onFormChange({ ...editForm, priority: e.target.value })}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              >
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent</option>
+              </select>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>INDUSTRY</label>
+              <input
+                type="text"
+                value={editForm.industry}
+                onChange={(e) => onFormChange({ ...editForm, industry: e.target.value })}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+            <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DESCRIPTION</label>
+            <textarea
+              rows={3}
+              value={editForm.description}
+              onChange={(e) => onFormChange({ ...editForm, description: e.target.value })}
+              style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+            />
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem" }}>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" glow disabled={actionLoading}>Save Changes</Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+};
+
+interface LeadLostModalProps {
+  isOpen: boolean;
+  lostReason: string;
+  actionLoading: boolean;
+  onClose: () => void;
+  onReasonChange: (reason: string) => void;
+  onConfirm: (e: React.FormEvent) => void;
+}
+
+const LeadLostModal: React.FC<LeadLostModalProps> = ({
+  isOpen,
+  lostReason,
+  actionLoading,
+  onClose,
+  onReasonChange,
+  onConfirm,
+}) => {
+  if (!isOpen) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+      <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
+        <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: "0 0 1rem 0" }}>Mark Lead as Lost</h2>
+        <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: "0 0 1rem 0" }}>
+          Please state why this lead was lost (e.g. Budget constraints, Competitor chosen, Project cancelled).
+        </p>
+        <form onSubmit={onConfirm} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <textarea
+            rows={3}
+            required
+            placeholder="Enter specific lost rationale..."
+            value={lostReason}
+            onChange={(e) => onReasonChange(e.target.value)}
+            style={{ padding: "0.75rem", backgroundColor: "#050811", border: "1px solid rgba(248, 113, 113, 0.4)", color: "#f8fafc", borderRadius: "4px" }}
+          />
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={actionLoading} style={{ backgroundColor: "#f87171", color: "#000" }}>
+              Confirm Lost
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+};
+
+interface LeadAssignModalProps {
+  isOpen: boolean;
+  assignUserId: number | "";
+  users: any[];
+  actionLoading: boolean;
+  onClose: () => void;
+  onUserChange: (id: number) => void;
+  onAssign: (e: React.FormEvent) => void;
+}
+
+const LeadAssignModal: React.FC<LeadAssignModalProps> = ({
+  isOpen,
+  assignUserId,
+  users,
+  actionLoading,
+  onClose,
+  onUserChange,
+  onAssign,
+}) => {
+  if (!isOpen) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+      <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
+        <h2 style={{ fontSize: "1.3rem", margin: "0 0 1rem 0" }}>Assign Lead to Executive</h2>
+        <form onSubmit={onAssign} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <select
+            required
+            value={assignUserId}
+            onChange={(e) => onUserChange(Number(e.target.value))}
+            style={{ padding: "0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+          >
+            <option value="">Select Team Member...</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name || u.username} ({u.role || "Executive"})
+              </option>
+            ))}
+          </select>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" glow disabled={actionLoading || !assignUserId}>Assign Lead</Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+};
+
+interface LeadScheduleFollowUpModalProps {
+  isOpen: boolean;
+  followUpForm: any;
+  actionLoading: boolean;
+  onClose: () => void;
+  onFormChange: (form: any) => void;
+  onSubmit: (e: React.FormEvent) => void;
+}
+
+const LeadScheduleFollowUpModal: React.FC<LeadScheduleFollowUpModalProps> = ({
+  isOpen,
+  followUpForm,
+  actionLoading,
+  onClose,
+  onFormChange,
+  onSubmit,
+}) => {
+  if (!isOpen) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+      <Card borderAccent style={{ width: "100%", maxWidth: "500px", padding: "2rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "1.3rem", margin: 0 }}>Schedule Client Follow-up</h2>
+          <button type="button" onClick={onClose} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+            <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>FOLLOW-UP TYPE</label>
+            <select
+              value={followUpForm.follow_up_type}
+              onChange={(e) => onFormChange({ ...followUpForm, follow_up_type: e.target.value })}
+              style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+            >
+              <option value="CALL">Phone Call</option>
+              <option value="MEETING">Video / In-person Meeting</option>
+              <option value="EMAIL">Email Outreach</option>
+              <option value="DEMO">Product Demo</option>
+            </select>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+            <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DATE & TIME</label>
+            <input
+              type="datetime-local"
+              required
+              value={followUpForm.scheduled_at}
+              onChange={(e) => onFormChange({ ...followUpForm, scheduled_at: e.target.value })}
+              style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+            />
+          </div>
+
+          {followUpForm.follow_up_type === "MEETING" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING LINK (Google Meet / Zoom / Teams) *</label>
+              <input
+                type="url"
+                required
+                placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                value={followUpForm.meeting_link || ""}
+                onChange={(e) => onFormChange({ ...followUpForm, meeting_link: e.target.value })}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              />
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+            <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>AGENDA / PRE-MEETING NOTES</label>
+            <textarea
+              rows={3}
+              placeholder="Specify topics to address, key questions, or objective..."
+              value={followUpForm.notes}
+              onChange={(e) => onFormChange({ ...followUpForm, notes: e.target.value })}
+              style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+            />
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem" }}>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" glow disabled={actionLoading}>Schedule Follow-up</Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+};
+
+interface LeadFollowUpsTabProps {
+  followUps: any[];
+  actionLoading: boolean;
+  onOpenSchedule: () => void;
+  onCompleteItem: (id: number) => void;
+}
+
+const LeadFollowUpsTab: React.FC<LeadFollowUpsTabProps> = ({
+  followUps,
+  actionLoading,
+  onOpenSchedule,
+  onCompleteItem,
+}) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <h3 style={{ fontSize: "1.05rem", margin: 0, color: "#f8fafc" }}>Scheduled Client Follow-ups</h3>
+      <Button variant="outline" onClick={onOpenSchedule} style={{ fontSize: "0.75rem" }}>
+        <Plus size={14} style={{ marginRight: "0.3rem" }} /> Schedule
+      </Button>
+    </div>
+
+    {followUps.length === 0 ? (
+      <Card style={{ padding: "2rem", textAlign: "center", color: "#94a3b8" }}>
+        <Clock size={32} color="#64748b" style={{ margin: "0 auto 0.5rem" }} />
+        <p style={{ margin: 0 }}>No follow-ups recorded for this lead.</p>
+        <Button variant="outline" onClick={onOpenSchedule} style={{ marginTop: "1rem" }}>
+          Schedule Initial Call
+        </Button>
+      </Card>
+    ) : (
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+        {followUps.map((fu) => {
+          const isCompleted = fu.status === "COMPLETED";
+          const isOverdue = !isCompleted && new Date(fu.scheduled_at).getTime() < Date.now();
+          return (
+            <Card
+              key={fu.id}
+              style={{
+                padding: "1rem 1.25rem",
+                borderLeft: isCompleted ? "3px solid #4ade80" : isOverdue ? "3px solid #f87171" : "3px solid #63f5e8",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", fontWeight: 600, color: "#63f5e8" }}>
+                      {fu.follow_up_type_display || fu.follow_up_type}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.65rem",
+                        padding: "0.1rem 0.4rem",
+                        borderRadius: "2px",
+                        backgroundColor: isCompleted ? "rgba(74, 222, 128, 0.15)" : "rgba(56, 189, 248, 0.15)",
+                        color: isCompleted ? "#4ade80" : "#38bdf8",
+                      }}
+                    >
+                      {fu.status_display || fu.status}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: "0.78rem", color: "#cbd5e1", margin: "0.3rem 0" }}>
+                    Scheduled: <strong>{new Date(fu.scheduled_at).toLocaleString()}</strong>
+                  </div>
+                  {fu.notes && (
+                    <p style={{ fontSize: "0.82rem", color: "#94a3b8", margin: "0.3rem 0 0 0" }}>
+                      {fu.notes}
+                    </p>
+                  )}
+                </div>
+
+                {!isCompleted && (
+                  <Button
+                    glow
+                    disabled={actionLoading}
+                    onClick={() => onCompleteItem(fu.id)}
+                    style={{ padding: "0.35rem 0.75rem", fontSize: "0.75rem" }}
+                  >
+                    Mark Done
+                  </Button>
+                )}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+    )}
+  </div>
+);
+
+interface LeadNotesTabProps {
+  notes: any[];
+}
+
+const LeadNotesTab: React.FC<LeadNotesTabProps> = ({ notes }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    {notes.length === 0 ? (
+      <Card style={{ padding: "2rem", textAlign: "center", color: "#94a3b8" }}>
+        <FileText size={32} color="#64748b" style={{ margin: "0 auto 0.5rem" }} />
+        <p style={{ margin: 0 }}>No notes recorded for this lead yet.</p>
+      </Card>
+    ) : (
+      notes.map((note) => (
+        <Card key={note.id} style={{ padding: "1rem 1.25rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.4rem" }}>
+            <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#63f5e8" }}>
+              {note.created_by_name || "Sales Executive"}
+            </span>
+            <span style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
+              {new Date(note.created_at).toLocaleString()}
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: "0.85rem", color: "#cbd5e1", lineHeight: 1.5 }}>
+            {note.content}
+          </p>
+        </Card>
+      ))
+    )}
+  </div>
+);
+
+interface LeadTimelineTabProps {
+  lead: any;
+  notes: any[];
+  followUps: any[];
+}
+
+const LeadTimelineTab: React.FC<LeadTimelineTabProps> = ({ lead, notes, followUps }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+    <Card style={{ padding: "1.25rem" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+        <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#63f5e8", marginTop: "0.4rem" }} />
+        <div>
+          <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#f8fafc" }}>Lead Established</div>
+          <div style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
+            {new Date(lead.created_at).toLocaleString()}
+          </div>
+          <p style={{ margin: "0.2rem 0 0 0", fontSize: "0.8rem", color: "#94a3b8" }}>
+            Initial entry recorded via source: {lead.source || "Website"}
+          </p>
+        </div>
+      </div>
+    </Card>
+
+    {notes.map((n) => (
+      <Card key={`tl-note-${n.id}`} style={{ padding: "1.25rem" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+          <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#38bdf8", marginTop: "0.4rem" }} />
+          <div>
+            <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#f8fafc" }}>Note Appended</div>
+            <div style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
+              {new Date(n.created_at).toLocaleString()} by {n.created_by_name || "Sales Executive"}
+            </div>
+            <p style={{ margin: "0.2rem 0 0 0", fontSize: "0.8rem", color: "#94a3b8" }}>{n.content}</p>
+          </div>
+        </div>
+      </Card>
+    ))}
+
+    {followUps.map((f) => (
+      <Card key={`tl-fu-${f.id}`} style={{ padding: "1.25rem" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+          <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: f.status === "COMPLETED" ? "#4ade80" : "#818cf8", marginTop: "0.4rem" }} />
+          <div>
+            <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#f8fafc" }}>
+              {f.status === "COMPLETED" ? "Follow-up Completed" : "Follow-up Scheduled"} ({f.follow_up_type})
+            </div>
+            <div style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
+              {new Date(f.scheduled_at).toLocaleString()}
+            </div>
+            <p style={{ margin: "0.2rem 0 0 0", fontSize: "0.8rem", color: "#94a3b8" }}>{f.notes}</p>
+          </div>
+        </div>
+      </Card>
+    ))}
+  </div>
+);
 
 export default LeadDetail;

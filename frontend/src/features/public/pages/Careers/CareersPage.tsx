@@ -14,17 +14,17 @@ export const CareersPage: React.FC = () => {
   // Derive unique filter options from live data
   const departments = useMemo(() => {
     if (!jobs) return [];
-    return [...new Set(jobs.map((j: any) => j.department).filter(Boolean))].sort();
+    return [...new Set(jobs.map((j: any) => j.department).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   }, [jobs]);
 
   const locations = useMemo(() => {
     if (!jobs) return [];
-    return [...new Set(jobs.map((j: any) => j.location).filter(Boolean))].sort();
+    return [...new Set(jobs.map((j: any) => j.location).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   }, [jobs]);
 
   const employmentTypes = useMemo(() => {
     if (!jobs) return [];
-    return [...new Set(jobs.map((j: any) => j.employmentType).filter(Boolean))].sort();
+    return [...new Set(jobs.map((j: any) => j.employmentType).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   }, [jobs]);
 
   const filteredJobs = useMemo(() => {
