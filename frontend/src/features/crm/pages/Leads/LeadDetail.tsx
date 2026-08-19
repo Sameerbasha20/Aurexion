@@ -305,7 +305,7 @@ export const LeadDetail: React.FC = () => {
               {lead.company || lead.name}
             </h1>
             <p style={{ margin: 0, fontSize: "0.88rem", color: "#94a3b8" }}>
-              Primary Contact: <strong style={{ color: "#e2e8f0" }}>{lead.name}</strong> • Established on{" "}
+              Primary Contact: <strong style={{ color: "#e2e8f0" }}>{lead.name}</strong>  Established on{" "}
               {new Date(lead.created_at).toLocaleDateString()}
             </p>
           </div>
@@ -887,7 +887,7 @@ export const LeadDetail: React.FC = () => {
                 />
               </div>
 
-              {followUpForm.follow_up_type === "MEETING" && (
+              {true && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING LINK (Google Meet / Zoom / Teams) *</label>
                   <input

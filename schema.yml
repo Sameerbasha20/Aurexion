@@ -3824,17 +3824,21 @@ components:
       - note
     ApplicationStageEnum:
       enum:
-      - RECEIVED
+      - APPLIED
+      - SCREENING
       - SHORTLISTED
-      - INTERVIEWED
-      - OFFERED
+      - INTERVIEW
+      - OFFER
+      - HIRED
       - REJECTED
       type: string
       description: |-
-        * `RECEIVED` - Received
+        * `APPLIED` - Applied
+        * `SCREENING` - Screening
         * `SHORTLISTED` - Shortlisted
-        * `INTERVIEWED` - Interviewed
-        * `OFFERED` - Offered
+        * `INTERVIEW` - Interview
+        * `OFFER` - Offer
+        * `HIRED` - Hired
         * `REJECTED` - Rejected
     Apply:
       type: object

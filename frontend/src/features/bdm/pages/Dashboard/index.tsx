@@ -11,7 +11,7 @@ import {
   ChartLegend,
 } from "../../../../components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { Mail, Phone, UserCheck, XCircle, CheckCircle2, User, MessageSquare, AlertTriangle, X } from "lucide-react";
+import { Mail, Phone, UserCheck, XCircle, CheckCircle2, User, MessageSquare, AlertTriangle, X, Eye, ArrowUpRight } from "lucide-react";
 
 const STATUS_LABELS: Record<string, string> = {
   new: "New",
@@ -68,10 +68,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
   icon,
   trend,
 }) => (
-  <Card glowOnHover>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+  <Card glowOnHover style={{ position: "relative", overflow: "hidden" }}>
+    <CardHeader className="flex flex-row items-center justify-between pb-2">
       <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-      {icon && <div className="text-2xl">{icon}</div>}
+      {icon}
     </CardHeader>
     <CardContent>
       <div className="text-2xl font-bold" style={{ color }}>
@@ -103,6 +103,9 @@ interface ActivityItem {
 
 export const Dashboard: React.FC = () => {
   const { data, isLoading, error, refetch } = useBdmDashboard();
+
+  // Lead Detail modal state
+  const [selectedLeadDetail, setSelectedLeadDetail] = useState<FormSubmission | null>(null);
 
   // Assign & Decline modal state
   const [salesExecs, setSalesExecs] = useState<Array<{ id: number; username: string; name: string }>>([]);
@@ -490,6 +493,14 @@ export const Dashboard: React.FC = () => {
 
                     {/* Action Bar: BDM Assign / Decline Buttons */}
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.6rem", borderTop: "1px solid rgba(140, 174, 187, 0.1)", paddingTop: "0.75rem" }}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setSelectedLeadDetail(submission)}
+                        style={{ fontSize: "0.78rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)" }}
+                      >
+                        <Eye size={14} style={{ marginRight: "0.35rem" }} /> View Lead Detail
+                      </Button>
+
                       {!isLost ? (
                         <>
                           <Button
@@ -526,55 +537,57 @@ export const Dashboard: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Assign Sales Executive Modal */}
+      {/* Modal: Assign Submission */}
       {modalMode === "assign" && selectedSubmission && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1rem" }}>
+          <Card borderAccent style={{ width: "100%", maxWidth: "500px", padding: "1.5rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-              <h2 style={{ fontSize: "1.3rem", color: "#63f5e8", margin: 0 }}>Assign Lead to Sales Executive</h2>
-              <button
-                type="button"
-                aria-label="Close dialog"
-                onClick={() => setModalMode(null)}
-                style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}
-              >
-                <X size={20} />
-              </button>
+              <div>
+                <p className="eyebrow" style={{ margin: 0 }}>ASSIGN LEAD TO SALES EXECUTIVE</p>
+                <h3 style={{ fontSize: "1.25rem", color: "#f8fafc", margin: "0.25rem 0 0 0" }}>
+                  {selectedSubmission.name} ({selectedSubmission.company || "Individual"})
+                </h3>
+              </div>
+              <button onClick={() => setModalMode(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
             </div>
 
-            <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: "0 0 1.25rem 0" }}>
-              Assigning contact form lead <strong>{selectedSubmission.reference_id}</strong> ({selectedSubmission.name}) will transfer it to the selected Sales Executive's dashboard.
-            </p>
-
             <form onSubmit={handleAssignSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SELECT SALES EXECUTIVE *</label>
+              <div style={{ fontSize: "0.85rem", color: "#cbd5e1", background: "rgba(99, 245, 232, 0.05)", padding: "0.75rem", borderRadius: "4px" }}>
+                <p style={{ margin: 0 }}>Reference ID: <strong style={{ color: "#63f5e8" }}>{selectedSubmission.reference_id}</strong></p>
+                <p style={{ margin: "0.25rem 0 0 0" }}>Source: <strong>{SOURCE_LABELS[selectedSubmission.source] || selectedSubmission.source_display}</strong></p>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.8rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", marginBottom: "0.4rem" }}>
+                  SELECT SALES EXECUTIVE *
+                </label>
                 <select
-                  required
                   value={targetExecId}
-                  onChange={(e) => setTargetExecId(Number(e.target.value))}
+                  onChange={(e) => setTargetExecId(Number(e.target.value) || "")}
+                  required
                   style={{
-                    padding: "0.65rem",
-                    backgroundColor: "#050811",
-                    border: "1px solid rgba(140, 174, 187, 0.25)",
+                    width: "100%",
+                    padding: "0.6rem",
+                    backgroundColor: "#0a111c",
+                    border: "1px solid rgba(99, 245, 232, 0.3)",
                     color: "#f8fafc",
                     borderRadius: "4px",
-                    fontSize: "0.88rem",
+                    fontSize: "0.85rem",
                   }}
                 >
                   <option value="">-- Choose Sales Executive --</option>
-                  {salesExecs.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.name} ({user.username})
+                  {salesExecs.map((exec) => (
+                    <option key={exec.id} value={exec.id}>
+                      {exec.name} ({exec.username})
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
                 <Button type="button" variant="outline" onClick={() => setModalMode(null)}>Cancel</Button>
-                <Button type="submit" glow disabled={actionLoading || !targetExecId}>
-                  {actionLoading ? "Assigning..." : "Assign Lead"}
+                <Button type="submit" glow disabled={actionLoading}>
+                  {actionLoading ? "Assigning..." : "Confirm Assignment"}
                 </Button>
               </div>
             </form>
@@ -582,38 +595,36 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Decline Lead Modal */}
+      {/* Modal: Decline Submission */}
       {modalMode === "decline" && selectedSubmission && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1rem" }}>
+          <Card style={{ width: "100%", maxWidth: "500px", padding: "1.5rem", borderColor: "rgba(239, 68, 68, 0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-              <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: 0 }}>Decline Contact Submission</h2>
-              <button
-                type="button"
-                aria-label="Close dialog"
-                onClick={() => setModalMode(null)}
-                style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}
-              >
-                <X size={20} />
-              </button>
+              <div>
+                <p className="eyebrow" style={{ margin: 0, color: "#f87171" }}>DECLINE / REJECT INBOUND SUBMISSION</p>
+                <h3 style={{ fontSize: "1.25rem", color: "#f8fafc", margin: "0.25rem 0 0 0" }}>
+                  {selectedSubmission.name}
+                </h3>
+              </div>
+              <button onClick={() => setModalMode(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
             </div>
 
-            <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: "0 0 1rem 0" }}>
-              Are you sure you want to decline submission <strong>{selectedSubmission.reference_id}</strong> from {selectedSubmission.name}?
-            </p>
-
             <form onSubmit={handleDeclineSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DECLINE REASON</label>
+              <div>
+                <label style={{ display: "block", fontSize: "0.8rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", marginBottom: "0.4rem" }}>
+                  REASON FOR DECLINING *
+                </label>
                 <textarea
-                  rows={3}
-                  placeholder="e.g. Spam submission, Out of scope, Invalid contact details..."
                   value={declineReason}
                   onChange={(e) => setDeclineReason(e.target.value)}
+                  rows={3}
+                  placeholder="Provide reason for rejecting or marking as lost..."
+                  required
                   style={{
-                    padding: "0.65rem",
-                    backgroundColor: "#050811",
-                    border: "1px solid rgba(140, 174, 187, 0.25)",
+                    width: "100%",
+                    padding: "0.6rem",
+                    backgroundColor: "#0a111c",
+                    border: "1px solid rgba(239, 68, 68, 0.3)",
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.85rem",
@@ -628,6 +639,116 @@ export const Dashboard: React.FC = () => {
                 </Button>
               </div>
             </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Modal: BDM Lead Detail View */}
+      {selectedLeadDetail && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 50, padding: "1.5rem" }}>
+          <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <div>
+                <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                  BDM LEAD DETAIL VIEW
+                </span>
+                <h2 style={{ fontSize: "1.5rem", color: "#f8fafc", margin: "0.2rem 0 0 0" }}>
+                  {selectedLeadDetail.company || selectedLeadDetail.name}
+                </h2>
+              </div>
+              <button onClick={() => setSelectedLeadDetail(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", fontSize: "1.5rem" }}>
+                ✕
+              </button>
+            </div>
+
+            {/* Lead Header Info */}
+            <div style={{ backgroundColor: "rgba(10, 17, 28, 0.6)", border: "1px solid rgba(140, 174, 187, 0.15)", padding: "1.25rem", borderRadius: "6px", marginBottom: "1.5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
+                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontWeight: 600 }}>
+                  REF: {selectedLeadDetail.reference_id || `#LD-${selectedLeadDetail.id}`}
+                </span>
+                <Badge className={SOURCE_COLORS[selectedLeadDetail.source] || "bg-gray-500/20 text-gray-400"}>
+                  {SOURCE_LABELS[selectedLeadDetail.source] || selectedLeadDetail.source_display}
+                </Badge>
+                <Badge className={STATUS_COLORS[selectedLeadDetail.status] || "bg-gray-500/20 text-gray-400"}>
+                  {STATUS_LABELS[selectedLeadDetail.status] || selectedLeadDetail.status}
+                </Badge>
+              </div>
+              <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", fontSize: "0.85rem", color: "#94a3b8" }}>
+                <span>Submitted: <strong style={{ color: "#f8fafc" }}>{new Date(selectedLeadDetail.created_at).toLocaleString()}</strong></span>
+                <span>Assigned To: <strong style={{ color: selectedLeadDetail.assigned_to ? "#38bdf8" : "#fbbf24" }}>{selectedLeadDetail.assigned_to_name || "Unassigned"}</strong></span>
+              </div>
+            </div>
+
+            {/* Contact Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.4)", border: "1px solid rgba(140, 174, 187, 0.1)", padding: "1rem", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PRIMARY CONTACT</span>
+                <p style={{ margin: "0.5rem 0 0 0", fontSize: "1rem", fontWeight: 600, color: "#f8fafc" }}>{selectedLeadDetail.name}</p>
+                <p style={{ margin: "0.25rem 0 0 0", color: "#cbd5e1" }}>{selectedLeadDetail.company || "Direct Individual"}</p>
+              </div>
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.4)", border: "1px solid rgba(140, 174, 187, 0.1)", padding: "1rem", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EMAIL</span>
+                <a href={`mailto:${selectedLeadDetail.email}`} style={{ marginTop: "0.5rem", display: "flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", textDecoration: "none" }}>
+                  <Mail size={13} /> {selectedLeadDetail.email}
+                </a>
+              </div>
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.4)", border: "1px solid rgba(140, 174, 187, 0.1)", padding: "1rem", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PHONE</span>
+                <a href={`tel:${selectedLeadDetail.phone}`} style={{ marginTop: "0.5rem", display: "flex", alignItems: "center", gap: "0.3rem", color: "#cbd5e1", textDecoration: "none" }}>
+                  <Phone size={13} /> {selectedLeadDetail.phone || "Not provided"}
+                </a>
+              </div>
+            </div>
+
+            {/* Requirement Brief */}
+            {selectedLeadDetail.description && (
+              <div style={{ marginBottom: "1.5rem", padding: "1rem", backgroundColor: "rgba(5, 8, 17, 0.6)", border: "1px solid rgba(140, 174, 187, 0.1)", borderRadius: "4px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>INQUIRY / REQUIREMENT BRIEF</span>
+                <p style={{ margin: "0.5rem 0 0 0", color: "#cbd5e1", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{selectedLeadDetail.description}</p>
+              </div>
+            )}
+
+            {/* BDM Action Buttons */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", justifyContent: "flex-end" }}>
+              {selectedLeadDetail.status !== "lost" && (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const item = selectedLeadDetail;
+                      setSelectedLeadDetail(null);
+                      handleOpenDecline(item);
+                    }}
+                    style={{ fontSize: "0.82rem", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.3)" }}
+                  >
+                    <XCircle size={14} style={{ marginRight: "0.35rem" }} /> Decline / Reject
+                  </Button>
+                  <Button
+                    glow
+                    onClick={() => {
+                      const item = selectedLeadDetail;
+                      setSelectedLeadDetail(null);
+                      handleOpenAssign(item);
+                    }}
+                    style={{ fontSize: "0.82rem" }}
+                  >
+                    <UserCheck size={14} style={{ marginRight: "0.35rem" }} />
+                    {selectedLeadDetail.assigned_to ? "Reassign Executive" : "Assign to Sales Executive"}
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  window.open(`/crm/leads/${selectedLeadDetail.id}`, '_blank');
+                  setSelectedLeadDetail(null);
+                }}
+                style={{ fontSize: "0.82rem" }}
+              >
+                <ArrowUpRight size={14} style={{ marginRight: "0.35rem" }} /> Open Full Workspace
+              </Button>
+            </div>
           </Card>
         </div>
       )}
