@@ -10,7 +10,7 @@ interface RoleItem {
   code: string;
   name: string;
   description: string;
-  permissions: string[];
+  permissions: any[];
 }
 
 export const Roles: React.FC = () => {
@@ -90,17 +90,20 @@ export const Roles: React.FC = () => {
                       GRANTED SCOPES ({r.permissions.length === 1 && r.permissions[0] === "*" ? "ALL ACCESS" : r.permissions.length}):
                     </span>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                      {r.permissions.map((rule) => (
-                        <code key={rule} style={{
-                          backgroundColor: "var(--color-bg-primary)",
-                          border: "1px solid var(--color-border)",
-                          padding: "0.15rem 0.4rem",
-                          borderRadius: "4px",
-                          color: "var(--color-text-primary)",
-                          fontSize: "0.75rem",
-                          fontFamily: "var(--font-mono)"
-                        }}>{rule}</code>
-                      ))}
+                      {r.permissions.map((ruleItem: any, idx) => {
+                        const label = typeof ruleItem === "string" ? ruleItem : (ruleItem && typeof ruleItem === "object" ? (ruleItem.module ? `${ruleItem.module}` : JSON.stringify(ruleItem)) : String(ruleItem || ""));
+                        return (
+                          <code key={typeof ruleItem === "string" ? ruleItem : idx} style={{
+                            backgroundColor: "var(--color-bg-primary)",
+                            border: "1px solid var(--color-border)",
+                            padding: "0.15rem 0.4rem",
+                            borderRadius: "4px",
+                            color: "var(--color-text-primary)",
+                            fontSize: "0.75rem",
+                            fontFamily: "var(--font-mono)"
+                          }}>{label}</code>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

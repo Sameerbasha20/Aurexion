@@ -542,7 +542,7 @@ export const Leads: React.FC = () => {
           backdropFilter: "blur(8px)",
           display: "grid",
           placeItems: "center",
-          zIndex: 50,
+          zIndex: 1000,
           padding: "1.5rem",
         }}>
           <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
@@ -578,11 +578,13 @@ export const Leads: React.FC = () => {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                    CONTACT NAME *
+                    CONTACT NAME <span style={{ color: "#ef4444", fontWeight: "bold" }} title="Contact Name is a mandatory required field">*</span>
                   </label>
                   <input
                     type="text"
                     required
+                    aria-required="true"
+                    title="Please enter contact name"
                     placeholder="e.g. John Doe"
                     value={createForm.name}
                     onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
@@ -598,11 +600,13 @@ export const Leads: React.FC = () => {
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                    EMAIL ADDRESS *
+                    EMAIL ADDRESS <span style={{ color: "#ef4444", fontWeight: "bold" }} title="Email Address is a mandatory required field">*</span>
                   </label>
                   <input
                     type="email"
                     required
+                    aria-required="true"
+                    title="Please enter a valid email address"
                     placeholder="john@company.com"
                     value={createForm.email}
                     onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
