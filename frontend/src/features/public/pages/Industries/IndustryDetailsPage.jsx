@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useParams, useLocation } from "wouter";
+import { useIndustryDetails } from "../../hooks/usePublicContent";
 import { industriesData } from "../../../../data/industries";
 
 import { IndustryHero } from "./components/Detail/IndustryHero";
@@ -18,13 +19,97 @@ import { IndustryDetailCTA } from "./components/Detail/IndustryDetailCTA";
 export const IndustryDetailsPage = () => {
   const params = useParams();
   const [, setLocation] = useLocation();
-  const slug = params.slug;
+  const slug = params.slug || "";
 
-  const industry = industriesData.find(ind => ind.slug === slug);
+  // Fetch PostgreSQL model via public API
+  const { data: apiIndustry, loading } = useIndustryDetails(slug);
+
+  const staticIndustry = industriesData.find(ind => ind.slug === slug);
+  
+  // Safe mapping of DB instance to frontend format
+  const industry = apiIndustry ? {
+    id: String(apiIndustry.id),
+    slug: apiIndustry.slug,
+    name: apiIndustry.name || staticIndustry?.name || "",
+    shortDescription: staticIndustry?.shortDescription || apiIndustry.challenges || "",
+    challenges: (typeof apiIndustry.challenges === "string") ? {
+      operational: [{ title: "Operational Impact", description: apiIndustry.challenges }],
+      regulatory: [{ title: "Regulatory Impact", description: apiIndustry.challenges }],
+      technical: [{ title: "Technical Impact", description: apiIndustry.challenges }]
+    } : (staticIndustry?.challenges || { operational: [], regulatory: [], technical: [] }),
+    solutions: staticIndustry?.solutions || (apiIndustry.target_solutions ? apiIndustry.target_solutions.split("\n").filter(Boolean) : []),
+    target_solutions: apiIndustry.target_solutions,
+    relatedServices: staticIndustry?.relatedServices || (apiIndustry.services ? apiIndustry.services.map(s => s.slug) : []),
+    relatedCaseStudies: staticIndustry?.relatedCaseStudies || (apiIndustry.case_studies ? apiIndustry.case_studies.map(cs => cs.slug) : []),
+    outcomes: staticIndustry?.outcomes || ["Operational Efficiency", "Compliance Architecture", "Security Risk Mitigation"]
+  } : staticIndustry;
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [slug]);
+
+  // SEO & Schema Mapping (PRD 4.3)
+  useEffect(() => {
+    if (industry) {
+      document.title = `Enterprise ${industry.name} Technology Solutions | Aurexion Technologies`;
+
+      // Update meta description
+      const descText = `Learn how Aurexion Technologies designs custom software engineering and digital transformation architectures for ${industry.name} sector.`;
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute("content", descText);
+      } else {
+        const meta = document.createElement("meta");
+        meta.name = "description";
+        meta.content = descText;
+        document.head.appendChild(meta);
+      }
+
+      // Update meta keywords
+      const keywordsText = `${industry.name}, technology solutions, compliance, enterprise architecture`;
+      let metaKeywords = document.querySelector('meta[name="keywords"]');
+      if (metaKeywords) {
+        metaKeywords.setAttribute("content", keywordsText);
+      } else {
+        const meta = document.createElement("meta");
+        meta.name = "keywords";
+        meta.content = keywordsText;
+        document.head.appendChild(meta);
+      }
+
+      // Inject JSON-LD Schema
+      const schemaId = "jsonld-industry-schema";
+      let script = document.getElementById(schemaId);
+      if (!script) {
+        script = document.createElement("script");
+        script.id = schemaId;
+        script.type = "application/ld+json";
+        document.head.appendChild(script);
+      }
+      
+      const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": `Enterprise ${industry.name} Technology Solutions`,
+        "description": descText,
+        "provider": {
+          "@type": "Organization",
+          "name": "Aurexion Technologies",
+          "url": window.location.origin
+        },
+        "url": window.location.href
+      };
+      script.text = JSON.stringify(jsonLd);
+    }
+  }, [industry]);
+
+  if (loading && !apiIndustry && !staticIndustry) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center">
+        <div className="text-primary font-mono text-sm">RETRIEVING SECTOR PROFILE...</div>
+      </div>
+    );
+  }
 
   if (!industry) {
     setLocation("/industries");

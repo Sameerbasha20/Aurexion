@@ -1,1 +1,11 @@
-<!-- Recruitment dashboard placeholder -->
+{% extends "base.html" %}
+
+{% block title %}Recruitment Dashboard{% endblock %}
+
+{% block content %}
+<h2>Recruitment Dashboard</h2>
+<div class="stats-container">
+    <p>Active Job Vacancies: {{ active_jobs|default:0 }}</p>
+    <p>Total Candidates: {{ total_candidates|default:0 }}</p>
+</div>
+{% endblock %}

@@ -18,7 +18,7 @@ export const CategoryNavigation = ({ categories, activeCategory, setActiveCatego
   };
 
   return (
-    <div className="w-full border-b border-[rgba(140,174,187,0.15)] mb-10 bg-[#050811]">
+    <div id="categories" className="w-full border-b border-[rgba(140,174,187,0.15)] mb-10 bg-[#050811]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center group py-2">
           {/* Scroll Left Button */}

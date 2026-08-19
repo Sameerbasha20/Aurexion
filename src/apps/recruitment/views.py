@@ -223,7 +223,7 @@ class AdminCandidateApplicationViewSet(viewsets.ReadOnlyModelViewSet):
         """HR API: Securely download resume via signed URL"""
         application = self.get_object()
         try:
-            url = generate_signed_url(application.resume_storage_path, expires_in=60)
+            url = generate_signed_url(application.resume_storage_path, expires_in=3600)
             return Response({'download_url': url})
         except Exception:
             logger.exception("Failed to generate signed resume URL")

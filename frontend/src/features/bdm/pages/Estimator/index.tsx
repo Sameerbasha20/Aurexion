@@ -3,13 +3,16 @@ import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 
 export const Estimator: React.FC = () => {
-  const [developerCount, setDeveloperCount] = useState(5);
-  const [timelineMonths, setTimelineMonths] = useState(6);
+  const [developerCount, setDeveloperCount] = useState<number | "">("");
+  const [timelineMonths, setTimelineMonths] = useState<number | "">("");
   const [calculatedCost, setCalculatedCost] = useState(0);
 
   const calculateEstimate = () => {
+    // Fall back to default values (5 devs, 6 months) if inputs are left blank by user
+    const devs = developerCount === "" ? 5 : developerCount;
+    const months = timelineMonths === "" ? 6 : timelineMonths;
     // Basic mock calculation rate: $10,000 per dev per month
-    const estimate = developerCount * timelineMonths * 10000;
+    const estimate = devs * months * 10000;
     setCalculatedCost(estimate);
   };
 
@@ -33,7 +36,10 @@ export const Estimator: React.FC = () => {
                   id="devs"
                   type="number"
                   value={developerCount}
-                  onChange={(e) => setDeveloperCount(Number.parseInt(e.target.value, 10) || 0)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDeveloperCount(val === "" ? "" : Number.parseInt(val, 10) || 0);
+                  }}
                   style={{
                     width: "100%",
                     height: "44px",
@@ -60,7 +66,10 @@ export const Estimator: React.FC = () => {
                   id="months"
                   type="number"
                   value={timelineMonths}
-                  onChange={(e) => setTimelineMonths(Number.parseInt(e.target.value, 10) || 0)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setTimelineMonths(val === "" ? "" : Number.parseInt(val, 10) || 0);
+                  }}
                   style={{
                     width: "100%",
                     height: "44px",

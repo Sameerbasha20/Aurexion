@@ -24,15 +24,16 @@ export const useCaseStudies = () => {
   return { data, loading, error };
 };
 
-export const useBlogPosts = () => {
+export const useBlogPosts = (filters?: { category?: string; tag?: string; search?: string }) => {
   const [data, setData] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
+      setLoading(true);
       try {
-        const result = await publicService.getBlogPosts();
+        const result = await publicService.getBlogPosts(filters);
         setData(result);
       } catch (err: any) {
         setError(err);
@@ -41,7 +42,55 @@ export const useBlogPosts = () => {
       }
     };
     fetch();
-  }, []);
+  }, [filters?.category, filters?.tag, filters?.search]);
+
+  return { data, loading, error };
+};
+
+export const useBlogPostDetails = (slug: string) => {
+  const [data, setData] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const result = await publicService.getBlogPostBySlug(slug);
+        setData(result);
+      } catch (err: any) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, [slug]);
+
+  return { data, loading, error };
+};
+
+export const useRelatedBlogPosts = (slug: string) => {
+  const [data, setData] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const result = await publicService.getRelatedBlogPosts(slug);
+        setData(result);
+      } catch (err: any) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, [slug]);
 
   return { data, loading, error };
 };

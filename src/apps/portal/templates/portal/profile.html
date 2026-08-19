@@ -1,1 +1,11 @@
-<!-- Portal profile placeholder -->
+{% extends "base.html" %}
+
+{% block title %}Portal Profile{% endblock %}
+
+{% block content %}
+<h2>Portal Profile</h2>
+<div class="stats-container">
+    <p>Username: {{ user.username|default:"Guest" }}</p>
+    <p>Role: {{ user.profile.role|default:"N/A" }}</p>
+</div>
+{% endblock %}

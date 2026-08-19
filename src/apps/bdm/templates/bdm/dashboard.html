@@ -1,1 +1,11 @@
-<!-- CMS dashboard placeholder -->
+{% extends "base.html" %}
+
+{% block title %}BDM Dashboard{% endblock %}
+
+{% block content %}
+<h2>BDM Dashboard</h2>
+<div class="stats-container">
+    <p>Total Submissions: {{ total_submissions|default:0 }}</p>
+    <p>Estimates Value: {{ total_estimates_value|default:0 }}</p>
+</div>
+{% endblock %}
