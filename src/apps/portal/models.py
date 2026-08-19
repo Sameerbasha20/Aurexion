@@ -3,6 +3,11 @@ from django.conf import settings
 from django.utils import timezone
 
 
+STATUS_IN_PROGRESS_LABEL = 'In Progress'
+STATUS_UNDER_REVIEW_LABEL = 'Under Review'
+STATUS_COMPLETED_LABEL = 'Completed'
+
+
 class SupportTicket(models.Model):
     CATEGORY_CHOICES = [
         ('bug', 'Bug'),
@@ -22,7 +27,7 @@ class SupportTicket(models.Model):
     STATUS_CHOICES = [
         ('open', 'Open'),
         ('assigned', 'Assigned'),
-        ('in_progress', 'In Progress'),
+        ('in_progress', STATUS_IN_PROGRESS_LABEL),
         ('awaiting_client', 'Awaiting Client'),
         ('resolved', 'Resolved'),
         ('closed', 'Closed'),
@@ -88,9 +93,9 @@ class SupportTicket(models.Model):
 class ClientProject(models.Model):
     STATUS_CHOICES = [
         ('planning', 'Planning'),
-        ('in_progress', 'In Progress'),
-        ('under_review', 'Under Review'),
-        ('completed', 'Completed'),
+        ('in_progress', STATUS_IN_PROGRESS_LABEL),
+        ('under_review', STATUS_UNDER_REVIEW_LABEL),
+        ('completed', STATUS_COMPLETED_LABEL),
         ('on_hold', 'On Hold'),
     ]
 
@@ -125,10 +130,10 @@ class ClientRequest(models.Model):
 
     STATUS_CHOICES = [
         ('submitted', 'Submitted'),
-        ('under_review', 'Under Review'),
+        ('under_review', STATUS_UNDER_REVIEW_LABEL),
         ('approved', 'Approved'),
-        ('in_progress', 'In Progress'),
-        ('completed', 'Completed'),
+        ('in_progress', STATUS_IN_PROGRESS_LABEL),
+        ('completed', STATUS_COMPLETED_LABEL),
         ('rejected', 'Rejected'),
     ]
 

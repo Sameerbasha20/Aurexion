@@ -7,12 +7,150 @@ import { Skeleton } from "../../../components/ui/skeleton";
 import { ErrorState, LoadingState, EmptyState } from "../../portal/components/StateViews";
 import { TicketCategoryBadge, TicketPriorityBadge, TicketStatusBadge } from "../../portal/components/TicketMeta";
 import { formatDateTime } from "../../portal/utils/format";
-import { buildTicketStats } from "../../portal/types/portal.types";
+import { buildTicketStats, TicketStats } from "../../portal/types/portal.types";
 import useExecutiveTickets from "../hooks/useExecutiveTickets";
+
+interface ExecutiveKpiCardProps {
+  label: string;
+  value: number;
+  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+  accentColor: string;
+  subtitle: string;
+  isLoading: boolean;
+}
+
+const ExecutiveKpiCard: React.FC<ExecutiveKpiCardProps> = ({
+  label,
+  value,
+  icon: Icon,
+  accentColor,
+  subtitle,
+  isLoading,
+}) => (
+  <Card glowOnHover className="h-full min-h-[160px] p-6 flex flex-col justify-between" style={{ boxSizing: "border-box" }}>
+    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
+      <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", fontWeight: 500 }}>
+        {label}
+      </span>
+      <Icon size={18} style={{ color: accentColor, flexShrink: 0 }} />
+    </div>
+    <div style={{ margin: "14px 0" }}>
+      {isLoading ? (
+        <Skeleton className="h-8 w-16" />
+      ) : (
+        <p style={{ fontSize: "2rem", fontWeight: 600, color: accentColor, margin: 0, lineHeight: 1.1 }}>{value}</p>
+      )}
+    </div>
+    <div style={{ color: "#64748b", fontSize: "0.8rem" }}>{subtitle}</div>
+  </Card>
+);
+
+const ExecutiveKpiSection: React.FC<{ stats: TicketStats | null; isLoading: boolean }> = ({ stats, isLoading }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" style={{ width: "100%" }}>
+    <ExecutiveKpiCard
+      label="TOTAL ASSIGNED"
+      value={stats?.total ?? 0}
+      icon={LifeBuoy}
+      accentColor="#63f5e8"
+      subtitle="Assigned support tickets"
+      isLoading={isLoading}
+    />
+    <ExecutiveKpiCard
+      label="OPEN & ASSIGNED"
+      value={(stats?.open ?? 0) + (stats?.assigned ?? 0)}
+      icon={Clock}
+      accentColor="#fbbf24"
+      subtitle="Awaiting executive action"
+      isLoading={isLoading}
+    />
+    <ExecutiveKpiCard
+      label="IN PROGRESS"
+      value={stats?.inProgress ?? 0}
+      icon={UserCheck}
+      accentColor="#60a5fa"
+      subtitle="Currently being resolved"
+      isLoading={isLoading}
+    />
+    <ExecutiveKpiCard
+      label="AWAITING CLIENT"
+      value={stats?.awaitingClient ?? 0}
+      icon={AlertCircle}
+      accentColor="#c4b5fd"
+      subtitle="Client feedback pending"
+      isLoading={isLoading}
+    />
+    <ExecutiveKpiCard
+      label="RESOLVED & CLOSED"
+      value={(stats?.resolved ?? 0) + (stats?.closed ?? 0)}
+      icon={CheckCircle2}
+      accentColor="#4ade80"
+      subtitle="Resolved & closed tickets"
+      isLoading={isLoading}
+    />
+    <ExecutiveKpiCard
+      label="CRITICAL PRIORITY"
+      value={stats?.critical ?? 0}
+      icon={ShieldAlert}
+      accentColor="#ef4444"
+      subtitle="Urgent intervention required"
+      isLoading={isLoading}
+    />
+  </div>
+);
+
+const ExecutiveRecentTicketsTable: React.FC<{ tickets: any[] }> = ({ tickets }) => (
+  <div style={{ overflowX: "auto" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "750px", fontSize: "0.875rem" }}>
+      <thead>
+        <tr style={{ textAlign: "left", color: "#64748b", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.7rem", letterSpacing: "0.08em" }}>
+          <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>TICKET ID</th>
+          <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>SUBJECT</th>
+          <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CLIENT</th>
+          <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CATEGORY</th>
+          <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>PRIORITY</th>
+          <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>STATUS</th>
+          <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>UPDATED</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tickets.slice(0, 8).map((ticket) => (
+          <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(140,174,187,0.12)" }}>
+            <td style={{ padding: "0.75rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
+              <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#63f5e8" }}>
+                {ticket.ticket_id}
+              </Link>
+            </td>
+            <td style={{ padding: "0.75rem", maxWidth: "280px" }}>
+              <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#e2e8f0", textDecoration: "none" }}>
+                <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
+                  {ticket.subject}
+                </span>
+              </Link>
+            </td>
+            <td style={{ padding: "0.75rem", color: "#cbd5e1" }}>{ticket.client_username}</td>
+            <td style={{ padding: "0.75rem" }}>
+              <TicketCategoryBadge category={ticket.category} />
+            </td>
+            <td style={{ padding: "0.75rem" }}>
+              <TicketPriorityBadge priority={ticket.priority} />
+            </td>
+            <td style={{ padding: "0.75rem" }}>
+              <TicketStatusBadge status={ticket.status} />
+            </td>
+            <td style={{ padding: "0.75rem", color: "#94a3b8", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+              {formatDateTime(ticket.updated_at)}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 
 export const SupportDashboard: React.FC = () => {
   const tickets = useExecutiveTickets();
   const stats = tickets.data ? buildTicketStats(tickets.data) : null;
+  const isKpiLoading = tickets.isLoading && !stats;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem", width: "100%", maxWidth: "100%" }}>
@@ -41,98 +179,7 @@ export const SupportDashboard: React.FC = () => {
         <ErrorState error={tickets.error} onRetry={tickets.refetch} title="Unable to load support tickets queue" />
       ) : (
         <>
-          {/* KPI Metrics */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" style={{ width: "100%" }}>
-            <Card glowOnHover className="h-full min-h-[160px] p-6 flex flex-col justify-between" style={{ boxSizing: "border-box" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
-                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", fontWeight: 500 }}>TOTAL ASSIGNED</span>
-                <LifeBuoy size={18} style={{ color: "#63f5e8", flexShrink: 0 }} />
-              </div>
-              <div style={{ margin: "14px 0" }}>
-                {tickets.isLoading && !stats ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <p style={{ fontSize: "2rem", fontWeight: 600, color: "#63f5e8", margin: 0, lineHeight: 1.1 }}>{stats?.total ?? 0}</p>
-                )}
-              </div>
-              <div style={{ color: "#64748b", fontSize: "0.8rem" }}>Assigned support tickets</div>
-            </Card>
-
-            <Card glowOnHover className="h-full min-h-[160px] p-6 flex flex-col justify-between" style={{ boxSizing: "border-box" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
-                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", fontWeight: 500 }}>OPEN & ASSIGNED</span>
-                <Clock size={18} style={{ color: "#fbbf24", flexShrink: 0 }} />
-              </div>
-              <div style={{ margin: "14px 0" }}>
-                {tickets.isLoading && !stats ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <p style={{ fontSize: "2rem", fontWeight: 600, color: "#fbbf24", margin: 0, lineHeight: 1.1 }}>{(stats?.open ?? 0) + (stats?.assigned ?? 0)}</p>
-                )}
-              </div>
-              <div style={{ color: "#64748b", fontSize: "0.8rem" }}>Awaiting executive action</div>
-            </Card>
-
-            <Card glowOnHover className="h-full min-h-[160px] p-6 flex flex-col justify-between" style={{ boxSizing: "border-box" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
-                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", fontWeight: 500 }}>IN PROGRESS</span>
-                <UserCheck size={18} style={{ color: "#60a5fa", flexShrink: 0 }} />
-              </div>
-              <div style={{ margin: "14px 0" }}>
-                {tickets.isLoading && !stats ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <p style={{ fontSize: "2rem", fontWeight: 600, color: "#60a5fa", margin: 0, lineHeight: 1.1 }}>{stats?.inProgress ?? 0}</p>
-                )}
-              </div>
-              <div style={{ color: "#64748b", fontSize: "0.8rem" }}>Currently being resolved</div>
-            </Card>
-
-            <Card glowOnHover className="h-full min-h-[160px] p-6 flex flex-col justify-between" style={{ boxSizing: "border-box" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
-                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", fontWeight: 500 }}>AWAITING CLIENT</span>
-                <AlertCircle size={18} style={{ color: "#c4b5fd", flexShrink: 0 }} />
-              </div>
-              <div style={{ margin: "14px 0" }}>
-                {tickets.isLoading && !stats ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <p style={{ fontSize: "2rem", fontWeight: 600, color: "#c4b5fd", margin: 0, lineHeight: 1.1 }}>{stats?.awaitingClient ?? 0}</p>
-                )}
-              </div>
-              <div style={{ color: "#64748b", fontSize: "0.8rem" }}>Client feedback pending</div>
-            </Card>
-
-            <Card glowOnHover className="h-full min-h-[160px] p-6 flex flex-col justify-between" style={{ boxSizing: "border-box" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
-                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", fontWeight: 500 }}>RESOLVED & CLOSED</span>
-                <CheckCircle2 size={18} style={{ color: "#4ade80", flexShrink: 0 }} />
-              </div>
-              <div style={{ margin: "14px 0" }}>
-                {tickets.isLoading && !stats ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <p style={{ fontSize: "2rem", fontWeight: 600, color: "#4ade80", margin: 0, lineHeight: 1.1 }}>{(stats?.resolved ?? 0) + (stats?.closed ?? 0)}</p>
-                )}
-              </div>
-              <div style={{ color: "#64748b", fontSize: "0.8rem" }}>Resolved & closed tickets</div>
-            </Card>
-
-            <Card glowOnHover className="h-full min-h-[160px] p-6 flex flex-col justify-between" style={{ boxSizing: "border-box" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
-                <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#ef4444", fontWeight: 500 }}>CRITICAL PRIORITY</span>
-                <ShieldAlert size={18} style={{ color: "#ef4444", flexShrink: 0 }} />
-              </div>
-              <div style={{ margin: "14px 0" }}>
-                {tickets.isLoading && !stats ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : (
-                  <p style={{ fontSize: "2rem", fontWeight: 600, color: "#ef4444", margin: 0, lineHeight: 1.1 }}>{stats?.critical ?? 0}</p>
-                )}
-              </div>
-              <div style={{ color: "#64748b", fontSize: "0.8rem" }}>Urgent intervention required</div>
-            </Card>
-          </div>
+          <ExecutiveKpiSection stats={stats} isLoading={isKpiLoading} />
 
           {/* Active Ticket Ledger Queue */}
           <Card glowOnHover>
@@ -158,52 +205,7 @@ export const SupportDashboard: React.FC = () => {
                 description="You currently have no support tickets assigned to your account."
               />
             ) : (
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "750px", fontSize: "0.875rem" }}>
-                  <thead>
-                    <tr style={{ textAlign: "left", color: "#64748b", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.7rem", letterSpacing: "0.08em" }}>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>TICKET ID</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>SUBJECT</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CLIENT</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CATEGORY</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>PRIORITY</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>STATUS</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>UPDATED</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(tickets.data || []).slice(0, 8).map((ticket) => (
-                      <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(140,174,187,0.12)" }}>
-                        <td style={{ padding: "0.75rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
-                          <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#63f5e8" }}>
-                            {ticket.ticket_id}
-                          </Link>
-                        </td>
-                        <td style={{ padding: "0.75rem", maxWidth: "280px" }}>
-                          <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#e2e8f0", textDecoration: "none" }}>
-                            <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
-                              {ticket.subject}
-                            </span>
-                          </Link>
-                        </td>
-                        <td style={{ padding: "0.75rem", color: "#cbd5e1" }}>{ticket.client_username}</td>
-                        <td style={{ padding: "0.75rem" }}>
-                          <TicketCategoryBadge category={ticket.category} />
-                        </td>
-                        <td style={{ padding: "0.75rem" }}>
-                          <TicketPriorityBadge priority={ticket.priority} />
-                        </td>
-                        <td style={{ padding: "0.75rem" }}>
-                          <TicketStatusBadge status={ticket.status} />
-                        </td>
-                        <td style={{ padding: "0.75rem", color: "#94a3b8", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                          {formatDateTime(ticket.updated_at)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <ExecutiveRecentTicketsTable tickets={tickets.data || []} />
             )}
           </Card>
         </>
@@ -213,3 +215,4 @@ export const SupportDashboard: React.FC = () => {
 };
 
 export default SupportDashboard;
+
