@@ -5,31 +5,33 @@ export const IntegrationsSection = ({ caseStudy }) => {
   if (!caseStudy.thirdPartyIntegrations) return null;
 
   return (
-    <section className="py-8 bg-card/30 border-b border-border/10">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 mb-6">
+    <section className="py-12 bg-card/30 border-b border-border/10">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 mb-8">
           <span className="text-2xl font-bold text-primary font-mono opacity-50">06</span>
-          <h2 className="text-2xl font-bold">Third-Party Integrations</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Third-Party Integrations</h2>
         </div>
 
         {caseStudy.thirdPartyIntegrations.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {caseStudy.thirdPartyIntegrations.map((integration, idx) => (
-              <div key={idx} className="p-5 bg-background border border-border/40 rounded-xl">
+              <div key={idx} className="p-6 bg-[#080f1a] border border-border/20 rounded-xl hover:border-primary/30 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-bold text-base text-white">{integration.name}</h4>
                   <Link2 className="w-4 h-4 text-primary" />
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{integration.purpose}</p>
+                <p className="text-sm text-gray-400 leading-relaxed">{integration.purpose}</p>
               </div>
             ))}
           </div>
         ) : (
-          <div className="p-8 bg-background border border-border/40 rounded-lg text-center max-w-2xl">
-            <p className="text-muted-foreground">Integration details available through specific project configuration.</p>
+          <div className="p-8 bg-[#080f1a] border border-border/20 rounded-xl text-center max-w-2xl">
+            <p className="text-gray-400">Integration details available through specific project configuration.</p>
           </div>
         )}
       </div>
     </section>
   );
 };
+
+export default IntegrationsSection;

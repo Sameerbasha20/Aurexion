@@ -9,9 +9,9 @@ export const RelatedCaseStudies = ({ currentCaseStudy }) => {
   if (related.length === 0) return null;
 
   return (
-    <section className="py-10 bg-background border-t border-border/10">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-bold mb-6 text-white">Explore More Case Studies</h2>
+    <section className="py-12 bg-background border-t border-border/10">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl md:text-3xl font-bold mb-8 text-white tracking-tight">Explore More Case Studies</h2>
         
         <div className="grid md:grid-cols-3 gap-8">
           {related.map((cs) => (
@@ -22,3 +22,5 @@ export const RelatedCaseStudies = ({ currentCaseStudy }) => {
     </section>
   );
 };
+
+export default RelatedCaseStudies;

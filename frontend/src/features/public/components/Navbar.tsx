@@ -118,6 +118,7 @@ export const Navbar: React.FC = () => {
     { name: "Case Studies", path: "/case-studies" },
     { name: "Careers", path: "/careers" },
     { name: "Insights", path: "/insights" },
+    { name: "Contact", path: "/contact" },
   ];
 
   return (
@@ -193,11 +194,8 @@ export const Navbar: React.FC = () => {
 
         {/* Desktop CTAs */}
         <div className="nav-ctas">
-          <Link href="/login" className="nav-cta-primary" onClick={closeAll}>
+          <Link href="/login" className="nav-cta-secondary" onClick={closeAll}>
             LOGIN
-          </Link>
-          <Link href="/rfp" className="nav-cta-primary" onClick={closeAll}>
-            SUBMIT RFP
           </Link>
           <Link href="/estimator" className="nav-cta-primary" onClick={closeAll}>
             ESTIMATE PROJECT <ArrowUpRight size={14} />
@@ -263,11 +261,8 @@ export const Navbar: React.FC = () => {
             ))}
           </div>
           <div className="nav-mobile-ctas">
-            <Link href="/login" className="nav-cta-primary w-full text-center" onClick={closeAll} style={{ marginBottom: "0.75rem" }}>
+            <Link href="/login" className="nav-cta-secondary w-full text-center" onClick={closeAll} style={{ marginBottom: "0.75rem", display: "block" }}>
               LOGIN
-            </Link>
-            <Link href="/rfp" className="nav-cta-primary w-full text-center" onClick={closeAll} style={{ marginBottom: "0.75rem" }}>
-              SUBMIT RFP
             </Link>
             <Link href="/estimator" className="nav-cta-primary w-full text-center" onClick={closeAll}>
               ESTIMATE PROJECT <ArrowUpRight size={14} />

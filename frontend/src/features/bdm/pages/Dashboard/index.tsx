@@ -255,7 +255,7 @@ export const Dashboard: React.FC = () => {
       )}
 
       {/* KPI Cards */}
-      <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}>
+      <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))" }}>
         <MetricCard
           title="Total Leads"
           value={data?.total_leads || 0}
@@ -295,13 +295,13 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Charts & Activity */}
-      <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "1fr 1fr" }}>
+      <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))" }}>
         <Card>
           <CardHeader>
             <CardTitle>Pipeline by Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ height: 300 }}>
+            <div style={{ height: 300, minWidth: 0, width: "100%" }}>
               <ChartContainer
                 config={{
                   total: { label: "Leads", color: "#63f5e8" },
@@ -321,7 +321,7 @@ export const Dashboard: React.FC = () => {
                     tick={{ fill: "#64748b", fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
-                    width={140}
+                    width={120}
                   />
                   <ChartTooltip
                     content={
@@ -332,14 +332,12 @@ export const Dashboard: React.FC = () => {
                     }
                   />
                   <ChartLegend />
-                  <ResponsiveContainer width="100%" height="100%">
-                    <Bar
-                      dataKey="total"
-                      name="Leads"
-                      radius={[0, 4, 4, 0]}
-                      fill="#63f5e8"
-                    />
-                  </ResponsiveContainer>
+                  <Bar
+                    dataKey="total"
+                    name="Leads"
+                    radius={[0, 4, 4, 0]}
+                    fill="#63f5e8"
+                  />
                 </BarChart>
               </ChartContainer>
             </div>

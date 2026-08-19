@@ -48,7 +48,7 @@ export const PublicRoutes: React.FC = () => {
         
         <Route path="/insights" component={InsightsPage} />
         <Route path="/insights/:slug" component={ArticleDetailPage} />
-        <Route path="/blog"><Redirect to="/insights" /></Route>
+        <Route path="/blog"><Redirect to="/insights" replace /></Route>
         
         <Route path="/contact" component={ContactPage} />
         <Route path="/request-quote" component={RequestQuotePage} />

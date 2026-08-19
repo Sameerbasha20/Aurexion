@@ -5,24 +5,24 @@ export const ModulesDeveloped = ({ caseStudy }) => {
   if (!caseStudy.modules || caseStudy.modules.length === 0) return null;
 
   return (
-    <section className="py-8 bg-background border-b border-border/10">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 mb-6">
+    <section className="py-12 bg-background border-b border-border/10">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 mb-8">
           <span className="text-2xl font-bold text-primary font-mono opacity-50">05</span>
-          <h2 className="text-2xl font-bold">Modules Developed</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Modules Developed</h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {caseStudy.modules.map((module, idx) => (
-            <div key={idx} className="p-5 bg-card border border-border/40 rounded-xl flex items-center gap-3.5 hover:border-primary/50 transition-colors">
-              <div className="w-9 h-9 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Blocks className="w-4 h-4 text-primary" />
+            <div key={idx} className="p-6 bg-[#080f1a] border border-border/20 rounded-xl flex items-start gap-4 hover:border-primary/40 transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Blocks className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <span className="text-[10px] font-mono font-bold text-primary block mb-0.5">
+                <span className="text-[10px] font-mono font-bold text-[#63f5e8] block mb-1">
                   MODULE {String(idx + 1).padStart(2, '0')}
                 </span>
-                <h4 className="font-bold text-foreground text-sm leading-tight">{module}</h4>
+                <h4 className="font-bold text-gray-100 text-sm leading-snug">{module}</h4>
               </div>
             </div>
           ))}
@@ -31,3 +31,5 @@ export const ModulesDeveloped = ({ caseStudy }) => {
     </section>
   );
 };
+
+export default ModulesDeveloped;
