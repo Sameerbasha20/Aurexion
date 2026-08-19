@@ -1,10 +1,5 @@
 import React from "react";
-import { Link } from "wouter";
-import { ArrowRight, Code } from "lucide-react";
-// Import servicesData to map the actual service names based on slugs
-// We'll import it from data/services in a real scenario, assuming the path is correct
-// If it fails, we fall back to just formatting the slug
-import { servicesData } from "../../../../../../data/services";
+import ServiceCardGrid from "../../../../components/ServiceCardGrid";
 
 export const AssociatedServices = ({ industry }) => {
   if (!industry.relatedServices || industry.relatedServices.length === 0) return null;
@@ -13,6 +8,7 @@ export const AssociatedServices = ({ industry }) => {
     <section className="py-24 bg-background border-t border-border/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold mb-12">Technology Services for {industry.name}</h2>
+<<<<<<< Updated upstream
         
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {industry.relatedServices.map((slug, idx) => {
@@ -38,6 +34,9 @@ export const AssociatedServices = ({ industry }) => {
             )
           })}
         </div>
+=======
+        <ServiceCardGrid serviceSlugs={industry.relatedServices} />
+>>>>>>> Stashed changes
       </div>
     </section>
   );

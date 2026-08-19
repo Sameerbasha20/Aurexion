@@ -14,7 +14,9 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code with non-root ownership
-COPY --chown=appuser:appuser . .
+COPY --chown=appuser:appuser manage.py ./
+COPY --chown=appuser:appuser schema.yml ./
+COPY --chown=appuser:appuser src/ ./src/
 
 # Switch to non-root user
 USER appuser

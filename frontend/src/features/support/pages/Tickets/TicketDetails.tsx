@@ -51,6 +51,190 @@ const InfoRow: React.FC<InfoRowProps> = ({ label, value }) => (
   </div>
 );
 
+interface TicketMetadataCardProps {
+  data: any;
+}
+
+const TicketMetadataCard: React.FC<TicketMetadataCardProps> = ({ data }) => (
+  <Card glowOnHover>
+    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8", marginBottom: "1rem" }}>
+      <LifeBuoy size={18} />
+      <h3 style={{ margin: 0, color: "#63f5e8" }}>Ticket Metadata</h3>
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <InfoRow label="Ticket ID" value={data.ticket_id} />
+      <InfoRow label="Client Account" value={data.client_user} />
+      <InfoRow label="Current Assignee" value={data.assigned_to || "Unassigned"} />
+      <InfoRow label="Created Date" value={formatDateTime(data.created_at)} />
+      <InfoRow label="Last Update" value={formatDateTime(data.updated_at)} />
+      <InfoRow label="Closed Date" value={data.closed_at ? formatDateTime(data.closed_at) : "Active"} />
+    </div>
+  </Card>
+);
+
+interface ExecutiveWorkspaceCardProps {
+  status: TicketStatus;
+  priority: TicketPriority;
+  category: TicketCategory;
+  assignedToId: number | null;
+  assignableUsers: any[];
+  onStatusChange: (s: TicketStatus) => void;
+  onPriorityChange: (p: TicketPriority) => void;
+  onCategoryChange: (c: TicketCategory) => void;
+  onAssigneeChange: (id: number | null) => void;
+}
+
+const ExecutiveWorkspaceCard: React.FC<ExecutiveWorkspaceCardProps> = ({
+  status,
+  priority,
+  category,
+  assignedToId,
+  assignableUsers,
+  onStatusChange,
+  onPriorityChange,
+  onCategoryChange,
+  onAssigneeChange,
+}) => (
+  <Card glowOnHover>
+    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8", marginBottom: "1rem" }}>
+      <UserCheck size={18} />
+      <h3 style={{ margin: 0, color: "#63f5e8" }}>Executive Control Workspace</h3>
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      {/* Status Dropdown */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+        <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+          WORKFLOW STATUS
+        </Label>
+        <Select value={status} onValueChange={(v) => onStatusChange(v as TicketStatus)}>
+          <SelectTrigger style={{ width: "100%" }}>
+            <SelectValue placeholder="Select Status" />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Priority Dropdown */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+        <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+          PRIORITY LEVEL
+        </Label>
+        <Select value={priority} onValueChange={(v) => onPriorityChange(v as TicketPriority)}>
+          <SelectTrigger style={{ width: "100%" }}>
+            <SelectValue placeholder="Select Priority" />
+          </SelectTrigger>
+          <SelectContent>
+            {PRIORITY_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Category Dropdown */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+        <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+          ISSUE CATEGORY
+        </Label>
+        <Select value={category} onValueChange={(v) => onCategoryChange(v as TicketCategory)}>
+          <SelectTrigger style={{ width: "100%" }}>
+            <SelectValue placeholder="Select Category" />
+          </SelectTrigger>
+          <SelectContent>
+            {CATEGORY_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Assignee Selection */}
+      {assignableUsers && assignableUsers.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+          <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+            ASSIGNED EXECUTIVE
+          </Label>
+          <Select
+            value={assignedToId ? String(assignedToId) : "unassigned"}
+            onValueChange={(v) => onAssigneeChange(v === "unassigned" ? null : Number(v))}
+          >
+            <SelectTrigger style={{ width: "100%" }}>
+              <SelectValue placeholder="Unassigned" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {assignableUsers.map((u) => (
+                <SelectItem key={u.id} value={String(u.id)}>
+                  {u.first_name || u.last_name ? `${u.first_name} ${u.last_name} (${u.username})` : u.username}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+    </div>
+  </Card>
+);
+
+interface ResolutionNotesCardProps {
+  notes: string;
+  isLoading: boolean;
+  onNotesChange: (val: string) => void;
+  onSave: () => void;
+}
+
+const ResolutionNotesCard: React.FC<ResolutionNotesCardProps> = ({
+  notes,
+  isLoading,
+  onNotesChange,
+  onSave,
+}) => (
+  <Card glowOnHover>
+    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8", marginBottom: "1rem" }}>
+      <FileText size={18} />
+      <h3 style={{ margin: 0, color: "#63f5e8" }}>Resolution & Client Response Notes</h3>
+    </div>
+    <p style={{ color: "#94a3b8", fontSize: "0.85rem", margin: "0 0 1rem 0" }}>
+      Provide detailed resolution notes, technical findings, or response guidance. These notes are visible to the client upon status updates.
+    </p>
+    <textarea
+      value={notes}
+      onChange={(e) => onNotesChange(e.target.value)}
+      rows={6}
+      placeholder="Enter resolution notes, root cause analysis, or response details for the client..."
+      style={{
+        width: "100%",
+        backgroundColor: "#0c1222",
+        border: "1px solid #1e293b",
+        borderRadius: "6px",
+        padding: "0.85rem",
+        color: "#e2e8f0",
+        fontSize: "0.9rem",
+        fontFamily: "inherit",
+        lineHeight: 1.6,
+        outline: "none",
+        resize: "vertical",
+        marginBottom: "1.25rem",
+      }}
+    />
+
+    <Button glow size="sm" onClick={onSave} disabled={isLoading}>
+      <Save size={14} />
+      {isLoading ? "Saving Changes..." : "Save Ticket & Resolution"}
+    </Button>
+  </Card>
+);
+
 export const TicketDetails: React.FC = () => {
   const params = useParams();
   const ticketId = params?.id || "";
@@ -75,8 +259,8 @@ export const TicketDetails: React.FC = () => {
     }
   }, [ticket.data]);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!ticket.data) return;
 
     try {
@@ -146,149 +330,26 @@ export const TicketDetails: React.FC = () => {
 
           {/* Grid Layout: Information & Actions */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
-            {/* Ticket Info Card */}
-            <Card glowOnHover>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8", marginBottom: "1rem" }}>
-                <LifeBuoy size={18} />
-                <h3 style={{ margin: 0, color: "#63f5e8" }}>Ticket Metadata</h3>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <InfoRow label="Ticket ID" value={ticket.data.ticket_id} />
-                <InfoRow label="Client Account" value={ticket.data.client_user} />
-                <InfoRow label="Current Assignee" value={ticket.data.assigned_to || "Unassigned"} />
-                <InfoRow label="Created Date" value={formatDateTime(ticket.data.created_at)} />
-                <InfoRow label="Last Update" value={formatDateTime(ticket.data.updated_at)} />
-                <InfoRow label="Closed Date" value={ticket.data.closed_at ? formatDateTime(ticket.data.closed_at) : "Active"} />
-              </div>
-            </Card>
-
-            {/* Management & Status Control Card */}
-            <Card glowOnHover>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8", marginBottom: "1rem" }}>
-                <UserCheck size={18} />
-                <h3 style={{ margin: 0, color: "#63f5e8" }}>Executive Control Workspace</h3>
-              </div>
-              <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-                {/* Status Dropdown */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                  <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-                    WORKFLOW STATUS
-                  </Label>
-                  <Select value={status} onValueChange={(v) => setStatus(v as TicketStatus)}>
-                    <SelectTrigger style={{ width: "100%" }}>
-                      <SelectValue placeholder="Select Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUS_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Priority Dropdown */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                  <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-                    PRIORITY LEVEL
-                  </Label>
-                  <Select value={priority} onValueChange={(v) => setPriority(v as TicketPriority)}>
-                    <SelectTrigger style={{ width: "100%" }}>
-                      <SelectValue placeholder="Select Priority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PRIORITY_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Category Dropdown */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                  <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-                    ISSUE CATEGORY
-                  </Label>
-                  <Select value={category} onValueChange={(v) => setCategory(v as TicketCategory)}>
-                    <SelectTrigger style={{ width: "100%" }}>
-                      <SelectValue placeholder="Select Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORY_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Assignee Selection */}
-                {assignableUsers.data && assignableUsers.data.length > 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                    <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-                      ASSIGNED EXECUTIVE
-                    </Label>
-                    <Select
-                      value={assignedToId ? String(assignedToId) : "unassigned"}
-                      onValueChange={(v) => setAssignedToId(v === "unassigned" ? null : Number(v))}
-                    >
-                      <SelectTrigger style={{ width: "100%" }}>
-                        <SelectValue placeholder="Unassigned" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="unassigned">Unassigned</SelectItem>
-                        {assignableUsers.data.map((u) => (
-                          <SelectItem key={u.id} value={String(u.id)}>
-                            {u.first_name || u.last_name ? `${u.first_name} ${u.last_name} (${u.username})` : u.username}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </form>
-            </Card>
+            <TicketMetadataCard data={ticket.data} />
+            <ExecutiveWorkspaceCard
+              status={status}
+              priority={priority}
+              category={category}
+              assignedToId={assignedToId}
+              assignableUsers={assignableUsers.data || []}
+              onStatusChange={setStatus}
+              onPriorityChange={setPriority}
+              onCategoryChange={setCategory}
+              onAssigneeChange={setAssignedToId}
+            />
           </div>
 
-          {/* Resolution Notes Editor Section */}
-          <Card glowOnHover>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8", marginBottom: "1rem" }}>
-              <FileText size={18} />
-              <h3 style={{ margin: 0, color: "#63f5e8" }}>Resolution & Client Response Notes</h3>
-            </div>
-            <p style={{ color: "#94a3b8", fontSize: "0.85rem", margin: "0 0 1rem 0" }}>
-              Provide detailed resolution notes, technical findings, or response guidance. These notes are visible to the client upon status updates.
-            </p>
-            <textarea
-              value={resolutionNotes}
-              onChange={(e) => setResolutionNotes(e.target.value)}
-              rows={6}
-              placeholder="Enter resolution notes, root cause analysis, or response details for the client..."
-              style={{
-                width: "100%",
-                backgroundColor: "#0c1222",
-                border: "1px solid #1e293b",
-                borderRadius: "6px",
-                padding: "0.85rem",
-                color: "#e2e8f0",
-                fontSize: "0.9rem",
-                fontFamily: "inherit",
-                lineHeight: 1.6,
-                outline: "none",
-                resize: "vertical",
-                marginBottom: "1.25rem",
-              }}
-            />
-
-            <Button glow size="sm" onClick={handleSave} disabled={updateTicket.isLoading}>
-              <Save size={14} />
-              {updateTicket.isLoading ? "Saving Changes..." : "Save Ticket & Resolution"}
-            </Button>
-          </Card>
+          <ResolutionNotesCard
+            notes={resolutionNotes}
+            isLoading={updateTicket.isLoading}
+            onNotesChange={setResolutionNotes}
+            onSave={() => handleSave()}
+          />
         </>
       ) : null}
     </div>
@@ -296,3 +357,4 @@ export const TicketDetails: React.FC = () => {
 };
 
 export default TicketDetails;
+

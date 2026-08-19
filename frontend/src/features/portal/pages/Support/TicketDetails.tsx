@@ -43,6 +43,175 @@ const InfoRow: React.FC<InfoRowProps> = ({ label, value }) => (
   </div>
 );
 
+export const validateTicketEditForm = (
+  subject: string,
+  category: string,
+  priority: string
+): Record<string, string> => {
+  const errors: Record<string, string> = {};
+  if (!subject.trim()) errors.subject = "Subject is required.";
+  if (!category) errors.category = "Category is required.";
+  if (!priority) errors.priority = "Priority is required.";
+  return errors;
+};
+
+const TicketInfoGrid: React.FC<{ data: any }> = ({ data }) => (
+  <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+    <Card glowOnHover>
+      <h3 style={{ margin: 0, color: "#63f5e8", marginBottom: "1rem" }}>Ticket Information</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+        <InfoRow label="Ticket Reference" value={data.ticket_id} />
+        <InfoRow label="Status" value={<TicketStatusBadge status={data.status} />} />
+        <InfoRow label="Category" value={<TicketCategoryBadge category={data.category} />} />
+        <InfoRow label="Priority" value={<TicketPriorityBadge priority={data.priority} />} />
+        <InfoRow label="Assigned Executive" value={data.assigned_to || "Unassigned"} />
+        <InfoRow label="Client Account" value={data.client_user || "My Account"} />
+      </div>
+    </Card>
+
+    <Card glowOnHover>
+      <h3 style={{ margin: 0, color: "#63f5e8", marginBottom: "1rem" }}>Timeline & Activity</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+        <InfoRow label="Created Date" value={formatDateTime(data.created_at)} />
+        <InfoRow label="Last Update" value={formatDateTime(data.updated_at)} />
+        <InfoRow label="Closed Date" value={data.closed_at ? formatDateTime(data.closed_at) : "Active"} />
+      </div>
+    </Card>
+  </div>
+);
+
+const TicketResolutionNotesCard: React.FC<{ notes: string | null }> = ({ notes }) => (
+  <Card glowOnHover>
+    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
+      <LifeBuoy size={18} style={{ color: "#63f5e8" }} />
+      <h3 style={{ margin: 0, color: "#63f5e8" }}>Support Team Resolution Notes</h3>
+    </div>
+    <div
+      style={{
+        backgroundColor: "rgba(12, 18, 34, 0.6)",
+        border: "1px solid #1e293b",
+        borderRadius: "6px",
+        padding: "1rem",
+        color: "#cbd5e1",
+        fontSize: "0.9rem",
+        lineHeight: 1.6,
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      {notes ||
+        "No resolution notes have been posted by the support team yet. Our engineering team is currently reviewing your ticket."}
+    </div>
+  </Card>
+);
+
+interface TicketEditFormCardProps {
+  subject: string;
+  category: TicketCategory;
+  priority: TicketPriority;
+  localErrors: Record<string, string>;
+  updateError: any;
+  isLoading: boolean;
+  onSubjectChange: (s: string) => void;
+  onCategoryChange: (c: TicketCategory) => void;
+  onPriorityChange: (p: TicketPriority) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}
+
+const TicketEditFormCard: React.FC<TicketEditFormCardProps> = ({
+  subject,
+  category,
+  priority,
+  localErrors,
+  updateError,
+  isLoading,
+  onSubjectChange,
+  onCategoryChange,
+  onPriorityChange,
+  onSave,
+  onCancel,
+}) => (
+  <Card glowOnHover>
+    <h3 style={{ margin: 0, color: "#63f5e8", marginBottom: "1rem" }}>Edit Ticket Information</h3>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSave();
+      }}
+      style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+        <Label htmlFor="edit-subject" style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+          SUBJECT
+        </Label>
+        <Input
+          id="edit-subject"
+          value={subject}
+          onChange={(e) => onSubjectChange(e.target.value)}
+          maxLength={255}
+          aria-invalid={!!localErrors.subject}
+        />
+        {localErrors.subject && (
+          <span style={{ color: "#f87171", fontSize: "0.78rem" }}>{localErrors.subject}</span>
+        )}
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+        <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+          CATEGORY
+        </Label>
+        <Select value={category} onValueChange={(v) => onCategoryChange(v as TicketCategory)}>
+          <SelectTrigger style={{ width: "100%" }}>
+            <SelectValue placeholder={ticketCategoryLabel(category)} />
+          </SelectTrigger>
+          <SelectContent>
+            {CATEGORY_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+        <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+          PRIORITY
+        </Label>
+        <Select value={priority} onValueChange={(v) => onPriorityChange(v as TicketPriority)}>
+          <SelectTrigger style={{ width: "100%" }}>
+            <SelectValue placeholder={ticketPriorityLabel(priority)} />
+          </SelectTrigger>
+          <SelectContent>
+            {PRIORITY_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {updateError && getFieldErrors(updateError).subject && (
+        <div style={{ color: "#f87171", fontSize: "0.8rem" }}>
+          {getFieldErrors(updateError).subject.join(", ")}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: "0.75rem" }}>
+        <Button type="submit" glow size="sm" disabled={isLoading}>
+          <Save size={14} />
+          {isLoading ? "Saving..." : "Save Changes"}
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={onCancel}>
+          <X size={14} />
+          Cancel
+        </Button>
+      </div>
+    </form>
+  </Card>
+);
+
 export const TicketDetails: React.FC = () => {
   const params = useParams();
   const ticketId = params?.id || "";
@@ -67,10 +236,7 @@ export const TicketDetails: React.FC = () => {
   };
 
   const handleSave = async () => {
-    const errors: Record<string, string> = {};
-    if (!subject.trim()) errors.subject = "Subject is required.";
-    if (!category) errors.category = "Category is required.";
-    if (!priority) errors.priority = "Priority is required.";
+    const errors = validateTicketEditForm(subject, category, priority);
     if (Object.keys(errors).length > 0) {
       setLocalErrors(errors);
       return;
@@ -129,128 +295,23 @@ export const TicketDetails: React.FC = () => {
             </div>
           )}
 
-          <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
-            <Card glowOnHover>
-              <h3 style={{ margin: 0, color: "#63f5e8", marginBottom: "1rem" }}>Ticket Information</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
-                <InfoRow label="Ticket Reference" value={ticket.data.ticket_id} />
-                <InfoRow label="Status" value={<TicketStatusBadge status={ticket.data.status} />} />
-                <InfoRow label="Category" value={<TicketCategoryBadge category={ticket.data.category} />} />
-                <InfoRow label="Priority" value={<TicketPriorityBadge priority={ticket.data.priority} />} />
-                <InfoRow label="Assigned Executive" value={ticket.data.assigned_to || "Unassigned"} />
-                <InfoRow label="Client Account" value={ticket.data.client_user || "My Account"} />
-              </div>
-            </Card>
-
-            <Card glowOnHover>
-              <h3 style={{ margin: 0, color: "#63f5e8", marginBottom: "1rem" }}>Timeline & Activity</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
-                <InfoRow label="Created Date" value={formatDateTime(ticket.data.created_at)} />
-                <InfoRow label="Last Update" value={formatDateTime(ticket.data.updated_at)} />
-                <InfoRow label="Closed Date" value={ticket.data.closed_at ? formatDateTime(ticket.data.closed_at) : "Active"} />
-              </div>
-            </Card>
-          </div>
-
-          <Card glowOnHover>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
-              <LifeBuoy size={18} style={{ color: "#63f5e8" }} />
-              <h3 style={{ margin: 0, color: "#63f5e8" }}>Support Team Resolution Notes</h3>
-            </div>
-            <div style={{
-              backgroundColor: "rgba(12, 18, 34, 0.6)",
-              border: "1px solid #1e293b",
-              borderRadius: "6px",
-              padding: "1rem",
-              color: "#cbd5e1",
-              fontSize: "0.9rem",
-              lineHeight: 1.6,
-              whiteSpace: "pre-wrap"
-            }}>
-              {ticket.data.resolution_notes ? ticket.data.resolution_notes : "No resolution notes have been posted by the support team yet. Our engineering team is currently reviewing your ticket."}
-            </div>
-          </Card>
+          <TicketInfoGrid data={ticket.data} />
+          <TicketResolutionNotesCard notes={ticket.data.resolution_notes} />
 
           {editing && (
-            <Card glowOnHover>
-              <h3 style={{ margin: 0, color: "#63f5e8", marginBottom: "1rem" }}>Edit Ticket Information</h3>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSave();
-                }}
-                style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
-              >
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                  <Label htmlFor="edit-subject" style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-                    SUBJECT
-                  </Label>
-                  <Input
-                    id="edit-subject"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    maxLength={255}
-                    aria-invalid={!!localErrors.subject}
-                  />
-                  {localErrors.subject && (
-                    <span style={{ color: "#f87171", fontSize: "0.78rem" }}>{localErrors.subject}</span>
-                  )}
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                  <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-                    CATEGORY
-                  </Label>
-                  <Select value={category} onValueChange={(v) => setCategory(v as TicketCategory)}>
-                    <SelectTrigger style={{ width: "100%" }}>
-                      <SelectValue placeholder={ticketCategoryLabel(category)} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORY_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                  <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-                    PRIORITY
-                  </Label>
-                  <Select value={priority} onValueChange={(v) => setPriority(v as TicketPriority)}>
-                    <SelectTrigger style={{ width: "100%" }}>
-                      <SelectValue placeholder={ticketPriorityLabel(priority)} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PRIORITY_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {update.error && getFieldErrors(update.error).subject && (
-                  <div style={{ color: "#f87171", fontSize: "0.8rem" }}>
-                    {getFieldErrors(update.error).subject.join(", ")}
-                  </div>
-                )}
-
-                <div style={{ display: "flex", gap: "0.75rem" }}>
-                  <Button type="submit" glow size="sm" disabled={update.isLoading}>
-                    <Save size={14} />
-                    {update.isLoading ? "Saving..." : "Save Changes"}
-                  </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={() => setEditing(false)}>
-                    <X size={14} />
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </Card>
+            <TicketEditFormCard
+              subject={subject}
+              category={category}
+              priority={priority}
+              localErrors={localErrors}
+              updateError={update.error}
+              isLoading={update.isLoading}
+              onSubjectChange={setSubject}
+              onCategoryChange={setCategory}
+              onPriorityChange={setPriority}
+              onSave={handleSave}
+              onCancel={() => setEditing(false)}
+            />
           )}
         </>
       ) : null}
@@ -259,3 +320,4 @@ export const TicketDetails: React.FC = () => {
 };
 
 export default TicketDetails;
+;

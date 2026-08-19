@@ -33,8 +33,8 @@ def send_email(
             fail_silently=fail_silently,
         )
         logger.info(f"Email sent to {recipient_list}: {subject}")
-    except Exception as e:
-        logger.error(f"Failed to send email to {recipient_list}: {e}")
+    except Exception:
+        logger.exception(f"Failed to send email to {recipient_list}")
         if not fail_silently:
             raise
 

@@ -105,8 +105,8 @@ export const publicService = {
       description: data.requirements,
       source: "estimator",
     });
-    return Promise.resolve({ estimatedCost: data.estimatedCost || "$10,000" });
-  }
+    return { estimatedCost: data.estimatedCost || "$10,000" };
+  },
 };
 
 export default publicService;

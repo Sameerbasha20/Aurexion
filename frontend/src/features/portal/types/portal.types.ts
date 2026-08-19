@@ -94,6 +94,8 @@ export interface DashboardTicketStats {
   critical: number;
 }
 
+export type TicketStats = DashboardTicketStats;
+
 export function buildTicketStats(tickets: SupportTicketItem[]): DashboardTicketStats {
   return {
     total: tickets.length,
