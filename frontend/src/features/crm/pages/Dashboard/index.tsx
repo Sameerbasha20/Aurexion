@@ -22,6 +22,7 @@ import {
   FileText,
   Building,
   Inbox,
+  XCircle,
 } from "lucide-react";
 
 export const Dashboard: React.FC = () => {

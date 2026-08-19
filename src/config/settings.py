@@ -272,9 +272,17 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 
 # Client Portal Configuration
+<<<<<<< HEAD
 CLIENT_PORTAL_LOGIN_URL = os.getenv('CLIENT_PORTAL_LOGIN_URL', 'http://localhost:3000/login')
 DEFAULT_CLIENT_PASSWORD = os.getenv('DEFAULT_CLIENT_PASSWORD', 'client@2026')
+=======
+CLIENT_PORTAL_LOGIN_URL = os.getenv(
+    'CLIENT_PORTAL_LOGIN_URL',
+    'http://localhost:3000/login'
+)
+>>>>>>> d61e1f4e200efe37c1fd9f6ee0426bb805b20470
 
+DEFAULT_CLIENT_PASSWORD = os.getenv('DEFAULT_CLIENT_PASSWORD', '')
 # Project Info
 PROJECT_NAME = os.getenv('PROJECT_NAME', 'Aurexion Enterprise Platform')
 LAST_UPDATED = os.getenv('LAST_UPDATED', '2026-08-17')
