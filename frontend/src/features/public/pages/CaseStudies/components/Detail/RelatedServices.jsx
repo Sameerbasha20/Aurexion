@@ -13,7 +13,6 @@ export const RelatedServices = ({ caseStudy }) => {
           </span>
           <h2 className="text-2xl font-bold">Services Used</h2>
         </div>
-
         <ServiceCardGrid serviceSlugs={caseStudy.services} />
       </div>
     </section>

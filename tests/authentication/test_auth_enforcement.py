@@ -374,30 +374,31 @@ class JWTAuthenticationEnforcementTestCase(APITestCase):
         """
         Test token refresh endpoint behavior.
         """
-        # No auth required for token refresh (it uses refresh token in body)
+        # No auth required for token refresh (it uses refresh token in cookie)
         tokens = self.get_tokens(self.client_user)
 
-        # Valid refresh token should work
+        # 1. Valid refresh token should work
+        self.client.cookies['refresh_token'] = tokens['refresh']
         response = self.client.post(
             reverse('token_refresh'),
-            {'refresh': tokens['refresh']},
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
+        self.assertNotIn('access', response.data)
+        self.assertIn('access_token', response.cookies)
 
-        # Invalid refresh token should fail
+        # 2. Invalid refresh token should fail
+        self.client.cookies['refresh_token'] = 'invalid-refresh-token'
         response = self.client.post(
             reverse('token_refresh'),
-            {'refresh': 'invalid-refresh-token'},
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        # Missing refresh token should fail
+        # 3. Missing refresh token should fail
+        self.client.cookies.clear()
         response = self.client.post(
             reverse('token_refresh'),
-            {},
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -411,8 +412,10 @@ class JWTAuthenticationEnforcementTestCase(APITestCase):
             'password': 'ClientP@ss10'
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
+        self.assertNotIn('access', response.data)
+        self.assertNotIn('refresh', response.data)
+        self.assertIn('access_token', response.cookies)
+        self.assertIn('refresh_token', response.cookies)
 
 
 class PublicEndpointVerificationTestCase(APITestCase):

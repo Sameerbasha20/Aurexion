@@ -76,7 +76,8 @@ class SupportSmokeTestCase(APITestCase):
             {'username': 'smoke_client_a', 'password': 'ClientA@10'},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
+        self.assertIn('access_token', response.cookies)
+        self.assertNotIn('access', response.data)
         self.assertEqual(response.data['user']['role'], 'client_user')
 
     def test_04_support_api_is_reachable(self):
