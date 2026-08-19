@@ -76,7 +76,7 @@ class BdmDashboardView(APIView):
         recent_form_submissions = (
             Lead.objects.filter(source__in=form_sources)
             .select_related("assigned_to")
-            .order_by("-created_at")[:50]
+            .order_by("-created_at")[:10]
         )
 
         return Response({
