@@ -5,6 +5,8 @@ import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import PageHeader from "../../components/PageHeader";
 import { ErrorState, LoadingState, EmptyState } from "../../components/StateViews";
+import { TicketCategoryBadge, TicketPriorityBadge, TicketStatusBadge } from "../../components/TicketMeta";
+import { formatDateTime } from "../../utils/format";
 import { buildTicketStats } from "../../types/portal.types";
 import useMyTickets from "../../hooks/useMyTickets";
 
@@ -87,7 +89,7 @@ export const SupportHome: React.FC = () => {
               </div>
               <div>
                 <div style={{ fontSize: "2rem", fontWeight: 600, color: "#f8fafc", fontFamily: "Space Grotesk, sans-serif", lineHeight: 1.1 }}>
-                  {stats.open + stats.inProgress + stats.awaitingClient}
+                  {stats.open + stats.assigned + stats.inProgress + stats.awaitingClient}
                 </div>
                 <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.35rem" }}>
                   Open / in progress / awaiting
@@ -164,19 +166,64 @@ export const SupportHome: React.FC = () => {
               }
             />
           ) : (
-            <Card>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", gap: "1rem", flexWrap: "wrap" }}>
-                <h3 style={{ margin: 0, color: "#63f5e8" }}>Ticket Queue</h3>
-                <Link href="/portal/support/tickets">
-                  <Button variant="outline" size="sm">
-                    <ListChecks size={14} />
-                    View all tickets
+            <Card glowOnHover>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", flexWrap: "wrap", gap: "1rem" }}>
+                <h3 style={{ margin: 0, color: "#63f5e8", fontSize: "1.1rem" }}>Your Support Ticket Queue</h3>
+                <Link href="/portal/support/tickets/create">
+                  <Button glow size="sm">
+                    <Plus size={14} />
+                    Create Ticket
                   </Button>
                 </Link>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#94a3b8", fontSize: "0.85rem" }}>
-                <LifeBuoy size={16} />
-                <span>Support requests are processed by the Aurexion support team. Status updates appear in the ticket detail view.</span>
+
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "750px", fontSize: "0.875rem" }}>
+                  <thead>
+                    <tr style={{ textAlign: "left", color: "#64748b", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.7rem", letterSpacing: "0.08em" }}>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>TICKET ID</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>SUBJECT</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CATEGORY</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>PRIORITY</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>STATUS</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>ASSIGNED EXECUTIVE</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CREATED</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(tickets.data || []).map((t) => (
+                      <tr key={t.id} style={{ borderBottom: "1px solid rgba(140,174,187,0.12)" }}>
+                        <td style={{ padding: "0.75rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
+                          <Link href={`/portal/support/tickets/${t.id}`} style={{ color: "#63f5e8" }}>
+                            {t.ticket_id}
+                          </Link>
+                        </td>
+                        <td style={{ padding: "0.75rem", maxWidth: "280px" }}>
+                          <Link href={`/portal/support/tickets/${t.id}`} style={{ color: "#e2e8f0", textDecoration: "none" }}>
+                            <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
+                              {t.subject}
+                            </span>
+                          </Link>
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <TicketCategoryBadge category={t.category} />
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <TicketPriorityBadge priority={t.priority} />
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <TicketStatusBadge status={t.status} />
+                        </td>
+                        <td style={{ padding: "0.75rem", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                          {t.assigned_username || "Unassigned"}
+                        </td>
+                        <td style={{ padding: "0.75rem", color: "#94a3b8", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                          {formatDateTime(t.created_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </Card>
           )}

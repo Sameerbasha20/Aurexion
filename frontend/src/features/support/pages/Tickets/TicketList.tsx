@@ -191,8 +191,9 @@ export const TicketList: React.FC = () => {
                   <thead>
                     <tr style={{ textAlign: "left", color: "#64748b", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.7rem", letterSpacing: "0.08em" }}>
                       <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>TICKET ID</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)", width: "30%" }}>SUBJECT</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)", width: "25%" }}>SUBJECT</th>
                       <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CLIENT</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>ASSIGNED</th>
                       <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CATEGORY</th>
                       <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>PRIORITY</th>
                       <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>STATUS</th>
@@ -216,6 +217,9 @@ export const TicketList: React.FC = () => {
                           </Link>
                         </td>
                         <td style={{ padding: "0.75rem", color: "#cbd5e1" }}>{ticket.client_username}</td>
+                        <td style={{ padding: "0.75rem", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                          {ticket.assigned_username || "Unassigned"}
+                        </td>
                         <td style={{ padding: "0.75rem" }}>
                           <TicketCategoryBadge category={ticket.category} />
                         </td>
