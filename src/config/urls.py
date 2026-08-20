@@ -26,6 +26,12 @@ urlpatterns = [
     path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
 
+from django.conf import settings
+from django.conf.urls.static import static
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 handler400 = 'config.views.error_400'
 handler403 = 'config.views.error_403'
 handler404 = 'config.views.error_404'

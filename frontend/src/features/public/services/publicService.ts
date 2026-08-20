@@ -95,14 +95,24 @@ export const publicService = {
   },
   
   submitRfp: async (data: any): Promise<void> => {
-    await axiosClient.post(API_ENDPOINTS.CRM.PUBLIC_LEADS, {
-      name: data.full_name,
-      email: data.work_email,
-      phone: data.phone,
-      company: data.company_name,
-      description: data.project_description,
-      industry: data.project_type,
-      source: "rfp_form",
+    const formData = new FormData();
+    formData.append("full_name", data.full_name);
+    formData.append("company_name", data.company_name);
+    formData.append("work_email", data.work_email);
+    formData.append("phone", data.phone);
+    formData.append("designation", data.designation);
+    formData.append("country", data.country);
+    formData.append("project_type", data.project_type);
+    formData.append("budget_range", data.budget_range);
+    formData.append("project_description", data.project_description);
+    formData.append("nda_required", data.nda_required ? "true" : "false");
+    if (data.file) {
+      formData.append("document_attachment", data.file);
+    }
+    await axiosClient.post("/crm/rfp/submit/", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
   },
   

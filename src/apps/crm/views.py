@@ -612,6 +612,21 @@ class RFPSubmitView(APIView):
         serializer = RFPEnquirySerializer(data=request.data)
         if serializer.is_valid():
             rfp = serializer.save()
+            
+            # Automatically create a corresponding CRM Lead
+            create_lead(
+                actor=None,
+                name=rfp.full_name,
+                email=rfp.work_email,
+                phone=rfp.phone,
+                company=rfp.company_name,
+                industry=rfp.project_type,
+                source="rfp_form",
+                description=rfp.project_description,
+                rfp_enquiry=rfp,
+                request=request
+            )
+
             return Response({
                 "message": "RFP submitted successfully.",
                 "reference_id": rfp.reference_id
