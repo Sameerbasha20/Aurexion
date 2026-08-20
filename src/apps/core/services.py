@@ -59,6 +59,42 @@ Best regards,
 Aurexion Technologies Team
 """
     send_email(
+        subject=f"Meeting Scheduled - Aurexion Technologies ({lead.reference_id})",
+        message=message,
+        recipient_list=[lead.email],
+        fail_silently=True,
+    )
+
+
+def send_lead_declined_email(lead, reason: str):
+    """Send polite inquiry declined notification email to lead/client user."""
+    if not lead.email:
+        return
+
+    subject = f"Update Regarding Your Inquiry - Aurexion Technologies ({lead.reference_id})"
+    message = f"""Dear {lead.name or 'Valued Client'},
+
+Thank you for your interest in Aurexion Technologies and for submitting your project inquiry ({lead.reference_id}).
+
+After careful evaluation by our Business Development team, we regret to inform you that we are unable to proceed with this submission at this time.
+
+Reason / Review Feedback:
+{reason}
+
+We appreciate the time you spent reaching out to us. If you have any further questions or would like to submit another proposal in the future, please do not hesitate to contact our team.
+
+Best regards,
+Business Development Team
+Aurexion Technologies
+https://aurexion.com
+"""
+    send_email(
+        subject=subject,
+        message=message,
+        recipient_list=[lead.email],
+        fail_silently=True,
+    )
+    send_email(
         subject=f"Meeting Scheduled with Aurexion - {followup.scheduled_at.strftime('%B %d, %Y')}",
         message=message,
         recipient_list=[lead.email],

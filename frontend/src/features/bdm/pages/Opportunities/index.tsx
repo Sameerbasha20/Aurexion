@@ -33,10 +33,11 @@ export const Opportunities: React.FC = () => {
   const [search, setSearch] = useState("");
 
   const { leads, totalCount, isLoading, error, refetch, currentPage, totalPages, nextPage, prevPage, hasNext, hasPrev } = useLeads({
+    status: "qualified,proposal_submitted,negotiation",
     search: search || undefined,
   });
 
-  const opportunities = leads.filter((lead) => OPPORTUNITY_STATUSES.includes(lead.status));
+  const opportunities = leads;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

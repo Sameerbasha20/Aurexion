@@ -609,31 +609,50 @@ export const Dashboard: React.FC = () => {
 
             <form onSubmit={handleDeclineSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.8rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", marginBottom: "0.4rem" }}>
-                  REASON FOR DECLINING *
-                </label>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
+                  <label style={{ fontSize: "0.8rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
+                    REASON FOR DECLINING *
+                  </label>
+                  <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: declineReason.trim().length >= 10 ? "#22c55e" : "#f87171" }}>
+                    {declineReason.trim().length} / 10 min chars
+                  </span>
+                </div>
                 <textarea
                   value={declineReason}
                   onChange={(e) => setDeclineReason(e.target.value)}
                   rows={3}
-                  placeholder="Provide reason for rejecting or marking as lost..."
+                  placeholder="Provide a detailed reason for rejecting (minimum 10 characters)..."
                   required
+                  minLength={10}
                   style={{
                     width: "100%",
-                    padding: "0.6rem",
+                    padding: "0.65rem",
                     backgroundColor: "#0a111c",
-                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                    border: declineReason.trim().length > 0 && declineReason.trim().length < 10 ? "1px solid #ef4444" : "1px solid rgba(239, 68, 68, 0.3)",
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.85rem",
+                    outline: "none",
                   }}
                 />
+                {declineReason.trim().length > 0 && declineReason.trim().length < 10 && (
+                  <p style={{ color: "#ef4444", fontSize: "0.75rem", margin: "0.35rem 0 0 0" }}>
+                    Please enter at least 10 characters explaining the reason for declining.
+                  </p>
+                )}
+                <p style={{ color: "#64748b", fontSize: "0.72rem", margin: "0.35rem 0 0 0" }}>
+                  📧 An automated decline notification email will be sent to <strong>{selectedSubmission.email}</strong>.
+                </p>
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
                 <Button type="button" variant="outline" onClick={() => setModalMode(null)}>Cancel</Button>
-                <Button type="submit" style={{ backgroundColor: "#ef4444", color: "#ffffff" }} disabled={actionLoading}>
-                  {actionLoading ? "Declining..." : "Decline Submission"}
+                <Button 
+                  type="submit" 
+                  style={{ backgroundColor: "#ef4444", color: "#ffffff", opacity: declineReason.trim().length < 10 ? 0.5 : 1 }} 
+                  disabled={actionLoading || declineReason.trim().length < 10}
+                >
+                  {actionLoading ? "Declining & Emailing..." : "Decline Submission"}
                 </Button>
               </div>
             </form>
