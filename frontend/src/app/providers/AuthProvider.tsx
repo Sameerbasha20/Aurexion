@@ -3,6 +3,7 @@ import AuthContext, { User } from "../../context/AuthContext";
 import authService from "../../features/authentication/services/authService";
 import crmService from "../../features/crm/services/crmService";
 import bdmService from "../../features/bdm/services/bdmService";
+import { queryClient } from "./QueryProvider";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -74,7 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Invalidate in-memory caches on user switch
       crmService.clearCache();
       bdmService.clearCache();
-    } catch (err: any) {
+    } catch (err) {
       setIsLoading(false);
       throw err;
     }
@@ -88,6 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem("aurexion_refresh_token");
     crmService.clearCache();
     bdmService.clearCache();
+    queryClient.clear(); // Clear all server query cache on logout
     authService.logout().catch(() => {});
   };
 

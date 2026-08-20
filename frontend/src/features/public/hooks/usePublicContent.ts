@@ -6,11 +6,12 @@ import { blogPosts } from "../../../data/blogPosts";
 
 export const useCaseStudies = () => {
   const [data, setData] = useState<any[]>(caseStudiesData);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
+      setLoading(true);
       try {
         const result = await publicService.getCaseStudies();
         if (result && Array.isArray(result) && result.length > 0) {
@@ -30,6 +31,8 @@ export const useCaseStudies = () => {
       } catch (err: any) {
         setData(caseStudiesData);
         setError(err);
+      } finally {
+        setLoading(false);
       }
     };
     fetch();

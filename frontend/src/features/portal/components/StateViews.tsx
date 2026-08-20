@@ -17,10 +17,10 @@ export function getErrorMessage(error: ApiError | null): string {
 }
 
 export interface FieldErrors {
-  errors?: Record<string, string[]>;
+  errors?: Record<string, string[] | string>;
 }
 
-export function getFieldErrors(error: ApiError | null): Record<string, string[]> {
+export function getFieldErrors(error: ApiError | null): Record<string, string[] | string> {
   return error?.errors || {};
 }
 
