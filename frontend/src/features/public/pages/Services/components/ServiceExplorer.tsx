@@ -78,7 +78,6 @@ export const ServiceExplorer: React.FC = () => {
                     }`}
                   >
                     <div>
-                      <span className="font-mono text-xs opacity-70 mr-3">{category.id}</span>
                       <span className="font-bold text-lg">{category.name}</span>
                     </div>
                     {isActive && <ChevronRight className="w-5 h-5 text-primary" />}

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from apps.core.views import health_check
@@ -9,6 +9,8 @@ from apps.core.views import health_check
 def devtools_empty_view(request):
     return JsonResponse({}, status=200)
 
+
+from rest_framework.permissions import AllowAny
 
 urlpatterns = [
     path('.well-known/appspecific/com.chrome.devtools.json', devtools_empty_view),
@@ -22,8 +24,9 @@ urlpatterns = [
     path('api/v1/', include('apps.portal.urls')),
     path('api/v1/', include('apps.crm.urls')),
     path('api/v1/', include('apps.bdm.urls')),
-    path('api/v1/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/v1/schema/', SpectacularAPIView.as_view(permission_classes=[AllowAny]), name='schema'),
+    path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema', permission_classes=[AllowAny]), name='swagger-ui'),
+    path('api/v1/redoc/', SpectacularRedocView.as_view(url_name='schema', permission_classes=[AllowAny]), name='redoc'),
 ]
 
 from django.conf import settings

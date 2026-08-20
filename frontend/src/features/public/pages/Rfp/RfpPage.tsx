@@ -98,7 +98,7 @@ export const RfpPage: React.FC = () => {
   };
 
   const fieldClass = "w-full p-3 rounded-none bg-[#060c18] border border-[rgba(99,245,232,.2)] text-[#eef4f3] placeholder-[#5a6b72] focus:outline-none focus:border-[#63f5e8] font-['Space_Grotesk'] text-sm transition-colors";
-  const labelClass = "block text-xs font-mono tracking-widest text-[#63f5e8] mb-1.5 uppercase";
+  const labelClass = "flex items-center gap-1 text-xs font-mono tracking-widest text-[#63f5e8] mb-1.5 uppercase flex-wrap";
   const errorClass = "text-xs text-red-400 mt-1 font-mono";
 
   return (
@@ -150,45 +150,45 @@ export const RfpPage: React.FC = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit(onSubmit)} style={{ padding: "2.5rem" }}>
+              <form onSubmit={handleSubmit(onSubmit)} style={{ padding: "clamp(1.25rem, 5vw, 2.5rem)" }}>
 
                 {/* Row 1: Full Name + Company */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
+                <div className="rfp-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
                   <div>
-                    <label className={labelClass}>Full Name *</label>
+                    <label className={labelClass}>Full Name <span style={{ color: "#63f5e8" }}>*</span></label>
                     <input {...register("full_name")} className={fieldClass} placeholder="John Anderson" />
                     {errors.full_name && <p className={errorClass}>{errors.full_name.message}</p>}
                   </div>
                   <div>
-                    <label className={labelClass}>Company Name *</label>
+                    <label className={labelClass}>Company Name <span style={{ color: "#63f5e8" }}>*</span></label>
                     <input {...register("company_name")} className={fieldClass} placeholder="Acme Corporation" />
                     {errors.company_name && <p className={errorClass}>{errors.company_name.message}</p>}
                   </div>
                 </div>
 
                 {/* Row 2: Work Email + Phone */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
+                <div className="rfp-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
                   <div>
-                    <label className={labelClass}>Work Email *</label>
+                    <label className={labelClass}>Work Email <span style={{ color: "#63f5e8" }}>*</span></label>
                     <input {...register("work_email")} type="email" className={fieldClass} placeholder="j.anderson@company.com" />
                     {errors.work_email && <p className={errorClass}>{errors.work_email.message}</p>}
                   </div>
                   <div>
-                    <label className={labelClass}>Phone Number *</label>
+                    <label className={labelClass}>Phone Number <span style={{ color: "#63f5e8" }}>*</span></label>
                     <input {...register("phone")} type="tel" className={fieldClass} placeholder="+1 (555) 000-0000" />
                     {errors.phone && <p className={errorClass}>{errors.phone.message}</p>}
                   </div>
                 </div>
 
                 {/* Row 3: Designation + Country */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
+                <div className="rfp-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
                   <div>
-                    <label className={labelClass}>Designation / Job Title *</label>
+                    <label className={labelClass}>Designation / Job Title <span style={{ color: "#63f5e8" }}>*</span></label>
                     <input {...register("designation")} className={fieldClass} placeholder="CTO / VP Engineering" />
                     {errors.designation && <p className={errorClass}>{errors.designation.message}</p>}
                   </div>
                   <div>
-                    <label className={labelClass}>Country *</label>
+                    <label className={labelClass}>Country <span style={{ color: "#63f5e8" }}>*</span></label>
                     <select {...register("country")} className={fieldClass} style={{ cursor: "pointer" }}>
                       <option value="">Select country...</option>
                       {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -198,9 +198,9 @@ export const RfpPage: React.FC = () => {
                 </div>
 
                 {/* Row 4: Project Type + Budget */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
+                <div className="rfp-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
                   <div>
-                    <label className={labelClass}>Project Type *</label>
+                    <label className={labelClass}>Project Type <span style={{ color: "#63f5e8" }}>*</span></label>
                     <select {...register("project_type")} className={fieldClass} style={{ cursor: "pointer" }}>
                       <option value="">Select project type...</option>
                       {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -208,7 +208,7 @@ export const RfpPage: React.FC = () => {
                     {errors.project_type && <p className={errorClass}>{errors.project_type.message}</p>}
                   </div>
                   <div>
-                    <label className={labelClass}>Budget Range *</label>
+                    <label className={labelClass}>Budget Range <span style={{ color: "#63f5e8" }}>*</span></label>
                     <select {...register("budget_range")} className={fieldClass} style={{ cursor: "pointer" }}>
                       <option value="">Select budget range...</option>
                       {BUDGET_RANGES.map((b) => <option key={b} value={b}>{b}</option>)}

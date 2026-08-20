@@ -47,12 +47,20 @@ export const IndustryCaseStudies = ({ industry }) => {
     <section className="py-24 bg-background border-t border-border/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-end mb-12">
-          <h2 className="text-3xl font-bold">Case Studies in {industry.name}</h2>
-          <Link href="/case-studies" className="hidden sm:flex items-center text-sm font-bold text-primary hover:underline">
+          <div>
+            <p className="text-xs font-mono text-[#63f5e8] tracking-widest uppercase mb-2">
+              PROVEN RESULTS
+            </p>
+            <h2 className="text-3xl font-bold">Case Studies in {industry.name}</h2>
+          </div>
+          <Link
+            href="/case-studies"
+            className="hidden sm:flex items-center text-sm font-bold text-primary hover:underline"
+          >
             View All Work <ArrowRight className="w-4 h-4 ml-1" />
           </Link>
         </div>
-        
+
         <div className="grid md:grid-cols-2 gap-8">
           {matchedCaseStudies.map((cs, idx) => (
             <Link 
@@ -88,15 +96,27 @@ export const IndustryCaseStudies = ({ industry }) => {
                     </>
                   )}
                 </div>
-                <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-colors">
-                  <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary-foreground" />
+
+                <div className="p-6 md:p-8 flex justify-between items-end">
+                  <div>
+                    <p className="text-xs font-mono text-[#5e7079] uppercase tracking-widest mb-1">
+                      OUTCOME
+                    </p>
+                    <p className="text-base text-[#c8d8e0]">{outcome}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-full border border-[rgba(99,245,232,0.2)] flex items-center justify-center group-hover:bg-[#63f5e8] group-hover:border-[#63f5e8] transition-colors flex-shrink-0">
+                    <ArrowRight className="w-5 h-5 text-[#63f5e8] group-hover:text-[#041014]" />
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
-        
-        <Link href="/case-studies" className="sm:hidden flex items-center justify-center w-full mt-8 h-12 border border-border rounded-md text-sm font-bold">
+
+        <Link
+          href="/case-studies"
+          className="sm:hidden flex items-center justify-center w-full mt-8 h-12 border border-border rounded-md text-sm font-bold"
+        >
           View All Work
         </Link>
       </div>

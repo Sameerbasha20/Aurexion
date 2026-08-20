@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useParams, useLocation } from "wouter";
 import { useServiceDetails } from "../../hooks/usePublicContent";
 import { servicesData } from "../../../../data/services";
+import { ServiceDetail } from "../../types/website.types";
 
 import { ServiceHero } from "./components/Detail/ServiceHero";
 import { ChallengeSection } from "./components/Detail/ChallengeSection";
@@ -20,22 +21,46 @@ export const ServiceDetailsPage: React.FC = () => {
   const { data: apiService, loading } = useServiceDetails(slug);
 
   // Fall back to static data if not yet loaded or not present in DB
-  const staticService = servicesData.find((s: any) => s.slug === slug);
-  const service = apiService ? {
-    id: String(apiService.id),
-    slug: apiService.slug,
-    name: apiService.title || apiService.name || staticService?.name || "",
-    category: apiService.category || staticService?.category || "Core Engineering",
-    description: apiService.description || staticService?.description || "",
-    problem: apiService.problem || staticService?.problem || "",
-    solution: apiService.solution || staticService?.solution || "",
-    technologies: apiService.tech_stack || staticService?.technologies || [],
-    meta_title: apiService.meta_title,
-    meta_description: apiService.meta_description,
-    meta_keywords: apiService.meta_keywords,
-    relatedIndustries: staticService?.relatedIndustries || [],
-    relatedCaseStudies: staticService?.relatedCaseStudies || []
-  } : staticService;
+  const staticService = servicesData.find((s) => s.slug === slug);
+
+  // Normalize both sources into the shared ServiceDetail shape
+  const service = useMemo<ServiceDetail | null>(() => {
+    if (apiService) {
+      return {
+        id: String(apiService.id),
+        slug: apiService.slug,
+        name: apiService.title || staticService?.name || "",
+        category: staticService?.category || "Core Engineering",
+        description: apiService.description || staticService?.description || "",
+        problem: apiService.problem,
+        solution: apiService.solution,
+        technologies: apiService.tech_stack.length > 0 ? apiService.tech_stack : staticService?.technologies || [],
+        meta_title: apiService.meta_title,
+        meta_description: apiService.meta_description,
+        meta_keywords: apiService.meta_keywords,
+        relatedIndustries: staticService?.relatedIndustries || [],
+        relatedCaseStudies: staticService?.relatedCaseStudies || []
+      };
+    }
+    if (staticService) {
+      return {
+        id: staticService.id,
+        slug: staticService.slug,
+        name: staticService.name,
+        category: staticService.category,
+        description: staticService.description,
+        problem: "",
+        solution: "",
+        technologies: staticService.technologies,
+        meta_title: null,
+        meta_description: null,
+        meta_keywords: null,
+        relatedIndustries: staticService.relatedIndustries,
+        relatedCaseStudies: staticService.relatedCaseStudies
+      };
+    }
+    return null;
+  }, [apiService, staticService]);
 
   useEffect(() => {
     window.scrollTo(0, 0);

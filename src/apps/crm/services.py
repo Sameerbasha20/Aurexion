@@ -304,11 +304,21 @@ def mark_lead_lost(*, lead, actor, reason, request=None):
     reason = (reason or "").strip()
     if not reason:
         raise ValidationError("A reason is required when a lead is marked as lost.")
+    if len(reason) < 10:
+        raise ValidationError("A minimum explanation of at least 10 characters is required when declining a lead.")
 
     previous = lead.status
     lead.status = Lead.Status.LOST
     lead.lost_reason = reason
     lead.save(update_fields=["status", "lost_reason", "updated_at"])
+
+    # Send decline notification email to client user
+    try:
+        from apps.core.services import send_lead_declined_email
+        send_lead_declined_email(lead, reason)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Failed to send lead decline email to {lead.email}: {e}")
 
     log_audit_event(
         user=actor,

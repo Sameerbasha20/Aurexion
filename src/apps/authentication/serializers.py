@@ -9,13 +9,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
-    role = serializers.CharField(write_only=True, required=False)
+    role = serializers.CharField(required=False)
     password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'profile', 'role', 'password', 'date_joined')
         read_only_fields = ('date_joined',)
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if hasattr(instance, 'profile') and instance.profile:
+            ret['role'] = instance.profile.role
+        else:
+            ret['role'] = 'client_user'
+        return ret
 
     def create(self, validated_data):
         role = validated_data.pop('role', 'client_user')

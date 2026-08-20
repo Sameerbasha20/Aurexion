@@ -1,7 +1,8 @@
 import React from "react";
 import { ShieldAlert } from "lucide-react";
+import { ServiceDetail } from "../../../../types/website.types";
 
-export const ChallengeSection: React.FC<{ service?: any }> = ({ service }) => {
+export const ChallengeSection: React.FC<{ service?: ServiceDetail }> = ({ service }) => {
   return (
     <section className="py-10 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

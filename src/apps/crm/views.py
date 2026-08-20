@@ -191,7 +191,15 @@ class LeadViewSet(viewsets.ModelViewSet):
 
         status_value = params.get("status")
         if status_value:
-            queryset = queryset.filter(status=status_value)
+            if "," in status_value:
+                statuses = [s.strip() for s in status_value.split(",") if s.strip()]
+                queryset = queryset.filter(status__in=statuses)
+            else:
+                queryset = queryset.filter(status=status_value)
+
+        is_opportunity = params.get("is_opportunity")
+        if is_opportunity and str(is_opportunity).lower() in ("true", "1"):
+            queryset = queryset.filter(status__in=Lead.OPPORTUNITY_STATUSES)
 
         priority = params.get("priority")
         if priority:

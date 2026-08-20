@@ -135,6 +135,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 if os.getenv('DB_ENGINE'):
+    db_host = os.getenv('DB_HOST', '')
+    is_supabase = 'supabase' in str(db_host).lower()
+    default_port = '6543' if is_supabase else '5432'
+    
     DATABASES = {
         'default': {
             'ENGINE': os.getenv('DB_ENGINE'),
@@ -266,6 +270,8 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
     'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5',
+    'SWAGGER_UI_FAVICON_HREF': 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/favicon-32x32.png',
     'ENUM_NAME_OVERRIDES': {
         'LeadStatusEnum': 'apps.crm.models.LeadStatus',
         'LeadPriorityEnum': 'apps.crm.models.LeadPriority',
@@ -306,4 +312,4 @@ CLIENT_PORTAL_LOGIN_URL = os.getenv(
 DEFAULT_CLIENT_PASSWORD = os.getenv('DEFAULT_CLIENT_PASSWORD', '')
 # Project Info
 PROJECT_NAME = os.getenv('PROJECT_NAME', 'Aurexion Enterprise Platform')
-LAST_UPDATED = os.getenv('LAST_UPDATED', '2026-08-17')
+LAST_UPDATED = os.getenv('LAST_UPDATED', '2026-08-19')

@@ -33,7 +33,7 @@ export const InsightsHero = () => {
       <div className="subpage-hero-container">
         <div style={{ maxWidth: "880px" }}>
           <div className="subpage-hero-eyebrow">
-            <span className="subpage-cat-tag">PUBLICATIONS & RESEARCH / 06</span>
+            <span className="subpage-cat-tag">PUBLICATIONS & RESEARCH</span>
             <span className="subpage-signal-divider" />
             <span className="subpage-code-tag">INSIGHTS</span>
           </div>
