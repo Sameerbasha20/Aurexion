@@ -144,8 +144,10 @@ class SupportExecutiveTicketUpdateSerializer(serializers.ModelSerializer):
 
         if new_status == 'closed':
             resolution_notes = attrs.get('resolution_notes', instance.resolution_notes if instance else '')
-            if not resolution_notes or not resolution_notes.strip():
+            if attrs.get('resolution_notes') == '':
                 raise serializers.ValidationError("Resolution notes are required to close a ticket.")
+            elif not resolution_notes or not resolution_notes.strip():
+                attrs['resolution_notes'] = 'Resolved and closed'
 
         return attrs
 
@@ -199,8 +201,12 @@ class AdministratorTicketUpdateSerializer(serializers.ModelSerializer):
         new_status = attrs.get('status', instance.status if instance else 'open')
         if instance and instance.status == 'closed' and new_status != 'closed':
             raise serializers.ValidationError("Cannot reopen a closed ticket.")
-        if new_status == 'closed' and attrs.get('resolution_notes', '') == '':
-            raise serializers.ValidationError("Resolution notes are required to close a ticket.")
+        if new_status == 'closed':
+            resolution_notes = attrs.get('resolution_notes', instance.resolution_notes if instance else '')
+            if attrs.get('resolution_notes') == '':
+                raise serializers.ValidationError("Resolution notes are required to close a ticket.")
+            elif not resolution_notes or not resolution_notes.strip():
+                attrs['resolution_notes'] = 'Resolved and closed'
         return attrs
 
 
