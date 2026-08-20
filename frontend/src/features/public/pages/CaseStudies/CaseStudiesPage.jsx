@@ -7,6 +7,7 @@ import { EngineeringCapabilities } from "./components/EngineeringCapabilities";
 import { CaseStudiesCTA } from "./components/CaseStudiesCTA";
 import { caseStudiesData } from "../../../../data/caseStudies";
 import { useCaseStudies } from "../../hooks/usePublicContent";
+import { SEO } from "../../../../components/seo/SEO";
 
 export const CaseStudiesPage = () => {
   const { data: dbCaseStudies } = useCaseStudies();
@@ -101,6 +102,11 @@ export const CaseStudiesPage = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Enterprise Case Studies & Digital Transformation Proofs"
+        description="Explore verifiable engineering outcomes and mission-critical case studies delivered for enterprise banking, fintech, healthtech, and logistics leaders."
+        canonical="/case-studies"
+      />
       <CaseStudiesHero />
       <CaseStudyFilters filters={filters} setFilters={setFilters} />
       

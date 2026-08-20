@@ -130,6 +130,7 @@ export const PrivacyPolicyPage: React.FC = () => {
       badgeLabel="LEGAL / PRIVACY"
       title="Privacy Policy"
       description="This Privacy Policy explains how Aurexion Technologies collects, uses, discloses, and safeguards your personal information when you interact with our platform and services."
+      canonical="/privacy-policy"
       lastUpdated={LAST_UPDATED}
       sections={sections}
       relatedLinks={[

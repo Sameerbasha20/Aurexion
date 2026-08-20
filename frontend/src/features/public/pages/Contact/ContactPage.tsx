@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { publicService } from "../../services/publicService";
 import { Mail, Phone, MapPin, Clock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { SEO } from "../../../../components/seo/SEO";
 
 interface CountryCodeOption {
   code: string;
@@ -162,6 +163,11 @@ export const ContactPage: React.FC = () => {
 
   return (
     <div className="bg-background pt-16 pb-20 sm:pt-24 sm:pb-28 overflow-x-hidden">
+      <SEO
+        title="Contact Aurexion | Enterprise Engineering & Advisory Inquiries"
+        description="Connect directly with Aurexion Technologies engineering directors and solution architects. Inquire about custom enterprise software, AI, and cloud modernization."
+        canonical="/contact"
+      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
         
         {/* 1. Top Hero Section - Centered */}

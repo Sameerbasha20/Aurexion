@@ -11,26 +11,12 @@ import { TagFilter } from "./components/Hub/TagFilter";
 import { ArticleGrid } from "./components/Hub/ArticleGrid";
 import { InsightsCTA } from "./components/Hub/InsightsCTA";
 import { authors } from "../../../../data/authors";
+import { SEO } from "../../../../components/seo/SEO";
 
 export const InsightsPage = () => {
   const [activeCategory, setActiveCategory] = useState("");
   const [activeTag, setActiveTag] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-
-  // SEO tags
-  useEffect(() => {
-    document.title = "Insights & Technology Blog | Aurexion Technologies";
-    const descText = "Explore deep-dive technical articles, research papers, and guides on AI engineering, zero trust cloud security, and scalable microservices.";
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute("content", descText);
-    } else {
-      const meta = document.createElement("meta");
-      meta.name = "description";
-      meta.content = descText;
-      document.head.appendChild(meta);
-    }
-  }, []);
 
   const clearFilters = () => {
     setActiveCategory("");
@@ -159,6 +145,11 @@ export const InsightsPage = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Insights & Technical Engineering Blog"
+        description="Explore deep-dive technical articles, research papers, and guides on AI engineering, zero-trust cloud security, and scalable distributed architectures."
+        canonical="/blogengine"
+      />
       <InsightsHero />
       
       {!activeCategory && !activeTag && !searchQuery && featuredArticle && (

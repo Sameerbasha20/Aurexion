@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { useJobs } from "../../hooks/usePublicContent";
 import { ArrowUpRight, Loader2, AlertCircle, MapPin, Clock, Search, X } from "lucide-react";
+import { SEO } from "../../../../components/seo/SEO";
 
 export const CareersPage: React.FC = () => {
   const { data: jobs, loading, error } = useJobs();
@@ -74,6 +75,11 @@ export const CareersPage: React.FC = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Careers & Open Positions | Engineering at Aurexion"
+        description="Join our precision engineering squads. Explore open positions for senior software engineers, cloud architects, AI researchers, and technical leads."
+        canonical="/careers"
+      />
       {/* Immersive Careers Hero Header */}
       <section className="subpage-immersive-hero">
         <div

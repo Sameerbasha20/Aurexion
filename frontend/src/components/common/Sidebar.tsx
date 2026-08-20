@@ -100,19 +100,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             marginBottom: "0.5rem",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <img src="/logo.svg" alt="Aurexion" style={{ width: "24px", height: "24px" }} />
-            <span
-              style={{
-                fontFamily: "Space Grotesk, sans-serif",
-                fontWeight: 600,
-                fontSize: "1.05rem",
-                letterSpacing: "0.05em",
-                color: "#f8fafc",
-              }}
-            >
-              AUREXION
-            </span>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img src="/images/aurexion-logo.webp" alt="Aurexion" style={{ height: "32px", width: "auto", objectFit: "contain" }} />
           </div>
           <button
             type="button"

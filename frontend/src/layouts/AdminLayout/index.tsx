@@ -3,6 +3,7 @@ import Header from "../../components/common/Header";
 import Sidebar from "../../components/common/Sidebar";
 import Footer from "../../components/common/Footer";
 import { useIsMobile } from "../../hooks/useMobile";
+import { PrivatePageSEO } from "../../components/seo/PrivatePageSEO";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -25,6 +26,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       overflow: "hidden",
       backgroundColor: "#050811",
     }}>
+      <PrivatePageSEO title="Internal Console" />
       <Header showToggle onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
       <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

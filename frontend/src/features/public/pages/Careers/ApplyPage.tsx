@@ -6,6 +6,7 @@ import * as z from "zod";
 import { useJobDetails } from "../../hooks/usePublicContent";
 import { publicService } from "../../services/publicService";
 import { ArrowLeft, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { SEO } from "../../../../components/seo/SEO";
 
 interface CountryCodeOption {
   code: string;
@@ -254,6 +255,12 @@ export const ApplyPage: React.FC = () => {
 
   return (
     <div className="bg-background pt-32 sm:pt-36 pb-24">
+      <SEO
+        title={`Apply: ${job.title} | Careers`}
+        description={`Submit application for the ${job.title} position at Aurexion Technologies.`}
+        noindex={true}
+        nofollow={true}
+      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
         <Link href={`/careers/${id}`} className="inline-flex items-center text-sm font-mono text-muted-foreground hover:text-primary mb-6 transition-colors">
           <ArrowLeft className="mr-2 h-4 w-4" /> BACK TO JOB DESCRIPTION

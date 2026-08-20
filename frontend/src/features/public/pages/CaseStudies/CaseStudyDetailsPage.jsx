@@ -21,7 +21,7 @@ import { RelatedServices } from "./components/Detail/RelatedServices";
 import { RelatedIndustry } from "./components/Detail/RelatedIndustry";
 import { RelatedCaseStudies } from "./components/Detail/RelatedCaseStudies";
 import { CaseStudyCTA } from "./components/Detail/CaseStudyCTA";
-
+import { SEO } from "../../../../components/seo/SEO";
 import { useCaseStudyDetails } from "../../hooks/usePublicContent";
 
 export const CaseStudyDetailsPage = () => {
@@ -93,6 +93,13 @@ export const CaseStudyDetailsPage = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title={`${caseStudy.title} | Enterprise Case Study`}
+        description={caseStudy.challenge ? caseStudy.challenge.substring(0, 160) : `Enterprise engineering case study: ${caseStudy.title} for ${caseStudy.industry} industry.`}
+        canonical={`/case-studies/${caseStudy.slug}`}
+        ogImage={caseStudy.coverImage}
+        ogType="article"
+      />
       <CaseStudyHero caseStudy={caseStudy} />
       <ClientInformation caseStudy={caseStudy} />
       

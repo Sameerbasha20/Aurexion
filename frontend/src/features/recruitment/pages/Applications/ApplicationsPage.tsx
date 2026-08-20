@@ -84,10 +84,10 @@ export const Applications: React.FC = () => {
       if (response?.download_url) {
         window.open(response.download_url, "_blank");
       } else {
-        showError("No resume file is attached to this application.");
+        alert("No resume file is attached to this application.");
       }
     } catch (err: any) {
-      showError("Unable to open resume: " + (err?.message || "File unavailable"));
+      alert("Unable to open resume: " + (err?.message || "File unavailable"));
     }
   };
 

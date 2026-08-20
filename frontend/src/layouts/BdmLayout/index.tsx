@@ -3,6 +3,7 @@ import Header from "../../components/common/Header";
 import Sidebar from "../../components/common/Sidebar";
 import Footer from "../../components/common/Footer";
 import { useIsMobile } from "../../hooks/useMobile";
+import { PrivatePageSEO } from "../../components/seo/PrivatePageSEO";
 
 interface BdmLayoutProps {
   children: React.ReactNode;
@@ -25,6 +26,7 @@ export const BdmLayout: React.FC<BdmLayoutProps> = ({ children }) => {
       overflow: "hidden",
       backgroundColor: "#050811",
     }}>
+      <PrivatePageSEO title="Business Development Management" />
       <Header showToggle onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
       <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

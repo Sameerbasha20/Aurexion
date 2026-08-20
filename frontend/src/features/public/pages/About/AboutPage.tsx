@@ -1,4 +1,5 @@
 import React from "react";
+import { SEO } from "../../../../components/seo/SEO";
 import { AboutHero } from "./components/AboutHero";
 import { CompanyOverview } from "./components/CompanyOverview";
 import { FoundationSection } from "./components/FoundationSection";
@@ -15,6 +16,11 @@ import { AboutCTA } from "./components/AboutCTA";
 export const AboutPage: React.FC = () => {
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="About Aurexion | Enterprise Engineering & Technology Leadership"
+        description="Learn about Aurexion's engineering foundation, leadership, core principles, and enterprise digital transformation mission."
+        canonical="/about"
+      />
       <AboutHero />
       <CompanyOverview />
       <FoundationSection />

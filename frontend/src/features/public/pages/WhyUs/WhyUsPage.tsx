@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "wouter";
 import { ArrowUpRight, Users, Code2, Lock, Zap, LineChart, Award, Clock, Globe } from "lucide-react";
+import { SEO } from "../../../../components/seo/SEO";
 
 const DIFFERENTIATORS = [
   {
@@ -89,6 +90,11 @@ const COMPARISON = [
 export const WhyUsPage: React.FC = () => {
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Why Choose Aurexion | Precision Engineering & Enterprise Standards"
+        description="Senior-only engineering squads, 100% build transparency, contractual performance benchmarks, and zero technical debt policy."
+        canonical="/why-us"
+      />
       {/* Hero */}
       <section className="subpage-immersive-hero">
         <div

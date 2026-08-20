@@ -12,13 +12,9 @@ const ServicesDropdown: React.FC<{ onClose: () => void }> = ({ onClose }) => (
         const services = servicesData.filter((s) => s.category === cat.name);
         return (
           <div key={cat.id} className="nav-mega-col">
-            <Link
-              href="/services"
-              className="nav-mega-cat"
-              onClick={onClose}
-            >
+            <div className="nav-mega-cat">
               <span className="nav-mega-cat-title">{cat.name}</span>
-            </Link>
+            </div>
             <ul>
               {services.map((s) => (
                 <li key={s.id}>
@@ -135,8 +131,7 @@ export const Navbar: React.FC = () => {
       <div className="aurexion-nav-inner">
         {/* Logo */}
         <Link href="/" className="nav-logo" onClick={handleHomeClick}>
-          <img src="/manus-storage/aurexion-mark_e8f9e729.png" alt="Aurexion" className="nav-logo-mark" />
-          <span className="nav-logo-text">AUREXION</span>
+          <img src="/images/aurexion-logo.webp" alt="Aurexion" className="nav-logo-mark" />
         </Link>
 
         {/* Desktop Nav */}

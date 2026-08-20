@@ -1,4 +1,5 @@
 import React from "react";
+import { SEO } from "../../../../components/seo/SEO";
 import { ServicesHero } from "./components/ServicesHero";
 import { ServicesOverview } from "./components/ServicesOverview";
 import { ServiceExplorer } from "./components/ServiceExplorer";
@@ -10,6 +11,11 @@ import { ServicesCTA } from "./components/ServicesCTA";
 export const ServicesPage: React.FC = () => {
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Enterprise Technology & Software Engineering Services"
+        description="Comprehensive enterprise technology capabilities across 6 core categories: AI/ML, Cloud Infrastructure, Custom ERP/CRM, DevOps, and Cybersecurity."
+        canonical="/services"
+      />
       <ServicesHero />
       <ServicesOverview />
       <ServiceExplorer />
