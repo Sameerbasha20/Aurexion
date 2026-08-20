@@ -396,7 +396,17 @@ export const Dashboard: React.FC = () => {
             </span>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <div
+            className="custom-scrollbar"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.75rem",
+              maxHeight: "360px",
+              overflowY: "auto",
+              paddingRight: "0.5rem",
+            }}
+          >
             {stats.recent_applications.map((app) => {
               const badge = getStageBadgeStyle(app.stage);
               return (
@@ -460,7 +470,7 @@ export const Dashboard: React.FC = () => {
                         {advancingId === app.id ? "..." : "Shortlist"}
                       </Button>
                     )}
-                    <Link href="/recruitment/applications">
+                    <Link href={`/recruitment/applications?search=${encodeURIComponent(app.tracking_code)}`}>
                       <Button glow style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}>
                         Review Application &rarr;
                       </Button>

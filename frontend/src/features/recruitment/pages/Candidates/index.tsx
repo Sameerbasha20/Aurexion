@@ -246,10 +246,17 @@ export const Candidates: React.FC = () => {
             </Link>
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
+          <div
+            className="custom-scrollbar"
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              maxHeight: "520px",
+            }}
+          >
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
               <thead>
-                <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.8)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)" }}>
+                <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.95)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)", position: "sticky", top: 0, zIndex: 2 }}>
                   <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
                     CANDIDATE NAME / CODE
                   </th>
@@ -352,7 +359,7 @@ export const Candidates: React.FC = () => {
                           >
                             Update Stage
                           </Button>
-                          <Link href="/recruitment/applications">
+                          <Link href={`/recruitment/applications?search=${encodeURIComponent(candidate.tracking_code || candidate.name)}`}>
                             <Button glow style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem" }}>
                               Review &rarr;
                             </Button>

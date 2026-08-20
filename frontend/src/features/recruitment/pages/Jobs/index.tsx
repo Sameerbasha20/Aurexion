@@ -322,10 +322,17 @@ export const Jobs: React.FC = () => {
             </Button>
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
+          <div
+            className="custom-scrollbar"
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              maxHeight: "520px",
+            }}
+          >
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
               <thead>
-                <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.8)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)" }}>
+                <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.95)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)", position: "sticky", top: 0, zIndex: 2 }}>
                   <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
                     JOB CODE / DATE
                   </th>
@@ -417,7 +424,7 @@ export const Jobs: React.FC = () => {
                             <Edit size={12} />
                           </Button>
 
-                          <Link href="/recruitment/applications">
+                          <Link href={`/recruitment/applications?job=${encodeURIComponent(job.title)}`}>
                             <Button glow style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}>
                               Applications &rarr;
                             </Button>
@@ -489,7 +496,7 @@ export const Jobs: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.75rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0.85rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DEPARTMENT</label>
                   <input
@@ -521,6 +528,19 @@ export const Jobs: React.FC = () => {
                     onChange={(e) => setCreateForm({ ...createForm, experience: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
                   />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>STATUS</label>
+                  <select
+                    value={createForm.status || "ACTIVE"}
+                    onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}
+                    style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="CLOSED">Closed</option>
+                    <option value="DRAFT">Draft</option>
+                  </select>
                 </div>
               </div>
 
@@ -598,7 +618,7 @@ export const Jobs: React.FC = () => {
                 />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.75rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0.85rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DEPARTMENT</label>
                   <input
@@ -617,6 +637,17 @@ export const Jobs: React.FC = () => {
                     placeholder="e.g. Remote"
                     value={editForm.location || ""}
                     onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                    style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EXPERIENCE</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 3+ Years"
+                    value={editForm.experience || ""}
+                    onChange={(e) => setEditForm({ ...editForm, experience: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
                   />
                 </div>
