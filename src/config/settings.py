@@ -296,4 +296,4 @@ CLIENT_PORTAL_LOGIN_URL = os.getenv(
 DEFAULT_CLIENT_PASSWORD = os.getenv('DEFAULT_CLIENT_PASSWORD', '')
 # Project Info
 PROJECT_NAME = os.getenv('PROJECT_NAME', 'Aurexion Enterprise Platform')
-LAST_UPDATED = os.getenv('LAST_UPDATED', '2026-08-17')
+LAST_UPDATED = os.getenv('LAST_UPDATED', '2026-08-19')
