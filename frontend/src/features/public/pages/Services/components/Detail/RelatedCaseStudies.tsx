@@ -1,5 +1,5 @@
 import React from "react";
-import { ServiceItem } from "../../../../../../data/services";
+import { ServiceDetail } from "../../../../types/website.types";
 import { caseStudiesData } from "../../../../../../data/caseStudies";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
@@ -37,7 +37,7 @@ function toSlug(str: string): string {
 }
 
 interface RelatedCaseStudiesProps {
-  service: ServiceItem;
+  service: ServiceDetail;
 }
 
 export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service }) => {

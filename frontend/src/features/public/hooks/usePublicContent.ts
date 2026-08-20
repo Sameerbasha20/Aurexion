@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { publicService } from "../services/publicService";
-import { BlogPost, CaseStudy, Industry, Job, Service } from "../types/website.types";
+import { BlogPost, CaseStudy, Industry, Job, ServiceApiDetail } from "../types/website.types";
 import { caseStudiesData } from "../../../data/caseStudies";
 import { blogPosts } from "../../../data/blogPosts";
 
@@ -143,7 +143,7 @@ export const useJobs = () => {
 };
 
 export const useServiceDetails = (slug: string) => {
-  const [data, setData] = useState<Service | null>(null);
+  const [data, setData] = useState<ServiceApiDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
