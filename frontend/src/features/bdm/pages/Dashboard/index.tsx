@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useBdmDashboard } from "../../hooks/useBdmDashboard";
 import bdmService, { FormSubmission } from "../../services/bdmService";
-import crmService from "../../../crm/services/crmService";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
 import Button from "../../../../components/ui/button";
@@ -12,7 +11,7 @@ import {
   ChartLegend,
 } from "../../../../components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { Mail, Phone, UserCheck, XCircle, CheckCircle2, User, MessageSquare, AlertTriangle, X, Eye, ArrowUpRight, Key, Send } from "lucide-react";
+import { Mail, Phone, UserCheck, XCircle, CheckCircle2, User, MessageSquare, AlertTriangle, X, Eye, ArrowUpRight } from "lucide-react";
 
 const STATUS_LABELS: Record<string, string> = {
   new: "New",
@@ -26,18 +25,6 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  new: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-  under_review: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  contacted: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  qualified: "bg-green-500/20 text-green-400 border-green-500/30",
-  proposal_submitted: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  negotiation: "bg-pink-500/20 text-pink-400 border-pink-500/30",
-  won: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  lost: "bg-red-500/20 text-red-400 border-red-500/30",
-};
-
-// Hex colors for chart bars and MetricCard color props
-const STATUS_HEX_COLORS: Record<string, string> = {
   new: "#63f5e8",
   under_review: "#fbbf24",
   contacted: "#60a5fa",
@@ -121,16 +108,17 @@ export const Dashboard: React.FC = () => {
   const [selectedLeadDetail, setSelectedLeadDetail] = useState<FormSubmission | null>(null);
 
   // Assign & Decline modal state
-  const [dynSalesExecs, setDynSalesExecs] = useState<Array<{ id: number; username: string; name: string; active_leads_count?: number }>>([]);
-  const salesExecs = (data?.team_workload && data.team_workload.length > 0)
-    ? data.team_workload
-    : dynSalesExecs;
+  const [salesExecs, setSalesExecs] = useState<Array<{ id: number; username: string; name: string; active_leads_count?: number }>>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
   const [modalMode, setModalMode] = useState<"assign" | "decline" | null>(null);
   const [targetExecId, setTargetExecId] = useState<number | "">("");
   const [declineReason, setDeclineReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    bdmService.getAssignableUsers().then(setSalesExecs);
+  }, []);
 
   const showFeedback = (type: "success" | "error", text: string) => {
     setFeedback({ type, text });
@@ -141,13 +129,6 @@ export const Dashboard: React.FC = () => {
     setSelectedSubmission(submission);
     setTargetExecId(submission.assigned_to || "");
     setModalMode("assign");
-    if (salesExecs.length === 0) {
-      bdmService.getAssignableUsers(true).then((users) => {
-        if (users && users.length > 0) {
-          setDynSalesExecs(users.map((u) => ({ id: u.id, username: u.username, name: u.name })));
-        }
-      });
-    }
   };
 
   const handleOpenDecline = (submission: FormSubmission) => {
@@ -232,7 +213,7 @@ export const Dashboard: React.FC = () => {
   const pipelineData: PipelineDataItem[] = data?.pipeline_summary?.map((item: { status: string; total: number }) => ({
     status: STATUS_LABELS[item.status] || item.status,
     total: item.total,
-    color: STATUS_HEX_COLORS[item.status] || "#64748b",
+    color: STATUS_COLORS[item.status] || "#64748b",
   })) || [];
 
   const recentActivities: ActivityItem[] = data?.recent_activities || [];
@@ -564,7 +545,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Contact Details & Message Grid */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "1rem" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "1rem" }}>
                       {/* Left: Contact Info */}
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.85rem" }}>
                         <p style={{ fontWeight: 600, color: "#f8fafc", margin: 0, fontSize: "1rem" }}>
@@ -603,11 +584,11 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Action Bar: BDM Assign / Decline Buttons */}
-                    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "0.6rem", borderTop: "1px solid rgba(140, 174, 187, 0.1)", paddingTop: "0.75rem", width: "100%" }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.6rem", borderTop: "1px solid rgba(140, 174, 187, 0.1)", paddingTop: "0.75rem" }}>
                       <Button
                         variant="outline"
                         onClick={() => setSelectedLeadDetail(submission)}
-                        style={{ fontSize: "0.78rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)", whiteSpace: "nowrap" }}
+                        style={{ fontSize: "0.78rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)" }}
                       >
                         <Eye size={14} style={{ marginRight: "0.35rem" }} /> View Lead Detail
                       </Button>
@@ -695,49 +676,14 @@ export const Dashboard: React.FC = () => {
                       <td style={{ padding: "0.75rem 1rem", color: "#38bdf8", fontWeight: 500 }}>
                         {client.assigned_to_name || "Unassigned"}
                       </td>
-                      <td style={{ padding: "0.75rem 1rem" }}>
-                        {client.client_onboarded ? (
-                          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                            Active Client (Creds Sent)
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-                            Ready for Client Conversion
-                          </Badge>
-                        )}
-                      </td>
-                      <td style={{ padding: "0.75rem 1rem", textAlign: "right", whiteSpace: "nowrap", minWidth: "180px" }}>
-                        {!client.client_onboarded ? (
-                          <Button
-                            glow
-                            onClick={async () => {
-                              const defaultPwd = "client@2026";
-                              const pwdInput = window.prompt(`BDM Credential Dispatch for ${client.name} (${client.email}):\nEnter client login password:`, defaultPwd);
-                              if (pwdInput === null) return;
-                              const finalPwd = pwdInput.trim() || defaultPwd;
-                              try {
-                                await crmService.onboardClient(client.id, finalPwd);
-                                showFeedback("success", `Client ${client.name} onboarded! Credentials email (Username: ${client.email}, Password: ${finalPwd}) sent successfully.`);
-                                refetch();
-                              } catch (err: any) {
-                                showFeedback("error", err?.message || "Failed to onboard client and dispatch credentials.");
-                              }
-                            }}
-                            style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem", backgroundColor: "#22c55e", color: "#ffffff", whiteSpace: "nowrap" }}
-                          >
-                            <Key size={13} style={{ marginRight: "0.3rem" }} /> Send Credentials & Onboard
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              window.location.href = "/bdm/clients";
-                            }}
-                            style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)", whiteSpace: "nowrap" }}
-                          >
-                            <Eye size={13} style={{ marginRight: "0.3rem" }} /> View in Clients Desk
-                          </Button>
-                        )}
+                      <td style={{ padding: "0.75rem 1rem", color: "#94a3b8", fontSize: "0.78rem" }}>
+                        {new Date(client.updated_at).toLocaleString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </td>
                     </tr>
                   ))}
@@ -945,13 +891,6 @@ export const Dashboard: React.FC = () => {
 
             {/* BDM Action Buttons */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", justifyContent: "flex-end" }}>
-              <Button
-                variant="outline"
-                onClick={() => setSelectedLeadDetail(null)}
-                style={{ fontSize: "0.82rem" }}
-              >
-                Close Desk
-              </Button>
               {selectedLeadDetail.status !== "lost" && (
                 <>
                   <Button
@@ -979,6 +918,16 @@ export const Dashboard: React.FC = () => {
                   </Button>
                 </>
               )}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  window.open(`/crm/leads/${selectedLeadDetail.id}`, '_blank');
+                  setSelectedLeadDetail(null);
+                }}
+                style={{ fontSize: "0.82rem" }}
+              >
+                <ArrowUpRight size={14} style={{ marginRight: "0.35rem" }} /> Open Full Workspace
+              </Button>
             </div>
           </Card>
         </div>
