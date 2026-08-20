@@ -28,9 +28,14 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
   // Request Interceptor
   axiosInstance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      // Attach JWT Bearer Token if present
+      // Attach JWT Bearer Token if present (except on public endpoints)
       const token = localStorage.getItem("aurexion_token") || localStorage.getItem("access_token");
-      if (token && !config.headers["Authorization"]) {
+      const isPublicEndpoint = config.url && (
+        config.url.includes("/auth/login") ||
+        config.url.includes("/auth/token/refresh")
+      );
+
+      if (token && !isPublicEndpoint && !config.headers["Authorization"]) {
         config.headers["Authorization"] = `Bearer ${token}`;
       }
 
@@ -43,6 +48,7 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
           config.headers["X-CSRFToken"] = csrfToken;
         }
       }
+
       return config;
     },
     (error) => Promise.reject(error)
@@ -51,7 +57,52 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
   // Response Interceptor
   axiosInstance.interceptors.response.use(
     (response: AxiosResponse) => unpackApiResponse(response.data),
-    (error) => {
+    async (error) => {
+      const originalRequest = error.config;
+
+      if (
+        error.response?.status === 401 &&
+        originalRequest &&
+        !originalRequest._retry &&
+        !originalRequest.url?.includes("/auth/login") &&
+        !originalRequest.url?.includes("/auth/token/refresh")
+      ) {
+        originalRequest._retry = true;
+        const refreshToken = localStorage.getItem("aurexion_refresh_token");
+
+        if (refreshToken) {
+          try {
+            const refreshData = await axiosInstance.post<any, any>("/auth/token/refresh/", {
+              refresh: refreshToken,
+            });
+
+            const newAccessToken = refreshData?.access;
+            if (newAccessToken) {
+              localStorage.setItem("aurexion_token", newAccessToken);
+              if (refreshData.refresh) {
+                localStorage.setItem("aurexion_refresh_token", refreshData.refresh);
+              }
+              originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+              return axiosInstance(originalRequest);
+            }
+          } catch (refreshError) {
+            localStorage.removeItem("aurexion_user");
+            localStorage.removeItem("aurexion_token");
+            localStorage.removeItem("aurexion_refresh_token");
+            if (window.location.pathname.startsWith("/portal") || window.location.pathname.startsWith("/client")) {
+              window.location.href = "/login";
+            }
+            return Promise.reject(handleApiError(refreshError));
+          }
+        } else {
+          localStorage.removeItem("aurexion_user");
+          localStorage.removeItem("aurexion_token");
+          if (window.location.pathname.startsWith("/portal") || window.location.pathname.startsWith("/client")) {
+            window.location.href = "/login";
+          }
+        }
+      }
+
       const formattedError = handleApiError(error);
       return Promise.reject(formattedError);
     }
