@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { LifeBuoy, Clock, ShieldAlert, CheckCircle2, ListChecks, ArrowRight, UserCheck, AlertCircle } from "lucide-react";
 import Card from "../../../components/ui/card";
@@ -7,7 +7,8 @@ import { Skeleton } from "../../../components/ui/skeleton";
 import { ErrorState, LoadingState, EmptyState } from "../../portal/components/StateViews";
 import { TicketCategoryBadge, TicketPriorityBadge, TicketStatusBadge } from "../../portal/components/TicketMeta";
 import { formatDateTime } from "../../portal/utils/format";
-import { buildTicketStats, TicketStats } from "../../portal/types/portal.types";
+import portalService from "../../portal/services/portalService";
+import type { SupportTicketItem } from "../../portal/types/portal.types";
 import useExecutiveTickets from "../hooks/useExecutiveTickets";
 
 interface ExecutiveKpiCardProps {
@@ -45,11 +46,20 @@ const ExecutiveKpiCard: React.FC<ExecutiveKpiCardProps> = ({
   </Card>
 );
 
-const ExecutiveKpiSection: React.FC<{ stats: TicketStats | null; isLoading: boolean }> = ({ stats, isLoading }) => (
+interface KpiStats {
+  totalAssigned: number;
+  openAssigned: number;
+  inProgress: number;
+  awaitingClient: number;
+  resolvedClosed: number;
+  criticalPriority: number;
+}
+
+const ExecutiveKpiSection: React.FC<{ stats: KpiStats | null; isLoading: boolean }> = ({ stats, isLoading }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" style={{ width: "100%" }}>
     <ExecutiveKpiCard
       label="TOTAL ASSIGNED"
-      value={stats?.total ?? 0}
+      value={stats?.totalAssigned ?? 0}
       icon={LifeBuoy}
       accentColor="#63f5e8"
       subtitle="Assigned support tickets"
@@ -57,7 +67,7 @@ const ExecutiveKpiSection: React.FC<{ stats: TicketStats | null; isLoading: bool
     />
     <ExecutiveKpiCard
       label="OPEN & ASSIGNED"
-      value={(stats?.open ?? 0) + (stats?.assigned ?? 0)}
+      value={stats?.openAssigned ?? 0}
       icon={Clock}
       accentColor="#fbbf24"
       subtitle="Awaiting executive action"
@@ -81,7 +91,7 @@ const ExecutiveKpiSection: React.FC<{ stats: TicketStats | null; isLoading: bool
     />
     <ExecutiveKpiCard
       label="RESOLVED & CLOSED"
-      value={(stats?.resolved ?? 0) + (stats?.closed ?? 0)}
+      value={stats?.resolvedClosed ?? 0}
       icon={CheckCircle2}
       accentColor="#4ade80"
       subtitle="Resolved & closed tickets"
@@ -89,7 +99,7 @@ const ExecutiveKpiSection: React.FC<{ stats: TicketStats | null; isLoading: bool
     />
     <ExecutiveKpiCard
       label="CRITICAL PRIORITY"
-      value={stats?.critical ?? 0}
+      value={stats?.criticalPriority ?? 0}
       icon={ShieldAlert}
       accentColor="#ef4444"
       subtitle="Urgent intervention required"
@@ -98,7 +108,7 @@ const ExecutiveKpiSection: React.FC<{ stats: TicketStats | null; isLoading: bool
   </div>
 );
 
-const ExecutiveRecentTicketsTable: React.FC<{ tickets: any[] }> = ({ tickets }) => (
+const ExecutiveRecentTicketsTable: React.FC<{ tickets: SupportTicketItem[] }> = ({ tickets }) => (
   <div style={{ overflowX: "auto" }}>
     <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "750px", fontSize: "0.875rem" }}>
       <thead>
@@ -106,6 +116,7 @@ const ExecutiveRecentTicketsTable: React.FC<{ tickets: any[] }> = ({ tickets }) 
           <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>TICKET ID</th>
           <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>SUBJECT</th>
           <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CLIENT</th>
+          <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>ASSIGNED EXECUTIVE</th>
           <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CATEGORY</th>
           <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>PRIORITY</th>
           <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>STATUS</th>
@@ -120,7 +131,7 @@ const ExecutiveRecentTicketsTable: React.FC<{ tickets: any[] }> = ({ tickets }) 
                 {ticket.ticket_id}
               </Link>
             </td>
-            <td style={{ padding: "0.75rem", maxWidth: "280px" }}>
+            <td style={{ padding: "0.75rem", maxWidth: "240px" }}>
               <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#e2e8f0", textDecoration: "none" }}>
                 <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
                   {ticket.subject}
@@ -128,6 +139,9 @@ const ExecutiveRecentTicketsTable: React.FC<{ tickets: any[] }> = ({ tickets }) 
               </Link>
             </td>
             <td style={{ padding: "0.75rem", color: "#cbd5e1" }}>{ticket.client_username}</td>
+            <td style={{ padding: "0.75rem", color: "#cbd5e1", fontSize: "0.8rem" }}>
+              {ticket.assigned_username || "Unassigned Queue"}
+            </td>
             <td style={{ padding: "0.75rem" }}>
               <TicketCategoryBadge category={ticket.category} />
             </td>
@@ -149,7 +163,31 @@ const ExecutiveRecentTicketsTable: React.FC<{ tickets: any[] }> = ({ tickets }) 
 
 export const SupportDashboard: React.FC = () => {
   const tickets = useExecutiveTickets();
-  const stats = tickets.data ? buildTicketStats(tickets.data) : null;
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    portalService.getProfile().then((profile) => {
+      if (profile && profile.username) setUsername(profile.username);
+    }).catch(() => {});
+  }, []);
+
+  const calculateKpiStats = (allTickets: SupportTicketItem[], currentUsername: string | null): KpiStats => {
+    // Filter tickets assigned to current executive (or all assigned tickets if admin/unspecified)
+    const assignedTickets = currentUsername
+      ? allTickets.filter((t) => t.assigned_username === currentUsername)
+      : allTickets.filter((t) => t.assigned_username !== null);
+
+    return {
+      totalAssigned: assignedTickets.length,
+      openAssigned: assignedTickets.filter((t) => t.status === "open" || t.status === "assigned").length,
+      inProgress: assignedTickets.filter((t) => t.status === "in_progress").length,
+      awaitingClient: assignedTickets.filter((t) => t.status === "awaiting_client").length,
+      resolvedClosed: assignedTickets.filter((t) => t.status === "resolved" || t.status === "closed").length,
+      criticalPriority: assignedTickets.filter((t) => t.priority === "critical").length,
+    };
+  };
+
+  const stats = tickets.data ? calculateKpiStats(tickets.data, username) : null;
   const isKpiLoading = tickets.isLoading && !stats;
 
   return (
@@ -185,9 +223,9 @@ export const SupportDashboard: React.FC = () => {
           <Card glowOnHover>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", flexWrap: "wrap", gap: "1rem" }}>
               <div>
-                <h3 style={{ margin: 0, color: "#63f5e8", fontSize: "1.1rem" }}>Recent Assigned Tickets</h3>
+                <h3 style={{ margin: 0, color: "#63f5e8", fontSize: "1.1rem" }}>Recent Assigned & Queue Tickets</h3>
                 <p style={{ margin: "0.25rem 0 0 0", color: "#94a3b8", fontSize: "0.825rem" }}>
-                  Tickets assigned to your executive account needing immediate processing or status updates.
+                  Tickets in the support queue needing processing, assignment, or status updates.
                 </p>
               </div>
               <Link href="/support/tickets">
@@ -201,8 +239,8 @@ export const SupportDashboard: React.FC = () => {
               <LoadingState rows={4} label="Loading recent tickets" />
             ) : tickets.data && tickets.data.length === 0 ? (
               <EmptyState
-                title="No assigned tickets"
-                description="You currently have no support tickets assigned to your account."
+                title="No tickets in queue"
+                description="There are currently no support tickets in the database queue."
               />
             ) : (
               <ExecutiveRecentTicketsTable tickets={tickets.data || []} />
@@ -215,4 +253,3 @@ export const SupportDashboard: React.FC = () => {
 };
 
 export default SupportDashboard;
-

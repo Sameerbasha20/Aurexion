@@ -32,21 +32,13 @@ export const portalService = {
   },
 
   getProjects: async (): Promise<any[]> => {
-    try {
-      const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.PROJECTS);
-      return Array.isArray(data) ? data : (data.results || []);
-    } catch {
-      return [];
-    }
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.PROJECTS);
+    return Array.isArray(data) ? data : (data.results || []);
   },
 
   getRequests: async (): Promise<any[]> => {
-    try {
-      const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.REQUESTS);
-      return Array.isArray(data) ? data : (data.results || []);
-    } catch {
-      return [];
-    }
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.REQUESTS);
+    return Array.isArray(data) ? data : (data.results || []);
   },
 
   createRequest: async (requestData: { title: string; category?: string; description?: string; priority?: string }): Promise<any> => {
@@ -54,12 +46,8 @@ export const portalService = {
   },
 
   getDocuments: async (): Promise<any[]> => {
-    try {
-      const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.DOCUMENTS);
-      return Array.isArray(data) ? data : (data.results || []);
-    } catch {
-      return [];
-    }
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.DOCUMENTS);
+    return Array.isArray(data) ? data : (data.results || []);
   },
 
   getAllTickets: async (): Promise<SupportTicketItem[]> => {

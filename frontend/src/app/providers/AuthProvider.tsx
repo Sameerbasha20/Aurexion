@@ -67,6 +67,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (token) {
         localStorage.setItem("aurexion_token", token);
       }
+      const refreshToken = response.refresh || (response as any).tokens?.refresh;
+      if (refreshToken) {
+        localStorage.setItem("aurexion_refresh_token", refreshToken);
+      }
       // Invalidate in-memory caches on user switch
       crmService.clearCache();
       bdmService.clearCache();
@@ -81,6 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     localStorage.removeItem("aurexion_user");
     localStorage.removeItem("aurexion_token");
+    localStorage.removeItem("aurexion_refresh_token");
     crmService.clearCache();
     bdmService.clearCache();
     authService.logout().catch(() => {});

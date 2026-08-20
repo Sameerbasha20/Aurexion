@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import PageHeader from "../../components/PageHeader";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
 import portalService from "../../services/portalService";
-import { FolderLock, Download, ExternalLink, RefreshCw, FileText } from "lucide-react";
+import usePortalQuery from "../../hooks/usePortalQuery";
+import { ErrorState, LoadingState } from "../../components/StateViews";
+import { FolderLock, Download, RefreshCw, FileText } from "lucide-react";
 
 interface DocumentItem {
   id: number;
@@ -26,24 +28,10 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export const Documents: React.FC = () => {
-  const [documents, setDocuments] = useState<DocumentItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchDocuments = async () => {
-    setIsLoading(true);
-    try {
-      const data = await portalService.getDocuments();
-      setDocuments(data);
-    } catch {
-      setDocuments([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDocuments();
-  }, []);
+  const { data: documents, isLoading, isError, error, refetch } = usePortalQuery<DocumentItem[]>(
+    ["portal", "documents"],
+    () => portalService.getDocuments()
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
@@ -52,7 +40,7 @@ export const Documents: React.FC = () => {
         title="Documents & Deliverables"
         description="Access contracts, invoices, specifications, and project deliverables."
         actions={
-          <Button variant="outline" size="sm" onClick={fetchDocuments}>
+          <Button variant="outline" size="sm" onClick={refetch}>
             <RefreshCw size={14} style={{ marginRight: "0.35rem" }} />
             Refresh Repository
           </Button>
@@ -60,13 +48,10 @@ export const Documents: React.FC = () => {
       />
 
       {isLoading ? (
-        <div style={{ padding: "3rem", textAlign: "center", color: "#63f5e8" }}>
-          <RefreshCw size={24} style={{ animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
-          <p style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.85rem" }}>
-            LOADING REPOSITORY DOCUMENTS...
-          </p>
-        </div>
-      ) : documents.length === 0 ? (
+        <LoadingState label="LOADING REPOSITORY DOCUMENTS..." rows={3} />
+      ) : isError ? (
+        <ErrorState error={error} onRetry={refetch} title="Unable to load documents" />
+      ) : !documents || documents.length === 0 ? (
         <Card style={{ padding: "3rem", textAlign: "center" }}>
           <FolderLock size={36} color="#64748b" style={{ margin: "0 auto 1rem" }} />
           <h3 style={{ fontSize: "1.2rem", color: "#f8fafc", margin: 0 }}>No documents found</h3>
