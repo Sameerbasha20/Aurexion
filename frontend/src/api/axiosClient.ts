@@ -1,7 +1,7 @@
 import axios from "axios";
 import setupInterceptors from "./interceptors";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://aurexion.onrender.com/api/v1/";
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8000/api/v1/" : "https://aurexion.onrender.com/api/v1/");
 
 const axiosClient = axios.create({
   baseURL: API_URL,

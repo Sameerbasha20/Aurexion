@@ -9,7 +9,12 @@ import {
   UserCheck, 
   UserX,
   X,
-  Eye
+  Eye,
+  Shield,
+  Mail,
+  Calendar,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 import {
   Dialog,
@@ -18,16 +23,17 @@ import {
   DialogTitle,
   DialogFooter,
 } from "../../../../components/ui/dialog";
-import administrationService, { UserItem } from "../../services/administrationService";
+import administrationService, { UserItem, RoleChoiceItem } from "../../services/administrationService";
 
 interface ExtendedUser extends UserItem {
-  department: string;
-  lastLogin: string;
-  createdDate: string;
+  department?: string;
+  lastLogin?: string;
+  createdDate?: string;
 }
 
 export const Users: React.FC = () => {
   const [users, setUsers] = useState<ExtendedUser[]>([]);
+  const [roleChoices, setRoleChoices] = useState<RoleChoiceItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
@@ -39,59 +45,72 @@ export const Users: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<ExtendedUser | null>(null);
 
   // Form State
-  const [formName, setFormName] = useState("");
+  const [formUsername, setFormUsername] = useState("");
   const [formEmail, setFormEmail] = useState("");
-  const [formRole, setFormRole] = useState("CLIENT");
-  const [formDept, setFormDept] = useState("Operations");
+  const [formRole, setFormRole] = useState("client_user");
+  const [formPassword, setFormPassword] = useState("");
   const [formStatus, setFormStatus] = useState("ACTIVE");
+  const [formError, setFormError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
+    const fetchRoleChoices = async () => {
       try {
-        const data = await administrationService.getUsers();
-        // Extend API users with UI-only fields
-        const extended: ExtendedUser[] = data.map((u, index) => ({
-          ...u,
-          department: u.role === "ADMIN" ? "Engineering" : u.role === "BDM" ? "Business Development" : "Operations",
-          lastLogin: new Date(Date.now() - index * 3600000 * 4).toLocaleString(),
-          createdDate: new Date(Date.now() - index * 86400000 * 10).toLocaleDateString(),
-        }));
-        setUsers(extended);
+        const choices = await administrationService.getRoleChoices();
+        setRoleChoices(choices);
       } catch (err) {
-        // Fallback mock database
-        setUsers([
-          { id: "usr_10", name: "Venkat G.", email: "venkat@aurexion.io", role: "ADMIN", status: "ACTIVE", department: "Engineering", lastLogin: "8/15/2026, 2:30:12 PM", createdDate: "6/12/2026" },
-          { id: "usr_11", name: "Alice S.", email: "alice@aurexion.io", role: "BDM", status: "ACTIVE", department: "Business Development", lastLogin: "8/15/2026, 1:15:30 PM", createdDate: "6/18/2026" },
-          { id: "usr_12", name: "Marcus L.", email: "marcus@client.com", role: "CLIENT", status: "SUSPENDED", department: "External", lastLogin: "8/12/2026, 9:45:00 AM", createdDate: "7/01/2026" },
-          { id: "usr_13", name: "Sarah K.", email: "sarah@aurexion.io", role: "SALES_EXECUTIVE", status: "ACTIVE", department: "Sales", lastLogin: "8/15/2026, 11:22:45 AM", createdDate: "6/20/2026" },
-        ]);
-      } finally {
-        setLoading(false);
+        console.error("Failed to load role choices", err);
       }
     };
-    fetchUsers();
+    fetchRoleChoices();
   }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const data = await administrationService.getUsers({
+        role: roleFilter !== "ALL" ? roleFilter : undefined,
+        search: searchTerm.trim() || undefined,
+      });
+      const extended: ExtendedUser[] = data.map((u, index) => ({
+        ...u,
+        department: u.role === "SUPER_ADMIN" || u.role === "ADMINISTRATOR" ? "Administration" : u.role === "BDM" ? "Business Development" : u.role === "SALES_EXECUTIVE" ? "Sales" : "Operations",
+        lastLogin: "Active Session",
+        createdDate: u.date_joined ? new Date(u.date_joined).toLocaleDateString() : "N/A",
+      }));
+      setUsers(extended);
+    } catch (err) {
+      console.error("Failed to fetch users", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [roleFilter, searchTerm]);
 
   const handleOpenAddDialog = () => {
     setDialogMode("add");
     setSelectedUser(null);
-    setFormName("");
+    setFormUsername("");
     setFormEmail("");
-    setFormRole("CLIENT");
-    setFormDept("Operations");
+    setFormRole(roleChoices[0]?.code || "client_user");
+    setFormPassword("");
     setFormStatus("ACTIVE");
+    setFormError("");
     setDialogOpen(true);
   };
 
   const handleOpenEditDialog = (user: ExtendedUser) => {
     setDialogMode("edit");
     setSelectedUser(user);
-    setFormName(user.name);
+    setFormUsername(user.name);
     setFormEmail(user.email);
-    setFormRole(user.role);
-    setFormDept(user.department);
+    setFormRole(user.role.toLowerCase());
+    setFormPassword("");
     setFormStatus(user.status);
+    setFormError("");
     setDialogOpen(true);
   };
 
@@ -101,55 +120,66 @@ export const Users: React.FC = () => {
     setDialogOpen(true);
   };
 
-  const handleSaveUser = (e: React.FormEvent) => {
+  const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (dialogMode === "add") {
-      const newUser: ExtendedUser = {
-        id: `usr_${window.crypto ? window.crypto.getRandomValues(new Uint32Array(1))[0] % 900 + 100 : Date.now()}`,
-        name: formName,
-        email: formEmail,
-        role: formRole,
-        department: formDept,
-        status: formStatus,
-        lastLogin: "Never",
-        createdDate: new Date().toLocaleDateString(),
-      };
-      setUsers([newUser, ...users]);
-    } else if (dialogMode === "edit" && selectedUser) {
-      setUsers(users.map(u => u.id === selectedUser.id ? {
-        ...u,
-        name: formName,
-        email: formEmail,
-        role: formRole,
-        department: formDept,
-        status: formStatus,
-      } : u));
-    }
-    setDialogOpen(false);
-  };
+    setFormError("");
+    setSubmitting(true);
 
-  const toggleUserStatus = (user: ExtendedUser) => {
-    const updatedStatus = user.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
-    setUsers(users.map(u => u.id === user.id ? { ...u, status: updatedStatus } : u));
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    if (window.confirm("Are you sure you want to delete this operator from system directory?")) {
-      setUsers(users.filter(u => u.id !== userId));
+    try {
+      if (dialogMode === "add") {
+        if (!formUsername || !formEmail) {
+          setFormError("Username and Email are required.");
+          setSubmitting(false);
+          return;
+        }
+        await administrationService.createUser({
+          username: formUsername,
+          email: formEmail,
+          role: formRole,
+          password: formPassword || undefined,
+        });
+      } else if (dialogMode === "edit" && selectedUser) {
+        await administrationService.updateUser(selectedUser.id, {
+          username: formUsername,
+          email: formEmail,
+          role: formRole,
+          is_active: formStatus === "ACTIVE",
+        });
+      }
+      setDialogOpen(false);
+      fetchUsers();
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || err?.response?.data?.message || "Failed to save user account.";
+      setFormError(msg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  // Filter Logic
+  const toggleUserStatus = async (user: ExtendedUser) => {
+    const nextActiveState = user.status !== "ACTIVE";
+    try {
+      await administrationService.updateUser(user.id, { is_active: nextActiveState });
+      fetchUsers();
+    } catch (err) {
+      console.error("Failed to toggle status", err);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (window.confirm("Are you sure you want to delete this user from the system directory?")) {
+      try {
+        await administrationService.deleteUser(userId);
+        fetchUsers();
+      } catch (err: any) {
+        alert(err?.response?.data?.detail || "Failed to delete user.");
+      }
+    }
+  };
+
   const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.id.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = roleFilter === "ALL" || user.role.toUpperCase() === roleFilter.toUpperCase();
     const matchesStatus = statusFilter === "ALL" || user.status.toUpperCase() === statusFilter.toUpperCase();
-
-    return matchesSearch && matchesRole && matchesStatus;
+    return matchesStatus;
   });
 
   return (
@@ -180,7 +210,7 @@ export const Users: React.FC = () => {
             <Search size={16} style={{ color: "var(--color-text-muted)" }} />
             <input
               type="text"
-              placeholder="Search by ID, name or email..."
+              placeholder="Search by username, email or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
@@ -211,19 +241,17 @@ export const Users: React.FC = () => {
                   fontSize: "0.85rem"
                 }}
               >
-                <option value="ALL">All Roles</option>
-                <option value="ADMIN">Super Admin</option>
-                <option value="BDM">BDM</option>
-                <option value="SALES_EXECUTIVE">Sales Executive</option>
-                <option value="HR_MANAGER">HR Manager</option>
-                <option value="CONTENT_MANAGER">Content Manager</option>
-                <option value="SUPPORT_EXECUTIVE">Support Executive</option>
-                <option value="CLIENT">Client User</option>
+                <option value="ALL">All Roles ({roleChoices.length})</option>
+                {roleChoices.map((rc) => (
+                  <option key={rc.code} value={rc.code}>
+                    {rc.name}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-              <label style={{ fontSize: "0.7rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>STATUS</label>
+              <label style={{ fontSize: "0.7rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>ACCOUNT STATUS</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -238,8 +266,8 @@ export const Users: React.FC = () => {
                 }}
               >
                 <option value="ALL">All Statuses</option>
-                <option value="ACTIVE">Active</option>
-                <option value="SUSPENDED">Suspended</option>
+                <option value="ACTIVE">Active Accounts</option>
+                <option value="SUSPENDED">Suspended Accounts</option>
               </select>
             </div>
           </div>
@@ -248,283 +276,277 @@ export const Users: React.FC = () => {
 
       {/* Directory Table */}
       <Card>
-        {loading ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "var(--color-cyan)", fontFamily: "var(--font-mono)" }}>
-            RESOLVING DIRECTORY DATA NODE...
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>OPERATOR ID</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>NAME</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>EMAIL</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ROLE</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>DEPARTMENT</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>STATUS</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>CREATED DATE</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem", textAlign: "right" }}>ACTIONS</th>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
+                <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>USER / EMAIL</th>
+                <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>SYSTEM ROLE</th>
+                <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>STATUS</th>
+                <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>JOINED DATE</th>
+                <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem", textAlign: "right" }}>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: "3rem", textAlign: "center", color: "var(--color-cyan)", fontFamily: "var(--font-mono)" }}>
+                    FETCHING USER DIRECTORY...
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} style={{ padding: "2rem", textAlign: "center", color: "var(--color-text-muted)" }}>
-                      No operators found matching the active filter parameters.
+              ) : filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: "3rem", textAlign: "center", color: "var(--color-text-muted)" }}>
+                    No users match your specified filters.
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((user) => (
+                  <tr key={user.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                    <td style={{ padding: "1rem" }}>
+                      <div style={{ fontWeight: 600, color: "var(--color-text-primary)" }}>{user.name}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>{user.email}</div>
+                    </td>
+                    <td style={{ padding: "1rem" }}>
+                      <span style={{
+                        fontSize: "0.72rem",
+                        fontFamily: "var(--font-mono)",
+                        color: user.role === "SUPER_ADMIN" || user.role === "ADMINISTRATOR" ? "#a855f7" : user.role === "BDM" ? "#3b82f6" : "var(--color-cyan)",
+                        backgroundColor: user.role === "SUPER_ADMIN" ? "rgba(168, 85, 247, 0.1)" : "rgba(99, 245, 232, 0.08)",
+                        border: "1px solid rgba(99, 245, 232, 0.15)",
+                        padding: "0.15rem 0.5rem",
+                        borderRadius: "4px"
+                      }}>
+                        {user.role.replace("_", " ")}
+                      </span>
+                    </td>
+                    <td style={{ padding: "1rem" }}>
+                      <span style={{
+                        fontSize: "0.7rem",
+                        fontFamily: "var(--font-mono)",
+                        color: user.status === "ACTIVE" ? "#4ade80" : "#f87171",
+                        backgroundColor: user.status === "ACTIVE" ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                        padding: "0.15rem 0.45rem",
+                        borderRadius: "3px",
+                        border: user.status === "ACTIVE" ? "1px solid rgba(34, 197, 94, 0.2)" : "1px solid rgba(239, 68, 68, 0.2)"
+                      }}>
+                        {user.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: "1rem", color: "var(--color-text-secondary)", fontSize: "0.8rem", fontFamily: "var(--font-mono)" }}>
+                      {user.createdDate}
+                    </td>
+                    <td style={{ padding: "1rem", textAlign: "right" }}>
+                      <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.4rem" }}>
+                        <Button size="sm" variant="outline" onClick={() => handleOpenViewDialog(user)} style={{ padding: "0.25rem 0.5rem" }}>
+                          <Eye size={14} />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleOpenEditDialog(user)} style={{ padding: "0.25rem 0.5rem" }}>
+                          <Edit2 size={14} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toggleUserStatus(user)}
+                          style={{
+                            padding: "0.25rem 0.5rem",
+                            color: user.status === "ACTIVE" ? "#f87171" : "#4ade80",
+                            borderColor: user.status === "ACTIVE" ? "rgba(239, 68, 68, 0.3)" : "rgba(34, 197, 94, 0.3)"
+                          }}
+                        >
+                          {user.status === "ACTIVE" ? <UserX size={14} /> : <UserCheck size={14} />}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteUser(user.id)}
+                          style={{ padding: "0.25rem 0.5rem", color: "#f87171", borderColor: "rgba(239, 68, 68, 0.3)" }}
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  filteredUsers.map((usr) => (
-                    <tr key={usr.id} style={{ borderBottom: "1px solid var(--color-border)", transition: "background 150ms" }} className="hover:bg-muted/10">
-                      <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.85rem", color: "var(--color-cyan)" }}>
-                        {usr.id}
-                      </td>
-                      <td style={{ padding: "1rem", fontWeight: 600, color: "var(--color-text-primary)" }}>
-                        {usr.name}
-                      </td>
-                      <td style={{ padding: "1rem", color: "var(--color-text-secondary)" }}>
-                        {usr.email}
-                      </td>
-                      <td style={{ padding: "1rem" }}>
-                        <span style={{
-                          fontSize: "0.7rem",
-                          fontFamily: "var(--font-mono)",
-                          color: "var(--color-cyan)",
-                          backgroundColor: "rgba(99, 245, 232, 0.05)",
-                          border: "1px solid rgba(99, 245, 232, 0.15)",
-                          padding: "0.15rem 0.4rem",
-                          borderRadius: "4px"
-                        }}>{usr.role}</span>
-                      </td>
-                      <td style={{ padding: "1rem", color: "var(--color-text-secondary)" }}>
-                        {usr.department}
-                      </td>
-                      <td style={{ padding: "1rem" }}>
-                        <span style={{
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          color: usr.status === "ACTIVE" ? "#10b981" : "#ef4444"
-                        }}>{usr.status}</span>
-                      </td>
-                      <td style={{ padding: "1rem", color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
-                        {usr.createdDate}
-                      </td>
-                      <td style={{ padding: "1rem", textAlign: "right" }}>
-                        <div style={{ display: "inline-flex", gap: "0.5rem" }}>
-                          <button
-                            type="button"
-                            aria-label="View Operator"
-                            onClick={() => handleOpenViewDialog(usr)}
-                            title="View Operator"
-                            style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "0.25rem" }}
-                            onMouseOver={(e) => e.currentTarget.style.color = "var(--color-cyan)"}
-                            onMouseOut={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
-                            onFocus={(e) => e.currentTarget.style.color = "var(--color-cyan)"}
-                            onBlur={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            aria-label="Edit Operator"
-                            onClick={() => handleOpenEditDialog(usr)}
-                            title="Edit Operator"
-                            style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "0.25rem" }}
-                            onMouseOver={(e) => e.currentTarget.style.color = "var(--color-cyan)"}
-                            onMouseOut={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
-                            onFocus={(e) => e.currentTarget.style.color = "var(--color-cyan)"}
-                            onBlur={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            aria-label={usr.status === "ACTIVE" ? "Deactivate Operator" : "Activate Operator"}
-                            onClick={() => toggleUserStatus(usr)}
-                            title={usr.status === "ACTIVE" ? "Deactivate Operator" : "Activate Operator"}
-                            style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "0.25rem" }}
-                            onMouseOver={(e) => e.currentTarget.style.color = usr.status === "ACTIVE" ? "#ef4444" : "#10b981"}
-                            onMouseOut={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
-                            onFocus={(e) => e.currentTarget.style.color = usr.status === "ACTIVE" ? "#ef4444" : "#10b981"}
-                            onBlur={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
-                          >
-                            {usr.status === "ACTIVE" ? <UserX size={16} /> : <UserCheck size={16} />}
-                          </button>
-                          <button
-                            type="button"
-                            aria-label="Delete Operator"
-                            onClick={() => handleDeleteUser(usr.id)}
-                            title="Delete Operator"
-                            style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "0.25rem" }}
-                            onMouseOver={(e) => e.currentTarget.style.color = "#ef4444"}
-                            onMouseOut={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
-                            onFocus={(e) => e.currentTarget.style.color = "#ef4444"}
-                            onBlur={(e) => e.currentTarget.style.color = "var(--color-text-muted)"}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </Card>
 
-      {/* Add / Edit / View Dialog */}
+      {/* User Add / Edit / View Modal Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent style={{ backgroundColor: "#0a111c", border: "1px solid #1e293b", color: "#f8fafc", maxWidth: "520px", maxHeight: "85vh", overflowY: "auto", padding: "1.75rem", zIndex: 100, boxSizing: "border-box" }}>
-          <DialogHeader style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1e293b", paddingBottom: "1rem" }}>
-            <DialogTitle style={{ fontSize: "1.25rem", fontFamily: "var(--font-display)", fontWeight: 600, color: "#63f5e8" }}>
-              {dialogMode === "add" ? "Register New Operator" : dialogMode === "edit" ? "Modify Operator Profile" : "Operator Detailed Metadata"}
+        <DialogContent style={{ backgroundColor: "#0b0f19", border: "1px solid var(--color-border)", color: "#fff", maxWidth: "480px" }}>
+          <DialogHeader>
+            <DialogTitle style={{ color: "var(--color-cyan)", fontFamily: "var(--font-display)" }}>
+              {dialogMode === "add" && "CREATE NEW OPERATOR ACCOUNT"}
+              {dialogMode === "edit" && `EDIT OPERATOR: ${selectedUser?.name}`}
+              {dialogMode === "view" && `OPERATOR DOSSIER: ${selectedUser?.name}`}
             </DialogTitle>
           </DialogHeader>
 
           {dialogMode === "view" && selectedUser ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem", margin: "1rem 0" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.8fr", gap: "0.75rem 1rem", fontSize: "0.88rem", alignItems: "center" }}>
-                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>OPERATOR ID:</span>
-                <span style={{ color: "#63f5e8", fontFamily: "IBM Plex Mono, monospace", fontWeight: 600 }}>{selectedUser.id}</span>
-                
-                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>FULL NAME:</span>
-                <span style={{ fontWeight: 600, color: "#f8fafc" }}>{selectedUser.name}</span>
-
-                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>EMAIL ADDRESS:</span>
-                <span style={{ color: "#cbd5e1" }}>{selectedUser.email}</span>
-
-                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>ROLE SCOPE:</span>
-                <span style={{ color: "#cbd5e1" }}>{selectedUser.role}</span>
-
-                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>DEPARTMENT:</span>
-                <span style={{ color: "#cbd5e1" }}>{selectedUser.department}</span>
-
-                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>STATUS:</span>
-                <span style={{ color: selectedUser.status === "ACTIVE" ? "#10b981" : "#ef4444", fontWeight: 600 }}>{selectedUser.status}</span>
-
-                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>LAST LOGGED IN:</span>
-                <span style={{ color: "#cbd5e1" }}>{selectedUser.lastLogin}</span>
-
-                <span style={{ color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem" }}>CREATED DATE:</span>
-                <span style={{ color: "#cbd5e1" }}>{selectedUser.createdDate}</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>USER ID</label>
+                  <div style={{ fontSize: "0.85rem", color: "#fff", fontFamily: "var(--font-mono)" }}>{selectedUser.id}</div>
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>USERNAME</label>
+                  <div style={{ fontSize: "0.85rem", color: "#fff" }}>{selectedUser.name}</div>
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>EMAIL ADDRESS</label>
+                  <div style={{ fontSize: "0.85rem", color: "#fff", wordBreak: "break-all" }}>{selectedUser.email}</div>
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>SYSTEM ROLE</label>
+                  <div style={{ fontSize: "0.85rem", color: "var(--color-cyan)", fontFamily: "var(--font-mono)" }}>{selectedUser.role}</div>
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>STATUS</label>
+                  <div style={{ fontSize: "0.85rem", color: selectedUser.status === "ACTIVE" ? "#4ade80" : "#f87171" }}>
+                    {selectedUser.status}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--color-text-muted)", fontFamily: "var(--font-mono)" }}>DATE JOINED</label>
+                  <div style={{ fontSize: "0.85rem", color: "#fff" }}>{selectedUser.createdDate}</div>
+                </div>
               </div>
-              <DialogFooter style={{ borderTop: "1px solid #1e293b", paddingTop: "1rem", marginTop: "0.5rem" }}>
-                <Button variant="outline" onClick={() => setDialogOpen(false)} style={{ width: "100%" }}>CLOSE METADATA</Button>
+              <DialogFooter style={{ marginTop: "1.5rem" }}>
+                <Button onClick={() => setDialogOpen(false)}>Close</Button>
               </DialogFooter>
             </div>
           ) : (
-            <form onSubmit={handleSaveUser} style={{ display: "flex", flexDirection: "column", gap: "1rem", margin: "1rem 0" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>FULL OPERATOR NAME</label>
+            <form onSubmit={handleSaveUser} style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem" }}>
+              {formError && (
+                <div style={{ padding: "0.75rem", backgroundColor: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "4px", color: "#f87171", fontSize: "0.8rem" }}>
+                  {formError}
+                </div>
+              )}
+
+              <div>
+                <label style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)", display: "block", marginBottom: "0.25rem" }}>
+                  Username *
+                </label>
                 <input
                   type="text"
+                  value={formUsername}
+                  onChange={(e) => setFormUsername(e.target.value)}
                   required
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
                   style={{
-                    backgroundColor: "var(--color-bg-primary)",
+                    width: "100%",
+                    padding: "0.5rem",
+                    borderRadius: "4px",
+                    backgroundColor: "#070a12",
+                    color: "#fff",
                     border: "1px solid var(--color-border)",
-                    color: "var(--color-text-primary)",
-                    padding: "0.5rem 0.75rem",
-                    borderRadius: "6px",
                     outline: "none"
                   }}
                 />
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>EMAIL ADDRESS</label>
+              <div>
+                <label style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)", display: "block", marginBottom: "0.25rem" }}>
+                  Email Address *
+                </label>
                 <input
                   type="email"
-                  required
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
+                  required
                   style={{
-                    backgroundColor: "var(--color-bg-primary)",
+                    width: "100%",
+                    padding: "0.5rem",
+                    borderRadius: "4px",
+                    backgroundColor: "#070a12",
+                    color: "#fff",
                     border: "1px solid var(--color-border)",
-                    color: "var(--color-text-primary)",
-                    padding: "0.5rem 0.75rem",
-                    borderRadius: "6px",
                     outline: "none"
                   }}
                 />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>ROLE SCOPE</label>
-                  <select
-                    value={formRole}
-                    onChange={(e) => setFormRole(e.target.value)}
-                    style={{
-                      backgroundColor: "var(--color-bg-primary)",
-                      border: "1px solid var(--color-border)",
-                      color: "var(--color-text-primary)",
-                      padding: "0.5rem",
-                      borderRadius: "6px",
-                      outline: "none"
-                    }}
-                  >
-                    <option value="ADMIN">Super Admin</option>
-                    <option value="BDM">BDM</option>
-                    <option value="SALES_EXECUTIVE">Sales Executive</option>
-                    <option value="HR_MANAGER">HR Manager</option>
-                    <option value="CONTENT_MANAGER">Content Manager</option>
-                    <option value="SUPPORT_EXECUTIVE">Support Executive</option>
-                    <option value="CLIENT">Client User</option>
-                  </select>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>DEPARTMENT</label>
-                  <select
-                    value={formDept}
-                    onChange={(e) => setFormDept(e.target.value)}
-                    style={{
-                      backgroundColor: "var(--color-bg-primary)",
-                      border: "1px solid var(--color-border)",
-                      color: "var(--color-text-primary)",
-                      padding: "0.5rem",
-                      borderRadius: "6px",
-                      outline: "none"
-                    }}
-                  >
-                    <option value="Engineering">Engineering</option>
-                    <option value="Business Development">Business Development</option>
-                    <option value="Sales">Sales</option>
-                    <option value="Recruitment">Recruitment</option>
-                    <option value="Support">Support Desk</option>
-                    <option value="Content">CMS Catalog</option>
-                    <option value="Operations">Operations</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}>SYSTEM STATUS</label>
+              <div>
+                <label style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)", display: "block", marginBottom: "0.25rem" }}>
+                  System Role *
+                </label>
                 <select
-                  value={formStatus}
-                  onChange={(e) => setFormStatus(e.target.value)}
+                  value={formRole}
+                  onChange={(e) => setFormRole(e.target.value)}
                   style={{
-                    backgroundColor: "var(--color-bg-primary)",
+                    width: "100%",
+                    padding: "0.5rem",
+                    borderRadius: "4px",
+                    backgroundColor: "#070a12",
+                    color: "#fff",
                     border: "1px solid var(--color-border)",
-                    color: "var(--color-text-primary)",
-                    padding: "0.5rem 0.75rem",
-                    borderRadius: "6px",
                     outline: "none"
                   }}
                 >
-                  <option value="ACTIVE">ACTIVE</option>
-                  <option value="SUSPENDED">SUSPENDED</option>
+                  {roleChoices.map((rc) => (
+                    <option key={rc.code} value={rc.code.toLowerCase()}>
+                      {rc.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              <DialogFooter style={{ borderTop: "1px solid var(--color-border)", paddingTop: "1rem", marginTop: "1rem", display: "flex", gap: "0.5rem" }}>
-                <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>CANCEL</Button>
-                <Button glow type="submit">SAVE OPERATOR</Button>
+              {dialogMode === "add" && (
+                <div>
+                  <label style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)", display: "block", marginBottom: "0.25rem" }}>
+                    Password (Optional - auto-generated if left blank)
+                  </label>
+                  <input
+                    type="password"
+                    value={formPassword}
+                    onChange={(e) => setFormPassword(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem",
+                      borderRadius: "4px",
+                      backgroundColor: "#070a12",
+                      color: "#fff",
+                      border: "1px solid var(--color-border)",
+                      outline: "none"
+                    }}
+                  />
+                </div>
+              )}
+
+              {dialogMode === "edit" && (
+                <div>
+                  <label style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)", display: "block", marginBottom: "0.25rem" }}>
+                    Account Status
+                  </label>
+                  <select
+                    value={formStatus}
+                    onChange={(e) => setFormStatus(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem",
+                      borderRadius: "4px",
+                      backgroundColor: "#070a12",
+                      color: "#fff",
+                      border: "1px solid var(--color-border)",
+                      outline: "none"
+                    }}
+                  >
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="SUSPENDED">SUSPENDED</option>
+                  </select>
+                </div>
+              )}
+
+              <DialogFooter style={{ marginTop: "1rem" }}>
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? "Saving..." : "Save Operator Account"}
+                </Button>
               </DialogFooter>
             </form>
           )}

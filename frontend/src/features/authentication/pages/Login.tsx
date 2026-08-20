@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import useAuth from "../../../hooks/useAuth";
 import Card from "../../../components/ui/card";
 import Button from "../../../components/ui/button";

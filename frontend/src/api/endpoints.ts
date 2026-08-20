@@ -7,7 +7,9 @@ export const API_ENDPOINTS = {
   ADMIN: {
     USERS: "/users/",
     ROLES: "/roles/",
+    ROLE_CHOICES: "/users/roles/",
     AUDIT_LOGS: "/audit-logs/",
+    DASHBOARD: "/admin/dashboard/",
   },
   CRM: {
     LEADS: "/leads/",

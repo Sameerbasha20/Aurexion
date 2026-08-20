@@ -28,6 +28,7 @@ export const AdminRoutes: React.FC = () => {
         <Route path="/admin/permissions" component={Permissions} />
         <Route path="/admin/modules" component={Modules} />
         <Route path="/admin/crm" component={CrmOverview} />
+        <Route path="/admin/leads" component={CrmOverview} />
         <Route path="/admin/bdm-sales" component={BdmSalesOverview} />
         <Route path="/admin/rfp" component={RfpOverview} />
         <Route path="/admin/estimator" component={EstimatorOverview} />
