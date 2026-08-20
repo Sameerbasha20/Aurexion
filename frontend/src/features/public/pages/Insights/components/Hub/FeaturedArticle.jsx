@@ -19,7 +19,7 @@ export const FeaturedArticle = ({ article }) => {
                 FEATURED • {article.category.replace('-', ' ')}
               </span>
               
-              <Link href={`/insights/${article.slug}`}>
+              <Link href={`/blogengine/${article.slug}`}>
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 text-foreground hover:text-primary transition-colors leading-tight">
                   {article.title}
                 </h2>
@@ -48,7 +48,7 @@ export const FeaturedArticle = ({ article }) => {
 
               <div>
                 <Link 
-                  href={`/insights/${article.slug}`}
+                  href={`/blogengine/${article.slug}`}
                   className="inline-flex items-center gap-2 text-sm font-bold text-foreground group-hover:text-primary transition-colors"
                 >
                   Read Article

@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'profile', 'role', 'password', 'date_joined')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'profile', 'role', 'password', 'date_joined')
         read_only_fields = ('date_joined',)
 
     def to_representation(self, instance):

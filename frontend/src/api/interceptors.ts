@@ -28,9 +28,14 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
   // Request Interceptor
   axiosInstance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      const token = localStorage.getItem("aurexion_token") || localStorage.getItem("access_token");
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+      if (config.method && !["get", "head", "options"].includes(config.method.toLowerCase())) {
+        const csrfToken = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("csrftoken="))
+          ?.split("=")[1];
+        if (csrfToken) {
+          config.headers["X-CSRFToken"] = csrfToken;
+        }
       }
       return config;
     },

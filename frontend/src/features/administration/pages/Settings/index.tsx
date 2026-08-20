@@ -9,8 +9,10 @@ import {
   Globe, 
   Save 
 } from "lucide-react";
+import { useIsMobile } from "../../../../hooks/useMobile";
 
 export const Settings: React.FC = () => {
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<"GENERAL" | "SECURITY" | "RBAC" | "NOTIF" | "PREFS">("GENERAL");
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -50,7 +52,7 @@ export const Settings: React.FC = () => {
       {/* Header */}
       <div>
         <p className="eyebrow" style={{ margin: 0 }}>PLATFORM GOVERNANCE</p>
-        <h1 style={{ fontSize: "2rem", margin: "0.25rem 0 0 0", letterSpacing: "-0.03em" }}>
+        <h1 style={{ fontSize: isMobile ? "1.5rem" : "2rem", margin: "0.25rem 0 0 0", letterSpacing: "-0.03em" }}>
           System Parameters &amp; Configurations
         </h1>
         <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>
@@ -59,10 +61,17 @@ export const Settings: React.FC = () => {
       </div>
 
       {/* Main Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: "1.5rem", alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "240px 1fr", gap: "1.5rem", alignItems: "start" }}>
         
         {/* Left Side: Tabs Navigation */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+        <div style={{
+          display: "flex",
+          flexDirection: isMobile ? "row" : "column",
+          gap: "0.4rem",
+          overflowX: isMobile ? "auto" : "visible",
+          paddingBottom: isMobile ? "0.5rem" : "0",
+          scrollbarWidth: "none"
+        }}>
           {tabs.map((tab) => {
             const TabIcon = tab.icon;
             const isActive = activeTab === tab.key;
@@ -74,20 +83,22 @@ export const Settings: React.FC = () => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "0.75rem",
-                  padding: "0.75rem 1rem",
+                  gap: "0.6rem",
+                  padding: isMobile ? "0.5rem 0.85rem" : "0.75rem 1rem",
                   borderRadius: "6px",
-                  fontSize: "0.9rem",
+                  fontSize: isMobile ? "0.8rem" : "0.9rem",
                   textAlign: "left",
-                  border: "1px solid " + (isActive ? "var(--color-cyan)" : "transparent"),
-                  backgroundColor: isActive ? "rgba(99, 245, 232, 0.05)" : "transparent",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  border: "1px solid " + (isActive ? "var(--color-cyan)" : "rgba(255,255,255,0.06)"),
+                  backgroundColor: isActive ? "rgba(99, 245, 232, 0.08)" : "#0c1424",
                   color: isActive ? "var(--color-cyan)" : "var(--color-text-secondary)",
                   cursor: "pointer",
                   fontWeight: isActive ? 600 : 400,
                   transition: "all 150ms"
                 }}
               >
-                <TabIcon size={16} />
+                <TabIcon size={15} />
                 <span>{tab.name}</span>
               </button>
             );
@@ -95,7 +106,7 @@ export const Settings: React.FC = () => {
         </div>
 
         {/* Right Side: Tab Form Content */}
-        <Card borderAccent>
+        <Card borderAccent style={{ width: "100%", overflowX: "hidden" }}>
           <form onSubmit={handleSave}>
             <CardHeader style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "1rem", display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
               <CardTitle style={{ fontSize: "1.1rem" }}>

@@ -4,7 +4,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import Dashboard from "../features/recruitment/pages/Dashboard";
 import Jobs from "../features/recruitment/pages/Jobs";
 import Candidates from "../features/recruitment/pages/Candidates";
-import Applications from "../features/recruitment/pages/Applications";
+import Applications from "../features/recruitment/pages/Applications/ApplicationsPage";
 
 export const RecruitmentRoutes: React.FC = () => {
   return (

@@ -25,6 +25,7 @@ export interface LeadItem {
   updated_at: string;
   value?: number;
   estimated_value?: number;
+  rfp_enquiry_details?: any;
 }
 
 export interface LeadFollowUp {
@@ -264,6 +265,7 @@ export const crmService = {
     if (!force && leadsPromises.has(cacheKey)) {
       return leadsPromises.get(cacheKey)!;
     }
+<<<<<<< HEAD
 
     const promise = (async () => {
       try {
@@ -287,6 +289,15 @@ export const crmService = {
 
     leadsPromises.set(cacheKey, promise);
     return promise;
+=======
+    if (response && response.data && Array.isArray(response.data)) {
+      return response.data;
+    }
+    if (response && response.data && Array.isArray(response.data.results)) {
+      return response.data.results;
+    }
+    return [];
+>>>>>>> c920af6a49febeb8b313b139dc3449b8face5ba3
   },
 
   /**
@@ -540,6 +551,14 @@ export const crmService = {
     notesCache.delete(leadId);
     activitiesCache = null;
     return data;
+  },
+
+  /**
+   * Fetch activity timeline for a lead
+   */
+  getActivities: async (leadId: number): Promise<any[]> => {
+    const data = await axiosClient.get<any, any>(`/leads/${leadId}/activities/`);
+    return Array.isArray(data) ? data : (data.results || []);
   },
 
   /**

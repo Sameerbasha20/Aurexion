@@ -49,6 +49,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const [location] = useLocation();
   const isMobile = useIsMobile();
 
+  React.useEffect(() => {
+    if (isMobile && open) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isMobile, open]);
+
   if (!open || !user) return null;
 
   const role = user.role.toUpperCase();

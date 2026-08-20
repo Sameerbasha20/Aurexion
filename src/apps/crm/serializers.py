@@ -2,8 +2,29 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from apps.authentication.models import AuditLog
-from apps.crm.models import Lead, LeadFollowUp, LeadNote
+from apps.crm.models import Lead, LeadFollowUp, LeadNote, RFPEnquiry
 from django.utils.html import strip_tags
+
+
+class RFPEnquirySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RFPEnquiry
+        fields = '__all__'
+
+    def validate_document_attachment(self, value):
+        if value:
+            if value.size > 10 * 1024 * 1024:
+                raise serializers.ValidationError("File size cannot exceed 10MB.")
+            ext = value.name.split('.')[-1].lower()
+            if ext not in ['pdf', 'docx', 'zip']:
+                raise serializers.ValidationError("Only PDF, DOCX, and ZIP files are allowed.")
+            
+            from apps.crm.validators import validate_magic_bytes
+            try:
+                validate_magic_bytes(value)
+            except Exception as e:
+                raise serializers.ValidationError(str(e))
+        return value
 
 
 class LeadSerializer(serializers.ModelSerializer):
@@ -13,6 +34,7 @@ class LeadSerializer(serializers.ModelSerializer):
     created_by_name = serializers.CharField(source="created_by.username", read_only=True, default=None)
     follow_up_count = serializers.IntegerField(read_only=True, default=0)
     note_count = serializers.IntegerField(read_only=True, default=0)
+    rfp_enquiry_details = RFPEnquirySerializer(source="rfp_enquiry", read_only=True)
 
     class Meta:
         model = Lead
@@ -40,6 +62,7 @@ class LeadSerializer(serializers.ModelSerializer):
             "next_follow_up_at",
             "follow_up_count",
             "note_count",
+            "rfp_enquiry_details",
             "created_at",
             "updated_at",
         ]
@@ -54,6 +77,7 @@ class LeadSerializer(serializers.ModelSerializer):
             "created_by_name",
             "follow_up_count",
             "note_count",
+            "rfp_enquiry_details",
             "created_at",
             "updated_at",
             "last_contacted_at",
@@ -289,25 +313,5 @@ class LeadActivitySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-from apps.crm.models import RFPEnquiry
 
-class RFPEnquirySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RFPEnquiry
-        fields = '__all__'
-
-    def validate_document_attachment(self, value):
-        if value:
-            if value.size > 10 * 1024 * 1024:
-                raise serializers.ValidationError("File size cannot exceed 10MB.")
-            ext = value.name.split('.')[-1].lower()
-            if ext not in ['pdf', 'docx', 'zip']:
-                raise serializers.ValidationError("Only PDF, DOCX, and ZIP files are allowed.")
-            
-            from apps.crm.validators import validate_magic_bytes
-            try:
-                validate_magic_bytes(value)
-            except Exception as e:
-                raise serializers.ValidationError(str(e))
-        return value
 

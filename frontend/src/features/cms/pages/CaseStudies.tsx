@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useCmsCaseStudies } from "../hooks/useCms";
-import { CaseStudyItem, CaseStudyCreatePayload } from "../services/cmsService";
+import { CaseStudyItem, CaseStudyCreatePayload, cmsService } from "../services/cmsService";
 import Card from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
 import {
@@ -36,6 +36,7 @@ export const CaseStudies: React.FC = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingCs, setEditingCs] = useState<CaseStudyItem | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   // Create form state
   const [createForm, setCreateForm] = useState<CaseStudyCreatePayload>({
@@ -51,12 +52,15 @@ export const CaseStudies: React.FC = () => {
     outcomes_performance: "",
     confidential: false,
     status: "published",
+    media: "",
   });
   const [techStackInput, setTechStackInput] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
 
   // Edit form state
-  const [editForm, setEditForm] = useState<Partial<CaseStudyItem>>({});
+  const [editForm, setEditForm] = useState<Partial<CaseStudyItem>>({
+    media: "",
+  });
   const [editTechInput, setEditTechInput] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
 
@@ -74,6 +78,25 @@ export const CaseStudies: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const res = await cmsService.uploadMedia(file);
+      if (isEdit) {
+        setEditForm((prev) => ({ ...prev, media: res.url }));
+      } else {
+        setCreateForm((prev) => ({ ...prev, media: res.url }));
+      }
+    } catch (err: any) {
+      alert("Failed to upload image: " + (err.message || err));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleOpenEdit = (cs: CaseStudyItem) => {
     setEditingCs(cs);
     setEditForm({
@@ -88,6 +111,7 @@ export const CaseStudies: React.FC = () => {
       outcomes_performance: cs.outcomes_performance,
       confidential: cs.confidential,
       status: cs.status,
+      media: cs.media,
     });
     setEditTechInput(Array.isArray(cs.tech_stack) ? cs.tech_stack.join(", ") : String(cs.tech_stack || ""));
     setEditError(null);
@@ -124,6 +148,7 @@ export const CaseStudies: React.FC = () => {
         outcomes_performance: "",
         confidential: false,
         status: "published",
+        media: "",
       });
       setTechStackInput("");
       setActionSuccess("Case study created successfully.");
@@ -378,12 +403,23 @@ export const CaseStudies: React.FC = () => {
                       onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                     >
                       <td style={{ padding: "1rem" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          {cs.confidential && <Lock size={12} color="#f87171" />}
-                          <span style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{cs.title}</span>
-                        </div>
-                        <div style={{ fontSize: "0.75rem", color: "#63f5e8", marginTop: "0.2rem" }}>
-                          Client: {cs.client}  /{cs.slug}
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                          {cs.media && (
+                            <img
+                              src={cs.media}
+                              alt=""
+                              style={{ width: "40px", height: "40px", borderRadius: "4px", objectFit: "cover", backgroundColor: "rgba(255,255,255,0.05)" }}
+                            />
+                          )}
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                              {cs.confidential && <Lock size={12} color="#f87171" />}
+                              <span style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{cs.title}</span>
+                            </div>
+                            <div style={{ fontSize: "0.75rem", color: "#63f5e8", marginTop: "0.2rem" }}>
+                              Client: {cs.client}  /{cs.slug}
+                            </div>
+                          </div>
                         </div>
                       </td>
 
@@ -543,6 +579,45 @@ export const CaseStudies: React.FC = () => {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>FEATURED PICTURE / MEDIA URL</label>
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/image.png"
+                    value={createForm.media || ""}
+                    onChange={(e) => setCreateForm({ ...createForm, media: e.target.value })}
+                    style={{ flex: 1, padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="cs-media-upload-create"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleMediaUpload(e, false)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploading}
+                    onClick={() => document.getElementById("cs-media-upload-create")?.click()}
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    {uploading ? "Uploading..." : "Upload File"}
+                  </Button>
+                </div>
+                {createForm.media && (
+                  <div style={{ marginTop: "0.5rem", padding: "0.5rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.15)", borderRadius: "4px", display: "inline-block", alignSelf: "flex-start" }}>
+                    <img
+                      src={createForm.media}
+                      alt="Uploaded Preview"
+                      style={{ maxHeight: "120px", maxWidth: "100%", borderRadius: "2px", display: "block" }}
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>BUSINESS CHALLENGE</label>
                 <textarea
                   rows={2}
@@ -670,6 +745,45 @@ export const CaseStudies: React.FC = () => {
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
                   />
                 </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>FEATURED PICTURE / MEDIA URL</label>
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/image.png"
+                    value={editForm.media || ""}
+                    onChange={(e) => setEditForm({ ...editForm, media: e.target.value })}
+                    style={{ flex: 1, padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="cs-media-upload-edit"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleMediaUpload(e, true)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploading}
+                    onClick={() => document.getElementById("cs-media-upload-edit")?.click()}
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    {uploading ? "Uploading..." : "Upload File"}
+                  </Button>
+                </div>
+                {editForm.media && (
+                  <div style={{ marginTop: "0.5rem", padding: "0.5rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.15)", borderRadius: "4px", display: "inline-block", alignSelf: "flex-start" }}>
+                    <img
+                      src={editForm.media}
+                      alt="Uploaded Preview"
+                      style={{ maxHeight: "120px", maxWidth: "100%", borderRadius: "2px", display: "block" }}
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>

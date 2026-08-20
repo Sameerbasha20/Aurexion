@@ -33,18 +33,12 @@ export const HeroVideoBackground: React.FC<HeroVideoBackgroundProps> = ({
       )}
 
       {/* Subtle, balanced dark overlay across the entire video */}
-      <div className="absolute inset-0 bg-[#050811]/35 pointer-events-none" />
+      <div className="hero-video-overlay absolute inset-0 bg-[#050811]/35 pointer-events-none" />
 
       {/* Directional gradient so text on the left stays crisp and legible */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#050811]/80 via-[#050811]/30 to-transparent pointer-events-none" />
+      <div className="hero-video-gradient absolute inset-0 bg-gradient-to-r from-[#050811]/80 via-[#050811]/30 to-transparent pointer-events-none" />
     </div>
   );
 };
 
 export default HeroVideoBackground;
-
-
-
-
-
-

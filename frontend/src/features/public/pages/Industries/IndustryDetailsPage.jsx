@@ -32,15 +32,21 @@ export const IndustryDetailsPage = () => {
     slug: apiIndustry.slug,
     name: apiIndustry.name || staticIndustry?.name || "",
     shortDescription: staticIndustry?.shortDescription || apiIndustry.challenges || "",
-    challenges: (typeof apiIndustry.challenges === "string") ? {
+    challenges: (typeof apiIndustry.challenges === "string" && !apiIndustry.challenges.includes("Challenges faced in the")) ? {
       operational: [{ title: "Operational Impact", description: apiIndustry.challenges }],
       regulatory: [{ title: "Regulatory Impact", description: apiIndustry.challenges }],
       technical: [{ title: "Technical Impact", description: apiIndustry.challenges }]
     } : (staticIndustry?.challenges || { operational: [], regulatory: [], technical: [] }),
-    solutions: staticIndustry?.solutions || (apiIndustry.target_solutions ? apiIndustry.target_solutions.split("\n").filter(Boolean) : []),
+    solutions: (apiIndustry.target_solutions && !apiIndustry.target_solutions.includes("Solutions designed for the"))
+      ? apiIndustry.target_solutions.split("\n").filter(Boolean)
+      : (staticIndustry?.solutions || []),
     target_solutions: apiIndustry.target_solutions,
-    relatedServices: staticIndustry?.relatedServices || (apiIndustry.services ? apiIndustry.services.map(s => s.slug) : []),
-    relatedCaseStudies: staticIndustry?.relatedCaseStudies || (apiIndustry.case_studies ? apiIndustry.case_studies.map(cs => cs.slug) : []),
+    relatedServices: (apiIndustry.services && apiIndustry.services.length > 0)
+      ? apiIndustry.services.map(s => s.slug)
+      : (staticIndustry?.relatedServices || []),
+    relatedCaseStudies: (apiIndustry.case_studies && apiIndustry.case_studies.length > 0)
+      ? apiIndustry.case_studies.map(cs => cs.slug)
+      : (staticIndustry?.relatedCaseStudies || []),
     outcomes: staticIndustry?.outcomes || ["Operational Efficiency", "Compliance Architecture", "Security Risk Mitigation"]
   } : staticIndustry;
 

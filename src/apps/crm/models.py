@@ -161,6 +161,15 @@ class Lead(models.Model):
         auto_now=True,
     )
 
+    rfp_enquiry = models.OneToOneField(
+        "RFPEnquiry",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lead",
+        help_text="Associated Request for Proposal (RFP) enquiry details.",
+    )
+
     class Meta:
         ordering = ["-created_at"]
 

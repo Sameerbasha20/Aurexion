@@ -575,6 +575,72 @@ export const LeadDetail: React.FC = () => {
                 </p>
               </div>
             )}
+
+            {lead.rfp_enquiry_details && (
+              <div style={{ marginTop: "1.5rem", borderTop: "1px solid rgba(140, 174, 187, 0.15)", paddingTop: "1.25rem" }}>
+                <h4 style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", marginBottom: "0.85rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  RFP Submission details
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", fontSize: "0.85rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(140, 174, 187, 0.05)" }}>
+                    <span style={{ color: "#94a3b8" }}>RFP Reference ID:</span>
+                    <span style={{ color: "#cbd5e1", fontFamily: "IBM Plex Mono, monospace" }}>{lead.rfp_enquiry_details.reference_id}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(140, 174, 187, 0.05)" }}>
+                    <span style={{ color: "#94a3b8" }}>Designation:</span>
+                    <span style={{ color: "#f8fafc" }}>{lead.rfp_enquiry_details.designation}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(140, 174, 187, 0.05)" }}>
+                    <span style={{ color: "#94a3b8" }}>Country:</span>
+                    <span style={{ color: "#f8fafc" }}>{lead.rfp_enquiry_details.country}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(140, 174, 187, 0.05)" }}>
+                    <span style={{ color: "#94a3b8" }}>Budget Range:</span>
+                    <span style={{ color: "#f8fafc" }}>{lead.rfp_enquiry_details.budget_range}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(140, 174, 187, 0.05)" }}>
+                    <span style={{ color: "#94a3b8" }}>NDA Status:</span>
+                    <span style={{
+                      color: lead.rfp_enquiry_details.nda_required ? "#f87171" : "#4ade80",
+                      fontWeight: 600,
+                      fontSize: "0.75rem",
+                      fontFamily: "IBM Plex Mono, monospace"
+                    }}>
+                      {lead.rfp_enquiry_details.nda_required ? "NDA REQUIRED" : "NO NDA REQUIRED"}
+                    </span>
+                  </div>
+                  
+                  {lead.rfp_enquiry_details.document_attachment && (
+                    <div style={{
+                      marginTop: "0.5rem",
+                      padding: "0.75rem",
+                      backgroundColor: "rgba(99, 245, 232, 0.05)",
+                      border: "1px dashed rgba(99, 245, 232, 0.25)",
+                      borderRadius: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.6rem"
+                    }}>
+                      <FileText size={18} style={{ color: "#63f5e8", flexShrink: 0 }} />
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+                        <span style={{ fontSize: "0.75rem", color: "#cbd5e1", fontWeight: 500 }}>Uploaded RFP Document</span>
+                        <a
+                          href={lead.rfp_enquiry_details.document_attachment.startsWith("http")
+                            ? lead.rfp_enquiry_details.document_attachment
+                            : `http://localhost:8000${lead.rfp_enquiry_details.document_attachment}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: "0.75rem", color: "#63f5e8", textDecoration: "underline", wordBreak: "break-all" }}
+                        >
+                          Download Attachment
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </Card>
 
           {/* Append Communication Note Box */}

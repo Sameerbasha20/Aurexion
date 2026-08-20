@@ -3,6 +3,7 @@ import { ServiceDetail } from "../../../../types/website.types";
 import { caseStudiesData } from "../../../../../../data/caseStudies";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
+import { useCaseStudies } from "../../../../hooks/usePublicContent";
 
 // Curated cover images per industry slug
 const INDUSTRY_IMAGES: Record<string, string> = {
@@ -41,58 +42,46 @@ interface RelatedCaseStudiesProps {
 }
 
 export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service }) => {
-  // Step 1: Try to find case studies directly referenced by slug/id in the service data
-  const directMatches: any[] = service.relatedCaseStudies
-    ?.map((csId) =>
-      (caseStudiesData as any[]).find(
-        (cs) =>
-          cs.slug === csId ||
-          cs.id === csId ||
-          cs.id.toLowerCase() === csId.toLowerCase()
-      )
-    )
-    .filter(Boolean) ?? [];
+  const { data: dbCaseStudies } = useCaseStudies();
 
-  // Step 2: If we have fewer than 2 direct matches, supplement with industry-matched case studies
-  let displayStudies = [...directMatches];
+  if (!service.relatedCaseStudies || service.relatedCaseStudies.length === 0) return null;
 
-  if (displayStudies.length < 2) {
-    // Build a set of industry slugs from the service's relatedIndustries
-    const serviceIndustrySlugs = new Set(
-      (service.relatedIndustries ?? []).map(toSlug)
-    );
+  // Map database case studies and static ones to a unified format
+  const allCaseStudies: any[] = [];
 
-    // Find case studies whose industry matches, not already in displayStudies
-    const existingIds = new Set(displayStudies.map((cs) => cs.id));
-    const industryMatches = (caseStudiesData as any[]).filter(
-      (cs) =>
-        !existingIds.has(cs.id) &&
-        serviceIndustrySlugs.has(cs.industry ?? "")
-    );
-
-    // Add until we have 2
-    for (const cs of industryMatches) {
-      if (displayStudies.length >= 2) break;
-      displayStudies.push(cs);
-    }
+  if (dbCaseStudies && dbCaseStudies.length > 0) {
+    dbCaseStudies.forEach(dbCase => {
+      allCaseStudies.push({
+        id: `db-${dbCase.id}`,
+        slug: dbCase.slug,
+        title: dbCase.title || "",
+        industry: "Technology",
+        coverImage: dbCase.media || COVER_IMAGES.default,
+        outcome: dbCase.outcomes_performance || "Verified architecture delivered"
+      });
+    });
   }
 
-  // Step 3: If still fewer than 2, fill with the first case studies globally
-  if (displayStudies.length < 2) {
-    const existingIds = new Set(displayStudies.map((cs: any) => cs.id));
-    for (const cs of caseStudiesData as any[]) {
-      if (displayStudies.length >= 2) break;
-      if (!existingIds.has(cs.id)) {
-        displayStudies.push(cs);
-        existingIds.add(cs.id);
-      }
+  caseStudiesData.forEach(staticCs => {
+    if (!allCaseStudies.some(cs => cs.slug === staticCs.slug)) {
+      allCaseStudies.push({
+        id: staticCs.id,
+        slug: staticCs.slug,
+        title: staticCs.title || "",
+        industry: staticCs.industry || "Enterprise",
+        coverImage: staticCs.coverImage || COVER_IMAGES.default,
+        outcome: staticCs.results?.[0] ? `${staticCs.results[0].label}: ${staticCs.results[0].impact}` : "Verified architecture delivered"
+      });
     }
-  }
+  });
 
-  // Limit to 2
-  displayStudies = displayStudies.slice(0, 2);
+  const matched = service.relatedCaseStudies.map((csId: string) => {
+    return allCaseStudies.find(
+      cs => cs.id === csId || cs.slug === csId || cs.id.toLowerCase() === csId.toLowerCase()
+    ) ?? null;
+  }).filter(Boolean);
 
-  if (displayStudies.length === 0) return null;
+  if (matched.length === 0) return null;
 
   return (
     <section className="py-12 bg-background border-t border-border/10">
@@ -113,25 +102,13 @@ export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service 
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {displayStudies.map((cs: any) => {
-            const coverImg =
-              cs.coverImage ||
-              INDUSTRY_IMAGES[cs.industry ?? ""] ||
-              INDUSTRY_IMAGES.default;
-
-            const industryLabel = (cs.industry ?? "Enterprise")
-              .replace(/-/g, " ")
-              .replace(/\b\w/g, (c: string) => c.toUpperCase());
-
-            const outcome = cs.results?.[0]
-              ? `${cs.results[0].label}: ${cs.results[0].impact}`
-              : "Operational Excellence Delivered";
-
+          {matched.map((cs, index) => {
+            const coverImg = COVER_IMAGES[cs.industry.toLowerCase().replace(/[\s()\/&]+/g, "-")] || cs.coverImage;
             return (
               <Link
-                key={cs.slug}
+                key={index}
                 href={`/case-studies/${cs.slug}`}
-                className="group block border border-border/20 bg-[#080f1a] rounded-xl overflow-hidden hover:border-[rgba(99,245,232,0.4)] transition-all duration-300"
+                className="group block border border-border/20 bg-[#080f1a] rounded-xl overflow-hidden hover:border-[rgba(99,245,232,0.4)] transition-colors"
               >
                 <div className="aspect-video relative overflow-hidden">
                   <img
@@ -142,21 +119,17 @@ export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service 
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                   <div className="absolute bottom-6 left-6 right-6 z-10">
-                    <span className="text-xs font-mono text-[#63f5e8] bg-[rgba(99,245,232,0.12)] border border-[rgba(99,245,232,0.25)] px-2 py-1 rounded mb-3 inline-block">
-                      {industryLabel}
+                    <span className="text-xs font-mono text-[#63f5e8] bg-[rgba(99,245,232,0.12)] border border-[rgba(99,245,232,0.25)] px-2 py-1 rounded mb-3 inline-block capitalize">
+                      {cs.industry.replace(/-/g, " ")}
                     </span>
-                    <h3 className="text-xl font-bold text-white leading-snug">
-                      {cs.title}
-                    </h3>
+                    <h3 className="text-xl font-bold text-white leading-snug line-clamp-2">{cs.title}</h3>
                   </div>
                 </div>
 
                 <div className="p-6 md:p-8 flex justify-between items-end">
                   <div>
-                    <p className="text-xs font-mono text-[#5e7079] uppercase tracking-widest mb-1">
-                      OUTCOME
-                    </p>
-                    <p className="text-base text-[#c8d8e0]">{outcome}</p>
+                    <p className="text-xs font-mono text-[#5e7079] uppercase tracking-widest mb-1">OUTCOME</p>
+                    <p className="text-base text-[#c8d8e0] line-clamp-1">{cs.outcome}</p>
                   </div>
                   <div className="w-10 h-10 rounded-full border border-[rgba(99,245,232,0.2)] flex items-center justify-center group-hover:bg-[#63f5e8] group-hover:border-[#63f5e8] transition-colors flex-shrink-0">
                     <ArrowRight className="w-5 h-5 text-[#63f5e8] group-hover:text-[#041014]" />
@@ -177,3 +150,6 @@ export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service 
     </section>
   );
 };
+
+
+
