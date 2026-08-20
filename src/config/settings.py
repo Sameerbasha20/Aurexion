@@ -135,15 +135,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 if os.getenv('DB_ENGINE'):
+    db_host = os.getenv('DB_HOST', '')
+    is_supabase = 'supabase' in str(db_host).lower()
+    default_port = '6543' if is_supabase else '5432'
+    
     DATABASES = {
         'default': {
             'ENGINE': os.getenv('DB_ENGINE'),
             'NAME': os.getenv('DB_NAME'),
             'USER': os.getenv('DB_USER'),
             'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-            'CONN_MAX_AGE': 60,
+            'HOST': db_host,
+            'PORT': os.getenv('DB_PORT', default_port),
+            'CONN_MAX_AGE': 0 if is_supabase else 60,
             'CONN_HEALTH_CHECKS': True,
         }
     }
@@ -306,4 +310,4 @@ CLIENT_PORTAL_LOGIN_URL = os.getenv(
 DEFAULT_CLIENT_PASSWORD = os.getenv('DEFAULT_CLIENT_PASSWORD', '')
 # Project Info
 PROJECT_NAME = os.getenv('PROJECT_NAME', 'Aurexion Enterprise Platform')
-LAST_UPDATED = os.getenv('LAST_UPDATED', '2026-08-17')
+LAST_UPDATED = os.getenv('LAST_UPDATED', '2026-08-19')

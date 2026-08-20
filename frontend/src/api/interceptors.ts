@@ -28,6 +28,10 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
   // Request Interceptor
   axiosInstance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
+      const token = localStorage.getItem("aurexion_token") || localStorage.getItem("access_token");
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
       return config;
     },
     (error) => Promise.reject(error)
