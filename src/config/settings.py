@@ -145,10 +145,10 @@ if os.getenv('DB_ENGINE'):
             'NAME': os.getenv('DB_NAME'),
             'USER': os.getenv('DB_USER'),
             'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': db_host,
-            'PORT': os.getenv('DB_PORT', default_port),
-            'CONN_MAX_AGE': 0 if is_supabase else 60,
-            'CONN_HEALTH_CHECKS': True,
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 0,
+            'CONN_HEALTH_CHECKS': False,
         }
     }
 else:

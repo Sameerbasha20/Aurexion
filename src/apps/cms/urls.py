@@ -1,8 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+# pyrefly: ignore [missing-import]
 from apps.cms.views import (
     AdminServiceViewSet, AdminCaseStudyViewSet, AdminIndustryViewSet, AdminCategoryViewSet, AdminBlogPostViewSet,
-    PublicServiceDetailView, PublicIndustryDetailView, PublicCaseStudyViewSet, PublicBlogPostViewSet
+    PublicServiceDetailView, PublicIndustryDetailView, PublicCaseStudyViewSet, PublicBlogPostViewSet,
+    PublicServiceListView, PublicIndustryListView, MediaUploadView
 )
 
 router = DefaultRouter()
@@ -19,8 +21,13 @@ router.register(r'cms/public/blog', PublicBlogPostViewSet, basename='public-blog
 
 urlpatterns = [
     # Public detail views
+    path('cms/public/services/', PublicServiceListView.as_view(), name='public-service-list'),
     path('cms/public/service/<slug:slug>/', PublicServiceDetailView.as_view(), name='public-service-detail'),
+    path('cms/public/industries/', PublicIndustryListView.as_view(), name='public-industry-list'),
     path('cms/public/industry/<slug:slug>/', PublicIndustryDetailView.as_view(), name='public-industry-detail'),
+    
+    # Media upload
+    path('cms/admin/upload/', MediaUploadView.as_view(), name='admin-media-upload'),
     
     path('', include(router.urls)),
 ]

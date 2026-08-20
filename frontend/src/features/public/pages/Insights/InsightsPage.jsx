@@ -50,18 +50,55 @@ export const InsightsPage = () => {
   // Adapt database posts to frontend expected structure
   const articlesList = useMemo(() => {
     if (isUsingDb) {
-      return dbPosts.map(post => ({
-        id: String(post.id),
-        slug: post.slug,
-        title: post.title,
-        excerpt: post.summary || post.content.substring(0, 150) + "...",
-        content: post.content,
-        category: post.category_name || post.category,
-        tags: Array.isArray(post.tags) ? post.tags : [],
-        authorId: "auth-001",
-        publishedAt: post.published_at || post.created_at,
-        featured: post.is_featured || false
-      }));
+      return dbPosts.map(post => {
+        // Find matching static post by slug
+        const staticPost = blogPosts.find(bp => bp.slug === post.slug);
+        
+        // Resolve coverImage
+        let coverImage = post.media || staticPost?.coverImage;
+        if (!coverImage) {
+          const categoryImages = {
+            "cybersecurity": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80",
+            "software-engineering": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
+            "ai-ml": "https://images.unsplash.com/photo-1527474305487-b87b222841cc?auto=format&fit=crop&w=600&q=80",
+            "cloud": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80",
+            "data": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
+            "devops": "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=600&q=80",
+            "enterprise": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
+            "digital-transformation": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
+            "ui-ux": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=600&q=80"
+          };
+          const cat = post.category_name || post.category || "";
+          coverImage = categoryImages[cat.toLowerCase()] || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80";
+        }
+
+        // Resolve author
+        let authorId = staticPost?.authorId;
+        if (!authorId) {
+          const contentStr = (post.title + " " + post.content).toLowerCase();
+          if (contentStr.includes("security") || contentStr.includes("cryptography") || contentStr.includes("zero-trust") || contentStr.includes("cybersecurity")) {
+            authorId = "auth-003"; // Elena Rodriguez
+          } else if (contentStr.includes("cloud") || contentStr.includes("devops") || contentStr.includes("kubernetes") || contentStr.includes("architecture")) {
+            authorId = "auth-002"; // Marcus Reynolds
+          } else {
+            authorId = "auth-001"; // Dr. Sarah Chen
+          }
+        }
+
+        return {
+          id: String(post.id),
+          slug: post.slug,
+          title: post.title,
+          excerpt: post.summary || post.content.substring(0, 150) + "...",
+          content: post.content,
+          category: post.category_name || post.category,
+          tags: (Array.isArray(post.tags) && post.tags.length > 0) ? post.tags : (staticPost?.tags || []),
+          authorId,
+          publishedAt: post.published_at || post.created_at,
+          featured: post.is_featured || staticPost?.featured || false,
+          coverImage
+        };
+      });
     }
     return blogPosts;
   }, [dbPosts, isUsingDb]);

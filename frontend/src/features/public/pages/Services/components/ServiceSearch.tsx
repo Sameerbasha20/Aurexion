@@ -1,14 +1,41 @@
 import React, { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { servicesData, serviceCategories } from "../../../../../data/services";
+import { useServices } from "../../../hooks/usePublicContent";
 import { Search, ArrowRight } from "lucide-react";
 
 export const ServiceSearch: React.FC = () => {
+  const { data: dbServices } = useServices();
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
 
+  // Map database services to ServiceItem format
+  const mappedDbServices = useMemo(() => {
+    return (dbServices || []).map((apiService: any) => ({
+      id: `db-${apiService.id}`,
+      slug: apiService.slug,
+      category: apiService.category || "Core Engineering",
+      name: apiService.title || apiService.name || "",
+      description: apiService.description || "",
+      technologies: apiService.tech_stack || [],
+      relatedIndustries: [],
+      relatedCaseStudies: [],
+    }));
+  }, [dbServices]);
+
+  // Combine static and DB services, prioritizing DB services for duplicates
+  const allServices = useMemo(() => {
+    const combined = [...mappedDbServices];
+    servicesData.forEach((staticS) => {
+      if (!combined.some((s) => s.slug === staticS.slug)) {
+        combined.push(staticS);
+      }
+    });
+    return combined;
+  }, [mappedDbServices]);
+
   const filteredServices = useMemo(() => {
-    return servicesData.filter((service: any) => {
+    return allServices.filter((service: any) => {
       const matchesSearch = 
         service.name.toLowerCase().includes(query.toLowerCase()) || 
         service.description.toLowerCase().includes(query.toLowerCase()) ||
@@ -18,7 +45,7 @@ export const ServiceSearch: React.FC = () => {
       
       return matchesSearch && matchesCategory;
     });
-  }, [query, activeFilter]);
+  }, [query, activeFilter, allServices]);
 
   return (
     <section className="py-24 bg-background border-t border-border/10">

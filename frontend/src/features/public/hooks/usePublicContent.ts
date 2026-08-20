@@ -38,6 +38,30 @@ export const useCaseStudies = () => {
   return { data, loading, error };
 };
 
+export const useCaseStudyDetails = (slug: string) => {
+  const [data, setData] = useState<CaseStudy | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const result = await publicService.getCaseStudyBySlug(slug);
+        setData(result);
+      } catch (err: any) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, [slug]);
+
+  return { data, loading, error };
+};
+
 export const useBlogPosts = (filters?: { category?: string; tag?: string; search?: string }) => {
   const [data, setData] = useState<any[]>(blogPosts);
   const [loading, setLoading] = useState(false);
@@ -142,6 +166,28 @@ export const useJobs = () => {
   return { data, loading, error };
 };
 
+export const useServices = () => {
+  const [data, setData] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const result = await publicService.getServices();
+        setData(result);
+      } catch (err: any) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, []);
+
+  return { data, loading, error };
+};
+
 export const useServiceDetails = (slug: string) => {
   const [data, setData] = useState<ServiceApiDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -160,6 +206,28 @@ export const useServiceDetails = (slug: string) => {
     };
     fetch();
   }, [slug]);
+
+  return { data, loading, error };
+};
+
+export const useIndustries = () => {
+  const [data, setData] = useState<Industry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const result = await publicService.getIndustries();
+        setData(result);
+      } catch (err: any) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, []);
 
   return { data, loading, error };
 };
