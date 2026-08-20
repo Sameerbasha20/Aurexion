@@ -30,10 +30,10 @@ export const BdmLayout: React.FC<BdmLayoutProps> = ({ children }) => {
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main style={{
           flex: 1,
-          padding: isMobile ? "1rem 0.75rem" : "2rem",
+          padding: isMobile ? "1rem 0.75rem" : "clamp(1rem, 2.5vw, 2rem)",
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? "1.25rem" : "2rem",
+          gap: isMobile ? "1rem" : "clamp(1rem, 2vw, 2rem)",
           overflowY: "auto",
           overflowX: "hidden",
           minWidth: 0,

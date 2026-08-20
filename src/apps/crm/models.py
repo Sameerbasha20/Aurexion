@@ -106,11 +106,25 @@ class Lead(models.Model):
         default=LeadPriority.MEDIUM,
     )
 
+    value = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0.00,
+        null=True,
+        blank=True,
+        help_text="Agreed project cost / deal value.",
+    )
+
     lost_reason = models.CharField(
         max_length=255,
         blank=True,
         default="",
         help_text="Business reason captured when a lead is marked as lost.",
+    )
+
+    client_onboarded = models.BooleanField(
+        default=False,
+        help_text="True once BDM reviews details, onboards client, and dispatches portal credentials.",
     )
 
     created_by = models.ForeignKey(

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
 import useAuth from "../../hooks/useAuth";
-import { Menu, LogOut, Shield } from "lucide-react";
+import { Menu, LogOut, Shield, User } from "lucide-react";
 
 interface HeaderProps {
   onToggleSidebar?: () => void;
@@ -17,6 +17,25 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
     setLocation("/login");
   };
 
+  const getHomePath = () => {
+    if (!user) return "/";
+    const r = (user.role || "").toUpperCase();
+    if (r.includes("ADMIN")) return "/admin/dashboard";
+    if (r === "BDM" || r.includes("BUSINESS")) return "/bdm/dashboard";
+    if (r.includes("SALES")) return "/crm/dashboard";
+    if (r.includes("CLIENT")) return "/portal/dashboard";
+    return "/";
+  };
+
+  const getScopeLabel = (role: string) => {
+    const r = (role || "").toUpperCase();
+    if (r.includes("SALES")) return "SALES";
+    if (r === "BDM" || r.includes("BUSINESS")) return "BDM";
+    if (r.includes("ADMIN")) return "ADMIN";
+    if (r.includes("CLIENT")) return "CLIENT";
+    return role;
+  };
+
   return (
     <header
       style={{
@@ -26,13 +45,16 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 1rem",
+        padding: "0 clamp(0.75rem, 2vw, 1.5rem)",
         position: "sticky",
         top: 0,
         zIndex: 100,
         flexShrink: 0,
+        width: "100%",
+        boxSizing: "border-box",
       }}
     >
+      {/* Left: Hamburger & Logo */}
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
         {showToggle && onToggleSidebar && (
           <button
@@ -65,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
             <Menu size={20} />
           </button>
         )}
-        <Link href={user ? (user.role === "ADMIN" ? "/admin/dashboard" : user.role === "BDM" ? "/bdm/dashboard" : "/portal/dashboard") : "/"}>
+        <Link href={getHomePath()}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
             <img src="/logo.svg" alt="Aurexion" style={{ width: "28px", height: "28px" }} />
             <span
@@ -83,57 +105,71 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
         </Link>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+      {/* Right: Scope Badge, User Profile & Logout */}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "nowrap" }}>
         {user ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "clamp(0.4rem, 1vw, 0.75rem)", flexWrap: "nowrap" }}>
+            {/* Scope Badge */}
             <span
               style={{
                 fontFamily: "IBM Plex Mono, monospace",
-                fontSize: "0.75rem",
+                fontSize: "0.72rem",
                 backgroundColor: "rgba(99, 245, 232, 0.1)",
-                border: "1px solid rgba(99, 245, 232, 0.2)",
+                border: "1px solid rgba(99, 245, 232, 0.25)",
                 color: "#63f5e8",
-                padding: "0.25rem 0.5rem",
+                padding: "0.25rem 0.55rem",
                 borderRadius: "4px",
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
                 gap: "0.35rem",
-                maxWidth: "160px",
                 whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
+                fontWeight: 600,
+                flexShrink: 0,
               }}
             >
               <Shield size={12} style={{ flexShrink: 0 }} />
               <span className="hide-mobile">SCOPE: </span>
-              <span>{user.role}</span>
+              <span>{getScopeLabel(user.role)}</span>
             </span>
-            {user.name && !user.name.toUpperCase().includes(user.role.toUpperCase()) && (
-              <span className="hide-mobile" style={{ fontSize: "0.85rem", color: "#cbd5e1" }}>{user.name}</span>
-            )}
+
+            {/* Username display */}
+            <div className="hide-mobile" style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.82rem", color: "#cbd5e1", whiteSpace: "nowrap" }}>
+              <User size={13} style={{ color: "#64748b" }} />
+              <span style={{ fontWeight: 500 }}>{user.name || user.email}</span>
+            </div>
+
+            {/* Logout button */}
             <button
               type="button"
               onClick={handleLogout}
               aria-label="Logout"
               style={{
                 background: "none",
-                border: "none",
+                border: "1px solid rgba(140, 174, 187, 0.15)",
                 color: "#94a3b8",
                 cursor: "pointer",
-                padding: "0.35rem",
+                padding: "0.35rem 0.6rem",
                 display: "flex",
                 alignItems: "center",
-                gap: "0.4rem",
-                fontSize: "0.85rem",
+                gap: "0.35rem",
+                fontSize: "0.8rem",
                 transition: "all 150ms",
                 borderRadius: "4px",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
               }}
-              onMouseOver={(e) => (e.currentTarget.style.color = "#ef4444")}
-              onMouseOut={(e) => (e.currentTarget.style.color = "#94a3b8")}
-              onFocus={(e) => (e.currentTarget.style.color = "#ef4444")}
-              onBlur={(e) => (e.currentTarget.style.color = "#94a3b8")}
+              onMouseOver={(e) => {
+                e.currentTarget.style.color = "#ef4444";
+                e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.3)";
+                e.currentTarget.style.backgroundColor = "rgba(239, 68, 68, 0.05)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.color = "#94a3b8";
+                e.currentTarget.style.borderColor = "rgba(140, 174, 187, 0.15)";
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
             >
-              <LogOut size={16} />
+              <LogOut size={14} />
               <span className="hide-mobile">Logout</span>
             </button>
           </div>
@@ -165,4 +201,3 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
 };
 
 export default Header;
-

@@ -30,6 +30,7 @@ export const SIDEBAR_NAV: Record<string, NavItem[]> = {
     { title: "Contact Forms", path: "/bdm/contact-forms", icon: "MessageSquareCode" },
     { title: "Leads Funnel", path: "/bdm/leads", icon: "Contact2" },
     { title: "Opportunities", path: "/bdm/opportunities", icon: "TrendingUp" },
+    { title: "Clients", path: "/bdm/clients", icon: "UserCheck" },
     { title: "RFP Engine", path: "/bdm/rfp", icon: "FileText" },
     { title: "Cost Estimator", path: "/bdm/estimator", icon: "Calculator" },
   ],

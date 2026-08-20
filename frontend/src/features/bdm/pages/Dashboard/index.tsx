@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useBdmDashboard } from "../../hooks/useBdmDashboard";
 import bdmService, { FormSubmission } from "../../services/bdmService";
+import crmService from "../../../crm/services/crmService";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
 import Button from "../../../../components/ui/button";
@@ -11,7 +12,7 @@ import {
   ChartLegend,
 } from "../../../../components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { Mail, Phone, UserCheck, XCircle, CheckCircle2, User, MessageSquare, AlertTriangle, X, Eye, ArrowUpRight } from "lucide-react";
+import { Mail, Phone, UserCheck, XCircle, CheckCircle2, User, MessageSquare, AlertTriangle, X, Eye, ArrowUpRight, Key, Send } from "lucide-react";
 
 const STATUS_LABELS: Record<string, string> = {
   new: "New",
@@ -25,6 +26,18 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
+  new: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+  under_review: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  contacted: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  qualified: "bg-green-500/20 text-green-400 border-green-500/30",
+  proposal_submitted: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+  negotiation: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  won: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  lost: "bg-red-500/20 text-red-400 border-red-500/30",
+};
+
+// Hex colors for chart bars and MetricCard color props
+const STATUS_HEX_COLORS: Record<string, string> = {
   new: "#63f5e8",
   under_review: "#fbbf24",
   contacted: "#60a5fa",
@@ -108,17 +121,13 @@ export const Dashboard: React.FC = () => {
   const [selectedLeadDetail, setSelectedLeadDetail] = useState<FormSubmission | null>(null);
 
   // Assign & Decline modal state
-  const [salesExecs, setSalesExecs] = useState<Array<{ id: number; username: string; name: string }>>([]);
+  const salesExecs = data?.team_workload || [];
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
   const [modalMode, setModalMode] = useState<"assign" | "decline" | null>(null);
   const [targetExecId, setTargetExecId] = useState<number | "">("");
   const [declineReason, setDeclineReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
-
-  useEffect(() => {
-    bdmService.getAssignableUsers().then(setSalesExecs);
-  }, []);
 
   const showFeedback = (type: "success" | "error", text: string) => {
     setFeedback({ type, text });
@@ -213,7 +222,7 @@ export const Dashboard: React.FC = () => {
   const pipelineData: PipelineDataItem[] = data?.pipeline_summary?.map((item: { status: string; total: number }) => ({
     status: STATUS_LABELS[item.status] || item.status,
     total: item.total,
-    color: STATUS_COLORS[item.status] || "#64748b",
+    color: STATUS_HEX_COLORS[item.status] || "#64748b",
   })) || [];
 
   const recentActivities: ActivityItem[] = data?.recent_activities || [];
@@ -251,6 +260,47 @@ export const Dashboard: React.FC = () => {
         >
           {feedback.type === "success" ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
           {feedback.text}
+        </div>
+      )}
+
+      {/* Unassigned Triage Alert Banner */}
+      {data && data.unassigned_leads > 0 && (
+        <div
+          style={{
+            padding: "1rem 1.25rem",
+            backgroundColor: "rgba(99, 245, 232, 0.08)",
+            border: "1px solid rgba(99, 245, 232, 0.25)",
+            borderRadius: "6px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "1rem",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "rgba(99, 245, 232, 0.2)", display: "grid", placeItems: "center", color: "#63f5e8" }}>
+              <UserCheck size={18} />
+            </div>
+            <div>
+              <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#f8fafc" }}>
+                {data.unassigned_leads} Unassigned {data.unassigned_leads === 1 ? "Lead" : "Leads"} Awaiting Triage & Assignment
+              </h4>
+              <p style={{ margin: "0.15rem 0 0 0", fontSize: "0.78rem", color: "#94a3b8" }}>
+                Business Development Manager review required. Assign inbound website submissions to Sales Executives.
+              </p>
+            </div>
+          </div>
+          <Button
+            glow
+            onClick={() => {
+              const el = document.getElementById("inbound-submissions-table");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
+            style={{ fontSize: "0.8rem", padding: "0.4rem 0.85rem" }}
+          >
+            Review Inbound Queue
+          </Button>
         </div>
       )}
 
@@ -293,6 +343,59 @@ export const Dashboard: React.FC = () => {
           color="#fbbf24"
         />
       </div>
+
+      {/* Lead Lifecycle State Machine Flow (PRD Section 4.7) */}
+      <Card borderAccent style={{ backgroundColor: "rgba(10, 17, 28, 0.6)" }}>
+        <CardHeader className="pb-3">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div>
+              <p className="eyebrow" style={{ margin: 0, color: "#63f5e8" }}>ENTERPRISE CRM PIPELINE</p>
+              <CardTitle className="text-lg mt-1" style={{ color: "#f8fafc" }}>Lead Lifecycle State Machine</CardTitle>
+            </div>
+            <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
+              PRD SEC 4.7 SPECIFICATION
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem", padding: "0.5rem 0", overflowX: "auto" }}>
+            {[
+              { status: "NEW", label: "NEW", color: "#63f5e8", bg: "rgba(99, 245, 232, 0.15)", border: "rgba(99, 245, 232, 0.3)" },
+              { status: "UNDER_REVIEW", label: "UNDER REVIEW", color: "#fbbf24", bg: "rgba(251, 191, 36, 0.15)", border: "rgba(251, 191, 36, 0.3)" },
+              { status: "CONTACTED", label: "CONTACTED", color: "#60a5fa", bg: "rgba(96, 165, 250, 0.15)", border: "rgba(96, 165, 250, 0.3)" },
+              { status: "QUALIFIED", label: "QUALIFIED", color: "#34d399", bg: "rgba(52, 211, 153, 0.15)", border: "rgba(52, 211, 153, 0.3)" },
+              { status: "PROPOSAL_SUBMITTED", label: "PROPOSAL SUBMITTED", color: "#a78bfa", bg: "rgba(167, 139, 250, 0.15)", border: "rgba(167, 139, 250, 0.3)" },
+              { status: "NEGOTIATION", label: "NEGOTIATION", color: "#f472b6", bg: "rgba(244, 114, 182, 0.15)", border: "rgba(244, 114, 182, 0.3)" },
+              { status: "WON", label: "WON / LOST", color: "#22c55e", bg: "rgba(34, 197, 94, 0.15)", border: "rgba(34, 197, 94, 0.3)" },
+            ].map((step, idx, arr) => (
+              <React.Fragment key={step.status}>
+                <div
+                  style={{
+                    padding: "0.5rem 0.85rem",
+                    borderRadius: "4px",
+                    backgroundColor: step.bg,
+                    border: `1px solid ${step.border}`,
+                    color: step.color,
+                    fontSize: "0.72rem",
+                    fontFamily: "IBM Plex Mono, monospace",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.35rem",
+                  }}
+                >
+                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: step.color }} />
+                  {step.label}
+                </div>
+                {idx < arr.length - 1 && (
+                  <span style={{ color: "#475569", fontSize: "0.85rem", fontWeight: 700 }}>➔</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Charts & Activity */}
       <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))" }}>
@@ -451,7 +554,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Contact Details & Message Grid */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "1rem" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "1rem" }}>
                       {/* Left: Contact Info */}
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.85rem" }}>
                         <p style={{ fontWeight: 600, color: "#f8fafc", margin: 0, fontSize: "1rem" }}>
@@ -490,11 +593,11 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Action Bar: BDM Assign / Decline Buttons */}
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.6rem", borderTop: "1px solid rgba(140, 174, 187, 0.1)", paddingTop: "0.75rem" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "0.6rem", borderTop: "1px solid rgba(140, 174, 187, 0.1)", paddingTop: "0.75rem", width: "100%" }}>
                       <Button
                         variant="outline"
                         onClick={() => setSelectedLeadDetail(submission)}
-                        style={{ fontSize: "0.78rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)" }}
+                        style={{ fontSize: "0.78rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)", whiteSpace: "nowrap" }}
                       >
                         <Eye size={14} style={{ marginRight: "0.35rem" }} /> View Lead Detail
                       </Button>
@@ -530,6 +633,110 @@ export const Dashboard: React.FC = () => {
           ) : (
             <p style={{ color: "#64748b", textAlign: "center", padding: "2rem" }}>
               No contact form or public submissions recorded yet.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Won Clients & Closed Deals Section */}
+      <Card>
+        <CardHeader>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div>
+              <CardTitle style={{ color: "#22c55e", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <CheckCircle2 size={18} /> Won Clients & Revenue Breakdown
+              </CardTitle>
+              <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.8rem", color: "#94a3b8" }}>
+                Deals successfully converted and closed by Sales Executives.
+              </p>
+            </div>
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+              {data?.won_clients?.length || 0} Closed Deals
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {data?.won_clients && data.won_clients.length > 0 ? (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", textAlign: "left" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.2)", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                    <th style={{ padding: "0.75rem 1rem", minWidth: "160px" }}>CLIENT NAME / COMPANY</th>
+                    <th style={{ padding: "0.75rem 1rem", minWidth: "180px" }}>CONTACT EMAIL</th>
+                    <th style={{ padding: "0.75rem 1rem", minWidth: "130px" }}>PROJECT COST ($)</th>
+                    <th style={{ padding: "0.75rem 1rem", minWidth: "150px" }}>CLOSED BY (SALES EXEC)</th>
+                    <th style={{ padding: "0.75rem 1rem", minWidth: "190px" }}>STATUS</th>
+                    <th style={{ padding: "0.75rem 1rem", minWidth: "180px", textAlign: "right" }}>ACTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.won_clients.map((client) => (
+                    <tr key={client.id} style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", backgroundColor: "rgba(10, 17, 28, 0.4)" }}>
+                      <td style={{ padding: "0.75rem 1rem", fontWeight: 600, color: "#f8fafc" }}>
+                        <div>{client.name}</div>
+                        <span style={{ fontSize: "0.75rem", color: "#cbd5e1", fontWeight: 400 }}>{client.company}</span>
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem", color: "#63f5e8", fontFamily: "IBM Plex Mono, monospace" }}>
+                        {client.email}
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem", fontWeight: 700, color: "#22c55e", fontSize: "0.95rem" }}>
+                        ${client.value ? client.value.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "0.00"}
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem", color: "#38bdf8", fontWeight: 500 }}>
+                        {client.assigned_to_name || "Unassigned"}
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem" }}>
+                        {client.client_onboarded ? (
+                          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                            Active Client (Creds Sent)
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                            Ready for Client Conversion
+                          </Badge>
+                        )}
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem", textAlign: "right", whiteSpace: "nowrap", minWidth: "180px" }}>
+                        {!client.client_onboarded ? (
+                          <Button
+                            glow
+                            onClick={async () => {
+                              const defaultPwd = "client@2026";
+                              const pwdInput = window.prompt(`BDM Credential Dispatch for ${client.name} (${client.email}):\nEnter client login password:`, defaultPwd);
+                              if (pwdInput === null) return;
+                              const finalPwd = pwdInput.trim() || defaultPwd;
+                              try {
+                                await crmService.onboardClient(client.id, finalPwd);
+                                showFeedback("success", `Client ${client.name} onboarded! Credentials email (Username: ${client.email}, Password: ${finalPwd}) sent successfully.`);
+                                refetch();
+                              } catch (err: any) {
+                                showFeedback("error", err?.message || "Failed to onboard client and dispatch credentials.");
+                              }
+                            }}
+                            style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem", backgroundColor: "#22c55e", color: "#ffffff", whiteSpace: "nowrap" }}
+                          >
+                            <Key size={13} style={{ marginRight: "0.3rem" }} /> Send Credentials & Onboard
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              window.location.href = "/bdm/clients";
+                            }}
+                            style={{ fontSize: "0.75rem", padding: "0.3rem 0.65rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)", whiteSpace: "nowrap" }}
+                          >
+                            <Eye size={13} style={{ marginRight: "0.3rem" }} /> View in Clients Desk
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p style={{ color: "#64748b", textAlign: "center", padding: "2rem" }}>
+              No deals marked as WON yet. Won deals will display here with project cost and Sales Executive attribution.
             </p>
           )}
         </CardContent>
@@ -576,7 +783,7 @@ export const Dashboard: React.FC = () => {
                   <option value="">-- Choose Sales Executive --</option>
                   {salesExecs.map((exec) => (
                     <option key={exec.id} value={exec.id}>
-                      {exec.name} ({exec.username})
+                      {exec.name} ({exec.username}) — {exec.active_leads_count ?? 0} active leads
                     </option>
                   ))}
                 </select>
@@ -728,6 +935,13 @@ export const Dashboard: React.FC = () => {
 
             {/* BDM Action Buttons */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", justifyContent: "flex-end" }}>
+              <Button
+                variant="outline"
+                onClick={() => setSelectedLeadDetail(null)}
+                style={{ fontSize: "0.82rem" }}
+              >
+                Close Desk
+              </Button>
               {selectedLeadDetail.status !== "lost" && (
                 <>
                   <Button
@@ -755,16 +969,6 @@ export const Dashboard: React.FC = () => {
                   </Button>
                 </>
               )}
-              <Button
-                variant="outline"
-                onClick={() => {
-                  window.open(`/crm/leads/${selectedLeadDetail.id}`, '_blank');
-                  setSelectedLeadDetail(null);
-                }}
-                style={{ fontSize: "0.82rem" }}
-              >
-                <ArrowUpRight size={14} style={{ marginRight: "0.35rem" }} /> Open Full Workspace
-              </Button>
             </div>
           </Card>
         </div>

@@ -23,6 +23,9 @@ import {
   FileText,
   Activity,
   UserCheck,
+  RotateCcw,
+  DollarSign,
+  ArrowRight,
 } from "lucide-react";
 
 interface LeadStatusBadgeProps {
@@ -30,30 +33,48 @@ interface LeadStatusBadgeProps {
   statusDisplay?: string;
 }
 
+const STATUS_COLOR_CONFIG: Record<string, { bg: string; color: string; border: string }> = {
+  NEW: { bg: "rgba(99, 245, 232, 0.15)", color: "#63f5e8", border: "rgba(99, 245, 232, 0.4)" },
+  UNDER_REVIEW: { bg: "rgba(251, 191, 36, 0.15)", color: "#fbbf24", border: "rgba(251, 191, 36, 0.4)" },
+  CONTACTED: { bg: "rgba(96, 165, 250, 0.15)", color: "#60a5fa", border: "rgba(96, 165, 250, 0.4)" },
+  QUALIFIED: { bg: "rgba(129, 140, 248, 0.15)", color: "#818cf8", border: "rgba(129, 140, 248, 0.4)" },
+  PROPOSAL_SUBMITTED: { bg: "rgba(167, 139, 250, 0.15)", color: "#a78bfa", border: "rgba(167, 139, 250, 0.4)" },
+  NEGOTIATION: { bg: "rgba(244, 114, 182, 0.15)", color: "#f472b6", border: "rgba(244, 114, 182, 0.4)" },
+  WON: { bg: "rgba(74, 222, 128, 0.15)", color: "#4ade80", border: "rgba(74, 222, 128, 0.4)" },
+  LOST: { bg: "rgba(248, 113, 113, 0.15)", color: "#f87171", border: "rgba(248, 113, 113, 0.4)" },
+};
+
+const LIFECYCLE_STAGES = [
+  { key: "NEW", label: "NEW", code: "new", color: "#63f5e8" },
+  { key: "UNDER_REVIEW", label: "UNDER REVIEW", code: "under_review", color: "#fbbf24" },
+  { key: "CONTACTED", label: "CONTACTED", code: "contacted", color: "#60a5fa" },
+  { key: "QUALIFIED", label: "QUALIFIED", code: "qualified", color: "#818cf8" },
+  { key: "PROPOSAL_SUBMITTED", label: "PROPOSAL SUBMITTED", code: "proposal_submitted", color: "#a78bfa" },
+  { key: "NEGOTIATION", label: "NEGOTIATION", code: "negotiation", color: "#f472b6" },
+  { key: "WON", label: "WON", code: "won", color: "#4ade80" },
+];
+
 export const LeadStatusBadge: React.FC<LeadStatusBadgeProps> = ({ status, statusDisplay }) => {
   const cleanStatus = status?.toUpperCase() || "NEW";
-  const colorMap: Record<string, { bg: string; color: string }> = {
-    WON: { bg: "rgba(74, 222, 128, 0.15)", color: "#4ade80" },
-    LOST: { bg: "rgba(248, 113, 113, 0.15)", color: "#f87171" },
-    QUALIFIED: { bg: "rgba(129, 140, 248, 0.15)", color: "#818cf8" },
-    NEW: { bg: "rgba(99, 245, 232, 0.15)", color: "#63f5e8" },
-  };
-
-  const styleConfig = colorMap[cleanStatus] || colorMap.NEW;
+  const styleConfig = STATUS_COLOR_CONFIG[cleanStatus] || STATUS_COLOR_CONFIG.NEW;
 
   return (
     <span
       style={{
-        padding: "0.15rem 0.55rem",
-        borderRadius: "2px",
-        fontSize: "0.68rem",
+        padding: "0.2rem 0.6rem",
+        borderRadius: "3px",
+        fontSize: "0.7rem",
         fontFamily: "IBM Plex Mono, monospace",
         fontWeight: 600,
         backgroundColor: styleConfig.bg,
         color: styleConfig.color,
-        border: "1px solid currentColor",
+        border: `1px solid ${styleConfig.border}`,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.3rem",
       }}
     >
+      <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: styleConfig.color }} />
       {statusDisplay || cleanStatus}
     </span>
   );
@@ -78,6 +99,7 @@ export const LeadDetail: React.FC = () => {
     qualify,
     markWon,
     markLost,
+    reopen,
     assign,
     addNote,
     addFollowUp,
@@ -91,6 +113,7 @@ export const LeadDetail: React.FC = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [isLostOpen, setIsLostOpen] = useState(false);
+  const [isWonOpen, setIsWonOpen] = useState(false);
   const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
 
   // Form states
@@ -107,6 +130,10 @@ export const LeadDetail: React.FC = () => {
   });
 
   const [lostReason, setLostReason] = useState("");
+  const [wonForm, setWonForm] = useState({
+    value: 25000,
+    notes: "Client agreed to project scope and accepted commercial proposal.",
+  });
   const [assignUserId, setAssignUserId] = useState<number | "">("");
   const [noteContent, setNoteContent] = useState("");
   const [followUpForm, setFollowUpForm] = useState({
@@ -120,7 +147,7 @@ export const LeadDetail: React.FC = () => {
 
   const showFeedback = (type: "success" | "error", text: string) => {
     setFeedbackMessage({ type, text });
-    setTimeout(() => setFeedbackMessage(null), 4000);
+    setTimeout(() => setFeedbackMessage(null), 4500);
   };
 
   const handleOpenEdit = () => {
@@ -151,19 +178,51 @@ export const LeadDetail: React.FC = () => {
     }
   };
 
-  const handleMarkLost = async (e: React.FormEvent) => {
+  const handleStageTransition = async (targetStatus: string) => {
+    try {
+      await transitionStatus(targetStatus);
+      showFeedback("success", `Lead stage updated to ${targetStatus.replace(/_/g, " ")}.`);
+    } catch (err: any) {
+      showFeedback("error", err?.message || "Failed to transition lead status.");
+    }
+  };
+
+  const handleConfirmWon = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lostReason.trim()) {
-      alert("Please provide a reason for lost status.");
+    try {
+      await markWon({
+        value: Number(wonForm.value) || 0,
+        notes: wonForm.notes,
+      });
+      setIsWonOpen(false);
+      showFeedback("success", `Lead marked WON! Project cost ($${Number(wonForm.value).toLocaleString()}) recorded and forwarded to BDM Dashboard for client credentials dispatch.`);
+    } catch (err: any) {
+      showFeedback("error", err?.message || "Failed to mark lead as won.");
+    }
+  };
+
+  const handleConfirmLost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lostReason.trim() || lostReason.trim().length < 10) {
+      alert("Please provide a reason of at least 10 characters.");
       return;
     }
     try {
-      await markLost(lostReason);
+      await markLost(lostReason.trim());
       setIsLostOpen(false);
       setLostReason("");
-      showFeedback("success", "Lead marked as LOST.");
+      showFeedback("success", "Lead marked as LOST. Notification recorded in communication ledger.");
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to mark lead lost.");
+      showFeedback("error", err?.message || "Failed to mark lead as lost.");
+    }
+  };
+
+  const handleReopen = async () => {
+    try {
+      await reopen();
+      showFeedback("success", "Lead re-opened and returned to active pipeline!");
+    } catch (err: any) {
+      showFeedback("error", err?.message || "Failed to re-open lead.");
     }
   };
 
@@ -205,7 +264,7 @@ export const LeadDetail: React.FC = () => {
         notes: "",
         meeting_link: "",
       });
-      showFeedback("success", "Follow-up scheduled successfully.");
+      showFeedback("success", "Follow-up scheduled and notifications dispatched.");
     } catch (err: any) {
       showFeedback("error", err?.message || "Failed to schedule follow-up.");
     }
@@ -258,9 +317,10 @@ export const LeadDetail: React.FC = () => {
   }
 
   const cleanStatus = lead.status?.toUpperCase() || "NEW";
+  const currentStageIndex = LIFECYCLE_STAGES.findIndex((s) => s.key === cleanStatus);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem", width: "100%" }}>
       {/* Navigation Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
         <Link href="/crm/leads">
@@ -279,49 +339,26 @@ export const LeadDetail: React.FC = () => {
               backgroundColor: feedbackMessage.type === "success" ? "rgba(74, 222, 128, 0.15)" : "rgba(239, 68, 68, 0.15)",
               color: feedbackMessage.type === "success" ? "#4ade80" : "#ef4444",
               border: feedbackMessage.type === "success" ? "1px solid rgba(74, 222, 128, 0.3)" : "1px solid rgba(239, 68, 68, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
             }}
           >
+            {feedbackMessage.type === "success" ? <CheckCircle2 size={15} /> : <AlertTriangle size={15} />}
             {feedbackMessage.text}
           </div>
         )}
       </div>
 
-      {/* Main Lead Header Card */}
+      {/* Main Lead Header Card with PRD 4.7 State Machine Flow */}
       <Card borderAccent style={{ padding: "1.75rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1.5rem" }}>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.4rem" }}>
-              <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.4rem", flexWrap: "wrap" }}>
+              <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontWeight: 600 }}>
                 LEAD REF // {lead.reference_id || `#LD-${lead.id}`}
               </span>
-              <span
-                style={{
-                  padding: "0.15rem 0.55rem",
-                  borderRadius: "2px",
-                  fontSize: "0.68rem",
-                  fontFamily: "IBM Plex Mono, monospace",
-                  fontWeight: 600,
-                  backgroundColor:
-                    cleanStatus === "WON"
-                      ? "rgba(74, 222, 128, 0.15)"
-                      : cleanStatus === "LOST"
-                      ? "rgba(248, 113, 113, 0.15)"
-                      : cleanStatus === "QUALIFIED"
-                      ? "rgba(129, 140, 248, 0.15)"
-                      : "rgba(99, 245, 232, 0.15)",
-                  color:
-                    cleanStatus === "WON"
-                      ? "#4ade80"
-                      : cleanStatus === "LOST"
-                      ? "#f87171"
-                      : cleanStatus === "QUALIFIED"
-                      ? "#818cf8"
-                      : "#63f5e8",
-                  border: "1px solid currentColor",
-                }}
-              >
-                {lead.status_display || cleanStatus}
-              </span>
+              <LeadStatusBadge status={cleanStatus} statusDisplay={lead.status_display} />
               <span
                 style={{
                   padding: "0.15rem 0.45rem",
@@ -344,7 +381,7 @@ export const LeadDetail: React.FC = () => {
             </p>
           </div>
 
-          {/* Workflow Action Buttons */}
+          {/* Top Quick Actions */}
           <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
             <Button variant="outline" onClick={handleOpenEdit} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
               <Edit size={14} /> Edit Info
@@ -362,7 +399,7 @@ export const LeadDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Status Transition Ribbon */}
+        {/* Dynamic Status Transition Ribbon */}
         <div style={{
           marginTop: "1.5rem",
           paddingTop: "1.25rem",
@@ -371,44 +408,61 @@ export const LeadDetail: React.FC = () => {
           alignItems: "center",
           justifyContent: "space-between",
           flexWrap: "wrap",
-          gap: "1rem",
+          gap: "0.75rem",
         }}>
-          <div style={{ fontSize: "0.78rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-            WORKFLOW ACTIONS:
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
+              UPDATE STAGE:
+            </span>
+            <select
+              value={cleanStatus}
+              disabled={actionLoading || cleanStatus === "WON"}
+              onChange={(e) => {
+                const target = e.target.value;
+                if (target === "WON") {
+                  setIsWonOpen(true);
+                } else if (target === "LOST") {
+                  setIsLostOpen(true);
+                } else {
+                  handleStageTransition(target);
+                }
+              }}
+              style={{
+                padding: "0.4rem 0.75rem",
+                backgroundColor: "rgba(5, 8, 17, 0.9)",
+                border: "1px solid rgba(99, 245, 232, 0.3)",
+                color: "#f8fafc",
+                borderRadius: "4px",
+                fontSize: "0.78rem",
+                fontFamily: "IBM Plex Mono, monospace",
+                cursor: cleanStatus === "WON" ? "not-allowed" : "pointer",
+                opacity: cleanStatus === "WON" ? 0.8 : 1,
+                outline: "none",
+              }}
+              title={cleanStatus === "WON" ? "Won deal is locked (managed by BDM)" : "Update stage"}
+            >
+              <option value="NEW">NEW</option>
+              <option value="UNDER_REVIEW">UNDER REVIEW</option>
+              <option value="CONTACTED">CONTACTED</option>
+              <option value="QUALIFIED">QUALIFIED</option>
+              <option value="PROPOSAL_SUBMITTED">PROPOSAL SUBMITTED</option>
+              <option value="NEGOTIATION">NEGOTIATION</option>
+              <option value="WON">WON</option>
+              <option value="LOST">LOST</option>
+            </select>
           </div>
 
+          {/* Action Buttons */}
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-            {cleanStatus === "NEW" && (
-              <Button
-                variant="outline"
-                disabled={actionLoading}
-                onClick={() => transitionStatus("CONTACTED")}
-                style={{ fontSize: "0.78rem" }}
-              >
-                Mark Contacted
-              </Button>
-            )}
-
-            {["NEW", "CONTACTED", "UNDER_REVIEW"].includes(cleanStatus) && (
-              <Button
-                variant="outline"
-                disabled={actionLoading}
-                onClick={() => qualify()}
-                style={{ fontSize: "0.78rem", color: "#818cf8", borderColor: "rgba(129, 140, 248, 0.4)" }}
-              >
-                <Award size={14} style={{ marginRight: "0.35rem" }} /> Qualify to Opportunity
-              </Button>
-            )}
-
             {cleanStatus !== "WON" && cleanStatus !== "LOST" && (
               <>
                 <Button
-                  variant="outline"
+                  glow
                   disabled={actionLoading}
-                  onClick={() => markWon()}
-                  style={{ fontSize: "0.78rem", color: "#4ade80", borderColor: "rgba(74, 222, 128, 0.4)" }}
+                  onClick={() => setIsWonOpen(true)}
+                  style={{ fontSize: "0.78rem", backgroundColor: "#22c55e", color: "#ffffff" }}
                 >
-                  <CheckCircle2 size={14} style={{ marginRight: "0.35rem" }} /> Mark Won Deal
+                  <CheckCircle2 size={13} style={{ marginRight: "0.3rem" }} /> Mark Won Deal
                 </Button>
                 <Button
                   variant="outline"
@@ -416,16 +470,33 @@ export const LeadDetail: React.FC = () => {
                   onClick={() => setIsLostOpen(true)}
                   style={{ fontSize: "0.78rem", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.4)" }}
                 >
-                  <XCircle size={14} style={{ marginRight: "0.35rem" }} /> Mark Lost
+                  <XCircle size={13} style={{ marginRight: "0.3rem" }} /> Mark Lost
                 </Button>
               </>
+            )}
+
+            {cleanStatus === "LOST" && (
+              <Button
+                glow
+                disabled={actionLoading}
+                onClick={handleReopen}
+                style={{ fontSize: "0.78rem", backgroundColor: "#63f5e8", color: "#050811" }}
+              >
+                <RotateCcw size={13} style={{ marginRight: "0.3rem" }} /> Re-open Lead
+              </Button>
+            )}
+
+            {cleanStatus === "WON" && (
+              <span style={{ fontSize: "0.8rem", color: "#4ade80", fontFamily: "IBM Plex Mono, monospace", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                <CheckCircle2 size={15} /> WON DEAL // Awaiting BDM Portal Credentials Dispatch
+              </span>
             )}
           </div>
         </div>
       </Card>
 
       {/* Main Details & Tabs Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: "1.5rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 360px), 1fr))", gap: "1.5rem" }}>
         {/* Left Column: Lead Specification Details */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           <Card style={{ padding: "1.5rem" }}>
@@ -477,10 +548,12 @@ export const LeadDetail: React.FC = () => {
                 <span style={{ color: "#63f5e8", fontWeight: 500 }}>{lead.assigned_to_name || "Unassigned"}</span>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.6rem", borderBottom: "1px solid rgba(140, 174, 187, 0.1)" }}>
-                <span style={{ color: "#94a3b8" }}>Created By:</span>
-                <span style={{ color: "#cbd5e1" }}>{lead.created_by_name || "System"}</span>
-              </div>
+              {lead.value !== undefined && lead.value > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.6rem", borderBottom: "1px solid rgba(140, 174, 187, 0.1)" }}>
+                  <span style={{ color: "#94a3b8" }}>Project Cost / Deal Value:</span>
+                  <span style={{ color: "#4ade80", fontWeight: 700, fontSize: "0.95rem" }}>${lead.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                </div>
+              )}
 
               {lead.lost_reason && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", padding: "0.75rem", backgroundColor: "rgba(248, 113, 113, 0.08)", border: "1px solid rgba(248, 113, 113, 0.2)", borderRadius: "4px" }}>
@@ -504,7 +577,7 @@ export const LeadDetail: React.FC = () => {
             )}
           </Card>
 
-          {/* Quick Add Note Box */}
+          {/* Append Communication Note Box */}
           <Card style={{ padding: "1.5rem" }}>
             <h3 style={{ fontSize: "1.1rem", margin: "0 0 1rem 0", color: "#f8fafc" }}>
               Append Communication Note
@@ -518,57 +591,138 @@ export const LeadDetail: React.FC = () => {
                 style={{
                   width: "100%",
                   padding: "0.75rem",
-                  backgroundColor: "rgba(5, 8, 17, 0.7)",
-                  border: "1px solid rgba(140, 174, 187, 0.2)",
+                  backgroundColor: "#050811",
+                  border: "1px solid rgba(140, 174, 187, 0.25)",
                   color: "#f8fafc",
                   borderRadius: "4px",
                   fontSize: "0.85rem",
                   resize: "vertical",
+                  boxSizing: "border-box",
                 }}
               />
-              <Button type="submit" glow disabled={actionLoading || !noteContent.trim()} style={{ alignSelf: "flex-end" }}>
-                <Send size={14} style={{ marginRight: "0.4rem" }} /> Save Note
-              </Button>
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <Button type="submit" glow disabled={actionLoading || !noteContent.trim()}>
+                  <Send size={14} style={{ marginRight: "0.4rem" }} /> Post Note
+                </Button>
+              </div>
             </form>
           </Card>
         </div>
 
-        {/* Right Column: Follow-ups, Notes & Timeline Tabs */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          {/* Tab Selection */}
-          <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid rgba(140, 174, 187, 0.2)", paddingBottom: "0.5rem" }}>
-            {[
-              { key: "followups", label: `Follow-ups (${followUps.length})`, icon: Clock },
-              { key: "notes", label: `Notes (${notes.length})`, icon: FileText },
-              { key: "timeline", label: "Audit Timeline", icon: Activity },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isSelected = activeTab === tab.key;
-              return (
-                <button type="button"
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key as any)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.4rem",
-                    padding: "0.5rem 1rem",
-                    borderRadius: "4px",
-                    background: isSelected ? "rgba(99, 245, 232, 0.1)" : "transparent",
-                    border: isSelected ? "1px solid #63f5e8" : "1px solid transparent",
-                    color: isSelected ? "#63f5e8" : "#94a3b8",
-                    fontFamily: "IBM Plex Mono, monospace",
-                    fontSize: "0.78rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  <Icon size={14} /> {tab.label}
-                </button>
-              );
-            })}
+        {/* Right Column: Interactive Tabs */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          {/* Tab Navigation */}
+          <div style={{ display: "flex", borderBottom: "1px solid rgba(140, 174, 187, 0.2)", gap: "0.5rem" }}>
+            {(["overview", "followups", "notes", "timeline"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: "0.6rem 1rem",
+                  background: "none",
+                  border: "none",
+                  borderBottom: activeTab === tab ? "2px solid #63f5e8" : "2px solid transparent",
+                  color: activeTab === tab ? "#63f5e8" : "#94a3b8",
+                  fontFamily: "IBM Plex Mono, monospace",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  textTransform: "uppercase",
+                }}
+              >
+                {tab === "overview" && "Summary"}
+                {tab === "followups" && `Follow-ups (${followUps.length})`}
+                {tab === "notes" && `Notes (${notes.length})`}
+                {tab === "timeline" && "Timeline"}
+              </button>
+            ))}
           </div>
 
-          {/* Tab 1: Follow-ups Section */}
+          {/* Tab Content Panes */}
+          {activeTab === "overview" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              <Card style={{ padding: "1.5rem" }}>
+                <h3 style={{ fontSize: "1.1rem", margin: "0 0 1rem 0", color: "#f8fafc" }}>
+                  Upcoming Touchpoints
+                </h3>
+                {followUps.filter((f) => f.status === "PENDING").length === 0 ? (
+                  <div style={{ padding: "1.5rem", textAlign: "center", color: "#94a3b8" }}>
+                    <p style={{ margin: 0 }}>No pending follow-ups scheduled.</p>
+                    <Button variant="outline" onClick={() => setIsFollowUpOpen(true)} style={{ marginTop: "0.75rem" }}>
+                      <Plus size={14} style={{ marginRight: "0.3rem" }} /> Schedule Follow-up
+                    </Button>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                    {followUps
+                      .filter((f) => f.status === "PENDING")
+                      .slice(0, 3)
+                      .map((fu) => (
+                        <div
+                          key={fu.id}
+                          style={{
+                            padding: "0.75rem",
+                            backgroundColor: "rgba(14, 24, 38, 0.6)",
+                            border: "1px solid rgba(140, 174, 187, 0.15)",
+                            borderRadius: "4px",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "#f8fafc" }}>
+                              {fu.follow_up_type_display || fu.follow_up_type}
+                            </div>
+                            <div style={{ fontSize: "0.75rem", color: "#63f5e8", fontFamily: "IBM Plex Mono, monospace" }}>
+                              {new Date(fu.scheduled_at).toLocaleString()}
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleCompleteFollowUpItem(fu.id)}
+                            style={{ fontSize: "0.75rem", padding: "0.3rem 0.6rem" }}
+                          >
+                            Mark Done
+                          </Button>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </Card>
+
+              <Card style={{ padding: "1.5rem" }}>
+                <h3 style={{ fontSize: "1.1rem", margin: "0 0 1rem 0", color: "#f8fafc" }}>
+                  Recent Communication Trail
+                </h3>
+                {notes.length === 0 ? (
+                  <p style={{ color: "#94a3b8", margin: 0, fontSize: "0.85rem" }}>No notes logged yet.</p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                    {notes.slice(0, 3).map((n) => (
+                      <div
+                        key={n.id}
+                        style={{
+                          padding: "0.75rem",
+                          backgroundColor: "rgba(14, 24, 38, 0.6)",
+                          border: "1px solid rgba(140, 174, 187, 0.15)",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "#64748b", marginBottom: "0.3rem" }}>
+                          <span style={{ color: "#63f5e8" }}>{n.created_by_name || "Executive"}</span>
+                          <span>{new Date(n.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p style={{ margin: 0, fontSize: "0.82rem", color: "#cbd5e1" }}>{n.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </div>
+          )}
+
           {activeTab === "followups" && (
             <LeadFollowUpsTab
               followUps={followUps}
@@ -578,30 +732,22 @@ export const LeadDetail: React.FC = () => {
             />
           )}
 
-          {/* Tab 2: Notes History */}
           {activeTab === "notes" && <LeadNotesTab notes={notes} />}
 
-          {/* Tab 3: Timeline Audit */}
-          {activeTab === "timeline" && <LeadTimelineTab lead={lead} notes={notes} followUps={followUps} />}
+          {activeTab === "timeline" && (
+            <LeadTimelineTab lead={lead} notes={notes} followUps={followUps} />
+          )}
         </div>
       </div>
 
+      {/* MODALS */}
       <LeadEditModal
         isOpen={isEditOpen}
         editForm={editForm}
         actionLoading={actionLoading}
         onClose={() => setIsEditOpen(false)}
         onFormChange={setEditForm}
-        onSave={handleSaveEdit}
-      />
-
-      <LeadLostModal
-        isOpen={isLostOpen}
-        lostReason={lostReason}
-        actionLoading={actionLoading}
-        onClose={() => setIsLostOpen(false)}
-        onReasonChange={setLostReason}
-        onConfirm={handleMarkLost}
+        onSubmit={handleSaveEdit}
       />
 
       <LeadAssignModal
@@ -612,6 +758,24 @@ export const LeadDetail: React.FC = () => {
         onClose={() => setIsAssignOpen(false)}
         onUserChange={setAssignUserId}
         onAssign={handleAssign}
+      />
+
+      <LeadLostModal
+        isOpen={isLostOpen}
+        lostReason={lostReason}
+        actionLoading={actionLoading}
+        onClose={() => setIsLostOpen(false)}
+        onReasonChange={setLostReason}
+        onConfirm={handleConfirmLost}
+      />
+
+      <LeadWonModal
+        isOpen={isWonOpen}
+        wonForm={wonForm}
+        actionLoading={actionLoading}
+        onClose={() => setIsWonOpen(false)}
+        onFormChange={setWonForm}
+        onConfirm={handleConfirmWon}
       />
 
       <LeadScheduleFollowUpModal
@@ -626,6 +790,7 @@ export const LeadDetail: React.FC = () => {
   );
 };
 
+/* --- Sub-Components & Modals --- */
 
 interface LeadEditModalProps {
   isOpen: boolean;
@@ -633,7 +798,7 @@ interface LeadEditModalProps {
   actionLoading: boolean;
   onClose: () => void;
   onFormChange: (form: any) => void;
-  onSave: (e: React.FormEvent) => void;
+  onSubmit: (e: React.FormEvent) => void;
 }
 
 const LeadEditModal: React.FC<LeadEditModalProps> = ({
@@ -642,25 +807,24 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
   actionLoading,
   onClose,
   onFormChange,
-  onSave,
+  onSubmit,
 }) => {
   if (!isOpen) return null;
   return (
     <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-      <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
+      <Card borderAccent style={{ width: "100%", maxWidth: "600px", padding: "2rem", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "1.4rem", margin: 0 }}>Edit Lead Information</h2>
+          <h2 style={{ fontSize: "1.3rem", margin: 0 }}>Edit Lead Specification</h2>
           <button type="button" onClick={onClose} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={onSave} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>NAME</label>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>FULL NAME *</label>
               <input
-                type="text"
                 required
                 value={editForm.name}
                 onChange={(e) => onFormChange({ ...editForm, name: e.target.value })}
@@ -668,7 +832,7 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EMAIL</label>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EMAIL ADDRESS *</label>
               <input
                 type="email"
                 required
@@ -681,26 +845,32 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>COMPANY</label>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PHONE NUMBER</label>
               <input
-                type="text"
-                value={editForm.company}
-                onChange={(e) => onFormChange({ ...editForm, company: e.target.value })}
+                value={editForm.phone}
+                onChange={(e) => onFormChange({ ...editForm, phone: e.target.value })}
                 style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PHONE</label>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>COMPANY NAME</label>
               <input
-                type="text"
-                value={editForm.phone}
-                onChange={(e) => onFormChange({ ...editForm, phone: e.target.value })}
+                value={editForm.company}
+                onChange={(e) => onFormChange({ ...editForm, company: e.target.value })}
                 style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
               />
             </div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>INDUSTRY</label>
+              <input
+                value={editForm.industry}
+                onChange={(e) => onFormChange({ ...editForm, industry: e.target.value })}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              />
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PRIORITY</label>
               <select
@@ -714,19 +884,10 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
                 <option value="URGENT">Urgent</option>
               </select>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>INDUSTRY</label>
-              <input
-                type="text"
-                value={editForm.industry}
-                onChange={(e) => onFormChange({ ...editForm, industry: e.target.value })}
-                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-              />
-            </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-            <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DESCRIPTION</label>
+            <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>REQUIREMENTS / DESCRIPTION</label>
             <textarea
               rows={3}
               value={editForm.description}
@@ -766,23 +927,115 @@ const LeadLostModal: React.FC<LeadLostModalProps> = ({
   return (
     <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
       <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
-        <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: "0 0 1rem 0" }}>Mark Lead as Lost</h2>
+        <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: "0 0 0.5rem 0" }}>Mark Lead as Lost</h2>
         <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: "0 0 1rem 0" }}>
-          Please state why this lead was lost (e.g. Budget constraints, Competitor chosen, Project cancelled).
+          Please enter the specific reason why this opportunity was lost (minimum 10 characters):
         </p>
         <form onSubmit={onConfirm} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <textarea
             rows={3}
             required
-            placeholder="Enter specific lost rationale..."
+            placeholder="e.g. Client budget constraints, selected competing vendor, or postponed project..."
             value={lostReason}
             onChange={(e) => onReasonChange(e.target.value)}
             style={{ padding: "0.75rem", backgroundColor: "#050811", border: "1px solid rgba(248, 113, 113, 0.4)", color: "#f8fafc", borderRadius: "4px" }}
           />
           <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={actionLoading} style={{ backgroundColor: "#f87171", color: "#000" }}>
+            <Button type="submit" disabled={actionLoading} style={{ backgroundColor: "#f87171", color: "#000", fontWeight: 600 }}>
               Confirm Lost
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+};
+
+interface LeadWonModalProps {
+  isOpen: boolean;
+  wonForm: { value: number; notes: string };
+  actionLoading: boolean;
+  onClose: () => void;
+  onFormChange: (form: { value: number; notes: string }) => void;
+  onConfirm: (e: React.FormEvent) => void;
+}
+
+const LeadWonModal: React.FC<LeadWonModalProps> = ({
+  isOpen,
+  wonForm,
+  actionLoading,
+  onClose,
+  onFormChange,
+  onConfirm,
+}) => {
+  if (!isOpen) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
+      <Card borderAccent style={{ width: "100%", maxWidth: "500px", padding: "2rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+          <CheckCircle2 size={22} color="#4ade80" />
+          <h2 style={{ fontSize: "1.3rem", color: "#4ade80", margin: 0 }}>Mark Deal as WON</h2>
+        </div>
+        <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: "0 0 1.25rem 0" }}>
+          Record the final agreed project cost and closing notes. The deal will be registered as WON and forwarded to the BDM Dashboard for client portal credential dispatch.
+        </p>
+        <form onSubmit={onConfirm} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+            <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
+              AGREED PROJECT COST / DEAL VALUE ($) *
+            </label>
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)", color: "#63f5e8", fontWeight: 700 }}>
+                $
+              </span>
+              <input
+                type="number"
+                min="0"
+                step="100"
+                required
+                value={wonForm.value}
+                onChange={(e) => onFormChange({ ...wonForm, value: parseFloat(e.target.value) || 0 })}
+                style={{
+                  width: "100%",
+                  padding: "0.65rem 0.75rem 0.65rem 1.8rem",
+                  backgroundColor: "#050811",
+                  border: "1px solid rgba(74, 222, 128, 0.4)",
+                  color: "#4ade80",
+                  fontWeight: 700,
+                  fontSize: "1.1rem",
+                  borderRadius: "4px",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+            <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
+              CLOSING SCOPE NOTES & CLIENT BRIEF
+            </label>
+            <textarea
+              rows={3}
+              required
+              value={wonForm.notes}
+              onChange={(e) => onFormChange({ ...wonForm, notes: e.target.value })}
+              style={{
+                padding: "0.75rem",
+                backgroundColor: "#050811",
+                border: "1px solid rgba(140, 174, 187, 0.25)",
+                color: "#f8fafc",
+                borderRadius: "4px",
+                fontSize: "0.85rem",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" glow disabled={actionLoading} style={{ backgroundColor: "#22c55e", color: "#ffffff" }}>
+              Confirm Won & Forward to BDM
             </Button>
           </div>
         </form>
@@ -970,7 +1223,7 @@ const LeadFollowUpsTab: React.FC<LeadFollowUpsTabProps> = ({
                 borderLeft: isCompleted ? "3px solid #4ade80" : isOverdue ? "3px solid #f87171" : "3px solid #63f5e8",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.5rem" }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", fontWeight: 600, color: "#63f5e8" }}>

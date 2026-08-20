@@ -67,7 +67,9 @@ export const ContactForms: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("");
 
   const [selectedLeadDetail, setSelectedLeadDetail] = useState<FormSubmission | null>(null);
-  const [salesExecs, setSalesExecs] = useState<Array<{ id: number; username: string; name: string }>>([]);
+  const [salesExecs, setSalesExecs] = useState<Array<{ id: number; username: string; name: string }>>(() => {
+    return (bdmService.getCachedAssignableUsers() || []).map((u) => ({ id: u.id, username: u.username, name: u.name }));
+  });
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
   const [modalMode, setModalMode] = useState<"assign" | "decline" | null>(null);
   const [targetExecId, setTargetExecId] = useState<number | "">("");
@@ -76,7 +78,9 @@ export const ContactForms: React.FC = () => {
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    bdmService.getAssignableUsers().then(setSalesExecs);
+    if (!bdmService.getCachedAssignableUsers()) {
+      bdmService.getAssignableUsers().then(setSalesExecs);
+    }
   }, []);
 
   const showFeedback = (type: "success" | "error", text: string) => {
@@ -115,11 +119,15 @@ export const ContactForms: React.FC = () => {
   const handleDeclineSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSubmission) return;
-    const reason = declineReason.trim() || "Declined by BDM";
+    const reason = declineReason.trim();
+    if (reason.length < 10) {
+      showFeedback("error", "Reason for declining must be at least 10 characters long.");
+      return;
+    }
     setActionLoading(true);
     try {
       await bdmService.markLeadLost(selectedSubmission.id, reason);
-      showFeedback("success", `Submission (${selectedSubmission.reference_id}) marked as Declined.`);
+      showFeedback("success", `Submission (${selectedSubmission.reference_id}) marked as Declined & notification email sent.`);
       setModalMode(null);
       refetch();
     } catch (err: any) {
@@ -348,7 +356,7 @@ export const ContactForms: React.FC = () => {
                     </span>
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "1rem" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "1rem" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.85rem" }}>
                       <p style={{ fontWeight: 600, color: "#f8fafc", margin: 0, fontSize: "1rem" }}>
                         {submission.name}
@@ -384,11 +392,11 @@ export const ContactForms: React.FC = () => {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.6rem", borderTop: "1px solid rgba(140, 174, 187, 0.1)", paddingTop: "0.75rem" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "0.6rem", borderTop: "1px solid rgba(140, 174, 187, 0.1)", paddingTop: "0.75rem", width: "100%" }}>
                     <Button
                       variant="outline"
                       onClick={() => setSelectedLeadDetail(submission)}
-                      style={{ fontSize: "0.78rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)" }}
+                      style={{ fontSize: "0.78rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)", whiteSpace: "nowrap" }}
                     >
                       <Eye size={14} style={{ marginRight: "0.35rem" }} /> View Lead Detail
                     </Button>
@@ -502,27 +510,47 @@ export const ContactForms: React.FC = () => {
 
             <form onSubmit={handleDeclineSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DECLINE REASON</label>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DECLINE REASON *</label>
+                  <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: declineReason.trim().length >= 10 ? "#22c55e" : "#f87171" }}>
+                    {declineReason.trim().length} / 10 min chars
+                  </span>
+                </div>
                 <textarea
                   rows={3}
-                  placeholder="e.g. Spam submission, Out of scope, Invalid contact details..."
+                  placeholder="Provide a detailed reason for rejecting (minimum 10 characters)..."
                   value={declineReason}
                   onChange={(e) => setDeclineReason(e.target.value)}
+                  required
+                  minLength={10}
                   style={{
                     padding: "0.65rem",
                     backgroundColor: "#050811",
-                    border: "1px solid rgba(140, 174, 187, 0.25)",
+                    border: declineReason.trim().length > 0 && declineReason.trim().length < 10 ? "1px solid #ef4444" : "1px solid rgba(140, 174, 187, 0.25)",
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.85rem",
+                    outline: "none",
                   }}
                 />
+                {declineReason.trim().length > 0 && declineReason.trim().length < 10 && (
+                  <p style={{ color: "#ef4444", fontSize: "0.75rem", margin: "0.2rem 0 0 0" }}>
+                    Please enter at least 10 characters explaining the reason for declining.
+                  </p>
+                )}
+                <p style={{ color: "#64748b", fontSize: "0.72rem", margin: "0.2rem 0 0 0" }}>
+                  📧 An automated decline notification email will be sent to <strong>{selectedSubmission.email}</strong>.
+                </p>
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
                 <Button type="button" variant="outline" onClick={() => setModalMode(null)}>Cancel</Button>
-                <Button type="submit" style={{ backgroundColor: "#ef4444", color: "#ffffff" }} disabled={actionLoading}>
-                  {actionLoading ? "Declining..." : "Decline Submission"}
+                <Button 
+                  type="submit" 
+                  style={{ backgroundColor: "#ef4444", color: "#ffffff", opacity: declineReason.trim().length < 10 ? 0.5 : 1 }} 
+                  disabled={actionLoading || declineReason.trim().length < 10}
+                >
+                  {actionLoading ? "Declining & Emailing..." : "Decline Submission"}
                 </Button>
               </div>
             </form>
@@ -598,6 +626,13 @@ export const ContactForms: React.FC = () => {
 
             {/* BDM Action Buttons */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", justifyContent: "flex-end" }}>
+              <Button
+                variant="outline"
+                onClick={() => setSelectedLeadDetail(null)}
+                style={{ fontSize: "0.82rem" }}
+              >
+                Close Desk
+              </Button>
               {selectedLeadDetail.status !== "lost" && (
                 <>
                   <Button
@@ -625,16 +660,6 @@ export const ContactForms: React.FC = () => {
                   </Button>
                 </>
               )}
-              <Button
-                variant="outline"
-                onClick={() => {
-                  window.open(`/crm/leads/${selectedLeadDetail.id}`, '_blank');
-                  setSelectedLeadDetail(null);
-                }}
-                style={{ fontSize: "0.82rem" }}
-              >
-                <ArrowUpRight size={14} style={{ marginRight: "0.35rem" }} /> Open Full Workspace
-              </Button>
             </div>
           </Card>
         </div>

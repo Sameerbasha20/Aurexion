@@ -86,6 +86,54 @@ export const Leads: React.FC = () => {
     }
   };
 
+  const handleQuickStatusTransition = async (lead: LeadItem, newStatus: string) => {
+    const currentClean = lead.status?.toUpperCase();
+    if (newStatus === currentClean || newStatus === lead.status) return;
+
+    if (newStatus === "WON") {
+      const valInput = window.prompt(`Enter agreed Project Cost ($) for ${lead.name}:`, "25000");
+      if (valInput === null) return;
+      const value = parseFloat(valInput) || 0;
+      const notes = window.prompt(`Enter closing notes for ${lead.name}:`, "Client accepted commercial proposal.") || "";
+      try {
+        await crmService.markLeadWon(lead.id, { value, notes });
+        setActionSuccess(`Lead ${lead.name} marked WON! Value ($${value.toLocaleString()}) recorded & forwarded to BDM.`);
+        setTimeout(() => setActionSuccess(null), 4000);
+        refetch();
+      } catch (err: any) {
+        alert(err?.message || "Failed to mark lead as won.");
+      }
+      return;
+    }
+
+    if (newStatus === "LOST") {
+      const reason = window.prompt(`Enter reason for marking ${lead.name} as lost (minimum 10 characters):`);
+      if (reason === null) return;
+      if (reason.trim().length < 10) {
+        alert("Please enter a reason of at least 10 characters.");
+        return;
+      }
+      try {
+        await crmService.markLeadLost(lead.id, reason.trim());
+        setActionSuccess(`Lead ${lead.name} marked LOST.`);
+        setTimeout(() => setActionSuccess(null), 4000);
+        refetch();
+      } catch (err: any) {
+        alert(err?.message || "Failed to mark lead lost.");
+      }
+      return;
+    }
+
+    try {
+      await crmService.transitionLead(lead.id, newStatus);
+      setActionSuccess(`Lead ${lead.name} stage updated to ${newStatus.replace(/_/g, " ")}.`);
+      setTimeout(() => setActionSuccess(null), 4000);
+      refetch();
+    } catch (err: any) {
+      alert(err?.message || "Failed to transition lead status.");
+    }
+  };
+
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateError(null);
@@ -455,20 +503,35 @@ export const Leads: React.FC = () => {
                       </td>
 
                       <td style={{ padding: "1rem" }}>
-                        <span
+                        <select
+                          value={lead.status?.toUpperCase() || "NEW"}
+                          disabled={lead.status?.toUpperCase() === "WON"}
+                          onChange={(e) => handleQuickStatusTransition(lead, e.target.value)}
                           style={{
-                            display: "inline-block",
-                            padding: "0.2rem 0.6rem",
-                            borderRadius: "3px",
-                            fontSize: "0.72rem",
-                            fontFamily: "IBM Plex Mono, monospace",
+                            padding: "0.3rem 0.65rem",
                             backgroundColor: statusStyle.bg,
-                            color: statusStyle.color,
                             border: `1px solid ${statusStyle.border}`,
+                            color: statusStyle.color,
+                            fontSize: "0.72rem",
+                            fontWeight: 600,
+                            borderRadius: "4px",
+                            fontFamily: "IBM Plex Mono, monospace",
+                            cursor: lead.status?.toUpperCase() === "WON" ? "not-allowed" : "pointer",
+                            opacity: lead.status?.toUpperCase() === "WON" ? 0.8 : 1,
+                            outline: "none",
+                            transition: "all 150ms ease",
                           }}
+                          title={lead.status?.toUpperCase() === "WON" ? "Won deal is locked (managed by BDM)" : "Change lead stage"}
                         >
-                          {lead.status_display || lead.status || "NEW"}
-                        </span>
+                          <option value="NEW" style={{ backgroundColor: "#0c1222", color: "#63f5e8" }}> NEW</option>
+                          <option value="UNDER_REVIEW" style={{ backgroundColor: "#0c1222", color: "#38bdf8" }}> UNDER REVIEW</option>
+                          <option value="CONTACTED" style={{ backgroundColor: "#0c1222", color: "#38bdf8" }}>CONTACTED</option>
+                          <option value="QUALIFIED" style={{ backgroundColor: "#0c1222", color: "#818cf8" }}> QUALIFIED</option>
+                          <option value="PROPOSAL_SUBMITTED" style={{ backgroundColor: "#0c1222", color: "#818cf8" }}> PROPOSAL</option>
+                          <option value="NEGOTIATION" style={{ backgroundColor: "#0c1222", color: "#818cf8" }}> NEGOTIATION</option>
+                          <option value="WON" style={{ backgroundColor: "#0c1222", color: "#4ade80" }}>WON</option>
+                          <option value="LOST" style={{ backgroundColor: "#0c1222", color: "#f87171" }}>LOST</option>
+                        </select>
                       </td>
 
                       <td style={{ padding: "1rem", fontSize: "0.8rem", color: "#cbd5e1" }}>

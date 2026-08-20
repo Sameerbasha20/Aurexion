@@ -23,6 +23,14 @@ class UserSerializer(serializers.ModelSerializer):
             ret['role'] = instance.profile.role
         else:
             ret['role'] = 'client_user'
+        
+        # Include active assigned leads count for workload indicators
+        try:
+            from apps.crm.models import Lead
+            ret['active_leads_count'] = instance.assigned_leads.exclude(status=Lead.Status.LOST).count()
+        except Exception:
+            ret['active_leads_count'] = 0
+
         return ret
 
     def create(self, validated_data):

@@ -34,22 +34,28 @@ STATUS_TRANSITIONS = {
     Lead.Status.NEW: {
         Lead.Status.UNDER_REVIEW,
         Lead.Status.CONTACTED,
+        Lead.Status.QUALIFIED,
         Lead.Status.LOST,
     },
     Lead.Status.UNDER_REVIEW: {
         Lead.Status.CONTACTED,
+        Lead.Status.QUALIFIED,
         Lead.Status.LOST,
     },
     Lead.Status.CONTACTED: {
         Lead.Status.QUALIFIED,
+        Lead.Status.PROPOSAL_SUBMITTED,
         Lead.Status.LOST,
     },
     Lead.Status.QUALIFIED: {
         Lead.Status.PROPOSAL_SUBMITTED,
+        Lead.Status.NEGOTIATION,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.PROPOSAL_SUBMITTED: {
         Lead.Status.NEGOTIATION,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.NEGOTIATION: {
@@ -57,7 +63,11 @@ STATUS_TRANSITIONS = {
         Lead.Status.LOST,
     },
     Lead.Status.WON: set(),
-    Lead.Status.LOST: set(),
+    Lead.Status.LOST: {
+        Lead.Status.NEW,
+        Lead.Status.UNDER_REVIEW,
+        Lead.Status.CONTACTED,
+    },
 }
 
 
@@ -210,8 +220,19 @@ def qualify_lead(*, lead, actor, request=None):
     )
 
 
-def mark_lead_won(*, lead, actor, request=None):
-    """Mark a lead as WON (valid only from NEGOTIATION)."""
+def mark_lead_won(*, lead, actor, value=None, notes=None, request=None):
+    """
+    Mark a lead as WON (valid from active stages).
+    Records agreed project cost (value) and closing notes.
+    The lead transitions to WON and awaits BDM onboarding & credential dispatch.
+    """
+    if value is not None:
+        try:
+            lead.value = float(value)
+            lead.save(update_fields=["value"])
+        except (ValueError, TypeError):
+            pass
+
     lead = change_lead_stage(
         lead=lead,
         new_status=Lead.Status.WON,
@@ -219,25 +240,30 @@ def mark_lead_won(*, lead, actor, request=None):
         request=request,
     )
 
-    # Create client user and send welcome credentials
-    if lead.email:
+    if notes and str(notes).strip():
         try:
-            create_client_user_and_send_credentials(lead, actor, request)
+            create_note(lead=lead, actor=actor, content=f"Deal WON Notes: {str(notes).strip()}", request=request)
         except Exception:
-            logger.exception(f"Failed to create client user for lead {lead.reference_id}")
+            pass
 
     return lead
 
 
-def create_client_user_and_send_credentials(lead, actor, request=None):
+def onboard_lead_as_client(*, lead, actor, password=None, request=None):
     """
-    Create a client user for the won lead and send welcome credentials email.
-    Uses the lead's email as username and a default password.
+    BDM action: Review won lead details, create/activate client user account,
+    and dispatch official welcome email with login credentials.
     """
     from django.conf import settings
 
-    default_password = getattr(settings, 'DEFAULT_CLIENT_PASSWORD', '') or secrets.token_urlsafe(12)
+    if lead.status != Lead.Status.WON:
+        raise LeadStateTransitionError(f"Lead {lead.reference_id} must be marked as WON before onboarding as client.")
+
+    default_password = password or getattr(settings, 'DEFAULT_CLIENT_PASSWORD', '') or 'client@2026'
     login_url = getattr(settings, 'CLIENT_PORTAL_LOGIN_URL', 'http://localhost:3000/login')
+
+    if not lead.email:
+        raise ValueError("Lead does not have a valid email address for client portal onboarding.")
 
     # Check if user already exists with this email
     user, created = User.objects.get_or_create(
@@ -250,37 +276,39 @@ def create_client_user_and_send_credentials(lead, actor, request=None):
         }
     )
 
-    if created:
-        user.set_password(default_password)
-        user.save()
+    user.set_password(default_password)
+    user.is_active = True
+    user.save()
 
-        # Create or update user profile with client_user role
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        profile.role = 'client_user'
-        profile.save()
-    else:
-        # User exists, update password to default (they can change it later)
-        user.set_password(default_password)
-        user.save()
+    # Ensure profile has client_user role
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    profile.role = 'client_user'
+    profile.save()
 
-        # Ensure profile has client_user role
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        profile.role = 'client_user'
-        profile.save()
-
-    # Send welcome credentials email
+    # Dispatch welcome credentials email
     send_welcome_credentials_email(user, default_password, login_url)
+
+    lead.client_onboarded = True
+    lead.save(update_fields=["client_onboarded", "updated_at"])
 
     log_audit_event(
         user=actor,
-        action="CLIENT_USER_CREATED",
+        action="CLIENT_ONBOARDED_BY_BDM",
         module="crm",
         object_id=user.id,
-        repr_str=f"Client user created for lead {lead.reference_id}: {user.email}",
-        updated_state={"user_id": user.id, "email": user.email, "role": "client_user"},
+        repr_str=f"BDM {actor.username} onboarded won lead {lead.reference_id} as client user ({user.email}) and dispatched portal credentials.",
+        updated_state={"user_id": user.id, "email": user.email, "role": "client_user", "client_onboarded": True},
         request=request,
     )
 
+    return lead, user
+
+
+def create_client_user_and_send_credentials(lead, actor, request=None):
+    """
+    Backwards-compatible helper for client user creation and credential dispatch.
+    """
+    lead, user = onboard_lead_as_client(lead=lead, actor=actor, request=request)
     return user
 
 

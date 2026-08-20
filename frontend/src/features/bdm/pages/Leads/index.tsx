@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLeads } from "../../hooks/useLeads";
+import crmService from "../../../crm/services/crmService";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
@@ -13,7 +14,7 @@ import {
   TableCell,
 } from "../../../../components/ui/table";
 import { Badge } from "../../../../components/ui/badge";
-import { Eye, ArrowUpRight, Mail, Phone, UserCheck, XCircle } from "lucide-react";
+import { Eye, ArrowUpRight, Mail, Phone, UserCheck, XCircle, RefreshCw } from "lucide-react";
 import type { Lead } from "../../services/bdmService";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -37,7 +38,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 export const Leads: React.FC = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [sourceFilter, setSourceFilter] = useState("website");
+  const [sourceFilter, setSourceFilter] = useState("");
   const [selectedLeadDetail, setSelectedLeadDetail] = useState<Lead | null>(null);
 
   const { leads, totalCount, isLoading, error, refetch, currentPage, totalPages, nextPage, prevPage, hasNext, hasPrev } = useLeads({
@@ -89,26 +90,26 @@ export const Leads: React.FC = () => {
         <CardHeader>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center", justifyContent: "space-between" }}>
             <CardTitle>Lead Pipeline ({totalCount} total)</CardTitle>
-            <form onSubmit={handleSearch} style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <form onSubmit={handleSearch} style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
               <Input
                 placeholder="Search leads..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                style={{ width: "220px" }}
+                style={{ minWidth: "160px", flex: "1 1 auto" }}
               />
               <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                <SelectTrigger style={{ width: "160px" }}>
-                  <SelectValue placeholder="Source: Website" />
+                <SelectTrigger style={{ minWidth: "150px", flex: "1 1 auto" }}>
+                  <SelectValue placeholder="All Sources" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="">All Sources</SelectItem>
                   <SelectItem value="website">Source: Website</SelectItem>
                   <SelectItem value="rfp_form">Source: RFP Form</SelectItem>
                   <SelectItem value="contact_form">Source: Contact Form</SelectItem>
-                  <SelectItem value="">All Sources</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger style={{ width: "160px" }}>
+                <SelectTrigger style={{ minWidth: "150px", flex: "1 1 auto" }}>
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -290,16 +291,43 @@ export const Leads: React.FC = () => {
 
             {/* Action Buttons */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", justifyContent: "flex-end" }}>
+              {(selectedLeadDetail.status === "lost" || selectedLeadDetail.status === "LOST") && (
+                <Button
+                  glow
+                  onClick={async () => {
+                    if (window.confirm(`Re-open declined lead ${selectedLeadDetail.reference_id} back into active pipeline?`)) {
+                      try {
+                        await crmService.reopenLead(selectedLeadDetail.id);
+                        alert("Lead successfully re-opened into active pipeline!");
+                        setSelectedLeadDetail(null);
+                        refetch();
+                      } catch (err: any) {
+                        alert(err?.message || "Failed to re-open lead.");
+                      }
+                    }
+                  }}
+                  style={{ fontSize: "0.82rem", backgroundColor: "#22c55e", color: "#ffffff" }}
+                >
+                  <RefreshCw size={14} style={{ marginRight: "0.35rem" }} /> Re-open / Re-engage Lead
+                </Button>
+              )}
               <Button
                 variant="outline"
-                onClick={() => {
-                  window.open(`/crm/leads/${selectedLeadDetail.id}`, '_blank');
-                  setSelectedLeadDetail(null);
-                }}
+                onClick={() => setSelectedLeadDetail(null)}
                 style={{ fontSize: "0.82rem" }}
               >
-                <ArrowUpRight size={14} style={{ marginRight: "0.35rem" }} /> Open Full Lead Workspace
+                Close Desk
               </Button>
+              {selectedLeadDetail.email && (
+                <a href={`mailto:${selectedLeadDetail.email}`} style={{ textDecoration: "none" }}>
+                  <Button
+                    glow
+                    style={{ fontSize: "0.82rem", backgroundColor: "#0284c7", color: "#ffffff" }}
+                  >
+                    <Mail size={14} style={{ marginRight: "0.35rem" }} /> Direct Email Lead
+                  </Button>
+                </a>
+              )}
             </div>
           </Card>
         </div>

@@ -72,10 +72,14 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleMarkWon = async (leadId: number, leadName: string) => {
-    if (!window.confirm(`Mark ${leadName} as WON? This will generate client credentials (default password: client@2026) and email the client.`)) return;
+    const valInput = window.prompt(`Enter agreed Project Cost / Deal Value ($) for ${leadName}:`, "25000");
+    if (valInput === null) return;
+    const value = parseFloat(valInput) || 0;
+    const notesInput = window.prompt(`Enter closing notes / scope summary for ${leadName}:`, "Client agreed to project scope and signed proposal.") || "";
+
     try {
-      await crmService.markLeadWon(leadId);
-      setActionSuccess(`Lead marked WON! Client User account created (password: client@2026) & credentials email sent.`);
+      await crmService.markLeadWon(leadId, { value, notes: notesInput });
+      setActionSuccess(`Lead marked WON! Project cost ($${value.toLocaleString()}) & closing notes recorded. Forwarded to BDM Dashboard for client portal credentials dispatch.`);
       refetch();
     } catch (err: any) {
       alert(err?.message || "Failed to mark lead as won.");
@@ -83,15 +87,15 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleMarkLost = async (leadId: number) => {
-    const reason = window.prompt("Reason for declining/marking lost:");
+    const reason = window.prompt("Reason for declining/marking lost (minimum 10 characters):");
     if (reason === null) return;
-    if (!reason.trim()) {
-      alert("A reason is required to mark as lost.");
+    if (reason.trim().length < 10) {
+      alert("Please enter a reason of at least 10 characters to decline or mark as lost.");
       return;
     }
     try {
       await crmService.markLeadLost(leadId, reason.trim());
-      setActionSuccess("Lead marked as lost/declined.");
+      setActionSuccess("Lead marked as lost/declined & email notification sent to client.");
       refetch();
     } catch (err: any) {
       alert(err?.message || "Failed to mark lead as lost.");

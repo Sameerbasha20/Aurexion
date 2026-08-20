@@ -1,6 +1,7 @@
 import * as React from "react";
 
-const MOBILE_BREAKPOINT = 768;
+// Breakpoint for drawer mode (Mobile & Tablet < 1024px per PRD 8.2 standards)
+const MOBILE_BREAKPOINT = 1024;
 
 export function useIsMobile(breakpoint = MOBILE_BREAKPOINT) {
   const [isMobile, setIsMobile] = React.useState<boolean>(() => {
@@ -22,4 +23,3 @@ export function useIsMobile(breakpoint = MOBILE_BREAKPOINT) {
 
   return isMobile;
 }
-

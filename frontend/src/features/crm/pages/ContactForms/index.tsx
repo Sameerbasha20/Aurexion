@@ -67,15 +67,15 @@ export const ContactForms: React.FC = () => {
   };
 
   const handleMarkLost = async (leadId: number) => {
-    const reason = window.prompt("Reason for declining/marking lost:");
+    const reason = window.prompt("Reason for declining/marking lost (minimum 10 characters):");
     if (reason === null) return;
-    if (!reason.trim()) {
-      alert("A reason is required to mark as lost.");
+    if (reason.trim().length < 10) {
+      alert("Please enter a reason of at least 10 characters to decline or mark as lost.");
       return;
     }
     try {
       await crmService.markLeadLost(leadId, reason.trim());
-      setActionSuccess("Lead marked as lost/declined.");
+      setActionSuccess("Lead marked as lost/declined & notification email dispatched.");
       refetch();
     } catch (err: any) {
       alert(err?.message || "Failed to mark lead as lost.");
