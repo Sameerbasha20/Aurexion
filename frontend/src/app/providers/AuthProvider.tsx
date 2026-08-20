@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import AuthContext, { User } from "../../context/AuthContext";
 import authService from "../../features/authentication/services/authService";
+import crmService from "../../features/crm/services/crmService";
+import bdmService from "../../features/bdm/services/bdmService";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -65,6 +67,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (token) {
         localStorage.setItem("aurexion_token", token);
       }
+      // Invalidate in-memory caches on user switch
+      crmService.clearCache();
+      bdmService.clearCache();
     } catch (err: any) {
       setIsLoading(false);
       throw err;
@@ -76,6 +81,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     localStorage.removeItem("aurexion_user");
     localStorage.removeItem("aurexion_token");
+    crmService.clearCache();
+    bdmService.clearCache();
     authService.logout().catch(() => {});
   };
 

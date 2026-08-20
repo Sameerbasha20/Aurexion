@@ -186,6 +186,7 @@ export const bdmService = {
     return leadsCache.get(key) || null;
   },
   getCachedAssignableUsers: () => cachedAssignableUsers,
+  clearCache: clearBdmCache,
 
   getDashboardData: async (force = false): Promise<DashboardData> => {
     if (cachedDashboard && !force) {
@@ -263,25 +264,30 @@ export const bdmService = {
    * Get assignable sales executives with active workload counts (cached)
    */
   getAssignableUsers: async (force = false): Promise<{ id: number; username: string; email: string; name: string; role: string; active_leads_count?: number }[]> => {
-    if (cachedAssignableUsers && !force) {
+    if (cachedAssignableUsers && cachedAssignableUsers.length > 0 && !force) {
       return cachedAssignableUsers;
     }
     if (!assignableUsersPromise || force) {
       assignableUsersPromise = (async () => {
         try {
-          const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS);
-          const list = Array.isArray(data) ? data : (data.data || data.results || []);
+          const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS, { params: { role: 'sales_executive' } });
+          const list = Array.isArray(data) ? data : (data.results || data.data?.results || data.data || []);
           const result = list
-            .filter((u: any) => u.profile?.role === 'sales_executive' || u.role === 'sales_executive')
+            .filter((u: any) => {
+              const r = String(u.profile?.role || u.role || '').toLowerCase();
+              return r === 'sales_executive' || r === 'sales' || r === 'sales_rep';
+            })
             .map((u: any) => ({
               id: u.id,
               username: u.username,
               email: u.email,
               name: u.first_name ? `${u.first_name} ${u.last_name || ""}`.trim() : u.username,
-              role: u.profile?.role || u.role,
+              role: u.profile?.role || u.role || 'sales_executive',
               active_leads_count: u.active_leads_count ?? 0,
             }));
-          cachedAssignableUsers = result;
+          if (result.length > 0) {
+            cachedAssignableUsers = result;
+          }
           return result;
         } catch {
           return [];

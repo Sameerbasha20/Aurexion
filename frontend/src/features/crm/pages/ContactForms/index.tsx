@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
 import { useLeads } from "../../hooks/useCrm";
+import { useAuth } from "../../../../hooks/useAuth";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import {
@@ -82,7 +83,22 @@ export const ContactForms: React.FC = () => {
     }
   };
 
+  const { user } = useAuth();
+
   const contactLeads = leads.filter((lead) => {
+    // Sales Executive role scope: only display leads assigned to current executive
+    if (user && user.role === "SALES_EXECUTIVE") {
+      const isAssignedToMe =
+        lead.assigned_to === Number(user.id) ||
+        (lead.assigned_to_name && (
+          String(lead.assigned_to_name).toLowerCase() === String(user.name || "").toLowerCase() ||
+          String(lead.assigned_to_name).toLowerCase() === String(user.email || "").toLowerCase()
+        ));
+      if (!isAssignedToMe) {
+        return false;
+      }
+    }
+
     const isContactSource =
       !lead.source ||
       lead.source === "contact_form" ||

@@ -177,9 +177,10 @@ class LeadViewSet(viewsets.ModelViewSet):
         )
 
         role = getattr(getattr(user, "profile", None), "role", None)
-        if role == "sales_executive":
+        role_lower = str(role or "").lower()
+        if role_lower in ("sales_executive", "sales", "sales_rep"):
             queryset = queryset.filter(assigned_to=user)
-        elif user.is_superuser or role in ("super_admin", "administrator", "bdm"):
+        elif user.is_superuser or role_lower in ("super_admin", "administrator", "bdm"):
             pass
         else:
             queryset = queryset.none()

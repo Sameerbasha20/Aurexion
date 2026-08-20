@@ -121,7 +121,10 @@ export const Dashboard: React.FC = () => {
   const [selectedLeadDetail, setSelectedLeadDetail] = useState<FormSubmission | null>(null);
 
   // Assign & Decline modal state
-  const salesExecs = data?.team_workload || [];
+  const [dynSalesExecs, setDynSalesExecs] = useState<Array<{ id: number; username: string; name: string; active_leads_count?: number }>>([]);
+  const salesExecs = (data?.team_workload && data.team_workload.length > 0)
+    ? data.team_workload
+    : dynSalesExecs;
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
   const [modalMode, setModalMode] = useState<"assign" | "decline" | null>(null);
   const [targetExecId, setTargetExecId] = useState<number | "">("");
@@ -138,6 +141,13 @@ export const Dashboard: React.FC = () => {
     setSelectedSubmission(submission);
     setTargetExecId(submission.assigned_to || "");
     setModalMode("assign");
+    if (salesExecs.length === 0) {
+      bdmService.getAssignableUsers(true).then((users) => {
+        if (users && users.length > 0) {
+          setDynSalesExecs(users.map((u) => ({ id: u.id, username: u.username, name: u.name })));
+        }
+      });
+    }
   };
 
   const handleOpenDecline = (submission: FormSubmission) => {

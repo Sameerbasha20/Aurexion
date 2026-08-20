@@ -167,7 +167,7 @@ export const useJobs = () => {
 };
 
 export const useServices = () => {
-  const [data, setData] = useState<Service[]>([]);
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 

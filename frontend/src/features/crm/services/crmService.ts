@@ -265,8 +265,6 @@ export const crmService = {
     if (!force && leadsPromises.has(cacheKey)) {
       return leadsPromises.get(cacheKey)!;
     }
-<<<<<<< HEAD
-
     const promise = (async () => {
       try {
         const response = await axiosClient.get<any, any>(API_ENDPOINTS.CRM.LEADS, { params: queryParams });
@@ -289,15 +287,6 @@ export const crmService = {
 
     leadsPromises.set(cacheKey, promise);
     return promise;
-=======
-    if (response && response.data && Array.isArray(response.data)) {
-      return response.data;
-    }
-    if (response && response.data && Array.isArray(response.data.results)) {
-      return response.data.results;
-    }
-    return [];
->>>>>>> c920af6a49febeb8b313b139dc3449b8face5ba3
   },
 
   /**

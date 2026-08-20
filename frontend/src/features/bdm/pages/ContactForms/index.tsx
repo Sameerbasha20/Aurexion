@@ -77,11 +77,18 @@ export const ContactForms: React.FC = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Sync team workload from dashboard metrics if available
   useEffect(() => {
-    if (!bdmService.getCachedAssignableUsers()) {
-      bdmService.getAssignableUsers().then(setSalesExecs);
+    if (data?.team_workload && data.team_workload.length > 0) {
+      setSalesExecs(data.team_workload.map((u) => ({ id: u.id, username: u.username, name: u.name || u.username })));
+    } else {
+      bdmService.getAssignableUsers().then((users) => {
+        if (users && users.length > 0) {
+          setSalesExecs(users.map((u) => ({ id: u.id, username: u.username, name: u.name })));
+        }
+      });
     }
-  }, []);
+  }, [data?.team_workload]);
 
   const showFeedback = (type: "success" | "error", text: string) => {
     setFeedback({ type, text });
@@ -92,6 +99,13 @@ export const ContactForms: React.FC = () => {
     setSelectedSubmission(submission);
     setTargetExecId(submission.assigned_to || "");
     setModalMode("assign");
+    if (salesExecs.length === 0) {
+      bdmService.getAssignableUsers(true).then((users) => {
+        if (users && users.length > 0) {
+          setSalesExecs(users.map((u) => ({ id: u.id, username: u.username, name: u.name })));
+        }
+      });
+    }
   };
 
   const handleOpenDecline = (submission: FormSubmission) => {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
 import { useSalesDashboard, useLeads } from "../../hooks/useCrm";
+import { useAuth } from "../../../../hooks/useAuth";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import crmService from "../../services/crmService";
@@ -26,11 +27,22 @@ import {
 } from "lucide-react";
 
 export const Dashboard: React.FC = () => {
+  const { user } = useAuth();
   const { data, isLoading, error, refetch } = useSalesDashboard();
   const { leads: assignedLeads, isLoading: leadsLoading } = useLeads({ page_size: 100 });
-  const approvedAssignedLeads = assignedLeads.filter(
-    (lead) => !!lead.assigned_to && lead.status !== "lost" && lead.status !== "LOST"
-  );
+  const approvedAssignedLeads = assignedLeads.filter((lead) => {
+    if (lead.status === "lost" || lead.status === "LOST") return false;
+    if (user && user.role === "SALES_EXECUTIVE") {
+      const isAssignedToMe =
+        lead.assigned_to === Number(user.id) ||
+        (lead.assigned_to_name && (
+          String(lead.assigned_to_name).toLowerCase() === String(user.name || "").toLowerCase() ||
+          String(lead.assigned_to_name).toLowerCase() === String(user.email || "").toLowerCase()
+        ));
+      return isAssignedToMe;
+    }
+    return !!lead.assigned_to;
+  });
   const [completingId, setCompletingId] = useState<number | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 

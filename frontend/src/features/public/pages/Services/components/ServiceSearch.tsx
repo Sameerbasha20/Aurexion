@@ -25,7 +25,7 @@ export const ServiceSearch: React.FC = () => {
 
   // Combine static and DB services, prioritizing DB services for duplicates
   const allServices = useMemo(() => {
-    const combined = [...mappedDbServices];
+    const combined: any[] = [...mappedDbServices];
     servicesData.forEach((staticS) => {
       if (!combined.some((s) => s.slug === staticS.slug)) {
         combined.push(staticS);
