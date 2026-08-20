@@ -10,6 +10,12 @@ export interface UserResponse {
 
 export interface LoginResponse {
   user: UserResponse;
+  access?: string;
+  refresh?: string;
+  tokens?: {
+    access: string;
+    refresh: string;
+  };
 }
 
 export const authService = {

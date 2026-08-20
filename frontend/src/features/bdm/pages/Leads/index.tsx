@@ -37,11 +37,13 @@ const PRIORITY_COLORS: Record<string, string> = {
 export const Leads: React.FC = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("website");
   const [selectedLeadDetail, setSelectedLeadDetail] = useState<Lead | null>(null);
 
   const { leads, totalCount, isLoading, error, refetch, currentPage, totalPages, nextPage, prevPage, hasNext, hasPrev } = useLeads({
     search: search || undefined,
     status: statusFilter || undefined,
+    source: sourceFilter || undefined,
   });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -92,10 +94,21 @@ export const Leads: React.FC = () => {
                 placeholder="Search leads..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                style={{ width: "250px" }}
+                style={{ width: "220px" }}
               />
+              <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                <SelectTrigger style={{ width: "160px" }}>
+                  <SelectValue placeholder="Source: Website" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="website">Source: Website</SelectItem>
+                  <SelectItem value="rfp_form">Source: RFP Form</SelectItem>
+                  <SelectItem value="contact_form">Source: Contact Form</SelectItem>
+                  <SelectItem value="">All Sources</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger style={{ width: "180px" }}>
+                <SelectTrigger style={{ width: "160px" }}>
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>

@@ -67,7 +67,7 @@ export const Roles: React.FC = () => {
           RESOLVING ROLE CONFIG MATRIX...
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }} className="grid-responsive">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: "1.5rem" }}>
           {roles.map((r) => (
             <Card key={r.code} glowOnHover>
               <CardContent style={{ padding: "1.5rem", display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>

@@ -61,6 +61,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       setUser(activeUser);
       localStorage.setItem("aurexion_user", JSON.stringify(activeUser));
+      const token = response.access || (response as any).tokens?.access;
+      if (token) {
+        localStorage.setItem("aurexion_token", token);
+      }
     } catch (err: any) {
       setIsLoading(false);
       throw err;
@@ -71,6 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("aurexion_user");
+    localStorage.removeItem("aurexion_token");
     authService.logout().catch(() => {});
   };
 

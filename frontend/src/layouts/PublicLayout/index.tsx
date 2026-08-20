@@ -11,7 +11,29 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   const [location] = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const handleScrollOrHash = () => {
+      if (window.location.hash) {
+        const id = window.location.hash.replace("#", "");
+        const el = document.getElementById(id);
+        if (el) {
+          setTimeout(() => {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 60);
+          return;
+        }
+      }
+      window.scrollTo(0, 0);
+    };
+
+    handleScrollOrHash();
+
+    window.addEventListener("popstate", handleScrollOrHash);
+    window.addEventListener("hashchange", handleScrollOrHash);
+
+    return () => {
+      window.removeEventListener("popstate", handleScrollOrHash);
+      window.removeEventListener("hashchange", handleScrollOrHash);
+    };
   }, [location]);
 
   return (

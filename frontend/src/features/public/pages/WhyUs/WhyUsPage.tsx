@@ -103,7 +103,7 @@ export const WhyUsPage: React.FC = () => {
         <div className="subpage-hero-container">
           <div style={{ maxWidth: "880px" }}>
             <div className="subpage-hero-eyebrow">
-              <span className="subpage-cat-tag">WHY AUREXION / 02</span>
+              <span className="subpage-cat-tag">WHY AUREXION</span>
               <span className="subpage-signal-divider" />
               <span className="subpage-code-tag">ENGINEERING DIFFERENTIATORS</span>
             </div>
@@ -163,9 +163,6 @@ export const WhyUsPage: React.FC = () => {
                 onFocus={e => ((e.currentTarget as HTMLDivElement).style.background = "#060d1a")}
                 onBlur={e => ((e.currentTarget as HTMLDivElement).style.background = "#050811")}
               >
-                <span style={{ position: "absolute", top: "1.2rem", right: "1.5rem", fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.95rem", fontWeight: 700, color: "#63f5e8", opacity: 0.85 }}>
-                  {d.number}
-                </span>
                 <d.icon size={22} color="#63f5e8" style={{ marginBottom: "1.2rem" }} />
                 <h3 style={{ fontSize: "1.05rem", fontWeight: 600, color: "#eef4f3", marginBottom: ".8rem" }}>{d.title}</h3>
                 <p style={{ color: "#8da5ae", fontSize: ".85rem", lineHeight: 1.7, marginBottom: "1.2rem" }}>

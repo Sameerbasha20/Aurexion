@@ -132,7 +132,7 @@ export const bdmService = {
   getAssignableUsers: async (): Promise<{ id: number; username: string; email: string; name: string; role: string }[]> => {
     try {
       const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS);
-      const list = Array.isArray(data) ? data : (data.results || []);
+      const list = Array.isArray(data) ? data : (data.data || data.results || []);
       return list
         .filter((u: any) => u.profile?.role === 'sales_executive' || u.role === 'sales_executive')
         .map((u: any) => ({

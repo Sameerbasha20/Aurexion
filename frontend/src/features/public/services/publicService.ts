@@ -1,12 +1,12 @@
 import axiosClient from "../../../api/axiosClient";
 import { API_ENDPOINTS } from "../../../api/endpoints";
-import { BlogPost, CaseStudy, Industry, Job, JobApplication, Service, ContactFormData, QuoteFormData, PublicLeadData } from "../types/website.types";
+import { BlogPost, CaseStudy, Industry, Job, JobApplication, Service, ServiceApiDetail, ContactFormData, QuoteFormData, PublicLeadData } from "../types/website.types";
 
 export const publicService = {
   // CMS endpoints
-  getServiceBySlug: async (slug: string): Promise<Service> => {
+  getServiceBySlug: async (slug: string): Promise<ServiceApiDetail> => {
     const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_SERVICE_DETAIL(slug));
-    return response as any;
+    return response as unknown as ServiceApiDetail;
   },
 
   getIndustryBySlug: async (slug: string): Promise<Industry> => {

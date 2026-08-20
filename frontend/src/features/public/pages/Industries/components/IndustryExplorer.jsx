@@ -55,9 +55,7 @@ export const IndustryExplorer = () => {
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[60px] pointer-events-none" />
               
               <div className="relative z-10 flex flex-col h-full">
-                <span className="text-6xl font-bold text-[#63f5e8] opacity-75 drop-shadow-[0_0_12px_rgba(99,245,232,0.6)] absolute top-4 right-8 font-mono">{activeIndustry.id}</span>
-                
-                <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 pr-16">
+                <h3 className="text-3xl md:text-5xl font-bold text-white mb-6">
                   {activeIndustry.name}
                 </h3>
                 

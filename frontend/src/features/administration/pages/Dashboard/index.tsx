@@ -180,7 +180,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Charts Panels */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }} className="grid-responsive">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))", gap: "1.5rem" }}>
         <Card>
           <CardHeader>
             <CardTitle style={{ fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>

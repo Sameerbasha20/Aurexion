@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
-from rest_framework import status, viewsets, filters
+from rest_framework import status, viewsets, filters, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -123,12 +123,20 @@ class LoginView(APIView):
                 django_login(request, user)
 
                 role = user.profile.role if hasattr(user, 'profile') else 'client_user'
+                access_str = str(refresh.access_token)
+                refresh_str = str(refresh)
                 response_data = {
                     'user': {
                         'id': user.id,
                         'username': user.username,
                         'email': user.email,
                         'role': role
+                    },
+                    'access': access_str,
+                    'refresh': refresh_str,
+                    'tokens': {
+                        'access': access_str,
+                        'refresh': refresh_str,
                     }
                 }
                 response = Response(response_data, status=status.HTTP_200_OK)
@@ -284,16 +292,35 @@ class CookieTokenRefreshView(TokenRefreshView):
 
 # --- User Management Views (RBAC Protected) ---
 
+class CanViewOrManageUsers(permissions.BasePermission):
+    """
+    GET requests (listing/reading users for lead assignment dropdowns):
+    Allowed for Super Admin, Administrator, BDM, and Sales Executive.
+    
+    POST, PUT, PATCH, DELETE (User creation, update, role assignment):
+    Restricted to Super Admin and Administrator.
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if request.user.is_superuser:
+            return True
+        role = request.user.profile.role if hasattr(request.user, 'profile') else None
+        if request.method in permissions.SAFE_METHODS:
+            return role in ['super_admin', 'administrator', 'bdm', 'sales_executive', 'hr_manager']
+        return role in ['super_admin', 'administrator']
+
+
 class UserViewSet(viewsets.ModelViewSet):
     """
     Endpoint: /api/v1/users/
     Handles User management and RBAC assignment.
-    Requires IsAdministrator (which covers Admin and Super Admin).
-    Prevents privilege escalation.
+    SAFE methods (GET) accessible by Admin, BDM, Sales Executive.
+    Mutation methods require Administrator.
     """
     queryset = User.objects.select_related('profile').all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [IsAdministrator]
+    permission_classes = [CanViewOrManageUsers]
 
     def perform_create(self, serializer):
         role = self.request.data.get('role', 'client_user')

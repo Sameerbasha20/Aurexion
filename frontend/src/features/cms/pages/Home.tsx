@@ -9,6 +9,8 @@ import { Link } from "wouter";
 import { HeroVideoBackground } from "../../../components/common/HeroVideoBackground";
 import { serviceCategories, servicesData } from "../../../data/services";
 import { industriesData } from "../../../data/industries";
+import { caseStudiesData } from "../../../data/caseStudies";
+import { blogPosts } from "../../../data/blogPosts";
 
 const principles = [
   ["01", "ENGINEERING FIRST", "Start with the system, not the surface. Make the foundation capable of carrying what comes next."],
@@ -170,8 +172,12 @@ export default function Home() {
   const [showAllIndustries, setShowAllIndustries] = useState(false);
   const [dialog, setDialog] = useState<"contact" | "project" | null>(null);
 
-  const { data: caseStudies } = useCaseStudies();
-  const { data: blogPosts } = useBlogPosts();
+  const { data: caseStudiesDataFromApi } = useCaseStudies();
+  const { data: blogPostsFromApi } = useBlogPosts();
+
+  const activeBlogPosts = (Array.isArray(blogPostsFromApi) && blogPostsFromApi.length > 0)
+    ? blogPostsFromApi
+    : (Array.isArray(blogPosts) ? blogPosts : []);
 
   useEffect(() => {
     if (window.location.hash) {
@@ -251,8 +257,9 @@ export default function Home() {
               return (
                 <div key={cat.id} className="service-card-pro">
                   <div className="svc-pro-header">
-                    <span className="svc-pro-num">{cat.id}</span>
-                    <Icon size={18} className="svc-pro-icon" />
+                    <div className="svc-pro-icon-box">
+                      <Icon size={20} className="svc-pro-icon" />
+                    </div>
                   </div>
 
                   <Link href={`/services?category=${encodeURIComponent(cat.name)}#explorer`} className="svc-pro-title hover:text-[#63f5e8] transition-colors block">
@@ -337,7 +344,6 @@ export default function Home() {
                     <div className="ind-card-icon-box">
                       <Icon size={20} className="ind-card-icon" />
                     </div>
-                    <span className="ind-card-num">{ind.id}</span>
                   </div>
 
                   <h3 className="ind-card-title">{ind.name}</h3>
@@ -382,63 +388,48 @@ export default function Home() {
             <Link href="/case-studies" className="text-button">VIEW ALL WORK <ArrowUpRight size={16} /></Link>
           </div>
 
-          {caseStudies && caseStudies.length > 0 ? (
-            <article className="case-study">
-              <div className="case-visual" style={{ padding: 0, overflow: "hidden" }}>
-                <img
-                  src="/manus-storage/case-study-intelligence.jpg"
-                  alt="Enterprise Intelligence Platform"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,17,0.3) 0%, rgba(5,8,17,0.7) 100%)", pointerEvents: "none" }} />
-                <p className="case-number">01</p>
-                <div style={{ position: "absolute", bottom: "1.5rem", left: "1.5rem", right: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", color: "#63f5e8", letterSpacing: ".12em", background: "rgba(5,8,17,.8)", padding: ".3rem .6rem", border: "1px solid rgba(99,245,232,.3)" }}>
-                    4K ARCHITECTURE VISUAL
-                  </span>
+          {(() => {
+            const featured = (caseStudiesDataFromApi && caseStudiesDataFromApi.length > 0) ? caseStudiesDataFromApi[0] : caseStudiesData[0];
+            if (!featured) return null;
+
+            const chal = featured.challenge || featured.business_challenge || featured.context || "Fragmented legacy architecture impeding performance and agility";
+            const sol = featured.solution || (typeof featured.architecture === "object" ? featured.architecture?.description : featured.architecture) || featured.proposed_architecture || "Cloud-native microservices architecture with zero-trust security and event-driven data streaming";
+            const out = (featured.results && Array.isArray(featured.results) && featured.results[0])
+              ? `${featured.results[0].impact} ${featured.results[0].label}`
+              : (typeof featured.results === "string" ? featured.results : (featured.outcomes_performance || "40% Reduction in Infrastructure Cost"));
+            const industryName = (featured.industry || "Enterprise").replace(/-/g, " ").toUpperCase();
+            const categoryName = featured.category || "Cloud Modernization";
+            const targetSlug = featured.slug || "banking-modernization";
+
+            return (
+              <article className="case-study">
+                <div className="case-visual" style={{ padding: 0, overflow: "hidden" }}>
+                  <img
+                    src={featured.coverImage || "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80"}
+                    alt={featured.title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,17,0.1) 0%, rgba(5,8,17,0.65) 100%)", pointerEvents: "none" }} />
+                  <div style={{ position: "absolute", bottom: "1.5rem", left: "1.5rem", right: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", color: "#63f5e8", letterSpacing: ".12em", background: "rgba(5,8,17,.8)", padding: ".3rem .6rem", border: "1px solid rgba(99,245,232,.3)" }}>
+                      {industryName}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div className="case-copy">
-                <p className="eyebrow">{caseStudies[0].industry}</p>
-                <h3>{caseStudies[0].title}</h3>
-                <p>{caseStudies[0].challenge}</p>
-                <div className="case-facts">
-                  <span><b>CHALLENGE</b> {caseStudies[0].challenge}</span>
-                  <span><b>SOLUTION</b> {caseStudies[0].solution}</span>
-                  <span><b>OUTCOME</b> {caseStudies[0].results}</span>
+                <div className="case-copy">
+                  <p className="eyebrow">{industryName} &bull; {categoryName}</p>
+                  <h3>{featured.title}</h3>
+                  <p>{chal.slice(0, 140)}{chal.length > 140 ? "..." : ""}</p>
+                  <div className="case-facts">
+                    <span><b>CHALLENGE</b> {chal.slice(0, 95)}{chal.length > 95 ? "..." : ""}</span>
+                    <span><b>SOLUTION</b> {sol.slice(0, 95)}{sol.length > 95 ? "..." : ""}</span>
+                    <span><b>OUTCOME</b> {out}</span>
+                  </div>
+                  <Link href={`/case-studies/${targetSlug}`} className="text-button">EXPLORE CASE STUDY <ArrowUpRight size={16} /></Link>
                 </div>
-                <Link href="/case-studies" className="text-button">EXPLORE CASE STUDY <ArrowUpRight size={16} /></Link>
-              </div>
-            </article>
-          ) : (
-            <article className="case-study">
-              <div className="case-visual" style={{ padding: 0, overflow: "hidden" }}>
-                <img
-                  src="/manus-storage/case-study-intelligence.jpg"
-                  alt="Enterprise Intelligence Platform"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,17,0.3) 0%, rgba(5,8,17,0.7) 100%)", pointerEvents: "none" }} />
-                <p className="case-number">01</p>
-                <div style={{ position: "absolute", bottom: "1.5rem", left: "1.5rem", right: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", color: "#63f5e8", letterSpacing: ".12em", background: "rgba(5,8,17,.8)", padding: ".3rem .6rem", border: "1px solid rgba(99,245,232,.3)" }}>
-                    4K ARCHITECTURE VISUAL
-                  </span>
-                </div>
-              </div>
-              <div className="case-copy">
-                <p className="eyebrow">AI + DATA + CLOUD</p>
-                <h3>Enterprise<br /><em>Intelligence Platform</em></h3>
-                <p>Reframing a complex operating environment as one connected decision system.</p>
-                <div className="case-facts">
-                  <span><b>CHALLENGE</b> Fragmented intelligence across business silos</span>
-                  <span><b>SOLUTION</b> Unified neural data platform & real-time analytics</span>
-                  <span><b>OUTCOME</b> Sub-second decision cycles with 99.99% uptime</span>
-                </div>
-                <Link href="/case-studies" className="text-button">EXPLORE CASE STUDIES <ArrowUpRight size={16} /></Link>
-              </div>
-            </article>
-          )}
+              </article>
+            );
+          })()}
         </section>
 
         {/* ── WHY AUREXION ──────────────────────────────────────────────── */}
@@ -489,43 +480,40 @@ export default function Home() {
               <p className="eyebrow">THOUGHTS ON WHAT'S NEXT</p>
               <h2>Signals worth<br /><em>following.</em></h2>
             </div>
-            <Link href="/blog" className="text-button">VIEW ALL INSIGHTS <ArrowUpRight size={16} /></Link>
+            <Link href="/insights" className="text-button">VIEW ALL INSIGHTS <ArrowUpRight size={16} /></Link>
           </div>
           <div className="insight-grid">
-            {[
-              {
-                tag: "AI",
-                date: "06.18.26",
-                title: "The new shape of enterprise intelligence",
-                image: "/manus-storage/insight-ai.jpg",
-              },
-              {
-                tag: "CLOUD",
-                date: "05.29.26",
-                title: "Why resilient systems begin with a point of view",
-                image: "/manus-storage/insight-cloud.jpg",
-              },
-              {
-                tag: "ENGINEERING",
-                date: "04.11.26",
-                title: "Complexity is a signal, not a sentence",
-                image: "/manus-storage/insight-engineering.jpg",
-              },
-            ].map((post) => (
-              <Link href="/blog" className="insight-card block" key={post.title}>
-                <div className="insight-img-wrap">
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="insight-photo"
-                  />
-                  <div className="insight-img-overlay" />
-                </div>
-                <span className="eyebrow">{post.tag} / {post.date}</span>
-                <h3>{post.title}</h3>
-                <span className="read-link">READ ARTICLE <ArrowUpRight size={15} /></span>
-              </Link>
-            ))}
+            {activeBlogPosts.slice(0, 3).map((post: any) => {
+              const rawCat = typeof post.category === "object" && post.category !== null ? post.category.name : post.category;
+              const categoryLabel = typeof rawCat === "string" ? rawCat.toUpperCase().replace(/-/g, " ") : "ENGINEERING";
+              
+              let dateFormatted = "06.18.26";
+              if (post.publishedAt || post.published_at || post.created_at) {
+                try {
+                  const d = new Date(post.publishedAt || post.published_at || post.created_at);
+                  if (!isNaN(d.getTime())) {
+                    dateFormatted = d.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "2-digit" }).replace(/\//g, ".");
+                  }
+                } catch (_) {}
+              }
+
+              return (
+                <Link href={`/insights/${post.slug}`} className="insight-card block" key={post.slug || post.id}>
+                  <div className="insight-img-wrap">
+                    <img
+                      src={post.coverImage || post.media || post.imageUrl || "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80"}
+                      alt={post.title}
+                      className="insight-photo"
+                      loading="lazy"
+                    />
+                    <div className="insight-img-overlay" />
+                  </div>
+                  <span className="eyebrow">{categoryLabel} / {dateFormatted}</span>
+                  <h3>{post.title}</h3>
+                  <span className="read-link">READ ARTICLE <ArrowUpRight size={15} /></span>
+                </Link>
+              );
+            })}
           </div>
         </section>
 

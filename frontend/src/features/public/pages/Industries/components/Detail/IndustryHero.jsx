@@ -54,7 +54,7 @@ export const IndustryHero = ({ industry }) => {
 
         <div style={{ maxWidth: "860px" }}>
           <div className="subpage-hero-eyebrow">
-            <span className="subpage-cat-tag">INDUSTRY VERTICAL / {industry.id || "01"}</span>
+            <span className="subpage-cat-tag">INDUSTRY VERTICAL</span>
             <span className="subpage-signal-divider" />
             <span className="subpage-code-tag">{industry.name.toUpperCase()} SECTOR</span>
           </div>

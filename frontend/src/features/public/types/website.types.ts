@@ -9,6 +9,41 @@ export interface Service {
   isActive: boolean;
 }
 
+/** Raw shape of a service returned by the backend CMS API (ServiceSerializer) */
+export interface ServiceApiDetail {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  problem: string;
+  solution: string;
+  tech_stack: string[];
+  meta_title: string | null;
+  meta_description: string | null;
+  meta_keywords: string | null;
+  is_featured: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Normalized service detail shape consumed by ServiceDetailsPage and its sections */
+export interface ServiceDetail {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
+  description: string;
+  problem: string;
+  solution: string;
+  technologies: string[];
+  meta_title?: string | null;
+  meta_description?: string | null;
+  meta_keywords?: string | null;
+  relatedIndustries: string[];
+  relatedCaseStudies: string[];
+}
+
 export interface Industry {
   id: number;
   slug: string;
