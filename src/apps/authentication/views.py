@@ -123,12 +123,20 @@ class LoginView(APIView):
                 django_login(request, user)
 
                 role = user.profile.role if hasattr(user, 'profile') else 'client_user'
+                access_str = str(refresh.access_token)
+                refresh_str = str(refresh)
                 response_data = {
                     'user': {
                         'id': user.id,
                         'username': user.username,
                         'email': user.email,
                         'role': role
+                    },
+                    'access': access_str,
+                    'refresh': refresh_str,
+                    'tokens': {
+                        'access': access_str,
+                        'refresh': refresh_str,
                     }
                 }
                 response = Response(response_data, status=status.HTTP_200_OK)
