@@ -9,18 +9,35 @@ export const publicService = {
     return response as any;
   },
 
+  getServices: async (): Promise<Service[]> => {
+    const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_SERVICES);
+    return (response as any) || [];
+  },
+
+  getIndustries: async (): Promise<Industry[]> => {
+    const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_INDUSTRIES);
+    return (response as any) || [];
+  },
+
   getIndustryBySlug: async (slug: string): Promise<Industry> => {
     const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_INDUSTRY_DETAIL(slug));
     return response as any;
   },
 
   getCaseStudies: async (): Promise<CaseStudy[]> => {
-    const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_CASE_STUDIES);
+    const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_CASE_STUDIES, { params: { page_size: 100 } });
     return (response as any) || [];
   },
 
+  getCaseStudyBySlug: async (slug: string): Promise<CaseStudy> => {
+    const response = await axiosClient.get(`${API_ENDPOINTS.CMS.PUBLIC_CASE_STUDIES}${slug}/`);
+    return response as any;
+  },
+
   getBlogPosts: async (params?: { category?: string; tag?: string; search?: string }): Promise<BlogPost[]> => {
-    const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_BLOG, { params });
+    const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_BLOG, {
+      params: { page_size: 100, ...params }
+    });
     return (response as any) || [];
   },
 

@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, "src"))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
-from apps.cms.models import Industry, Service
+from apps.cms.models import Industry, Service, Category
 from django.utils.text import slugify
 
 # 18 Industries from the frontend
@@ -33,6 +33,19 @@ INDUSTRIES = [
     "Professional Services",
     "Government / Public Sector",
     "Startups",
+]
+
+# 9 Blog Categories from the frontend
+CATEGORIES = [
+    {"name": "Software Engineering", "slug": "software-engineering"},
+    {"name": "AI & Machine Learning", "slug": "ai-ml"},
+    {"name": "Cloud & Infrastructure", "slug": "cloud"},
+    {"name": "Data & Analytics", "slug": "data"},
+    {"name": "Cybersecurity", "slug": "cybersecurity"},
+    {"name": "DevOps & Automation", "slug": "devops"},
+    {"name": "Enterprise Technology", "slug": "enterprise"},
+    {"name": "Digital Transformation", "slug": "digital-transformation"},
+    {"name": "UI/UX & Digital Platforms", "slug": "ui-ux"},
 ]
 
 # 33 Services from the frontend categorized by their vertical
@@ -146,9 +159,28 @@ def seed_services():
             service.save()
             print(f"[UPDATED SERVICE] {index}. {title} (Slug: {slug})")
 
+def seed_categories():
+    print(f"\nSeeding {len(CATEGORIES)} blog categories...")
+    for index, cat_data in enumerate(CATEGORIES, 1):
+        name = cat_data["name"]
+        slug = cat_data["slug"]
+        category, created = Category.objects.get_or_create(
+            slug=slug,
+            defaults={
+                "name": name
+            }
+        )
+        if created:
+            print(f"[CREATED CATEGORY] {index}. {name} (Slug: {slug})")
+        else:
+            category.name = name
+            category.save()
+            print(f"[UPDATED CATEGORY] {index}. {name} (Slug: {slug})")
+
 def main():
     seed_industries()
     seed_services()
+    seed_categories()
     print("\nAll seeding operations completed successfully!")
 
 if __name__ == "__main__":

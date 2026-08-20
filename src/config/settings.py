@@ -143,8 +143,8 @@ if os.getenv('DB_ENGINE'):
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST'),
             'PORT': os.getenv('DB_PORT', '5432'),
-            'CONN_MAX_AGE': 60,
-            'CONN_HEALTH_CHECKS': True,
+            'CONN_MAX_AGE': 0,
+            'CONN_HEALTH_CHECKS': False,
         }
     }
 else:
@@ -264,7 +264,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Aurexion Enterprise Platform API',
     'DESCRIPTION': 'API documentation for Aurexion Technologies platform.',
     'VERSION': '1.0.0',
-    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
     'SERVE_INCLUDE_SCHEMA': False,
     'ENUM_NAME_OVERRIDES': {
         'LeadStatusEnum': 'apps.crm.models.LeadStatus',

@@ -48,7 +48,7 @@ export const Footer: React.FC = () => {
         color: "#64748b",
         fontFamily: "IBM Plex Mono, monospace",
       }}>
-        <span>© {new Date().getFullYear()} AUREXION. All rights reserved.</span>
+
         <span>Secure Session Scope / MD-SIG-01</span>
       </div>
     </footer>

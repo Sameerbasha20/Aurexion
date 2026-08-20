@@ -28,7 +28,7 @@ export const Footer: React.FC = () => {
               <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
               <li><Link href="/why-us" className="hover:text-primary transition-colors">Why Choose Us</Link></li>
               <li><Link href="/careers" className="hover:text-primary transition-colors">Careers</Link></li>
-              <li><Link href="/insights" className="hover:text-primary transition-colors">Insights</Link></li>
+              <li><Link href="/blogengine" className="hover:text-primary transition-colors">Blog Engine</Link></li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
             </ul>
           </div>
@@ -95,7 +95,7 @@ export const Footer: React.FC = () => {
         {/* Footer Bottom Bar */}
         <div className="border-t border-border/40 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted-foreground">
-            &copy; {currentYear} Aurexion Technologies. All rights reserved.
+
           </p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link>

@@ -30,15 +30,39 @@ export const ArticleDetailPage = () => {
     excerpt: apiArticle.summary || apiArticle.content.substring(0, 150) + "...",
     content: apiArticle.content,
     category: apiArticle.category_name || apiArticle.category,
-    tags: Array.isArray(apiArticle.tags) ? apiArticle.tags : [],
-    authorId: "auth-001",
+    tags: (Array.isArray(apiArticle.tags) && apiArticle.tags.length > 0) ? apiArticle.tags : (staticArticle?.tags || []),
+    authorId: staticArticle?.authorId || (() => {
+      const contentStr = (apiArticle.title + " " + apiArticle.content).toLowerCase();
+      if (contentStr.includes("security") || contentStr.includes("cryptography") || contentStr.includes("zero-trust") || contentStr.includes("cybersecurity")) {
+        return "auth-003";
+      } else if (contentStr.includes("cloud") || contentStr.includes("devops") || contentStr.includes("kubernetes") || contentStr.includes("architecture")) {
+        return "auth-002";
+      } else {
+        return "auth-001";
+      }
+    })(),
     publishedAt: apiArticle.published_at || apiArticle.created_at,
     relatedServices: staticArticle?.relatedServices || [],
     relatedIndustries: staticArticle?.relatedIndustries || [],
     relatedCaseStudies: staticArticle?.relatedCaseStudies || [],
     meta_title: apiArticle.meta_title,
     meta_description: apiArticle.meta_description,
-    meta_keywords: apiArticle.meta_keywords
+    meta_keywords: apiArticle.meta_keywords,
+    coverImage: apiArticle.media || staticArticle?.coverImage || (() => {
+      const categoryImages = {
+        "cybersecurity": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80",
+        "software-engineering": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
+        "ai-ml": "https://images.unsplash.com/photo-1527474305487-b87b222841cc?auto=format&fit=crop&w=600&q=80",
+        "cloud": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80",
+        "data": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
+        "devops": "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=600&q=80",
+        "enterprise": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
+        "digital-transformation": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
+        "ui-ux": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=600&q=80"
+      };
+      const cat = apiArticle.category_name || apiArticle.category || "";
+      return categoryImages[cat.toLowerCase()] || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80";
+    })()
   } : staticArticle;
 
   useEffect(() => {

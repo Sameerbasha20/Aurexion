@@ -8,6 +8,7 @@ const INDUSTRY_IMAGES = {
   insurance: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=85",
   healthcare: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1600&q=85",
   lifesciences: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1600&q=85",
+  life: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1600&q=85",
   education: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1600&q=85",
   manufacturing: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1600&q=85",
   retail: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=85",
@@ -91,11 +92,11 @@ export const IndustryHero = ({ industry }) => {
           {/* Telemetry Metrics */}
           <div className="subpage-meta-telemetry">
             <div className="subpage-meta-item">
-              <span className="subpage-meta-value">{industry.relatedServices?.length || 4}</span>
+              <span className="subpage-meta-value">{industry.relatedServices?.length !== undefined ? industry.relatedServices.length : 0}</span>
               <span className="subpage-meta-label">Associated Services</span>
             </div>
             <div className="subpage-meta-item">
-              <span className="subpage-meta-value">{industry.relatedCaseStudies?.length || 1}</span>
+              <span className="subpage-meta-value">{industry.relatedCaseStudies?.length !== undefined ? industry.relatedCaseStudies.length : 0}</span>
               <span className="subpage-meta-label">Sector Case Studies</span>
             </div>
             <div className="subpage-meta-item">

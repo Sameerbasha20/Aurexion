@@ -1,17 +1,70 @@
 import React, { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { industriesData } from "../../../../../data/industries";
+import { useIndustries } from "../../../hooks/usePublicContent";
 import { Search, ArrowRight } from "lucide-react";
 
 export const IndustrySearch = () => {
+  const { data: dbIndustries } = useIndustries();
   const [query, setQuery] = useState("");
 
-  const filteredIndustries = useMemo(() => {
-    return industriesData.filter((ind) => {
-      return ind.name.toLowerCase().includes(query.toLowerCase()) || 
-             ind.shortDescription.toLowerCase().includes(query.toLowerCase());
+  // Map database industries to Industry format
+  const mappedDbIndustries = useMemo(() => {
+    return (dbIndustries || []).map((dbInd) => {
+      let challengesObj = { operational: [], regulatory: [], technical: [] };
+      try {
+        challengesObj = JSON.parse(dbInd.challenges);
+      } catch (e) {
+        challengesObj = {
+          operational: [{ title: dbInd.challenges ? dbInd.challenges.slice(0, 50) + "..." : "Operational challenges", description: dbInd.challenges || "" }],
+          regulatory: [],
+          technical: []
+        };
+      }
+
+      let solutionsArr = [];
+      try {
+        solutionsArr = JSON.parse(dbInd.target_solutions);
+      } catch (e) {
+        solutionsArr = dbInd.target_solutions ? [dbInd.target_solutions] : [];
+      }
+
+      return {
+        id: `db-${dbInd.id}`,
+        slug: dbInd.slug,
+        name: dbInd.name || "",
+        shortDescription: dbInd.challenges ? dbInd.challenges.slice(0, 150) + (dbInd.challenges.length > 150 ? "..." : "") : "Enterprise technology solutions.",
+        icon: "Building",
+        challenges: challengesObj,
+        solutions: solutionsArr,
+        relatedServices: [],
+        technologies: [],
+        relatedCaseStudies: [],
+        outcomes: ["Security", "Scalability"]
+      };
     });
-  }, [query]);
+  }, [dbIndustries]);
+
+  // Combine static and DB industries, prioritizing DB industries for duplicates
+  const allIndustries = useMemo(() => {
+    const combined = [...mappedDbIndustries];
+    industriesData.forEach((staticS) => {
+      if (!combined.some((s) => s.slug === staticS.slug)) {
+        combined.push(staticS);
+      }
+    });
+    return combined;
+  }, [mappedDbIndustries]);
+
+  const filteredIndustries = useMemo(() => {
+    if (!query) return [];
+    return allIndustries.filter((ind) => {
+      return (
+        ind.name.toLowerCase().includes(query.toLowerCase()) ||
+        ind.shortDescription.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+  }, [query, allIndustries]);
 
   return (
     <section className="py-24 bg-background border-t border-border/10">

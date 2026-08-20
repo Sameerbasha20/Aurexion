@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { serviceCategories, servicesData } from "../../../../../data/services";
+import { useServices } from "../../../hooks/usePublicContent";
 import { Code, Cpu, Cloud, Layout, Layers, Shield, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 
@@ -13,6 +14,33 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export const ServicesOverview: React.FC = () => {
+  const { data: dbServices } = useServices();
+
+  // Map database services to ServiceItem format
+  const mappedDbServices = useMemo(() => {
+    return (dbServices || []).map((apiService: any) => ({
+      id: `db-${apiService.id}`,
+      slug: apiService.slug,
+      category: apiService.category || "Core Engineering",
+      name: apiService.title || apiService.name || "",
+      description: apiService.description || "",
+      technologies: apiService.tech_stack || [],
+      relatedIndustries: [],
+      relatedCaseStudies: [],
+    }));
+  }, [dbServices]);
+
+  // Combine static and DB services, prioritizing DB services for duplicates
+  const allServices = useMemo(() => {
+    const combined = [...mappedDbServices];
+    servicesData.forEach((staticS) => {
+      if (!combined.some((s) => s.slug === staticS.slug)) {
+        combined.push(staticS);
+      }
+    });
+    return combined;
+  }, [mappedDbServices]);
+
   return (
     <section id="capabilities" className="py-24 bg-background scroll-mt-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -26,7 +54,7 @@ export const ServicesOverview: React.FC = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {serviceCategories.map((category: any) => {
             const Icon = iconMap[category.iconName];
-            const serviceCount = servicesData.filter((s: any) => s.category === category.name).length;
+            const serviceCount = allServices.filter((s: any) => s.category === category.name).length;
 
             return (
               <div 

@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { serviceCategories, servicesData } from "../../../../../data/services";
+import { useServices } from "../../../hooks/usePublicContent";
 import { ChevronRight, ArrowRight } from "lucide-react";
 
 export const ServiceExplorer: React.FC = () => {
+  const { data: dbServices } = useServices();
+
   const [activeCategory, setActiveCategory] = useState(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -26,7 +29,27 @@ export const ServiceExplorer: React.FC = () => {
     syncCategoryFromUrl();
   }, []);
   
-  const activeServices = servicesData.filter((s: any) => s.category === activeCategory);
+  // Map database services to ServiceItem format
+  const mappedDbServices = (dbServices || []).map((apiService: any) => ({
+    id: `db-${apiService.id}`,
+    slug: apiService.slug,
+    category: apiService.category || "Core Engineering",
+    name: apiService.title || apiService.name || "",
+    description: apiService.description || "",
+    technologies: apiService.tech_stack || [],
+    relatedIndustries: [],
+    relatedCaseStudies: [],
+  }));
+
+  // Combine static and DB services, prioritizing DB services for duplicates
+  const allServices = [...mappedDbServices];
+  servicesData.forEach((staticS) => {
+    if (!allServices.some((s) => s.slug === staticS.slug)) {
+      allServices.push(staticS);
+    }
+  });
+
+  const activeServices = allServices.filter((s: any) => s.category === activeCategory);
 
   return (
     <section id="explorer" className="py-24 bg-[#0a0f18] scroll-mt-20 border-t border-border/10">

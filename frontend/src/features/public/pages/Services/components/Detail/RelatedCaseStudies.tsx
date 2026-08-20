@@ -3,6 +3,7 @@ import { ServiceItem } from "../../../../../../data/services";
 import { caseStudiesData } from "../../../../../../data/caseStudies";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
+import { useCaseStudies } from "../../../../hooks/usePublicContent";
 
 // Curated Unsplash cover images per industry/category
 const COVER_IMAGES: Record<string, string> = {
@@ -27,32 +28,46 @@ interface RelatedCaseStudiesProps {
 }
 
 export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service }) => {
+  const { data: dbCaseStudies } = useCaseStudies();
+
   if (!service.relatedCaseStudies || service.relatedCaseStudies.length === 0) return null;
 
-  // Try to find matching caseStudies from real data
-  const cases = service.relatedCaseStudies.slice(0, 2).map((csId: string) => {
-    return (caseStudiesData as any[]).find(
-      cs => cs.id === csId || cs.slug === csId || cs.id.toLowerCase() === csId.toLowerCase()
-    ) ?? null;
+  // Map database case studies and static ones to a unified format
+  const allCaseStudies: any[] = [];
+
+  if (dbCaseStudies && dbCaseStudies.length > 0) {
+    dbCaseStudies.forEach(dbCase => {
+      allCaseStudies.push({
+        id: `db-${dbCase.id}`,
+        slug: dbCase.slug,
+        title: dbCase.title || "",
+        industry: "Technology",
+        coverImage: dbCase.media || COVER_IMAGES.default,
+        outcome: dbCase.outcomes_performance || "Verified architecture delivered"
+      });
+    });
+  }
+
+  caseStudiesData.forEach(staticCs => {
+    if (!allCaseStudies.some(cs => cs.slug === staticCs.slug)) {
+      allCaseStudies.push({
+        id: staticCs.id,
+        slug: staticCs.slug,
+        title: staticCs.title || "",
+        industry: staticCs.industry || "Enterprise",
+        coverImage: staticCs.coverImage || COVER_IMAGES.default,
+        outcome: staticCs.results?.[0] ? `${staticCs.results[0].label}: ${staticCs.results[0].impact}` : "Verified architecture delivered"
+      });
+    }
   });
 
-  // Fallback case study cards with curated content per industry
-  const fallbackCards = [
-    {
-      title: "Enterprise Digital Transformation",
-      industry: service.relatedIndustries?.[0] || "Enterprise",
-      slug: "enterprise-platform-modernization",
-      outcome: "40% Infrastructure Cost Reduction",
-      coverImage: COVER_IMAGES[service.relatedIndustries?.[0]?.toLowerCase().replace(/[\s()\/&]+/g, "-") ?? ""] || COVER_IMAGES.default,
-    },
-    {
-      title: "AI-Driven Platform Engineering",
-      industry: service.relatedIndustries?.[1] || "Scale-up",
-      slug: "ai-driven-supply-chain-optimization",
-      outcome: "300% Increase in Operational Efficiency",
-      coverImage: COVER_IMAGES[service.relatedIndustries?.[1]?.toLowerCase().replace(/[\s()\/&]+/g, "-") ?? ""] || COVER_IMAGES.default,
-    },
-  ];
+  const matched = service.relatedCaseStudies.map((csId: string) => {
+    return allCaseStudies.find(
+      cs => cs.id === csId || cs.slug === csId || cs.id.toLowerCase() === csId.toLowerCase()
+    ) ?? null;
+  }).filter(Boolean);
+
+  if (matched.length === 0) return null;
 
   return (
     <section className="py-12 bg-background border-t border-border/10">
@@ -68,41 +83,33 @@ export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service 
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {fallbackCards.map((card, index) => {
-            const realCase = cases[index];
-            const coverImg = COVER_IMAGES[(realCase?.industry ?? "").toLowerCase().replace(/[\s()\/&]+/g, "-")] || card.coverImage;
-            const title = realCase?.title ?? card.title;
-            const industry = realCase?.industry?.replace(/-/g, " ") ?? card.industry;
-            const outcome = realCase?.results?.[0]
-              ? `${realCase.results[0].label}: ${realCase.results[0].impact}`
-              : card.outcome;
-            const href = realCase?.slug ? `/case-studies/${realCase.slug}` : `/case-studies/${card.slug}`;
-
+          {matched.map((cs, index) => {
+            const coverImg = COVER_IMAGES[cs.industry.toLowerCase().replace(/[\s()\/&]+/g, "-")] || cs.coverImage;
             return (
               <Link
                 key={index}
-                href={href}
+                href={`/case-studies/${cs.slug}`}
                 className="group block border border-border/20 bg-[#080f1a] rounded-xl overflow-hidden hover:border-[rgba(99,245,232,0.4)] transition-colors"
               >
                 <div className="aspect-video relative overflow-hidden">
                   <img
                     src={coverImg}
-                    alt={title}
+                    alt={cs.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                   <div className="absolute bottom-6 left-6 right-6 z-10">
                     <span className="text-xs font-mono text-[#63f5e8] bg-[rgba(99,245,232,0.12)] border border-[rgba(99,245,232,0.25)] px-2 py-1 rounded mb-3 inline-block capitalize">
-                      {industry}
+                      {cs.industry.replace(/-/g, " ")}
                     </span>
-                    <h3 className="text-xl font-bold text-white leading-snug">{title}</h3>
+                    <h3 className="text-xl font-bold text-white leading-snug line-clamp-2">{cs.title}</h3>
                   </div>
                 </div>
 
                 <div className="p-6 md:p-8 flex justify-between items-end">
                   <div>
                     <p className="text-xs font-mono text-[#5e7079] uppercase tracking-widest mb-1">OUTCOME</p>
-                    <p className="text-base text-[#c8d8e0]">{outcome}</p>
+                    <p className="text-base text-[#c8d8e0] line-clamp-1">{cs.outcome}</p>
                   </div>
                   <div className="w-10 h-10 rounded-full border border-[rgba(99,245,232,0.2)] flex items-center justify-center group-hover:bg-[#63f5e8] group-hover:border-[#63f5e8] transition-colors flex-shrink-0">
                     <ArrowRight className="w-5 h-5 text-[#63f5e8] group-hover:text-[#041014]" />
@@ -120,5 +127,6 @@ export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service 
     </section>
   );
 };
+
 
 
