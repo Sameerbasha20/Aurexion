@@ -124,6 +124,7 @@ export const RFP: React.FC = () => {
     setActionError(null);
     try {
       await bdmService.assignLead(selectedLead.id, selectedAssignee);
+      setIsAcceptOpen(false);
       refetch();
       setSelectedLead(null);
       setSelectedAssignee(null);
@@ -136,14 +137,15 @@ export const RFP: React.FC = () => {
 
   // Submit Decline (mark as lost)
   const handleDeclineSubmit = async () => {
-    if (!selectedLead || !declineReason.trim()) {
-      setActionError("Reason is required to decline");
+    if (!selectedLead || declineReason.trim().length < 10) {
+      setActionError("Reason must be at least 10 characters long.");
       return;
     }
     setIsActionLoading(true);
     setActionError(null);
     try {
-      await bdmService.markLeadLost(selectedLead.id, declineReason);
+      await bdmService.markLeadLost(selectedLead.id, declineReason.trim());
+      setIsDeclineOpen(false);
       refetch();
       setSelectedLead(null);
       setDeclineReason("");
@@ -432,26 +434,37 @@ export const RFP: React.FC = () => {
             </div>
           )}
           <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, marginBottom: "0.5rem", color: "#cbd5e1" }}>
-              Decline Reason *
-            </label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+              <label style={{ fontSize: "0.875rem", fontWeight: 500, color: "#cbd5e1" }}>
+                Decline Reason *
+              </label>
+              <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: declineReason.trim().length >= 10 ? "#22c55e" : "#f87171" }}>
+                {declineReason.trim().length} / 10 min chars
+              </span>
+            </div>
             <Textarea
               value={declineReason}
               onChange={(e) => setDeclineReason(e.target.value)}
-              placeholder="Enter reason for declining this RFP..."
+              placeholder="Enter a detailed reason for declining this RFP (minimum 10 characters)..."
               rows={4}
               disabled={isActionLoading}
+              minLength={10}
             />
+            {declineReason.trim().length > 0 && declineReason.trim().length < 10 && (
+              <p style={{ color: "#ef4444", fontSize: "0.75rem", margin: "0.35rem 0 0 0" }}>
+                Please enter at least 10 characters explaining the reason for declining.
+              </p>
+            )}
             <p style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "0.5rem" }}>
-              This reason will be recorded and the lead will be marked as Lost.
+              📧 An automated notification email with this reason will be sent to the lead.
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeModals} disabled={isActionLoading}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeclineSubmit} disabled={isActionLoading || !declineReason.trim()}>
-              {isActionLoading ? "Declining..." : "Confirm Decline"}
+            <Button variant="destructive" onClick={handleDeclineSubmit} disabled={isActionLoading || declineReason.trim().length < 10}>
+              {isActionLoading ? "Declining & Emailing..." : "Confirm Decline"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -549,14 +562,21 @@ export const RFP: React.FC = () => {
               )}
               <Button
                 variant="outline"
-                onClick={() => {
-                  window.open(`/crm/leads/${selectedLeadDetail.id}`, '_blank');
-                  setSelectedLeadDetail(null);
-                }}
+                onClick={() => setSelectedLeadDetail(null)}
                 style={{ fontSize: "0.82rem" }}
               >
-                <ArrowUpRight size={14} style={{ marginRight: "0.35rem" }} /> Open Full Lead Workspace
+                Close Desk
               </Button>
+              {selectedLeadDetail.email && (
+                <a href={`mailto:${selectedLeadDetail.email}`} style={{ textDecoration: "none" }}>
+                  <Button
+                    glow
+                    style={{ fontSize: "0.82rem", backgroundColor: "#0284c7", color: "#ffffff" }}
+                  >
+                    <Mail size={14} style={{ marginRight: "0.35rem" }} /> Direct Email Lead
+                  </Button>
+                </a>
+              )}
             </div>
           </Card>
         </div>

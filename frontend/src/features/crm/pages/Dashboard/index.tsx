@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
 import { useSalesDashboard, useLeads } from "../../hooks/useCrm";
+import { useAuth } from "../../../../hooks/useAuth";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import crmService from "../../services/crmService";
@@ -26,11 +27,22 @@ import {
 } from "lucide-react";
 
 export const Dashboard: React.FC = () => {
+  const { user } = useAuth();
   const { data, isLoading, error, refetch } = useSalesDashboard();
   const { leads: assignedLeads, isLoading: leadsLoading } = useLeads({ page_size: 100 });
-  const approvedAssignedLeads = assignedLeads.filter(
-    (lead) => !!lead.assigned_to && lead.status !== "lost" && lead.status !== "LOST"
-  );
+  const approvedAssignedLeads = assignedLeads.filter((lead) => {
+    if (lead.status === "lost" || lead.status === "LOST") return false;
+    if (user && user.role === "SALES_EXECUTIVE") {
+      const isAssignedToMe =
+        lead.assigned_to === Number(user.id) ||
+        (lead.assigned_to_name && (
+          String(lead.assigned_to_name).toLowerCase() === String(user.name || "").toLowerCase() ||
+          String(lead.assigned_to_name).toLowerCase() === String(user.email || "").toLowerCase()
+        ));
+      return isAssignedToMe;
+    }
+    return !!lead.assigned_to;
+  });
   const [completingId, setCompletingId] = useState<number | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
@@ -72,10 +84,14 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleMarkWon = async (leadId: number, leadName: string) => {
-    if (!window.confirm(`Mark ${leadName} as WON? This will generate client credentials (default password: client@2026) and email the client.`)) return;
+    const valInput = window.prompt(`Enter agreed Project Cost / Deal Value ($) for ${leadName}:`, "25000");
+    if (valInput === null) return;
+    const value = parseFloat(valInput) || 0;
+    const notesInput = window.prompt(`Enter closing notes / scope summary for ${leadName}:`, "Client agreed to project scope and signed proposal.") || "";
+
     try {
-      await crmService.markLeadWon(leadId);
-      setActionSuccess(`Lead marked WON! Client User account created (password: client@2026) & credentials email sent.`);
+      await crmService.markLeadWon(leadId, { value, notes: notesInput });
+      setActionSuccess(`Lead marked WON! Project cost ($${value.toLocaleString()}) & closing notes recorded. Forwarded to BDM Dashboard for client portal credentials dispatch.`);
       refetch();
     } catch (err: any) {
       alert(err?.message || "Failed to mark lead as won.");
@@ -83,15 +99,15 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleMarkLost = async (leadId: number) => {
-    const reason = window.prompt("Reason for declining/marking lost:");
+    const reason = window.prompt("Reason for declining/marking lost (minimum 10 characters):");
     if (reason === null) return;
-    if (!reason.trim()) {
-      alert("A reason is required to mark as lost.");
+    if (reason.trim().length < 10) {
+      alert("Please enter a reason of at least 10 characters to decline or mark as lost.");
       return;
     }
     try {
       await crmService.markLeadLost(leadId, reason.trim());
-      setActionSuccess("Lead marked as lost/declined.");
+      setActionSuccess("Lead marked as lost/declined & email notification sent to client.");
       refetch();
     } catch (err: any) {
       alert(err?.message || "Failed to mark lead as lost.");

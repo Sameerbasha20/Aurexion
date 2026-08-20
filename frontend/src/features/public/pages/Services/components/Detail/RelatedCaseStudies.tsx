@@ -28,6 +28,8 @@ const INDUSTRY_IMAGES: Record<string, string> = {
   default: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
 };
 
+const COVER_IMAGES: Record<string, string> = INDUSTRY_IMAGES;
+
 /** Normalize an industry name from services.ts (e.g. "Financial Services (BFSI)") → slug key */
 function toSlug(str: string): string {
   return str

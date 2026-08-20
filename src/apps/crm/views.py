@@ -42,6 +42,7 @@ from apps.crm.services import (
     delete_note,
     mark_lead_lost,
     mark_lead_won,
+    onboard_lead_as_client,
     qualify_lead,
     reopen_lost_lead,
     schedule_followup,
@@ -176,9 +177,10 @@ class LeadViewSet(viewsets.ModelViewSet):
         )
 
         role = getattr(getattr(user, "profile", None), "role", None)
-        if role == "sales_executive":
+        role_lower = str(role or "").lower()
+        if role_lower in ("sales_executive", "sales", "sales_rep"):
             queryset = queryset.filter(assigned_to=user)
-        elif user.is_superuser or role in ("super_admin", "administrator", "bdm"):
+        elif user.is_superuser or role_lower in ("super_admin", "administrator", "bdm"):
             pass
         else:
             queryset = queryset.none()
@@ -335,10 +337,28 @@ class LeadViewSet(viewsets.ModelViewSet):
     @extend_schema(tags=["CRM Leads"], responses=LeadSerializer)
     @action(detail=True, methods=["post"])
     def won(self, request, pk=None):
-        """Mark a lead as WON."""
+        """Mark a lead as WON. Accepts optional value (project cost) and notes."""
         lead = self.get_object()
-        lead = mark_lead_won(lead=lead, actor=request.user, request=request)
+        value = request.data.get("value")
+        notes = request.data.get("notes")
+        lead = mark_lead_won(lead=lead, actor=request.user, value=value, notes=notes, request=request)
         return Response(LeadSerializer(lead, context=self.get_serializer_context()).data)
+
+    @extend_schema(tags=["CRM Leads"], responses=LeadSerializer)
+    @action(detail=True, methods=["post"], url_path="onboard-client")
+    def onboard_client(self, request, pk=None):
+        """
+        BDM action: Onboard won lead as client and dispatch welcome email with credentials.
+        """
+        lead = self.get_object()
+        password = request.data.get("password")
+        lead, user = onboard_lead_as_client(lead=lead, actor=request.user, password=password, request=request)
+        return Response({
+            "message": f"Client user account created and credentials dispatched to {lead.email}.",
+            "lead": LeadSerializer(lead, context=self.get_serializer_context()).data,
+            "user_id": user.id,
+            "username": user.username,
+        })
 
     @action(detail=True, methods=["post"], url_path="schedule-meeting")
     def schedule_meeting(self, request, pk=None):

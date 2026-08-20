@@ -86,31 +86,22 @@ export const IndustryCaseStudies = ({ industry }) => {
               </div>
               
               <div className="p-6 md:p-8 flex justify-between items-end">
-                <div>
+                <div className="flex-1 mr-4">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">CHALLENGE</p>
                   <p className="text-sm text-gray-400 line-clamp-2 mb-3">{cs.challenge}</p>
                   {cs.outcomes && cs.outcomes.length > 0 && (
                     <>
-                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">OUTCOME</p>
+                      <p className="text-xs font-mono text-[#5e7079] uppercase tracking-widest mb-1">OUTCOME</p>
                       <p className="text-sm text-foreground line-clamp-1">{cs.outcomes[0]} Achieved</p>
                     </>
                   )}
                 </div>
-
-                <div className="p-6 md:p-8 flex justify-between items-end">
-                  <div>
-                    <p className="text-xs font-mono text-[#5e7079] uppercase tracking-widest mb-1">
-                      OUTCOME
-                    </p>
-                    <p className="text-base text-[#c8d8e0]">{outcome}</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-full border border-[rgba(99,245,232,0.2)] flex items-center justify-center group-hover:bg-[#63f5e8] group-hover:border-[#63f5e8] transition-colors flex-shrink-0">
-                    <ArrowRight className="w-5 h-5 text-[#63f5e8] group-hover:text-[#041014]" />
-                  </div>
+                <div className="w-10 h-10 rounded-full border border-[rgba(99,245,232,0.2)] flex items-center justify-center group-hover:bg-[#63f5e8] group-hover:border-[#63f5e8] transition-colors flex-shrink-0">
+                  <ArrowRight className="w-5 h-5 text-[#63f5e8] group-hover:text-[#041014]" />
                 </div>
-              </Link>
-            );
-          })}
+              </div>
+            </Link>
+          ))}
         </div>
 
         <Link

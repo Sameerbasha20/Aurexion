@@ -289,6 +289,18 @@ export const recruitmentService = {
       department_distribution,
     };
   },
+
+  /**
+   * Get secure resume download/view URL for an application
+   */
+  getResumeUrl: async (trackingCode: string): Promise<{ resume_url: string }> => {
+    try {
+      const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_RESUME(trackingCode));
+      return data?.data || data;
+    } catch {
+      return { resume_url: "" };
+    }
+  },
 };
 
 export default recruitmentService;

@@ -79,6 +79,52 @@ class BdmDashboardView(APIView):
             .order_by("-created_at")[:10]
         )
 
+        # Compute Sales Team Workload
+        from apps.authentication.models import User
+        sales_execs = User.objects.filter(
+            models.Q(profile__role="sales_executive") | models.Q(profile__role="SALES_EXECUTIVE")
+        ).annotate(
+            active_count=Count("assigned_leads", filter=~models.Q(assigned_leads__status=Lead.Status.LOST))
+        ).order_by("-active_count")
+
+        team_workload = [
+            {
+                "id": u.id,
+                "username": u.username,
+                "name": u.get_full_name() or u.username,
+                "active_leads_count": u.active_count,
+            }
+            for u in sales_execs
+        ]
+
+        # Query WON Leads / Clients
+        won_leads_qs = (
+            Lead.objects.filter(status=Lead.Status.WON)
+            .select_related("assigned_to")
+            .order_by("-updated_at")[:15]
+        )
+        won_clients = [
+            {
+                "id": lead.id,
+                "reference_id": lead.reference_id,
+                "name": lead.name,
+                "email": lead.email,
+                "phone": lead.phone,
+                "company": lead.company or "Individual Client",
+                "source": lead.source,
+                "industry": lead.industry,
+                "description": lead.description or "",
+                "value": float(getattr(lead, "value", 0.0) or 0.0),
+                "assigned_to_name": lead.assigned_to.get_full_name() or lead.assigned_to.username if lead.assigned_to else "Unassigned",
+                "client_onboarded": getattr(lead, "client_onboarded", False),
+                "created_at": lead.created_at,
+                "updated_at": lead.updated_at,
+            }
+            for lead in won_leads_qs
+        ]
+
+        pending_client_onboardings = sum(1 for c in won_clients if not c["client_onboarded"])
+
         return Response({
             "total_leads": agg["total_leads"],
             "assigned_leads": agg["assigned_leads"],
@@ -90,6 +136,9 @@ class BdmDashboardView(APIView):
             "won_leads": agg["won_leads"],
             "lost_leads": agg["lost_leads"],
             "conversion_rate": conversion_rate,
+            "team_workload": team_workload,
+            "won_clients": won_clients,
+            "pending_client_onboardings": pending_client_onboardings,
             "pipeline_summary": [
                 {"status": item["status"], "total": item["total"]} for item in pipeline_summary
             ],

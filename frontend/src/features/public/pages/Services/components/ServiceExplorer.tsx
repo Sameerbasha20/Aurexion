@@ -42,7 +42,7 @@ export const ServiceExplorer: React.FC = () => {
   }));
 
   // Combine static and DB services, prioritizing DB services for duplicates
-  const allServices = [...mappedDbServices];
+  const allServices: any[] = [...mappedDbServices];
   servicesData.forEach((staticS) => {
     if (!allServices.some((s) => s.slug === staticS.slug)) {
       allServices.push(staticS);

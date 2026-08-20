@@ -28,6 +28,12 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
   // Request Interceptor
   axiosInstance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
+      // Attach JWT Bearer Token if present
+      const token = localStorage.getItem("aurexion_token") || localStorage.getItem("access_token");
+      if (token && !config.headers["Authorization"]) {
+        config.headers["Authorization"] = `Bearer ${token}`;
+      }
+
       if (config.method && !["get", "head", "options"].includes(config.method.toLowerCase())) {
         const csrfToken = document.cookie
           .split("; ")

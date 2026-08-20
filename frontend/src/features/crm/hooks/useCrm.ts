@@ -14,18 +14,18 @@ import crmService, {
 } from "../services/crmService";
 
 /**
- * Hook for fetching and managing Sales Dashboard Stats
+ * Hook for fetching and managing Sales Dashboard Stats (Cached)
  */
 export function useSalesDashboard() {
   const [data, setData] = useState<SalesDashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStats = useCallback(async () => {
+  const fetchStats = useCallback(async (force = false) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await crmService.getDashboardStats();
+      const result = await crmService.getDashboardStats(force);
       setData(result);
     } catch (err: any) {
       setError(err?.message || "Failed to load dashboard metrics.");
@@ -35,14 +35,14 @@ export function useSalesDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchStats();
+    fetchStats(false);
   }, [fetchStats]);
 
-  return { data, isLoading, error, refetch: fetchStats };
+  return { data, isLoading, error, refetch: () => fetchStats(true) };
 }
 
 /**
- * Hook for fetching and managing paginated Leads list
+ * Hook for fetching and managing paginated Leads list (Cached)
  */
 export function useLeads(initialParams?: LeadQueryParams) {
   const [params, setParams] = useState<LeadQueryParams>(initialParams || {});
@@ -50,11 +50,11 @@ export function useLeads(initialParams?: LeadQueryParams) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLeads = useCallback(async () => {
+  const fetchLeads = useCallback(async (force = false) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await crmService.getPaginatedLeads(params);
+      const response = await crmService.getPaginatedLeads(params, force);
       setData(response);
     } catch (err: any) {
       setError(err?.message || "Failed to load leads.");
@@ -64,7 +64,7 @@ export function useLeads(initialParams?: LeadQueryParams) {
   }, [params]);
 
   useEffect(() => {
-    fetchLeads();
+    fetchLeads(false);
   }, [fetchLeads]);
 
   const updateFilters = (newParams: Partial<LeadQueryParams>) => {
@@ -81,14 +81,14 @@ export function useLeads(initialParams?: LeadQueryParams) {
     params,
     isLoading,
     error,
-    refetch: fetchLeads,
+    refetch: () => fetchLeads(true),
     updateFilters,
     setPage,
   };
 }
 
 /**
- * Hook for a single Lead, its Notes, and its Follow-ups
+ * Hook for a single Lead, its Notes, and its Follow-ups (Cached)
  */
 export function useLeadDetail(leadId: number) {
   const [lead, setLead] = useState<LeadItem | null>(null);
@@ -98,15 +98,15 @@ export function useLeadDetail(leadId: number) {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
-  const fetchLeadDetails = useCallback(async () => {
+  const fetchLeadDetails = useCallback(async (force = false) => {
     if (!leadId) return;
     setIsLoading(true);
     setError(null);
     try {
       const [leadData, followUpsData, notesData] = await Promise.all([
-        crmService.getLead(leadId),
-        crmService.getFollowUps(leadId),
-        crmService.getNotes(leadId),
+        crmService.getLead(leadId, force),
+        crmService.getFollowUps(leadId, force),
+        crmService.getNotes(leadId, force),
       ]);
       setLead(leadData);
       setFollowUps(followUpsData);
@@ -119,7 +119,7 @@ export function useLeadDetail(leadId: number) {
   }, [leadId]);
 
   useEffect(() => {
-    fetchLeadDetails();
+    fetchLeadDetails(false);
   }, [fetchLeadDetails]);
 
   const updateLead = async (data: Partial<LeadItem>) => {
@@ -138,7 +138,7 @@ export function useLeadDetail(leadId: number) {
     try {
       const updated = await crmService.transitionLead(leadId, status);
       setLead(updated);
-      await fetchLeadDetails();
+      await fetchLeadDetails(true);
       return updated;
     } finally {
       setActionLoading(false);
@@ -150,19 +150,19 @@ export function useLeadDetail(leadId: number) {
     try {
       const updated = await crmService.qualifyLead(leadId);
       setLead(updated);
-      await fetchLeadDetails();
+      await fetchLeadDetails(true);
       return updated;
     } finally {
       setActionLoading(false);
     }
   };
 
-  const markWon = async () => {
+  const markWon = async (payload?: { value?: number; notes?: string }) => {
     setActionLoading(true);
     try {
-      const updated = await crmService.markLeadWon(leadId);
+      const updated = await crmService.markLeadWon(leadId, payload);
       setLead(updated);
-      await fetchLeadDetails();
+      await fetchLeadDetails(true);
       return updated;
     } finally {
       setActionLoading(false);
@@ -174,7 +174,19 @@ export function useLeadDetail(leadId: number) {
     try {
       const updated = await crmService.markLeadLost(leadId, reason);
       setLead(updated);
-      await fetchLeadDetails();
+      await fetchLeadDetails(true);
+      return updated;
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const reopen = async () => {
+    setActionLoading(true);
+    try {
+      const updated = await crmService.reopenLead(leadId);
+      setLead(updated);
+      await fetchLeadDetails(true);
       return updated;
     } finally {
       setActionLoading(false);
@@ -186,7 +198,7 @@ export function useLeadDetail(leadId: number) {
     try {
       const updated = await crmService.assignLead(leadId, userId);
       setLead(updated);
-      await fetchLeadDetails();
+      await fetchLeadDetails(true);
       return updated;
     } finally {
       setActionLoading(false);
@@ -233,12 +245,13 @@ export function useLeadDetail(leadId: number) {
     isLoading,
     actionLoading,
     error,
-    refetch: fetchLeadDetails,
+    refetch: () => fetchLeadDetails(true),
     updateLead,
     transitionStatus,
     qualify,
     markWon,
     markLost,
+    reopen,
     assign,
     addNote,
     addFollowUp,
@@ -247,18 +260,18 @@ export function useLeadDetail(leadId: number) {
 }
 
 /**
- * Hook for Global Follow-ups management
+ * Hook for Global Follow-ups management (Cached)
  */
 export function useFollowUps() {
   const [followUps, setFollowUps] = useState<LeadFollowUp[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchFollowUps = useCallback(async () => {
+  const fetchFollowUps = useCallback(async (force = false) => {
     setIsLoading(true);
     setError(null);
     try {
-      const items = await crmService.getAllFollowUps();
+      const items = await crmService.getAllFollowUps(undefined, force);
       setFollowUps(items);
     } catch (err: any) {
       setError(err?.message || "Failed to load follow-ups.");
@@ -268,7 +281,7 @@ export function useFollowUps() {
   }, []);
 
   useEffect(() => {
-    fetchFollowUps();
+    fetchFollowUps(false);
   }, [fetchFollowUps]);
 
   const markComplete = async (leadId: number, followUpId: number) => {
@@ -281,22 +294,22 @@ export function useFollowUps() {
     }
   };
 
-  return { followUps, isLoading, error, refetch: fetchFollowUps, markComplete };
+  return { followUps, isLoading, error, refetch: () => fetchFollowUps(true), markComplete };
 }
 
 /**
- * Hook for Sales Activities & Feed
+ * Hook for Sales Activities & Feed (Cached)
  */
 export function useActivities() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActivities = useCallback(async () => {
+  const fetchActivities = useCallback(async (force = false) => {
     setIsLoading(true);
     setError(null);
     try {
-      const list = await crmService.getRecentActivities();
+      const list = await crmService.getRecentActivities(undefined, force);
       setActivities(list);
     } catch (err: any) {
       setError(err?.message || "Failed to load activity ledger.");
@@ -306,25 +319,25 @@ export function useActivities() {
   }, []);
 
   useEffect(() => {
-    fetchActivities();
+    fetchActivities(false);
   }, [fetchActivities]);
 
-  return { activities, isLoading, error, refetch: fetchActivities };
+  return { activities, isLoading, error, refetch: () => fetchActivities(true) };
 }
 
 /**
- * Hook for Opportunities pipeline
+ * Hook for Opportunities pipeline (Cached)
  */
 export function useOpportunities() {
   const [opportunities, setOpportunities] = useState<OpportunityItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchOpportunities = useCallback(async () => {
+  const fetchOpportunities = useCallback(async (force = false) => {
     setIsLoading(true);
     setError(null);
     try {
-      const opps = await crmService.getOpportunities();
+      const opps = await crmService.getOpportunities(force);
       setOpportunities(opps);
     } catch (err: any) {
       setError(err?.message || "Failed to load opportunities.");
@@ -334,25 +347,25 @@ export function useOpportunities() {
   }, []);
 
   useEffect(() => {
-    fetchOpportunities();
+    fetchOpportunities(false);
   }, [fetchOpportunities]);
 
-  return { opportunities, isLoading, error, refetch: fetchOpportunities };
+  return { opportunities, isLoading, error, refetch: () => fetchOpportunities(true) };
 }
 
 /**
- * Hook for Contacts Directory
+ * Hook for Contacts Directory (Cached)
  */
 export function useContacts() {
   const [contacts, setContacts] = useState<ContactItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchContacts = useCallback(async () => {
+  const fetchContacts = useCallback(async (force = false) => {
     setIsLoading(true);
     setError(null);
     try {
-      const list = await crmService.getContacts();
+      const list = await crmService.getContacts(force);
       setContacts(list);
     } catch (err: any) {
       setError(err?.message || "Failed to load contacts directory.");
@@ -362,25 +375,25 @@ export function useContacts() {
   }, []);
 
   useEffect(() => {
-    fetchContacts();
+    fetchContacts(false);
   }, [fetchContacts]);
 
-  return { contacts, isLoading, error, refetch: fetchContacts };
+  return { contacts, isLoading, error, refetch: () => fetchContacts(true) };
 }
 
 /**
- * Hook for Company Registry
+ * Hook for Company Registry (Cached)
  */
 export function useCompanies() {
   const [companies, setCompanies] = useState<CompanyItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCompanies = useCallback(async () => {
+  const fetchCompanies = useCallback(async (force = false) => {
     setIsLoading(true);
     setError(null);
     try {
-      const list = await crmService.getCompanies();
+      const list = await crmService.getCompanies(force);
       setCompanies(list);
     } catch (err: any) {
       setError(err?.message || "Failed to load company registry.");
@@ -390,21 +403,21 @@ export function useCompanies() {
   }, []);
 
   useEffect(() => {
-    fetchCompanies();
+    fetchCompanies(false);
   }, [fetchCompanies]);
 
-  return { companies, isLoading, error, refetch: fetchCompanies };
+  return { companies, isLoading, error, refetch: () => fetchCompanies(true) };
 }
 
 /**
- * Hook for Assignable Users
+ * Hook for Assignable Users (Cached)
  */
 export function useAssignableUsers() {
   const [users, setUsers] = useState<UserOption[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    crmService.getAssignableUsers().then(setUsers);
+    crmService.getAssignableUsers(false).then(setUsers);
   }, []);
 
   return { users, isLoading };

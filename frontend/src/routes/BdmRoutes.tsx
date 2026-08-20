@@ -5,6 +5,7 @@ import Dashboard from "../features/bdm/pages/Dashboard";
 import ContactForms from "../features/bdm/pages/ContactForms";
 import Leads from "../features/bdm/pages/Leads";
 import Opportunities from "../features/bdm/pages/Opportunities";
+import Clients from "../features/bdm/pages/Clients";
 import RFP from "../features/bdm/pages/RFP";
 import Estimator from "../features/bdm/pages/Estimator";
 
@@ -16,6 +17,7 @@ export const BdmRoutes: React.FC = () => {
         <Route path="/bdm/contact-forms" component={ContactForms} />
         <Route path="/bdm/leads" component={Leads} />
         <Route path="/bdm/opportunities" component={Opportunities} />
+        <Route path="/bdm/clients" component={Clients} />
         <Route path="/bdm/rfp" component={RFP} />
         <Route path="/bdm/estimator" component={Estimator} />
       </Switch>
@@ -24,3 +26,4 @@ export const BdmRoutes: React.FC = () => {
 };
 
 export default BdmRoutes;
+

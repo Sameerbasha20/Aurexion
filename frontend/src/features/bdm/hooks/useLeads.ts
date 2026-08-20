@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { bdmService, Lead, LeadsResponse } from "../services/bdmService";
+import { bdmService, Lead, LeadsResponse, clearBdmCache } from "../services/bdmService";
+
+export function invalidateLeadsCache() {
+  clearBdmCache();
+}
 
 interface UseLeadsOptions {
   status?: string;
@@ -8,21 +12,57 @@ interface UseLeadsOptions {
 }
 
 export function useLeads(options: UseLeadsOptions = {}) {
-  const [data, setData] = useState<LeadsResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
-  const fetchLeads = useCallback(async (pageNum: number = 1) => {
+  const [data, setData] = useState<LeadsResponse | null>(() => {
+    return bdmService.getCachedLeads({
+      page: 1,
+      status: options.status,
+      search: options.search,
+      source: options.source,
+    });
+  });
+
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    const cached = bdmService.getCachedLeads({
+      page: 1,
+      status: options.status,
+      search: options.search,
+      source: options.source,
+    });
+    return !cached;
+  });
+
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLeads = useCallback(async (pageNum: number = 1, force = false) => {
+    const cached = bdmService.getCachedLeads({
+      page: pageNum,
+      status: options.status,
+      search: options.search,
+      source: options.source,
+    });
+
+    if (cached && !force) {
+      setData(cached);
+      setPage(pageNum);
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      setIsLoading(true);
+      if (!cached) {
+        setIsLoading(true);
+      }
       setError(null);
+
       const response = await bdmService.getLeads({
         page: pageNum,
         status: options.status,
         search: options.search,
         source: options.source,
-      });
+      }, force);
+
       setData(response);
       setPage(pageNum);
     } catch (err) {
@@ -33,11 +73,11 @@ export function useLeads(options: UseLeadsOptions = {}) {
   }, [options.status, options.search, options.source]);
 
   useEffect(() => {
-    fetchLeads(1);
-  }, [fetchLeads]);
+    fetchLeads(page, false);
+  }, [page, options.status, options.search, options.source]);
 
   const goToPage = useCallback((pageNum: number) => {
-    fetchLeads(pageNum);
+    fetchLeads(pageNum, false);
   }, [fetchLeads]);
 
   const nextPage = useCallback(() => {
@@ -48,6 +88,10 @@ export function useLeads(options: UseLeadsOptions = {}) {
     if (data?.previous) goToPage(page - 1);
   }, [data?.previous, goToPage, page]);
 
+  const refetch = useCallback(() => {
+    return fetchLeads(page, true);
+  }, [fetchLeads, page]);
+
   return {
     leads: data?.results || [],
     totalCount: data?.count || 0,
@@ -55,7 +99,7 @@ export function useLeads(options: UseLeadsOptions = {}) {
     totalPages: data ? Math.ceil(data.count / 20) : 0,
     isLoading,
     error,
-    refetch: () => fetchLeads(page),
+    refetch,
     goToPage,
     nextPage,
     prevPage,
@@ -66,7 +110,7 @@ export function useLeads(options: UseLeadsOptions = {}) {
 
 export function useLead(id: number) {
   const [lead, setLead] = useState<Lead | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchLead = useCallback(async () => {
