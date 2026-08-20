@@ -268,8 +268,10 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Aurexion Enterprise Platform API',
     'DESCRIPTION': 'API documentation for Aurexion Technologies platform.',
     'VERSION': '1.0.0',
-    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
     'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5',
+    'SWAGGER_UI_FAVICON_HREF': 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/favicon-32x32.png',
     'ENUM_NAME_OVERRIDES': {
         'LeadStatusEnum': 'apps.crm.models.LeadStatus',
         'LeadPriorityEnum': 'apps.crm.models.LeadPriority',
