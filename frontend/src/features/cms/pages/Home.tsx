@@ -11,6 +11,9 @@ import { serviceCategories, servicesData } from "../../../data/services";
 import { industriesData } from "../../../data/industries";
 import { caseStudiesData } from "../../../data/caseStudies";
 import { blogPosts } from "../../../data/blogPosts";
+import { SEO } from "../../../components/seo/SEO";
+import { createOrganizationSchema, createWebSiteSchema } from "../../../components/seo/structuredData";
+import { getSiteUrl } from "../../../components/seo/seoConfig";
 
 const principles = [
   ["01", "ENGINEERING FIRST", "Start with the system, not the surface. Make the foundation capable of carrying what comes next."],
@@ -189,10 +192,20 @@ export default function Home() {
   }, []);
 
   const openDialog = (type: "contact" | "project") => setDialog(type);
-  const action = (label: string) => toast.success(label, { description: "Done." });
+  const siteUrl = getSiteUrl();
+  const homeJsonLd = [
+    createOrganizationSchema(siteUrl),
+    createWebSiteSchema(siteUrl)
+  ];
 
   return (
     <div className="aurexion">
+      <SEO
+        title="Aurexion | AI, Cloud & Digital Transformation"
+        description="Enterprise applications, SaaS, APIs and resilient microservices. Complexity is a signal. We turn it into structure."
+        canonical="/"
+        jsonLd={homeJsonLd}
+      />
       <main>
 
         {/* ── HERO ──────────────────────────────────────────────────────── */}
@@ -302,7 +315,7 @@ export default function Home() {
         </section>
 
         {/* ── AI IMMERSIVE ──────────────────────────────────────────────── */}
-        <section id="ai" className="immersive-section ai-section section-dark" style={{ backgroundImage: "url(/manus-storage/aurexion-neural_ae3aae0d.png)" }}>
+        <section id="ai" className="immersive-section ai-section section-dark" style={{ backgroundImage: "url(/manus-storage/aurexion-neural_ae3aae0d.webp)" }}>
           <div className="section-index">AI & INTELLIGENCE</div>
           <div className="immersive-overlay" />
           <div className="immersive-content">
@@ -543,7 +556,7 @@ export default function Home() {
             <input placeholder="Your name" aria-label="Your name" />
             <input placeholder="Work email" aria-label="Work email" type="email" />
             <textarea placeholder="What are you trying to make possible?" aria-label="Project details" rows={4} />
-            <Button className="signal-button" onClick={() => { setDialog(null); action("Message queued"); }}>SEND MESSAGE <ArrowUpRight size={16} /></Button>
+            <Button className="signal-button" onClick={() => { setDialog(null); toast("Message queued"); }}>SEND MESSAGE <ArrowUpRight size={16} /></Button>
           </div>
         </DialogContent>
       </Dialog>

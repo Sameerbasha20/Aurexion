@@ -2,6 +2,9 @@ import React from "react";
 import { useParams, Link } from "wouter";
 import { useJobDetails } from "../../hooks/usePublicContent";
 import { ArrowLeft, Loader2, AlertCircle, MapPin, Clock, Briefcase } from "lucide-react";
+import { SEO } from "../../../../components/seo/SEO";
+import { createJobPostingSchema } from "../../../../components/seo/structuredData";
+import { getSiteUrl } from "../../../../components/seo/seoConfig";
 
 export const JobDetailsPage: React.FC = () => {
   const params = useParams<{ id: string }>();
@@ -29,8 +32,23 @@ export const JobDetailsPage: React.FC = () => {
     );
   }
 
+  const siteUrl = getSiteUrl();
+  const jobSchema = createJobPostingSchema({
+    title: job.title,
+    description: job.description || `${job.title} at Aurexion Technologies in ${job.department}.`,
+    employmentType: job.employmentType || "FULL_TIME",
+    location: job.location || "Remote / Global",
+    url: `/careers/${job.id}`
+  }, siteUrl);
+
   return (
     <div className="bg-background pt-24 pb-24">
+      <SEO
+        title={`${job.title} | Careers at Aurexion`}
+        description={job.description ? job.description.substring(0, 160) : `Join Aurexion as a ${job.title} in the ${job.department} department (${job.location}).`}
+        canonical={`/careers/${job.id}`}
+        jsonLd={jobSchema}
+      />
       <header className="border-b border-border/40 bg-card/20 pt-8 pb-12 mb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/careers" className="inline-flex items-center text-sm font-mono text-muted-foreground hover:text-primary mb-6 transition-colors">

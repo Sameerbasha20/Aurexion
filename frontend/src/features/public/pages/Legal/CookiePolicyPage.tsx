@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
 import { ArrowUpRight, Cookie, CheckCircle2, XCircle } from "lucide-react";
+import { SEO } from "../../../../components/seo/SEO";
 
 const LAST_UPDATED = "August 11, 2026";
 
@@ -66,6 +67,11 @@ export const CookiePolicyPage: React.FC = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Cookie Policy | Aurexion Technologies"
+        description="Learn how Aurexion Technologies uses strictly necessary and performance cookies to maintain platform security, sessions, and telemetry."
+        canonical="/cookie-policy"
+      />
       {/* Hero */}
       <section
         style={{

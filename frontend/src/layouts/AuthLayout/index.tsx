@@ -1,6 +1,7 @@
 import React from "react";
 import Header from "../../components/common/Header";
 import Footer from "../../components/common/Footer";
+import { PrivatePageSEO } from "../../components/seo/PrivatePageSEO";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       minHeight: "100vh",
       backgroundColor: "#050811",
     }}>
+      <PrivatePageSEO title="Account Authentication" />
       <Header />
       <div style={{
         flex: 1,

@@ -171,6 +171,14 @@ export const recruitmentService = {
     return data;
   },
 
+  getResumeUrl: async (trackingCode: string): Promise<{ resume_url?: string; download_url?: string }> => {
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_RESUME(trackingCode));
+    return {
+      resume_url: data?.download_url || data?.resume_url,
+      download_url: data?.download_url || data?.resume_url,
+    };
+  },
+
   /**
    * Extract unique candidates from applications
    */
@@ -288,18 +296,6 @@ export const recruitmentService = {
       active_jobs,
       department_distribution,
     };
-  },
-
-  /**
-   * Get secure resume download/view URL for an application
-   */
-  getResumeUrl: async (trackingCode: string): Promise<{ resume_url: string }> => {
-    try {
-      const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_RESUME(trackingCode));
-      return data?.data || data;
-    } catch {
-      return { resume_url: "" };
-    }
   },
 };
 

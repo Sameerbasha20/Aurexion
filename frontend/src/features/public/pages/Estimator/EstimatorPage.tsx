@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { publicService } from "../../services/publicService";
 import { ArrowUpRight, Loader2, CheckCircle2, AlertCircle, Mail, Phone, Building2 } from "lucide-react";
+import { SEO } from "../../../../components/seo/SEO";
 
 const ESTIMATOR_STEPS = [
   {
@@ -132,6 +133,11 @@ export const EstimatorPage: React.FC = () => {
 
   return (
     <div style={{ background: "#050811", minHeight: "100vh", paddingTop: "6rem", paddingBottom: "6rem" }}>
+      <SEO
+        title="Interactive Software Project Budget Estimator | Aurexion"
+        description="Calculate preliminary budget ranges and effort projections for web apps, SaaS platforms, cloud infrastructure, AI models, and custom ERP systems."
+        canonical="/estimator"
+      />
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 max(4vw, 1.5rem)" }}>
         {/* Header */}
         <div style={{ marginBottom: "4rem", textAlign: "left" }}>

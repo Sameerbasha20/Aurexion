@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "wouter";
 import { ArrowUpRight, Shield, Lock, Eye, AlertTriangle, Server, Key } from "lucide-react";
+import { SEO } from "../../../../components/seo/SEO";
 
 const PILLARS = [
   {
@@ -52,6 +53,11 @@ const COMPLIANCE = [
 export const SecurityGovernancePage: React.FC = () => {
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="Enterprise Security, Compliance & Governance | Aurexion"
+        description="Comprehensive security framework: AES-256 encryption, OWASP Top 10 compliance, zero-trust access control, and immutable audit logging."
+        canonical="/security"
+      />
       {/* Hero */}
       <section
         style={{

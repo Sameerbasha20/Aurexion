@@ -15,6 +15,7 @@ import { IndustryCaseStudies } from "./components/Detail/IndustryCaseStudies";
 import { IndustryOutcomes } from "./components/Detail/IndustryOutcomes";
 import { RelatedIndustries } from "./components/Detail/RelatedIndustries";
 import { IndustryDetailCTA } from "./components/Detail/IndustryDetailCTA";
+import { SEO } from "../../../../components/seo/SEO";
 
 export const IndustryDetailsPage = () => {
   const params = useParams();
@@ -124,6 +125,11 @@ export const IndustryDetailsPage = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title={`${industry.name} Solutions | Industry Engineering`}
+        description={industry.shortDescription || `Enterprise engineering solutions and digital transformation architecture for the ${industry.name} sector.`}
+        canonical={`/industries/${industry.slug}`}
+      />
       <IndustryHero industry={industry} />
       <IndustryChallenges industry={industry} />
       <TargetSolutions industry={industry} />
