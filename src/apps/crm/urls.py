@@ -12,6 +12,7 @@ urlpatterns = [
     path("estimator/calculate/", EstimatorCalculateView.as_view(), name="estimator-calculate"),
     path("crm/estimator/calculate/", EstimatorCalculateView.as_view(), name="crm-estimator-calculate"),
     path("rfp/submit/", RFPSubmitView.as_view(), name="rfp-submit"),
+    path("crm/rfp/submit/", RFPSubmitView.as_view(), name="crm-rfp-submit"),
 ]
 
  

@@ -31,6 +31,7 @@ class LeadSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source="get_status_display", read_only=True)
     priority_display = serializers.CharField(source="get_priority_display", read_only=True)
     assigned_to_name = serializers.CharField(source="assigned_to.username", read_only=True, default=None)
+    assigned_to_email = serializers.CharField(source="assigned_to.email", read_only=True, default=None)
     created_by_name = serializers.CharField(source="created_by.username", read_only=True, default=None)
     follow_up_count = serializers.IntegerField(read_only=True, default=0)
     note_count = serializers.IntegerField(read_only=True, default=0)
@@ -53,9 +54,12 @@ class LeadSerializer(serializers.ModelSerializer):
             "status_display",
             "priority",
             "priority_display",
+            "value",
             "lost_reason",
+            "client_onboarded",
             "assigned_to",
             "assigned_to_name",
+            "assigned_to_email",
             "created_by",
             "created_by_name",
             "last_contacted_at",
@@ -72,7 +76,9 @@ class LeadSerializer(serializers.ModelSerializer):
             "status",
             "status_display",
             "priority_display",
+            "client_onboarded",
             "assigned_to_name",
+            "assigned_to_email",
             "created_by",
             "created_by_name",
             "follow_up_count",

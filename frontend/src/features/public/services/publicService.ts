@@ -126,11 +126,23 @@ export const publicService = {
     if (data.file) {
       formData.append("document_attachment", data.file);
     }
-    await axiosClient.post("/crm/rfp/submit/", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    try {
+      await axiosClient.post("/rfp/submit/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    } catch (err: any) {
+      if (err?.response?.status === 404) {
+        await axiosClient.post("/crm/rfp/submit/", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      } else {
+        throw err;
+      }
+    }
   },
   
   calculateEstimate: async (data: any): Promise<any> => {
