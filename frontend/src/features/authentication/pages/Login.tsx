@@ -297,6 +297,26 @@ export const Login: React.FC = () => {
         <Button type="submit" glow style={{ width: "100%", height: "46px", marginTop: "8px" }} disabled={isLoading}>
           {isLoading ? "Logging in..." : "Login"}
         </Button>
+
+        <div style={{ textAlign: "center", marginTop: "12px", borderTop: "1px solid #1e293b", paddingTop: "16px" }}>
+          <Link href="/">
+            <span
+              style={{
+                fontFamily: "IBM Plex Mono, monospace",
+                fontSize: "0.78rem",
+                color: "#63f5e8",
+                cursor: "pointer",
+                letterSpacing: "0.06em",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.4rem",
+              }}
+              className="hover:underline"
+            >
+              ← Back to Aurexion Home
+            </span>
+          </Link>
+        </div>
       </form>
     </Card>
   );
