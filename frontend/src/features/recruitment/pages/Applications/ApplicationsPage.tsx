@@ -80,14 +80,14 @@ export const Applications: React.FC = () => {
 
   const handleViewResume = async (trackingCode: string) => {
     try {
-      const data = await recruitmentService.getResumeUrl(trackingCode);
-      if (data?.resume_url) {
-        window.open(data.resume_url, "_blank");
+      const response = await recruitmentService.getApplicationResumeUrl(trackingCode);
+      if (response?.download_url) {
+        window.open(response.download_url, "_blank");
       } else {
-        alert("Resume file unavailable.");
+        showError("No resume file is attached to this application.");
       }
     } catch (err: any) {
-      alert("Unable to open resume file: " + (err?.message || "File unavailable"));
+      showError("Unable to open resume: " + (err?.message || "File unavailable"));
     }
   };
 

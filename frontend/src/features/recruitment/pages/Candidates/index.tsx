@@ -31,6 +31,29 @@ export const Candidates: React.FC = () => {
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Review modal state (read-only)
+  const [reviewCandidate, setReviewCandidate] = useState<CandidateItem | null>(null);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [reviewResumeLoading, setReviewResumeLoading] = useState(false);
+  const [reviewResumeUrl, setReviewResumeUrl] = useState<string | null>(null);
+
+  const handleOpenReview = async (candidate: CandidateItem) => {
+    setReviewCandidate(candidate);
+    setReviewResumeUrl(null);
+    setIsReviewOpen(true);
+    if (candidate.tracking_code) {
+      setReviewResumeLoading(true);
+      try {
+        const res = await recruitmentService.getApplicationResumeUrl(candidate.tracking_code);
+        setReviewResumeUrl(res.download_url || null);
+      } catch {
+        setReviewResumeUrl(null);
+      } finally {
+        setReviewResumeLoading(false);
+      }
+    }
+  };
+
   const filteredCandidates = candidates.filter((c) => {
     const matchesSearch =
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -343,7 +366,7 @@ export const Candidates: React.FC = () => {
                             onClick={() => handleViewResume(candidate.tracking_code)}
                             style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.78rem", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                           >
-                            <Download size={13} /> View Resume
+                            <Download size={13} /> Resume
                           </button>
                         ) : (
                           <span style={{ color: "#64748b", fontSize: "0.75rem" }}>Attached</span>
@@ -359,11 +382,13 @@ export const Candidates: React.FC = () => {
                           >
                             Update Stage
                           </Button>
-                          <Link href={`/recruitment/applications?search=${encodeURIComponent(candidate.tracking_code || candidate.name)}`}>
-                            <Button glow style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem" }}>
-                              Review &rarr;
-                            </Button>
-                          </Link>
+                          <Button
+                            glow
+                            onClick={() => handleOpenReview(candidate)}
+                            style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem" }}
+                          >
+                            Review &rarr;
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -427,6 +452,106 @@ export const Candidates: React.FC = () => {
           </Card>
         </div>
       )}
+
+      {/* Candidate Review Modal (Read-Only) */}
+      {isReviewOpen && reviewCandidate && (() => {
+        const stage = reviewCandidate.stage || "APPLIED";
+        const stageColors: Record<string, { color: string; bg: string; border: string }> = {
+          APPLIED:    { color: "#63f5e8", bg: "rgba(99,245,232,0.15)",   border: "rgba(99,245,232,0.3)" },
+          SCREENING:  { color: "#38bdf8", bg: "rgba(56,189,248,0.15)",   border: "rgba(56,189,248,0.3)" },
+          SHORTLISTED:{ color: "#a855f7", bg: "rgba(168,85,247,0.15)",   border: "rgba(168,85,247,0.3)" },
+          INTERVIEW:  { color: "#818cf8", bg: "rgba(129,140,248,0.15)",  border: "rgba(129,140,248,0.3)" },
+          OFFER:      { color: "#facc15", bg: "rgba(250,204,21,0.15)",   border: "rgba(250,204,21,0.3)" },
+          HIRED:      { color: "#4ade80", bg: "rgba(74,222,128,0.15)",   border: "rgba(74,222,128,0.3)" },
+          REJECTED:   { color: "#f87171", bg: "rgba(248,113,113,0.15)",  border: "rgba(248,113,113,0.3)" },
+        };
+        const sc = stageColors[stage.toUpperCase()] || stageColors.APPLIED;
+        return (
+          <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.88)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1.5rem", overflowY: "auto" }}>
+            <Card borderAccent style={{ width: "100%", maxWidth: "560px", maxHeight: "90vh", overflowY: "auto", padding: "2rem", boxSizing: "border-box", margin: "auto" }}>
+
+              {/* Header */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
+                <div>
+                  <p className="eyebrow" style={{ margin: 0, color: "#63f5e8", fontSize: "0.7rem" }}>CANDIDATE APPLICATION REVIEW</p>
+                  <h2 style={{ fontSize: "1.6rem", margin: "0.3rem 0 0 0", color: "#f8fafc" }}>{reviewCandidate.name}</h2>
+                  <p style={{ fontSize: "0.75rem", color: "#64748b", margin: "0.3rem 0 0 0", fontFamily: "IBM Plex Mono, monospace" }}>
+                    Tracking Code: {reviewCandidate.tracking_code} &nbsp;◆&nbsp; Applied on {new Date(reviewCandidate.applied_date).toLocaleString()}
+                  </p>
+                </div>
+                <button type="button" onClick={() => setIsReviewOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", padding: "0.25rem", flexShrink: 0 }}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Info Grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem" }}>
+                <div style={{ backgroundColor: "rgba(14,24,38,0.7)", border: "1px solid rgba(140,174,187,0.15)", borderRadius: "6px", padding: "1rem" }}>
+                  <p style={{ fontSize: "0.68rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", margin: "0 0 0.4rem 0" }}>EMAIL ADDRESS</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#63f5e8", fontSize: "0.88rem", fontWeight: 500 }}>
+                    <Mail size={14} />
+                    <span style={{ wordBreak: "break-all" }}>{reviewCandidate.email}</span>
+                  </div>
+                </div>
+
+                <div style={{ backgroundColor: "rgba(14,24,38,0.7)", border: "1px solid rgba(140,174,187,0.15)", borderRadius: "6px", padding: "1rem" }}>
+                  <p style={{ fontSize: "0.68rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", margin: "0 0 0.4rem 0" }}>PHONE NUMBER</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#f8fafc", fontSize: "0.88rem", fontWeight: 500 }}>
+                    <Phone size={14} color="#64748b" />
+                    <span>{reviewCandidate.phone || "—"}</span>
+                  </div>
+                </div>
+
+                <div style={{ backgroundColor: "rgba(14,24,38,0.7)", border: "1px solid rgba(140,174,187,0.15)", borderRadius: "6px", padding: "1rem" }}>
+                  <p style={{ fontSize: "0.68rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", margin: "0 0 0.4rem 0" }}>APPLIED POSITION</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#f8fafc", fontSize: "0.88rem", fontWeight: 600 }}>
+                    <FileText size={14} color="#64748b" />
+                    <span>{reviewCandidate.job_title || `Job #${reviewCandidate.job_id}`}</span>
+                  </div>
+                </div>
+
+                <div style={{ backgroundColor: "rgba(14,24,38,0.7)", border: "1px solid rgba(140,174,187,0.15)", borderRadius: "6px", padding: "1rem" }}>
+                  <p style={{ fontSize: "0.68rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", margin: "0 0 0.4rem 0" }}>RESUME DOCUMENT</p>
+                  {reviewResumeLoading ? (
+                    <span style={{ fontSize: "0.8rem", color: "#64748b" }}>Loading...</span>
+                  ) : reviewResumeUrl ? (
+                    <a href={reviewResumeUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", color: "#63f5e8", fontSize: "0.85rem", textDecoration: "underline" }}>
+                      <Download size={14} /> Download File
+                    </a>
+                  ) : (
+                    <span style={{ fontSize: "0.8rem", color: "#64748b" }}>No resume attached</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Current Stage — Read Only */}
+              <div style={{ backgroundColor: "rgba(14,24,38,0.7)", border: `1px solid ${sc.border}`, borderRadius: "8px", padding: "1.25rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", textTransform: "uppercase" }}>Current Stage:</span>
+                  <span style={{
+                    fontSize: "0.78rem",
+                    fontFamily: "IBM Plex Mono, monospace",
+                    fontWeight: 700,
+                    padding: "0.25rem 0.75rem",
+                    borderRadius: "3px",
+                    backgroundColor: sc.bg,
+                    color: sc.color,
+                    border: `1px solid ${sc.border}`,
+                    letterSpacing: "0.05em",
+                  }}>
+                    {stage}
+                  </span>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+                <Button variant="outline" onClick={() => setIsReviewOpen(false)}>Close Review</Button>
+              </div>
+            </Card>
+          </div>
+        );
+      })()}
     </div>
   );
 };
