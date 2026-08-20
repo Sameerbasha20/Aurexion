@@ -48,10 +48,7 @@ export const IndustrySearch = () => {
                     className="group flex flex-col justify-between p-6 bg-card/30 border border-border/30 rounded-lg hover:border-primary/50 transition-colors"
                   >
                     <div>
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-1 rounded">
-                          {industry.id}
-                        </span>
+                      <div className="flex justify-end items-start mb-2">
                         <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                       </div>
                       <h4 className="text-lg font-bold group-hover:text-primary transition-colors">{industry.name}</h4>

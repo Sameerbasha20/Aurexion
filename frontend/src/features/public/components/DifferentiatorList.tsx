@@ -2,7 +2,7 @@ import React from "react";
 import { LucideIcon } from "lucide-react";
 
 export interface DifferentiatorItem {
-  number: string;
+  number?: string;
   title: string;
   description: string;
   icon: LucideIcon | React.ComponentType<{ className?: string }>;
@@ -32,20 +32,17 @@ export const DifferentiatorList: React.FC<DifferentiatorListProps> = ({
                 key={index}
                 className="group flex flex-col sm:flex-row items-start sm:items-center p-6 sm:p-8 bg-card/5 border border-border/20 rounded-lg hover:border-primary/40 hover:bg-card/10 transition-all duration-300"
               >
-                <div className="flex items-center sm:w-1/3 mb-4 sm:mb-0">
-                  <span className="text-3xl font-mono text-[#63f5e8] font-bold mr-6 drop-shadow-[0_0_10px_rgba(99,245,232,0.7)] group-hover:drop-shadow-[0_0_16px_rgba(99,245,232,0.95)] transition-all">
-                    {item.number}
-                  </span>
-                  <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center mr-4">
-                    <Icon className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-4 sm:w-1/3 mb-4 sm:mb-0">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/40 group-hover:scale-105 transition-all duration-300">
+                    <Icon className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors">
+                  <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors leading-snug">
                     {item.title}
                   </h3>
                 </div>
 
                 <div className="sm:w-2/3 sm:pl-12 sm:border-l border-border/20">
-                  <p className="text-gray-400 text-lg leading-relaxed">{item.description}</p>
+                  <p className="text-gray-400 text-base md:text-lg leading-relaxed">{item.description}</p>
                 </div>
               </div>
             );
