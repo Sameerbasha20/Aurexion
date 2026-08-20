@@ -31,7 +31,9 @@ class SupportTicketService:
 
     @staticmethod
     def get_support_tickets(support_user, status=None):
-        queryset = SupportTicket.objects.filter(assigned_to=support_user).select_related('client_user', 'assigned_to')
+        queryset = SupportTicket.objects.filter(
+            models.Q(assigned_to=support_user) | models.Q(assigned_to__isnull=True)
+        ).select_related('client_user', 'assigned_to')
         if status:
             queryset = queryset.filter(status=status)
         return queryset.order_by('-created_at', '-id')

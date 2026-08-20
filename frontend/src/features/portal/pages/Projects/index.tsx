@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import PageHeader from "../../components/PageHeader";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
 import portalService from "../../services/portalService";
-import { Briefcase, Calendar, CheckCircle2, Clock, RefreshCw, FolderLock } from "lucide-react";
+import usePortalQuery from "../../hooks/usePortalQuery";
+import { ErrorState, LoadingState } from "../../components/StateViews";
+import { Briefcase, RefreshCw } from "lucide-react";
 
 interface ProjectItem {
   id: number;
@@ -27,24 +29,10 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export const Projects: React.FC = () => {
-  const [projects, setProjects] = useState<ProjectItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchProjects = async () => {
-    setIsLoading(true);
-    try {
-      const data = await portalService.getProjects();
-      setProjects(data);
-    } catch {
-      setProjects([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+  const { data: projects, isLoading, isError, error, refetch } = usePortalQuery<ProjectItem[]>(
+    ["portal", "projects"],
+    () => portalService.getProjects()
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
@@ -53,7 +41,7 @@ export const Projects: React.FC = () => {
         title="Projects Portfolio"
         description="Live status tracking for active project deliverables and engineering scope."
         actions={
-          <Button variant="outline" size="sm" onClick={fetchProjects}>
+          <Button variant="outline" size="sm" onClick={refetch}>
             <RefreshCw size={14} style={{ marginRight: "0.35rem" }} />
             Refresh
           </Button>
@@ -61,13 +49,10 @@ export const Projects: React.FC = () => {
       />
 
       {isLoading ? (
-        <div style={{ padding: "3rem", textAlign: "center", color: "#63f5e8" }}>
-          <RefreshCw size={24} style={{ animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
-          <p style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.85rem" }}>
-            LOADING CLIENT PROJECTS...
-          </p>
-        </div>
-      ) : projects.length === 0 ? (
+        <LoadingState label="LOADING CLIENT PROJECTS..." rows={3} />
+      ) : isError ? (
+        <ErrorState error={error} onRetry={refetch} title="Unable to load client projects" />
+      ) : !projects || projects.length === 0 ? (
         <Card style={{ padding: "3rem", textAlign: "center" }}>
           <Briefcase size={36} color="#64748b" style={{ margin: "0 auto 1rem" }} />
           <h3 style={{ fontSize: "1.2rem", color: "#f8fafc", margin: 0 }}>No active projects yet</h3>

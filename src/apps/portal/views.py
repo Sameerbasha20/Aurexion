@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from rest_framework.authentication import SessionAuthentication
 from apps.authentication.audit import log_audit_event
-from apps.administration.permissions import IsAdministrator
+from apps.administration.permissions import IsAdministrator, IsClientUser
 from apps.portal.models import SupportTicket, ClientProject, ClientRequest, ClientDocument
 from apps.portal.authentication import ProfileJWTAuthentication
 from apps.portal.permissions import (
@@ -137,6 +137,16 @@ class ClientTicketViewSet(
             return SupportTicketDetailSerializer
         return SupportTicketListSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        output = SupportTicketDetailSerializer(
+            serializer.instance, context=self.get_serializer_context()
+        ).data
+        headers = self.get_success_headers(output)
+        return Response(output, status=status.HTTP_201_CREATED, headers=headers)
+
     def perform_create(self, serializer):
         ticket = serializer.save(client_user=self.request.user)
         log_audit_event(
@@ -215,12 +225,7 @@ class SupportExecutiveTicketViewSet(
     ]
 
     def get_queryset(self):
-        return (
-            SupportTicket.objects
-            .filter(assigned_to=self.request.user)
-            .select_related('client_user', 'assigned_to')
-            .order_by('-created_at')
-        )
+        return SupportTicketService.get_support_tickets(self.request.user)
 
     def get_serializer_class(self):
         if self.action in ('update', 'partial_update'):
@@ -228,6 +233,15 @@ class SupportExecutiveTicketViewSet(
         if self.action == 'retrieve':
             return SupportTicketDetailSerializer
         return SupportTicketListSerializer
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        output = SupportTicketDetailSerializer(instance, context=self.get_serializer_context()).data
+        return Response(output)
 
     def perform_update(self, serializer):
         instance = serializer.instance
@@ -478,6 +492,7 @@ class TicketViewSet(
     destroy=extend_schema(tags=['Client Portal (Projects)'], summary="Delete project"),
 )
 class ClientProjectViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsClientUser]
     authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
     serializer_class = ClientProjectSerializer
     queryset = ClientProject.objects.none()
@@ -499,6 +514,7 @@ class ClientProjectViewSet(viewsets.ModelViewSet):
     destroy=extend_schema(tags=['Client Portal (Requests)'], summary="Delete request"),
 )
 class ClientRequestViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsClientUser]
     authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
     serializer_class = ClientRequestSerializer
     queryset = ClientRequest.objects.none()
@@ -520,6 +536,7 @@ class ClientRequestViewSet(viewsets.ModelViewSet):
     destroy=extend_schema(tags=['Client Portal (Documents)'], summary="Delete document"),
 )
 class ClientDocumentViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsClientUser]
     authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
     serializer_class = ClientDocumentSerializer
     queryset = ClientDocument.objects.none()
