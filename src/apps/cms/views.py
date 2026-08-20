@@ -27,7 +27,7 @@ class AdminCaseStudyViewSet(viewsets.ModelViewSet):
     queryset = CaseStudy.objects.all().order_by('-created_at')
     serializer_class = CaseStudySerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'slug'
+    lookup_field = 'pk'
 
 class AdminIndustryViewSet(viewsets.ModelViewSet):
     queryset = Industry.objects.all().prefetch_related('services', 'case_studies').order_by('-created_at')
@@ -53,7 +53,6 @@ class AdminBlogPostViewSet(viewsets.ModelViewSet):
 @extend_schema_view(
     get=extend_schema(tags=['CMS (Public)'], auth=[])
 )
-@method_decorator(cache_page(60 * 15), name='dispatch')
 class PublicServiceDetailView(generics.RetrieveAPIView):
     """
     Public API: GET /api/v1/cms/public/services/{slug}/
@@ -67,7 +66,6 @@ class PublicServiceDetailView(generics.RetrieveAPIView):
 @extend_schema_view(
     get=extend_schema(tags=['CMS (Public)'], auth=[])
 )
-@method_decorator(cache_page(60 * 15), name='dispatch')
 class PublicIndustryDetailView(generics.RetrieveAPIView):
     """
     Public API: GET /api/v1/cms/public/industries/{slug}/
@@ -100,11 +98,9 @@ class PublicCaseStudyViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(tech_stack__icontains=tech_stack)
         return queryset
 
-    @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @method_decorator(cache_page(60 * 15))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -142,11 +138,9 @@ class PublicBlogPostViewSet(viewsets.ReadOnlyModelViewSet):
             
         return queryset
 
-    @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @method_decorator(cache_page(60 * 15))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -170,3 +164,56 @@ class PublicBlogPostViewSet(viewsets.ReadOnlyModelViewSet):
             
         serializer = BlogPostSerializer(suggestions, many=True, context={'request': request})
         return Response(serializer.data)
+
+
+class PublicServiceListView(generics.ListAPIView):
+    """
+    Public API: GET /api/v1/cms/public/services/
+    Returns a list of published services.
+    """
+    queryset = Service.objects.filter(status='published').order_by('-created_at')
+    serializer_class = ServiceSerializer
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+
+class PublicIndustryListView(generics.ListAPIView):
+    """
+    Public API: GET /api/v1/cms/public/industries/
+    Returns a list of published industries.
+    """
+    queryset = Industry.objects.filter(status='published').order_by('-created_at')
+    serializer_class = IndustrySerializer
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+import os
+
+class MediaUploadView(APIView):
+    """
+    CMS API: POST /api/v1/cms/admin/upload/
+    Uploads a media file/picture and returns its absolute URL.
+    """
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, *args, **kwargs):
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Ensure uploads folder exists in MEDIA_ROOT
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'uploads'), exist_ok=True)
+        
+        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
+        filename = fs.save(file_obj.name, file_obj)
+        file_url = request.build_absolute_uri(settings.MEDIA_URL + 'uploads/' + filename)
+        
+        return Response({'url': file_url}, status=status.HTTP_200_OK)
+
+

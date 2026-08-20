@@ -1,7 +1,7 @@
 export const APP_CONFIG = {
   name: "Aurexion Enterprise",
   version: "1.0.0",
-  apiBaseUrl: import.meta.env.VITE_API_URL || "https://aurexion.onrender.com/api/v1/",
+  apiBaseUrl: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8000/api/v1/" : "https://aurexion.onrender.com/api/v1/"),
   sessionTimeoutMinutes: 60,
   defaultRedirectPath: {
     ADMIN: "/admin/dashboard",

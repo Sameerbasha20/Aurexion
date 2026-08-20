@@ -45,6 +45,7 @@ export interface CaseStudyItem {
   modules_integration_security: string;
   outcomes_performance: string;
   confidential: boolean;
+  media: string | null;
   status: string; // "published", "draft", "archived"
   created_at: string;
   updated_at: string;
@@ -63,6 +64,7 @@ export interface CaseStudyCreatePayload {
   outcomes_performance: string;
   confidential?: boolean;
   status?: string;
+  media?: string | null;
 }
 
 export interface IndustryItem {
@@ -130,6 +132,7 @@ export interface BlogPostCreatePayload {
   category: number;
   author: number;
   status?: string;
+  media?: string | null;
   meta_title?: string | null;
   meta_description?: string | null;
   meta_keywords?: string | null;
@@ -158,7 +161,7 @@ export interface CmsDashboardStats {
 export const cmsService = {
   // Services
   getAdminServices: async (): Promise<ServiceItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICES);
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICES, { params: { page_size: 100 } });
     return Array.isArray(data) ? data : (data.results || []);
   },
 
@@ -183,7 +186,7 @@ export const cmsService = {
 
   // Case Studies
   getAdminCaseStudies: async (): Promise<CaseStudyItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES);
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, { params: { page_size: 100 } });
     return Array.isArray(data) ? data : (data.results || []);
   },
 
@@ -208,7 +211,7 @@ export const cmsService = {
 
   // Industries
   getAdminIndustries: async (): Promise<IndustryItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES);
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, { params: { page_size: 100 } });
     return Array.isArray(data) ? data : (data.results || []);
   },
 
@@ -233,7 +236,7 @@ export const cmsService = {
 
   // Categories
   getAdminCategories: async (): Promise<CategoryItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CATEGORIES);
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, { params: { page_size: 100 } });
     return Array.isArray(data) ? data : (data.results || []);
   },
 
@@ -248,7 +251,7 @@ export const cmsService = {
 
   // Blog
   getAdminBlog: async (): Promise<BlogPostItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG);
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG, { params: { page_size: 100 } });
     return Array.isArray(data) ? data : (data.results || []);
   },
 
@@ -283,12 +286,12 @@ export const cmsService = {
   },
 
   getPublicCaseStudies: async (): Promise<CaseStudyItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.PUBLIC_CASE_STUDIES);
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.PUBLIC_CASE_STUDIES, { params: { page_size: 100 } });
     return Array.isArray(data) ? data : (data.results || []);
   },
 
   getPublicBlog: async (): Promise<BlogPostItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.PUBLIC_BLOG);
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.PUBLIC_BLOG, { params: { page_size: 100 } });
     return Array.isArray(data) ? data : (data.results || []);
   },
 
@@ -302,40 +305,58 @@ export const cmsService = {
       cmsService.getAdminCategories(),
     ]);
 
-    const published_services = services.filter((s) => s.status?.toLowerCase() === "published").length;
-    const draft_services = services.filter((s) => s.status?.toLowerCase() === "draft").length;
+    const totalServices = services.length;
+    const publishedServices = services.filter((s) => s.status === "published").length;
+    const draftServices = totalServices - publishedServices;
 
-    const published_case_studies = caseStudies.filter((cs) => cs.status?.toLowerCase() === "published").length;
-    const draft_case_studies = caseStudies.filter((cs) => cs.status?.toLowerCase() === "draft").length;
+    const totalCaseStudies = caseStudies.length;
+    const publishedCaseStudies = caseStudies.filter((cs) => cs.status === "published").length;
+    const draftCaseStudies = totalCaseStudies - publishedCaseStudies;
 
-    const published_industries = industries.filter((i) => i.status?.toLowerCase() === "published").length;
+    const totalIndustries = industries.length;
+    const publishedIndustries = industries.filter((ind) => ind.status === "published").length;
 
-    const published_blog_posts = blogPosts.filter((b) => b.status?.toLowerCase() === "published").length;
-    const draft_blog_posts = blogPosts.filter((b) => b.status?.toLowerCase() === "draft").length;
+    const totalBlogPosts = blogPosts.length;
+    const publishedBlogPosts = blogPosts.filter((b) => b.status === "published").length;
+    const draftBlogPosts = totalBlogPosts - publishedBlogPosts;
 
-    const total_content_nodes = services.length + caseStudies.length + industries.length + blogPosts.length;
-    const total_published = published_services + published_case_studies + published_industries + published_blog_posts;
-    const published_ratio = total_content_nodes > 0 ? Math.round((total_published / total_content_nodes) * 100) : 0;
+    const totalCategories = categories.length;
+
+    const totalContentNodes = totalServices + totalCaseStudies + totalBlogPosts;
+    const totalPublished = publishedServices + publishedCaseStudies + publishedBlogPosts;
+    const publishedRatio = totalContentNodes > 0 ? (totalPublished / totalContentNodes) * 100 : 0;
 
     return {
-      total_services: services.length,
-      published_services,
-      draft_services,
-      total_case_studies: caseStudies.length,
-      published_case_studies,
-      draft_case_studies,
-      total_industries: industries.length,
-      published_industries,
-      total_blog_posts: blogPosts.length,
-      published_blog_posts,
-      draft_blog_posts,
-      total_categories: categories.length,
-      total_content_nodes,
-      published_ratio,
+      total_services: totalServices,
+      published_services: publishedServices,
+      draft_services: draftServices,
+      total_case_studies: totalCaseStudies,
+      published_case_studies: publishedCaseStudies,
+      draft_case_studies: draftCaseStudies,
+      total_industries: totalIndustries,
+      published_industries: publishedIndustries,
+      total_blog_posts: totalBlogPosts,
+      published_blog_posts: publishedBlogPosts,
+      draft_blog_posts: draftBlogPosts,
+      total_categories: totalCategories,
+      total_content_nodes: totalContentNodes,
+      published_ratio: publishedRatio,
       recent_articles: blogPosts.slice(0, 5),
       recent_case_studies: caseStudies.slice(0, 5),
       services_list: services,
     };
+  },
+
+  // File Upload
+  uploadMedia: async (file: File): Promise<{ url: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_UPLOAD, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return data;
   },
 };
 

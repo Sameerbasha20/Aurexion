@@ -23,7 +23,7 @@ export const Footer: React.FC = () => {
         color: "#94a3b8",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <img src="/logo.svg" alt="Aurexion" style={{ width: "20px", height: "20px" }} />
+          <img src="/manus-storage/aurexion-mark_e8f9e729.png" alt="Aurexion" style={{ width: "20px", height: "20px" }} />
           <span style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 500, color: "#f8fafc" }}>AUREXION</span>
         </div>
         <div style={{ display: "flex", gap: "1.5rem" }}>
@@ -48,7 +48,7 @@ export const Footer: React.FC = () => {
         color: "#64748b",
         fontFamily: "IBM Plex Mono, monospace",
       }}>
-        <span>© {new Date().getFullYear()} AUREXION. All rights reserved.</span>
+
         <span>Secure Session Scope / MD-SIG-01</span>
       </div>
     </footer>

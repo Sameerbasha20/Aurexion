@@ -46,9 +46,11 @@ export const PublicRoutes: React.FC = () => {
         <Route path="/careers/:id/apply" component={ApplyPage} />
         <Route path="/careers/:id" component={JobDetailsPage} />
         
-        <Route path="/insights" component={InsightsPage} />
-        <Route path="/insights/:slug" component={ArticleDetailPage} />
-        <Route path="/blog"><Redirect to="/insights" replace /></Route>
+        <Route path="/blogengine" component={InsightsPage} />
+        <Route path="/blogengine/:slug" component={ArticleDetailPage} />
+        <Route path="/insights"><Redirect to="/blogengine" /></Route>
+        <Route path="/insights/:slug">{({ params }) => <Redirect to={`/blogengine/${params.slug}`} />}</Route>
+        <Route path="/blog"><Redirect to="/blogengine" /></Route>
         
         <Route path="/contact" component={ContactPage} />
         <Route path="/request-quote" component={RequestQuotePage} />

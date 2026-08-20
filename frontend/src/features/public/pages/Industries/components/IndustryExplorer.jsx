@@ -1,19 +1,71 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { industriesData } from "../../../../../data/industries";
+import { useIndustries } from "../../../hooks/usePublicContent";
 import { ArrowRight } from "lucide-react";
 
 export const IndustryExplorer = () => {
+  const { data: dbIndustries } = useIndustries();
   const [activeIndex, setActiveIndex] = useState(0);
-  const activeIndustry = industriesData[activeIndex];
+
+  // Map database industries to Industry format
+  const mappedDbIndustries = useMemo(() => {
+    return (dbIndustries || []).map((dbInd) => {
+      let challengesObj = { operational: [], regulatory: [], technical: [] };
+      try {
+        challengesObj = JSON.parse(dbInd.challenges);
+      } catch (e) {
+        challengesObj = {
+          operational: [{ title: dbInd.challenges ? dbInd.challenges.slice(0, 50) + "..." : "Operational challenges", description: dbInd.challenges || "" }],
+          regulatory: [],
+          technical: []
+        };
+      }
+
+      let solutionsArr = [];
+      try {
+        solutionsArr = JSON.parse(dbInd.target_solutions);
+      } catch (e) {
+        solutionsArr = dbInd.target_solutions ? [dbInd.target_solutions] : [];
+      }
+
+      return {
+        id: `db-${dbInd.id}`,
+        slug: dbInd.slug,
+        name: dbInd.name || "",
+        shortDescription: dbInd.challenges ? dbInd.challenges.slice(0, 150) + (dbInd.challenges.length > 150 ? "..." : "") : "Enterprise technology solutions.",
+        icon: "Building",
+        challenges: challengesObj,
+        solutions: solutionsArr,
+        relatedServices: [],
+        technologies: [],
+        relatedCaseStudies: [],
+        outcomes: ["Security", "Scalability"]
+      };
+    });
+  }, [dbIndustries]);
+
+  // Combine static and DB industries, prioritizing DB industries for duplicates
+  const allIndustries = useMemo(() => {
+    const combined = [...mappedDbIndustries];
+    industriesData.forEach((staticS) => {
+      if (!combined.some((s) => s.slug === staticS.slug)) {
+        combined.push(staticS);
+      }
+    });
+    return combined;
+  }, [mappedDbIndustries]);
+
+  const activeIndustry = allIndustries[activeIndex] || allIndustries[0];
 
   // Auto cycle (optional, could be disabled on interaction)
   useEffect(() => {
+    if (allIndustries.length === 0) return;
     const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % industriesData.length);
+      setActiveIndex((prev) => (prev + 1) % allIndustries.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [allIndustries]);
 
   return (
     <section id="industries-explorer" className="py-24 bg-[#0a0f18] border-t border-border/10 hidden md:block scroll-mt-20">
@@ -25,7 +77,7 @@ export const IndustryExplorer = () => {
             <h3 className="text-xs font-mono tracking-[0.2em] text-primary mb-6">INDUSTRIES</h3>
             <div className="h-[600px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
               <div className="flex flex-col gap-1">
-                {industriesData.map((ind, idx) => {
+                {allIndustries.map((ind, idx) => {
                   const isActive = idx === activeIndex;
                   return (
                     <button type="button"

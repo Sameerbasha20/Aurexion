@@ -7,7 +7,9 @@ export const API_ENDPOINTS = {
   ADMIN: {
     USERS: "/users/",
     ROLES: "/roles/",
+    ROLE_CHOICES: "/users/roles/",
     AUDIT_LOGS: "/audit-logs/",
+    DASHBOARD: "/admin/dashboard/",
   },
   CRM: {
     LEADS: "/leads/",
@@ -51,7 +53,10 @@ export const API_ENDPOINTS = {
     ADMIN_CATEGORY_DETAIL: (id: number) => `/cms/admin/categories/${id}/`,
     ADMIN_BLOG: "/cms/admin/blog/",
     ADMIN_BLOG_DETAIL: (id: number) => `/cms/admin/blog/${id}/`,
+    ADMIN_UPLOAD: "/cms/admin/upload/",
     PUBLIC_SERVICE_DETAIL: (slug: string) => `/cms/public/service/${slug}/`,
+    PUBLIC_SERVICES: "/cms/public/services/",
+    PUBLIC_INDUSTRIES: "/cms/public/industries/",
     PUBLIC_INDUSTRY_DETAIL: (slug: string) => `/cms/public/industry/${slug}/`,
     PUBLIC_CASE_STUDIES: "/cms/public/case-studies/",
     PUBLIC_BLOG: "/cms/public/blog/",

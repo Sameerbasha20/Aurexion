@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useCmsBlog, useCmsCategories } from "../hooks/useCms";
-import { BlogPostItem, BlogPostCreatePayload } from "../services/cmsService";
+import { BlogPostItem, BlogPostCreatePayload, cmsService } from "../services/cmsService";
 import useAuth from "../../../hooks/useAuth";
 import Card from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
@@ -41,6 +41,7 @@ export const Blog: React.FC = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPostItem | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   // Create form state
   const [createForm, setCreateForm] = useState<BlogPostCreatePayload>({
@@ -51,12 +52,15 @@ export const Blog: React.FC = () => {
     category: categories[0]?.id || 1,
     author: Number(user?.id) || 1,
     status: "published",
+    media: "",
   });
   const [tagsInput, setTagsInput] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
 
   // Edit form state
-  const [editForm, setEditForm] = useState<Partial<BlogPostItem>>({});
+  const [editForm, setEditForm] = useState<Partial<BlogPostItem>>({
+    media: "",
+  });
   const [editTagsInput, setEditTagsInput] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
 
@@ -74,6 +78,25 @@ export const Blog: React.FC = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const res = await cmsService.uploadMedia(file);
+      if (isEdit) {
+        setEditForm((prev) => ({ ...prev, media: res.url }));
+      } else {
+        setCreateForm((prev) => ({ ...prev, media: res.url }));
+      }
+    } catch (err: any) {
+      alert("Failed to upload image: " + (err.message || err));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleOpenEdit = (post: BlogPostItem) => {
     setEditingPost(post);
     setEditForm({
@@ -82,6 +105,7 @@ export const Blog: React.FC = () => {
       content: post.content,
       category: post.category,
       status: post.status,
+      media: post.media,
     });
     setEditTagsInput(Array.isArray(post.tags) ? post.tags.join(", ") : String(post.tags || ""));
     setEditError(null);
@@ -121,6 +145,7 @@ export const Blog: React.FC = () => {
         category: categories[0]?.id || 1,
         author: authorId,
         status: "published",
+        media: "",
       });
       setTagsInput("");
       setActionSuccess("Article published successfully.");
@@ -403,9 +428,20 @@ export const Blog: React.FC = () => {
                       onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                     >
                       <td style={{ padding: "1rem" }}>
-                        <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{post.title}</div>
-                        <div style={{ fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontSize: "0.72rem", marginTop: "0.2rem" }}>
-                          /{post.slug}
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                          {post.media && (
+                            <img
+                              src={post.media}
+                              alt=""
+                              style={{ width: "40px", height: "40px", borderRadius: "4px", objectFit: "cover", backgroundColor: "rgba(255,255,255,0.05)" }}
+                            />
+                          )}
+                          <div>
+                            <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{post.title}</div>
+                            <div style={{ fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontSize: "0.72rem", marginTop: "0.2rem" }}>
+                              /{post.slug}
+                            </div>
+                          </div>
                         </div>
                       </td>
 
@@ -579,6 +615,45 @@ export const Blog: React.FC = () => {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>FEATURED PICTURE / MEDIA URL</label>
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/image.png"
+                    value={createForm.media || ""}
+                    onChange={(e) => setCreateForm({ ...createForm, media: e.target.value })}
+                    style={{ flex: 1, padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="blog-media-upload-create"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleMediaUpload(e, false)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploading}
+                    onClick={() => document.getElementById("blog-media-upload-create")?.click()}
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    {uploading ? "Uploading..." : "Upload File"}
+                  </Button>
+                </div>
+                {createForm.media && (
+                  <div style={{ marginTop: "0.5rem", padding: "0.5rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.15)", borderRadius: "4px", display: "inline-block", alignSelf: "flex-start" }}>
+                    <img
+                      src={createForm.media}
+                      alt="Uploaded Preview"
+                      style={{ maxHeight: "120px", maxWidth: "100%", borderRadius: "2px", display: "block" }}
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>ARTICLE CONTENT</label>
                 <textarea
                   rows={6}
@@ -671,6 +746,45 @@ export const Blog: React.FC = () => {
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
                   />
                 </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>FEATURED PICTURE / MEDIA URL</label>
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/image.png"
+                    value={editForm.media || ""}
+                    onChange={(e) => setEditForm({ ...editForm, media: e.target.value })}
+                    style={{ flex: 1, padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="blog-media-upload-edit"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleMediaUpload(e, true)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploading}
+                    onClick={() => document.getElementById("blog-media-upload-edit")?.click()}
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    {uploading ? "Uploading..." : "Upload File"}
+                  </Button>
+                </div>
+                {editForm.media && (
+                  <div style={{ marginTop: "0.5rem", padding: "0.5rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.15)", borderRadius: "4px", display: "inline-block", alignSelf: "flex-start" }}>
+                    <img
+                      src={editForm.media}
+                      alt="Uploaded Preview"
+                      style={{ maxHeight: "120px", maxWidth: "100%", borderRadius: "2px", display: "block" }}
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>

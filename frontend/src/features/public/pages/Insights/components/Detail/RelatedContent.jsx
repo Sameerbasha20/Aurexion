@@ -74,7 +74,7 @@ export const RelatedContent = ({ currentArticle }) => {
           <h3 className="text-2xl font-bold mb-8">Continue Reading</h3>
           <div className="grid md:grid-cols-3 gap-6">
             {relatedArticles.map(article => (
-              <Link key={article.id} href={`/insights/${article.slug}`} className="group block bg-card border border-border/40 rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
+              <Link key={article.id} href={`/blogengine/${article.slug}`} className="group block bg-card border border-border/40 rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
                 <div className="p-6">
                   <span className="text-[10px] font-mono text-primary uppercase mb-2 block">
                     {article.category.replace('-', ' ')}

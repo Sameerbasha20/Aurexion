@@ -7,7 +7,7 @@ export const ArticleCard = ({ article }) => {
   const author = authors.find(a => a.id === article.authorId);
 
   return (
-    <Link href={`/insights/${article.slug}`} className="group flex flex-col h-full bg-card border border-border/40 rounded-xl overflow-hidden hover:border-primary/50 transition-all hover:shadow-xl hover:-translate-y-1">
+    <Link href={`/blogengine/${article.slug}`} className="group flex flex-col h-full bg-card border border-border/40 rounded-xl overflow-hidden hover:border-primary/50 transition-all hover:shadow-xl hover:-translate-y-1">
       {/* Cover Image */}
       <div className="h-48 bg-[#0a0f18] relative overflow-hidden flex-shrink-0 border-b border-border/40">
         <img
