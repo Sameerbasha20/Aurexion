@@ -39,13 +39,10 @@ export const ValuesSection: React.FC = () => {
                 className="p-8 bg-[#0b1420] border border-[#1b2b3d] rounded-xl hover:border-[#63f5e8]/40 hover:bg-[#0e1a2b] transition-all duration-200 flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center mb-6">
                     <div className="w-11 h-11 rounded-lg bg-[#63f5e8]/10 border border-[#63f5e8]/20 flex items-center justify-center">
                       <Icon className="w-5 h-5 text-[#63f5e8]" />
                     </div>
-                    <span className="font-mono text-xs font-semibold text-[#63f5e8] bg-[#63f5e8]/10 border border-[#63f5e8]/20 px-2.5 py-0.5 rounded">
-                      {value.id}
-                    </span>
                   </div>
 
                   <h3 className="text-xl font-bold text-white tracking-tight mb-2">

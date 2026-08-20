@@ -35,13 +35,10 @@ export const ServicesOverview: React.FC = () => {
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-700" />
                 
-                <div className="flex justify-between items-start mb-6 relative z-10">
-                  <div className="w-12 h-12 rounded flex items-center justify-center bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <div className="flex items-center mb-6 relative z-10">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-primary/10 border border-primary/20 group-hover:bg-primary/20 group-hover:border-primary/40 group-hover:scale-105 transition-all duration-300">
                     <Icon className="w-6 h-6 text-primary" />
                   </div>
-                  <span className="font-mono text-4xl font-bold text-[#63f5e8] drop-shadow-[0_0_10px_rgba(99,245,232,0.7)] group-hover:drop-shadow-[0_0_16px_rgba(99,245,232,0.95)] transition-all select-none">
-                    {category.id}
-                  </span>
                 </div>
                 
                 <div className="flex-grow relative z-10">

@@ -20,7 +20,7 @@ export const AboutHero: React.FC = () => {
       <div className="subpage-hero-container">
         <div style={{ maxWidth: "880px" }}>
           <div className="subpage-hero-eyebrow">
-            <span className="subpage-cat-tag">ABOUT AUREXION / 03</span>
+            <span className="subpage-cat-tag">ABOUT AUREXION</span>
             <span className="subpage-signal-divider" />
             <span className="subpage-code-tag">ENGINEERING HERITAGE</span>
           </div>

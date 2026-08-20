@@ -19,7 +19,7 @@ export const CaseStudiesHero = () => {
       <div className="subpage-hero-container">
         <div style={{ maxWidth: "880px" }}>
           <div className="subpage-hero-eyebrow">
-            <span className="subpage-cat-tag">DEPLOYMENTS / 04</span>
+            <span className="subpage-cat-tag">DEPLOYMENTS</span>
             <span className="subpage-signal-divider" />
             <span className="subpage-code-tag">PROVEN IMPACT</span>
           </div>

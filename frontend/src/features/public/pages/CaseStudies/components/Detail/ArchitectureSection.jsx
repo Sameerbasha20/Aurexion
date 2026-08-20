@@ -7,8 +7,7 @@ export const ArchitectureSection = ({ caseStudy }) => {
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl font-bold text-primary font-mono opacity-50">02</span>
+          <div className="mb-4">
             <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Proposed Architecture</h2>
           </div>
           <p className="text-base md:text-lg text-gray-300 leading-relaxed max-w-4xl">

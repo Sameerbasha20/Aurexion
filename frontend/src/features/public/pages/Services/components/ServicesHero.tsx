@@ -34,7 +34,7 @@ export const ServicesHero: React.FC = () => {
       <div className="subpage-hero-container">
         <div style={{ maxWidth: "880px" }}>
           <div className="subpage-hero-eyebrow">
-            <span className="subpage-cat-tag">CAPABILITIES / 01</span>
+            <span className="subpage-cat-tag">CAPABILITIES</span>
             <span className="subpage-signal-divider" />
             <span className="subpage-code-tag">ENTERPRISE SOLUTIONS</span>
           </div>

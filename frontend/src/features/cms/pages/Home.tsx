@@ -257,8 +257,9 @@ export default function Home() {
               return (
                 <div key={cat.id} className="service-card-pro">
                   <div className="svc-pro-header">
-                    <span className="svc-pro-num">{cat.id}</span>
-                    <Icon size={18} className="svc-pro-icon" />
+                    <div className="svc-pro-icon-box">
+                      <Icon size={20} className="svc-pro-icon" />
+                    </div>
                   </div>
 
                   <Link href={`/services?category=${encodeURIComponent(cat.name)}#explorer`} className="svc-pro-title hover:text-[#63f5e8] transition-colors block">
@@ -343,7 +344,6 @@ export default function Home() {
                     <div className="ind-card-icon-box">
                       <Icon size={20} className="ind-card-icon" />
                     </div>
-                    <span className="ind-card-num">{ind.id}</span>
                   </div>
 
                   <h3 className="ind-card-title">{ind.name}</h3>
@@ -409,8 +409,7 @@ export default function Home() {
                     alt={featured.title}
                     style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,17,0.3) 0%, rgba(5,8,17,0.7) 100%)", pointerEvents: "none" }} />
-                  <p className="case-number">01</p>
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,8,17,0.1) 0%, rgba(5,8,17,0.65) 100%)", pointerEvents: "none" }} />
                   <div style={{ position: "absolute", bottom: "1.5rem", left: "1.5rem", right: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", color: "#63f5e8", letterSpacing: ".12em", background: "rgba(5,8,17,.8)", padding: ".3rem .6rem", border: "1px solid rgba(99,245,232,.3)" }}>
                       {industryName}
