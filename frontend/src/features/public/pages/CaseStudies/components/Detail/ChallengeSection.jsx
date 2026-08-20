@@ -2,17 +2,19 @@ import React from "react";
 
 export const ChallengeSection = ({ caseStudy }) => {
   return (
-    <section className="py-8 bg-background border-b border-border/10">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 mb-4">
+    <section className="py-12 bg-background border-b border-border/10">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 mb-6">
           <span className="text-2xl font-bold text-primary font-mono opacity-50">01</span>
-          <h2 className="text-2xl font-bold">The Challenge</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">The Challenge</h2>
         </div>
         
-        <p className="text-base text-gray-300 leading-relaxed">
+        <p className="text-base md:text-lg text-gray-300 leading-relaxed max-w-4xl">
           {caseStudy.challenge}
         </p>
       </div>
     </section>
   );
 };
+
+export default ChallengeSection;

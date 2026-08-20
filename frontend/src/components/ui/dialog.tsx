@@ -73,15 +73,24 @@ function DialogClose({
 
 function DialogOverlay({
   className,
+  style,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50",
         className
       )}
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(5, 8, 17, 0.8)",
+        backdropFilter: "blur(6px)",
+        zIndex: 50,
+        ...style
+      }}
       {...props}
     />
   );
@@ -94,6 +103,7 @@ function DialogContent({
   children,
   showCloseButton = true,
   onEscapeKeyDown,
+  style,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
@@ -127,6 +137,13 @@ function DialogContent({
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
           className
         )}
+        style={{
+          backgroundColor: "#0c1222",
+          border: "1px solid var(--color-border)",
+          color: "var(--color-text-primary)",
+          zIndex: 50,
+          ...style
+        }}
         onEscapeKeyDown={handleEscapeKeyDown}
         {...props}
       >

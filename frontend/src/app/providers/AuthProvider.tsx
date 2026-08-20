@@ -11,16 +11,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Check local storage for session
+    // Check local storage for user profile session
     const storedUser = localStorage.getItem("aurexion_user");
-    const storedToken = localStorage.getItem("aurexion_auth_token");
-    if (storedUser && storedToken) {
+    if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch {
         // Clear broken session
         localStorage.removeItem("aurexion_user");
-        localStorage.removeItem("aurexion_auth_token");
       }
     }
     setIsLoading(false);
@@ -63,7 +61,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       setUser(activeUser);
       localStorage.setItem("aurexion_user", JSON.stringify(activeUser));
-      localStorage.setItem("aurexion_auth_token", response.access);
     } catch (err: any) {
       setIsLoading(false);
       throw err;
@@ -74,7 +71,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("aurexion_user");
-    localStorage.removeItem("aurexion_auth_token");
+    authService.logout().catch(() => {});
   };
 
   const hasPermission = (permission: string) => {

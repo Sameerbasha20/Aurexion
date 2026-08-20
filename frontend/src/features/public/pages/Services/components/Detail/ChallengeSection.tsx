@@ -1,7 +1,8 @@
 import React from "react";
 import { ShieldAlert } from "lucide-react";
+import { ServiceDetail } from "../../../../types/website.types";
 
-export const ChallengeSection: React.FC = () => {
+export const ChallengeSection: React.FC<{ service?: ServiceDetail }> = ({ service }) => {
   return (
     <section className="py-10 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,7 +14,7 @@ export const ChallengeSection: React.FC = () => {
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Enterprise Challenges We Address</h2>
             <div className="w-16 h-1 bg-primary mb-8" />
             <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              Modern enterprises face unprecedented complexity in scaling operations securely, integrating disparate legacy systems, and extracting actionable intelligence from massive datasets.
+              {service?.problem || "Modern enterprises face unprecedented complexity in scaling operations securely, integrating disparate legacy systems, and extracting actionable intelligence from massive datasets."}
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
               Without rigorous engineering standards and an adaptable architecture, organizations risk technical debt, security vulnerabilities, and stalled digital transformation initiatives.

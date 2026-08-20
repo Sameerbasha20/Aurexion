@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "wouter";
-import { ServiceItem } from "../../../../../../data/services";
+import { ServiceDetail } from "../../../../types/website.types";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 
 interface ServiceHeroProps {
-  service: ServiceItem;
+  service: ServiceDetail;
 }
 
 const SERVICE_IMAGES: Record<string, string> = {

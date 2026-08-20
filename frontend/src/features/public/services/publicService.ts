@@ -1,12 +1,12 @@
 import axiosClient from "../../../api/axiosClient";
 import { API_ENDPOINTS } from "../../../api/endpoints";
-import { BlogPost, CaseStudy, Industry, Job, JobApplication, Service, ContactFormData, QuoteFormData, PublicLeadData } from "../types/website.types";
+import { BlogPost, CaseStudy, Industry, Job, JobApplication, Service, ServiceApiDetail, ContactFormData, QuoteFormData, PublicLeadData } from "../types/website.types";
 
 export const publicService = {
   // CMS endpoints
-  getServiceBySlug: async (slug: string): Promise<Service> => {
+  getServiceBySlug: async (slug: string): Promise<ServiceApiDetail> => {
     const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_SERVICE_DETAIL(slug));
-    return response as any;
+    return response as unknown as ServiceApiDetail;
   },
 
   getIndustryBySlug: async (slug: string): Promise<Industry> => {
@@ -19,8 +19,18 @@ export const publicService = {
     return (response as any) || [];
   },
 
-  getBlogPosts: async (): Promise<BlogPost[]> => {
-    const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_BLOG);
+  getBlogPosts: async (params?: { category?: string; tag?: string; search?: string }): Promise<BlogPost[]> => {
+    const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_BLOG, { params });
+    return (response as any) || [];
+  },
+
+  getBlogPostBySlug: async (slug: string): Promise<BlogPost> => {
+    const response = await axiosClient.get(`${API_ENDPOINTS.CMS.PUBLIC_BLOG}${slug}/`);
+    return response as any;
+  },
+
+  getRelatedBlogPosts: async (slug: string): Promise<BlogPost[]> => {
+    const response = await axiosClient.get(`${API_ENDPOINTS.CMS.PUBLIC_BLOG}${slug}/related/`);
     return (response as any) || [];
   },
 

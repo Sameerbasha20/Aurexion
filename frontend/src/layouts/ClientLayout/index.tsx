@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { LayoutDashboard, Briefcase, MessageSquareCode, FolderLock, LifeBuoy, UserCircle } from "lucide-react";
 import Header from "../../components/common/Header";
@@ -20,11 +20,13 @@ const MOBILE_NAV = [
 ];
 
 export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [location] = useLocation();
 
-  const showSidebar = !isMobile && sidebarOpen;
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
 
   return (
     <div
@@ -37,14 +39,14 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
         backgroundColor: "#050811",
       }}
     >
-      <Header showToggle onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <Header showToggle onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
 
       {isMobile && (
         <nav
           style={{
             display: "flex",
             gap: "0.5rem",
-            padding: "0.75rem 1rem",
+            padding: "0.5rem 0.75rem",
             borderBottom: "1px solid #1e293b",
             backgroundColor: "#0a111c",
             overflowX: "auto",
@@ -62,9 +64,9 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "0.4rem",
-                    padding: "0.5rem 0.75rem",
+                    padding: "0.4rem 0.65rem",
                     borderRadius: "4px",
-                    fontSize: "0.8rem",
+                    fontSize: "0.78rem",
                     fontFamily: "IBM Plex Mono, monospace",
                     whiteSpace: "nowrap",
                     color: isActive ? "#63f5e8" : "#cbd5e1",
@@ -72,7 +74,7 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
                     border: isActive ? "1px solid rgba(99,245,232,0.3)" : "1px solid transparent",
                   }}
                 >
-                  <Icon size={14} />
+                  <Icon size={13} />
                   {item.title}
                 </span>
               </Link>
@@ -82,17 +84,18 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
       )}
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
-        <Sidebar open={showSidebar} />
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main
           style={{
             flex: 1,
-            padding: isMobile ? "1.25rem" : "2rem",
+            padding: isMobile ? "1rem 0.75rem" : "2rem",
             display: "flex",
             flexDirection: "column",
-            gap: "2rem",
+            gap: isMobile ? "1.25rem" : "2rem",
             overflowY: "auto",
             overflowX: "hidden",
             minWidth: 0,
+            width: "100%",
           }}
         >
           {children}
@@ -103,4 +106,4 @@ export const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   );
 };
 
-export default ClientLayout;
+export default ClientLayout;

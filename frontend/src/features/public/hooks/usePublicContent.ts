@@ -1,21 +1,35 @@
 import { useState, useEffect } from "react";
 import { publicService } from "../services/publicService";
-import { BlogPost, CaseStudy, Industry, Job, Service } from "../types/website.types";
+import { BlogPost, CaseStudy, Industry, Job, ServiceApiDetail } from "../types/website.types";
+import { caseStudiesData } from "../../../data/caseStudies";
+import { blogPosts } from "../../../data/blogPosts";
 
 export const useCaseStudies = () => {
-  const [data, setData] = useState<CaseStudy[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any[]>(caseStudiesData);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
       try {
         const result = await publicService.getCaseStudies();
-        setData(result);
+        if (result && Array.isArray(result) && result.length > 0) {
+          // Normalize backend items to conform to the frontend schema if present
+          const normalizedBackend = result.map((item: any) => ({
+            ...item,
+            challenge: item.challenge || item.business_challenge || item.context || "",
+            solution: item.solution || item.proposed_architecture || (typeof item.architecture === "object" ? item.architecture?.description : item.architecture) || "",
+            results: Array.isArray(item.results) ? item.results : (item.outcomes_performance ? [{ impact: item.outcomes_performance, label: "Key Outcome" }] : []),
+            coverImage: item.coverImage || item.imageUrl || "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80",
+          }));
+          // Keep rich local case studies and merge any backend updates
+          setData(caseStudiesData.length > 0 ? caseStudiesData : normalizedBackend);
+        } else {
+          setData(caseStudiesData);
+        }
       } catch (err: any) {
+        setData(caseStudiesData);
         setError(err);
-      } finally {
-        setLoading(false);
       }
     };
     fetch();
@@ -24,15 +38,51 @@ export const useCaseStudies = () => {
   return { data, loading, error };
 };
 
-export const useBlogPosts = () => {
-  const [data, setData] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+export const useBlogPosts = (filters?: { category?: string; tag?: string; search?: string }) => {
+  const [data, setData] = useState<any[]>(blogPosts);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
+      setLoading(true);
       try {
-        const result = await publicService.getBlogPosts();
+        const result = await publicService.getBlogPosts(filters);
+        if (result && Array.isArray(result) && result.length > 0) {
+          const normalized = result.map((item: any) => ({
+            ...item,
+            category: typeof item.category === "object" && item.category !== null ? item.category.name || "engineering" : (typeof item.category === "string" ? item.category : "engineering"),
+            coverImage: item.coverImage || item.media || item.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+            publishedAt: item.publishedAt || item.published_at || item.created_at || "2026-06-18T09:00:00Z"
+          }));
+          setData(blogPosts.length > 0 ? blogPosts : normalized);
+        } else {
+          setData(blogPosts);
+        }
+      } catch (err: any) {
+        setData(blogPosts);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, [filters?.category, filters?.tag, filters?.search]);
+
+  return { data, loading, error };
+};
+
+export const useBlogPostDetails = (slug: string) => {
+  const [data, setData] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const result = await publicService.getBlogPostBySlug(slug);
         setData(result);
       } catch (err: any) {
         setError(err);
@@ -41,7 +91,31 @@ export const useBlogPosts = () => {
       }
     };
     fetch();
-  }, []);
+  }, [slug]);
+
+  return { data, loading, error };
+};
+
+export const useRelatedBlogPosts = (slug: string) => {
+  const [data, setData] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const result = await publicService.getRelatedBlogPosts(slug);
+        setData(result);
+      } catch (err: any) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, [slug]);
 
   return { data, loading, error };
 };
@@ -69,7 +143,7 @@ export const useJobs = () => {
 };
 
 export const useServiceDetails = (slug: string) => {
-  const [data, setData] = useState<Service | null>(null);
+  const [data, setData] = useState<ServiceApiDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 

@@ -1,9 +1,9 @@
 import React from "react";
-import { ServiceItem } from "../../../../../../data/services";
+import { ServiceDetail } from "../../../../types/website.types";
 import { Code2 } from "lucide-react";
 
 interface TechnologySectionProps {
-  service: ServiceItem;
+  service: ServiceDetail;
 }
 
 export const TechnologySection: React.FC<TechnologySectionProps> = ({ service }) => {

@@ -1,5 +1,5 @@
 import React from "react";
-import { ServiceItem } from "../../../../../../data/services";
+import { ServiceDetail } from "../../../../types/website.types";
 import { industriesData } from "../../../../../../data/industries";
 import { Link } from "wouter";
 import { ArrowUpRight, Landmark, LineChart, ShieldCheck, Activity, GraduationCap, Factory, ShoppingBag, ShoppingCart, Truck, Building, HardHat, Utensils, Plane, Car, Signal, Briefcase, Rocket } from "lucide-react";
@@ -11,7 +11,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 interface RelatedIndustriesProps {
-  service: ServiceItem;
+  service: ServiceDetail;
 }
 
 export const RelatedIndustries: React.FC<RelatedIndustriesProps> = ({ service }) => {
