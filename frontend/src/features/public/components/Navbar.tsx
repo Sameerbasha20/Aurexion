@@ -100,6 +100,16 @@ export const Navbar: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  useEffect(() => {
+    if (isOpen) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [isOpen]);
+
   const handleHomeClick = (e: React.MouseEvent) => {
     closeAll();
     if (location === "/") {
