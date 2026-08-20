@@ -67,18 +67,14 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
         )}
         <Link href={user ? (user.role === "ADMIN" ? "/admin/dashboard" : user.role === "BDM" ? "/bdm/dashboard" : "/portal/dashboard") : "/"}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
-            <img src="/logo.svg" alt="Aurexion" style={{ width: "28px", height: "28px" }} />
-            <span
-              style={{
-                fontFamily: "Space Grotesk, sans-serif",
-                fontWeight: 600,
-                fontSize: "1.1rem",
-                letterSpacing: "0.05em",
-                color: "#f8fafc",
-              }}
-            >
-              AUREXION
-            </span>
+            <img src="/manus-storage/aurexion-mark_e8f9e729.png" alt="Aurexion" style={{ width: "30px", height: "30px" }} />
+            <span style={{
+              fontFamily: "Space Grotesk, sans-serif",
+              fontWeight: 600,
+              fontSize: "1.15rem",
+              letterSpacing: "0.05em",
+              color: "#f8fafc",
+            }}>AUREXION</span>
           </div>
         </Link>
       </div>

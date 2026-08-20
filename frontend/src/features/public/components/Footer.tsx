@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
           {/* Col 1: Brand & Description */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <img src="/logo.svg" alt="Aurexion" className="h-7 w-7 object-contain" />
+              <img src="/manus-storage/aurexion-mark_e8f9e729.png" alt="Aurexion" className="h-7 w-7 object-contain" />
               <span className="text-2xl font-bold tracking-tighter text-primary">AUREXION</span>
             </Link>
             <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
@@ -23,7 +23,7 @@ export const Footer: React.FC = () => {
 
           {/* Col 2: Company */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">Company</h3>
+            <h4 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">Company</h4>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
               <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
               <li><Link href="/why-us" className="hover:text-primary transition-colors">Why Choose Us</Link></li>
@@ -35,7 +35,7 @@ export const Footer: React.FC = () => {
 
           {/* Col 3: Solutions */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">Solutions</h3>
+            <h4 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">Solutions</h4>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
               <li><Link href="/services" className="hover:text-primary transition-colors">Services</Link></li>
               <li><Link href="/industries" className="hover:text-primary transition-colors">Industries</Link></li>
@@ -47,7 +47,7 @@ export const Footer: React.FC = () => {
 
           {/* Col 4: Legal & Security */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">Legal &amp; Security</h3>
+            <h4 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">Legal &amp; Security</h4>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
               <li><Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-primary transition-colors">Terms &amp; Conditions</Link></li>
@@ -60,7 +60,7 @@ export const Footer: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5 mb-3">
               <MapPin className="h-4 w-4 text-primary shrink-0" />
-              <h3 className="font-semibold text-foreground text-sm uppercase tracking-wider">Our Location</h3>
+              <h4 className="font-semibold text-foreground text-sm uppercase tracking-wider">Our Location</h4>
             </div>
             <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
               100 Innovation Way, Suite 400<br />
