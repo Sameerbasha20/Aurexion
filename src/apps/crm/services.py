@@ -15,7 +15,15 @@ from rest_framework.exceptions import APIException, PermissionDenied, Validation
 from apps.authentication.audit import get_model_state, log_audit_event
 from apps.authentication.models import UserProfile
 from apps.crm.models import Lead, LeadFollowUp, LeadNote
-from apps.core.services import send_meeting_scheduled_email, send_welcome_credentials_email
+from apps.core.services import (
+    send_meeting_scheduled_email,
+    send_welcome_credentials_email,
+    send_form_submission_confirmation_email,
+    send_lead_status_update_email,
+    send_lead_won_email,
+    send_lead_declined_email,
+    PUBLIC_FORM_SOURCES,
+)
 
 User = get_user_model()
 
@@ -170,6 +178,14 @@ def create_lead(*, actor, request=None, **data):
         updated_state=get_model_state(lead),
         request=request,
     )
+
+    # Send auto-reply confirmation email to user if submitted via a public form
+    if lead.email and getattr(lead, "source", None) in PUBLIC_FORM_SOURCES:
+        try:
+            send_form_submission_confirmation_email(lead)
+        except Exception:
+            logger.exception(f"Failed to send form submission confirmation email for lead {lead.reference_id}")
+
     return lead
 
 
@@ -207,6 +223,14 @@ def change_lead_stage(*, lead, new_status, actor, request=None):
         updated_state={"status": lead.status},
         request=request,
     )
+
+    # Notify the lead/client about their status update (only for meaningful transitions)
+    if lead.email:
+        try:
+            send_lead_status_update_email(lead, previous, new_status)
+        except Exception:
+            logger.exception(f"Failed to send status update email for lead {lead.reference_id}")
+
     return lead
 
 
@@ -242,9 +266,16 @@ def mark_lead_won(*, lead, actor, value=None, notes=None, request=None):
 
     if notes and str(notes).strip():
         try:
-            create_note(lead=lead, actor=actor, content=f"Deal WON Notes: {str(notes).strip()}", request=request)
+            add_note(lead=lead, author=actor, content=f"Deal WON Notes: {str(notes).strip()}", request=request)
         except Exception:
             pass
+
+    # Send congratulations email to the client
+    if lead.email:
+        try:
+            send_lead_won_email(lead)
+        except Exception:
+            logger.exception(f"Failed to send WON congratulations email for lead {lead.reference_id}")
 
     return lead
 
@@ -340,13 +371,12 @@ def mark_lead_lost(*, lead, actor, reason, request=None):
     lead.lost_reason = reason
     lead.save(update_fields=["status", "lost_reason", "updated_at"])
 
-    # Send decline notification email to client user
-    try:
-        from apps.core.services import send_lead_declined_email
-        send_lead_declined_email(lead, reason)
-    except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning(f"Failed to send lead decline email to {lead.email}: {e}")
+    # Send decline notification email to the client
+    if lead.email:
+        try:
+            send_lead_declined_email(lead, reason)
+        except Exception:
+            logger.exception(f"Failed to send lead decline email for lead {lead.reference_id}")
 
     log_audit_event(
         user=actor,
@@ -625,6 +655,7 @@ def schedule_meeting_and_notify(*, lead, scheduled_at, follow_up_type="meeting",
 
     followup = LeadFollowUp.objects.create(
         lead=lead,
+        created_by=actor,
         assigned_to=actor or lead.assigned_to,
         follow_up_type=follow_up_type,
         scheduled_at=scheduled_at,

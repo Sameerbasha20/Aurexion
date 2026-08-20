@@ -92,6 +92,7 @@ class BdmDashboardView(APIView):
                 "id": u.id,
                 "username": u.username,
                 "name": u.get_full_name() or u.username,
+                "role": getattr(getattr(u, "profile", None), "role", "sales_executive"),
                 "active_leads_count": u.active_count,
             }
             for u in sales_execs
@@ -125,6 +126,12 @@ class BdmDashboardView(APIView):
 
         pending_client_onboardings = sum(1 for c in won_clients if not c["client_onboarded"])
 
+        # Count pending RFPs (new/unassigned from rfp_form source)
+        pending_rfp_count = Lead.objects.filter(
+            source="rfp_form",
+            status=Lead.Status.NEW,
+        ).count()
+
         return Response({
             "total_leads": agg["total_leads"],
             "assigned_leads": agg["assigned_leads"],
@@ -139,6 +146,7 @@ class BdmDashboardView(APIView):
             "team_workload": team_workload,
             "won_clients": won_clients,
             "pending_client_onboardings": pending_client_onboardings,
+            "pending_rfp_count": pending_rfp_count,
             "pipeline_summary": [
                 {"status": item["status"], "total": item["total"]} for item in pipeline_summary
             ],

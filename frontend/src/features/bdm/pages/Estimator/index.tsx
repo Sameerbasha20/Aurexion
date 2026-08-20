@@ -9,8 +9,9 @@ export const Estimator: React.FC = () => {
 
   const calculateEstimate = () => {
     // Fall back to default values (5 devs, 6 months) if inputs are left blank by user
-    const devs = developerCount === "" ? 5 : developerCount;
-    const months = timelineMonths === "" ? 6 : timelineMonths;
+    // Clamp to minimum of 1 to prevent zero or negative results
+    const devs = Math.max(1, developerCount === "" ? 5 : developerCount);
+    const months = Math.max(1, timelineMonths === "" ? 6 : timelineMonths);
     // Basic mock calculation rate: $10,000 per dev per month
     const estimate = devs * months * 10000;
     setCalculatedCost(estimate);
@@ -35,10 +36,15 @@ export const Estimator: React.FC = () => {
                 <input
                   id="devs"
                   type="number"
+                  min="1"
                   value={developerCount}
                   onChange={(e) => {
                     const val = e.target.value;
-                    setDeveloperCount(val === "" ? "" : Number.parseInt(val, 10) || 0);
+                    if (val === "") {
+                      setDeveloperCount("");
+                    } else {
+                      setDeveloperCount(Math.max(1, Number.parseInt(val, 10) || 1));
+                    }
                   }}
                   style={{
                     width: "100%",
@@ -65,10 +71,15 @@ export const Estimator: React.FC = () => {
                 <input
                   id="months"
                   type="number"
+                  min="1"
                   value={timelineMonths}
                   onChange={(e) => {
                     const val = e.target.value;
-                    setTimelineMonths(val === "" ? "" : Number.parseInt(val, 10) || 0);
+                    if (val === "") {
+                      setTimelineMonths("");
+                    } else {
+                      setTimelineMonths(Math.max(1, Number.parseInt(val, 10) || 1));
+                    }
                   }}
                   style={{
                     width: "100%",

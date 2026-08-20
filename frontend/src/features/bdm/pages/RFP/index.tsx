@@ -53,6 +53,27 @@ export const RFP: React.FC = () => {
     source: "rfp_form",
   });
 
+  // Separate hooks for accurate stat counts (not limited to current page)
+  const { totalCount: newRfpCount, refetch: refetchNew } = useLeads({ source: "rfp_form", status: "new" });
+  const { totalCount: underReviewCount, refetch: refetchUnderReview } = useLeads({ source: "rfp_form", status: "under_review" });
+  const { totalCount: contactedCount, refetch: refetchContacted } = useLeads({ source: "rfp_form", status: "contacted" });
+  const { totalCount: qualifiedCount, refetch: refetchQualified } = useLeads({ source: "rfp_form", status: "qualified" });
+  const { totalCount: wonCount, refetch: refetchWon } = useLeads({ source: "rfp_form", status: "won" });
+  const { totalCount: lostCount, refetch: refetchLost } = useLeads({ source: "rfp_form", status: "lost" });
+
+  const inProgressCount = underReviewCount + contactedCount + qualifiedCount;
+  const wonLostCount = wonCount + lostCount;
+
+  const refetchAll = () => {
+    refetch();
+    refetchNew();
+    refetchUnderReview();
+    refetchContacted();
+    refetchQualified();
+    refetchWon();
+    refetchLost();
+  };
+
   // Lead Detail View modal state
   const [selectedLeadDetail, setSelectedLeadDetail] = useState<Lead | null>(null);
 
@@ -173,7 +194,7 @@ export const RFP: React.FC = () => {
           <h1 style={{ fontSize: "2rem", margin: "0.5rem 0 0 0" }}>Requests For Proposal (RFP)</h1>
         </div>
         <div style={{ display: "flex", gap: "1rem" }}>
-          <Button onClick={refetch} variant="outline">
+          <Button onClick={refetchAll} variant="outline">
             Refresh
           </Button>
         </div>
@@ -186,7 +207,7 @@ export const RFP: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" style={{ color: "#63f5e8" }}>
-              {rfpLeads.length}
+              {totalCount}
             </div>
             <p className="text-xs text-muted-foreground mt-1">RFP submissions</p>
           </CardContent>
@@ -197,7 +218,7 @@ export const RFP: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" style={{ color: "#60a5fa" }}>
-              {rfpLeads.filter((l: Lead) => l.status === "new").length}
+              {newRfpCount}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Awaiting review</p>
           </CardContent>
@@ -208,7 +229,7 @@ export const RFP: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" style={{ color: "#fbbf24" }}>
-              {rfpLeads.filter((l: Lead) => ["under_review", "contacted", "qualified"].includes(l.status)).length}
+              {inProgressCount}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Active proposals</p>
           </CardContent>
@@ -219,7 +240,7 @@ export const RFP: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" style={{ color: "#fbbf24" }}>
-              {rfpLeads.filter((l: Lead) => ["won", "lost"].includes(l.status)).length}
+              {wonLostCount}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Closed RFPs</p>
           </CardContent>
@@ -229,7 +250,7 @@ export const RFP: React.FC = () => {
       <Card>
         <CardHeader>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center", justifyContent: "space-between" }}>
-            <CardTitle>RFP Submissions ({rfpLeads.length} total)</CardTitle>
+            <CardTitle>RFP Submissions ({totalCount} total)</CardTitle>
             <form onSubmit={handleSearch} style={{ display: "flex", gap: "0.75rem" }}>
               <Input
                 placeholder="Search RFPs..."
@@ -401,7 +422,7 @@ export const RFP: React.FC = () => {
                 <SelectContent>
                   {assignableUsers.map((user) => (
                     <SelectItem key={user.id} value={String(user.id)}>
-                      {user.name} ({user.email})
+                      {user.name} ({user.username})
                     </SelectItem>
                   ))}
                 </SelectContent>

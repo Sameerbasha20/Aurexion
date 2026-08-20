@@ -47,6 +47,7 @@ export const SIDEBAR_NAV: Record<string, NavItem[]> = {
     { title: "Contact Forms", path: "/crm/contact-forms", icon: "MessageSquareCode" },
     { title: "Leads Funnel", path: "/crm/leads", icon: "Contact2" },
     { title: "Opportunities", path: "/crm/opportunities", icon: "TrendingUp" },
+    { title: "RFP Engine", path: "/crm/rfp", icon: "FileText" },
     { title: "Follow-ups", path: "/crm/follow-ups", icon: "Calculator" },
     { title: "Activity Feed", path: "/crm/activities", icon: "History" },
     { title: "Contacts Directory", path: "/crm/contacts", icon: "Users" },

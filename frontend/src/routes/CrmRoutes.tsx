@@ -11,6 +11,7 @@ import Contacts from "../features/crm/pages/Contacts";
 import Companies from "../features/crm/pages/Companies";
 import Quotations from "../features/crm/pages/Quotations";
 import ContactForms from "../features/crm/pages/ContactForms";
+import { RFP } from "../features/bdm/pages/RFP";
 
 export const CrmRoutes: React.FC = () => {
   return (
@@ -24,6 +25,7 @@ export const CrmRoutes: React.FC = () => {
         <Route path="/crm/leads/:id" component={LeadDetail} />
         <Route path="/crm/leads/:id/" component={LeadDetail} />
         <Route path="/crm/opportunities" component={Opportunities} />
+        <Route path="/crm/rfp" component={RFP} />
         <Route path="/crm/follow-ups" component={FollowUps} />
         <Route path="/crm/activities" component={Activities} />
         <Route path="/crm/contacts" component={Contacts} />
@@ -37,6 +39,7 @@ export const CrmRoutes: React.FC = () => {
         <Route path="/sales/leads/:id" component={LeadDetail} />
         <Route path="/sales/leads/:id/" component={LeadDetail} />
         <Route path="/sales/opportunities" component={Opportunities} />
+        <Route path="/sales/rfp" component={RFP} />
         <Route path="/sales/follow-ups" component={FollowUps} />
         <Route path="/sales/activities" component={Activities} />
         <Route path="/sales/contacts" component={Contacts} />
