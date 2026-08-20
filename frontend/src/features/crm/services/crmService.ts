@@ -25,6 +25,7 @@ export interface LeadItem {
   updated_at: string;
   value?: number;
   estimated_value?: number;
+  rfp_enquiry_details?: any;
 }
 
 export interface LeadFollowUp {
@@ -179,6 +180,12 @@ export const crmService = {
     if (response && Array.isArray(response.results)) {
       return response.results;
     }
+    if (response && response.data && Array.isArray(response.data)) {
+      return response.data;
+    }
+    if (response && response.data && Array.isArray(response.data.results)) {
+      return response.data.results;
+    }
     return [];
   },
 
@@ -315,6 +322,14 @@ export const crmService = {
   createNote: async (leadId: number, content: string): Promise<LeadNote> => {
     const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEAD_NOTES(leadId), { content });
     return data;
+  },
+
+  /**
+   * Fetch activity timeline for a lead
+   */
+  getActivities: async (leadId: number): Promise<any[]> => {
+    const data = await axiosClient.get<any, any>(`/leads/${leadId}/activities/`);
+    return Array.isArray(data) ? data : (data.results || []);
   },
 
   /**

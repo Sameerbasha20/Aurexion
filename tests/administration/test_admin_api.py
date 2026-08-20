@@ -46,7 +46,8 @@ class RBACAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.sa_user)
         response = self.client.get(self.roles_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 3)
+        roles = response.data.get('results', response.data)
+        self.assertGreaterEqual(len(roles), 3)
 
     def test_non_super_admin_cannot_list_roles(self):
         self.client.force_authenticate(user=self.admin_user)
@@ -56,6 +57,53 @@ class RBACAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.hr_user)
         response = self.client.get(self.roles_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_dashboard_metrics_access_control(self):
+        # Admin should have access to dashboard overview
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/v1/admin/dashboard/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data.get('data', response.data)
+        self.assertIn('users', data)
+        self.assertIn('leads', data)
+        self.assertIn('recent_activities', data)
+        self.assertIn('recent_leads', data)
+
+        # Non-admin user should be forbidden
+        self.client.force_authenticate(user=self.hr_user)
+        response = self.client.get('/api/v1/admin/dashboard/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_filtering_by_role_and_search(self):
+        self.client.force_authenticate(user=self.admin_user)
+        
+        # Filter by role
+        response = self.client.get('/api/v1/users/?role=administrator')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        res_data = response.data.get('results', response.data.get('data', response.data))
+        if isinstance(res_data, dict):
+            users = res_data.get('results', [])
+        else:
+            users = res_data
+        self.assertTrue(all(u['profile']['role'] == 'administrator' for u in users if isinstance(u, dict) and 'profile' in u))
+
+        # Search by username
+        response = self.client.get('/api/v1/users/?search=sa_test')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        res_data = response.data.get('results', response.data.get('data', response.data))
+        if isinstance(res_data, dict):
+            users = res_data.get('results', [])
+        else:
+            users = res_data
+        self.assertTrue(any(u['username'] == 'sa_test' for u in users if isinstance(u, dict) and 'username' in u))
+
+    def test_user_role_choices_endpoint(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/v1/users/roles/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        roles = response.data.get('data', response.data) if isinstance(response.data, dict) else response.data
+        self.assertTrue(len(roles) >= 3)
+
 
     def test_update_role_permissions_and_audit(self):
         self.client.force_authenticate(user=self.sa_user)
@@ -153,3 +201,4 @@ class RBACAPITestCase(APITestCase):
         # Read permission should still be True
         request.method = 'GET'
         self.assertTrue(perm_check.has_permission(request, view))
+

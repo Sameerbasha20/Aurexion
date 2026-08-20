@@ -318,9 +318,28 @@ class UserViewSet(viewsets.ModelViewSet):
     SAFE methods (GET) accessible by Admin, BDM, Sales Executive.
     Mutation methods require Administrator.
     """
-    queryset = User.objects.select_related('profile').all().order_by('-date_joined')
     serializer_class = UserSerializer
     permission_classes = [CanViewOrManageUsers]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['username', 'email', 'first_name', 'last_name']
+    ordering_fields = ['date_joined', 'username', 'email']
+    ordering = ['-date_joined']
+
+    def get_queryset(self):
+        queryset = User.objects.select_related('profile').all().order_by('-date_joined')
+        role = self.request.query_params.get('role')
+        if role and role.upper() != 'ALL':
+            queryset = queryset.filter(profile__role__iexact=role)
+
+        is_active = self.request.query_params.get('is_active')
+        if is_active is not None:
+            if is_active.lower() == 'true':
+                queryset = queryset.filter(is_active=True)
+            elif is_active.lower() == 'false':
+                queryset = queryset.filter(is_active=False)
+
+        return queryset
+
 
     def perform_create(self, serializer):
         role = self.request.data.get('role', 'client_user')

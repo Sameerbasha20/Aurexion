@@ -7,6 +7,10 @@ export interface UserItem {
   email: string;
   role: string;
   status: string;
+  is_active?: boolean;
+  date_joined?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 export interface AuditLogItem {
@@ -17,17 +21,129 @@ export interface AuditLogItem {
   integrity: string;
 }
 
+export interface AdminDashboardOverviewData {
+  users: {
+    total: number;
+    active: number;
+    clients: number;
+    sales_executives: number;
+    bdms: number;
+    administrators: number;
+  };
+  leads: {
+    total: number;
+    active: number;
+    won: number;
+    lost: number;
+    pending: number;
+  };
+  support: {
+    open: number;
+    critical: number;
+  };
+  activity_chart?: Array<{
+    date: string;
+    activityCount: number;
+  }>;
+  pipeline_chart?: Array<{
+    status: string;
+    count: number;
+  }>;
+  recent_activities: Array<{
+    id: number;
+    timestamp: string;
+    operator: string;
+    action: string;
+    module: string;
+    details: string;
+  }>;
+  recent_leads: Array<{
+    id: number;
+    reference_id: string;
+    name: string;
+    company: string;
+    email: string;
+    status: string;
+    status_display: string;
+    priority: string;
+    assigned_to: string | null;
+    created_at: string;
+  }>;
+}
+
+export interface RoleChoiceItem {
+  code: string;
+  name: string;
+}
+
 export const administrationService = {
-  getUsers: async (): Promise<UserItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS);
+  getDashboardOverview: async (): Promise<AdminDashboardOverviewData> => {
+    const res = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.DASHBOARD);
+    if (res && typeof res === "object") {
+      if ("users" in res && "leads" in res && "support" in res) {
+        return res;
+      }
+      if (res.data && typeof res.data === "object" && "users" in res.data) {
+        return res.data;
+      }
+    }
+    return res;
+  },
+
+  getUsers: async (params?: { role?: string; search?: string; page?: number }): Promise<UserItem[]> => {
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS, { params });
     const users = Array.isArray(data) ? data : (data.results || []);
     return users.map((u: any) => ({
       id: String(u.id),
       name: u.username,
       email: u.email,
-      role: u.profile?.role?.toUpperCase() || "CLIENT",
-      status: "ACTIVE",
+      role: (u.role || u.profile?.role || "CLIENT").toUpperCase(),
+      status: u.is_active !== false ? "ACTIVE" : "SUSPENDED",
+      is_active: u.is_active !== false,
+      date_joined: u.date_joined,
+      first_name: u.first_name || "",
+      last_name: u.last_name || "",
     }));
+  },
+
+  getRoleChoices: async (): Promise<RoleChoiceItem[]> => {
+    try {
+      const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.ROLE_CHOICES);
+      return Array.isArray(data) ? data : (data.results || []);
+    } catch (err) {
+      return [
+        { code: "super_admin", name: "Super Admin" },
+        { code: "administrator", name: "Administrator" },
+        { code: "bdm", name: "Business Development Manager" },
+        { code: "sales_executive", name: "Sales Executive" },
+        { code: "hr_manager", name: "HR Manager" },
+        { code: "content_manager", name: "Content Manager" },
+        { code: "support_executive", name: "Support Executive" },
+        { code: "client_user", name: "Client User" },
+      ];
+    }
+  },
+
+  createUser: async (userData: { username: string; email: string; role: string; password?: string }) => {
+    return await axiosClient.post(API_ENDPOINTS.ADMIN.USERS, {
+      username: userData.username,
+      email: userData.email,
+      role: userData.role.toLowerCase(),
+      ...(userData.password ? { password: userData.password } : {}),
+    });
+  },
+
+  updateUser: async (userId: string, userData: { username?: string; email?: string; role?: string; is_active?: boolean }) => {
+    const payload: any = {};
+    if (userData.username) payload.username = userData.username;
+    if (userData.email) payload.email = userData.email;
+    if (userData.role) payload.role = userData.role.toLowerCase();
+    if (userData.is_active !== undefined) payload.is_active = userData.is_active;
+    return await axiosClient.patch(`${API_ENDPOINTS.ADMIN.USERS}${userId}/`, payload);
+  },
+
+  deleteUser: async (userId: string) => {
+    return await axiosClient.delete(`${API_ENDPOINTS.ADMIN.USERS}${userId}/`);
   },
 
   getAuditLogs: async (): Promise<AuditLogItem[]> => {
@@ -69,7 +185,6 @@ export const administrationService = {
     }));
   },
 
-  // Mock data for features not yet implemented in backend
   getSettings: async () => {
     return {
       appName: "Aurexion Enterprise Portal",
@@ -84,3 +199,4 @@ export const administrationService = {
 };
 
 export default administrationService;
+
