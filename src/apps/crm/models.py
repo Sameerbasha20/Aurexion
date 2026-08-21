@@ -202,11 +202,11 @@ class Lead(models.Model):
 
         constraints = [
             models.CheckConstraint(
-                check=models.Q(status__in=LeadStatus.values),
+                condition=models.Q(status__in=LeadStatus.values),
                 name="crm_lead_status_valid",
             ),
             models.CheckConstraint(
-                check=models.Q(priority__in=LeadPriority.values),
+                condition=models.Q(priority__in=LeadPriority.values),
                 name="crm_lead_priority_valid",
             ),
         ]
@@ -308,7 +308,7 @@ class LeadFollowUp(models.Model):
 
         constraints = [
             models.CheckConstraint(
-                check=models.Q(status__in=LeadFollowUpStatus.values),
+                condition=models.Q(status__in=LeadFollowUpStatus.values),
                 name="crm_followup_status_valid",
             ),
         ]

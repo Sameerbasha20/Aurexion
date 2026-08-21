@@ -14,8 +14,7 @@ const SECTOR_HERO_IMAGES = {
 const DEFAULT_INDUSTRIES_IMAGE = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=85";
 
 export const IndustriesHero = () => {
-  const [activeSector, setActiveSector] = useState("Banking & FinTech");
-  const currentBgImage = SECTOR_HERO_IMAGES[activeSector] || DEFAULT_INDUSTRIES_IMAGE;
+  const currentBgImage = SECTOR_HERO_IMAGES["Banking & FinTech"] || DEFAULT_INDUSTRIES_IMAGE;
 
   return (
     <section className="subpage-immersive-hero">
@@ -48,23 +47,14 @@ export const IndustriesHero = () => {
 
           {/* Sector Highlights */}
           <div className="subpage-tech-row flex flex-wrap gap-2 pt-2">
-            {["Banking & FinTech", "Healthcare & Life Sciences", "Manufacturing & Robotics", "Logistics & Supply Chain", "Government", "Telecom"].map((item) => {
-              const isSelected = activeSector === item;
-              return (
-                <button
-                  type="button"
-                  key={item}
-                  onClick={() => setActiveSector(item)}
-                  className={`subpage-tech-chip cursor-pointer transition-all duration-300 select-none ${
-                    isSelected
-                      ? "border-primary bg-primary/20 text-[#63f5e8] shadow-[0_0_15px_rgba(99,245,232,0.4)] scale-105"
-                      : "hover:border-primary/50 hover:bg-white/5 hover:text-white"
-                  }`}
-                >
-                  {item}
-                </button>
-              );
-            })}
+            {["Banking & FinTech", "Healthcare & Life Sciences", "Manufacturing & Robotics", "Logistics & Supply Chain", "Government", "Telecom"].map((item) => (
+              <span
+                key={item}
+                className="subpage-tech-chip"
+              >
+                {item}
+              </span>
+            ))}
           </div>
 
           {/* Action CTAs */}
