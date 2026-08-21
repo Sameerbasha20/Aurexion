@@ -194,7 +194,9 @@ const TicketEditFormCard: React.FC<TicketEditFormCardProps> = ({
 
       {updateError && getFieldErrors(updateError).subject && (
         <div style={{ color: "#f87171", fontSize: "0.8rem" }}>
-          {getFieldErrors(updateError).subject.join(", ")}
+          {Array.isArray(getFieldErrors(updateError).subject)
+            ? (getFieldErrors(updateError).subject as string[]).join(", ")
+            : getFieldErrors(updateError).subject}
         </div>
       )}
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "wouter";
 import { LifeBuoy, Clock, ShieldAlert, CheckCircle2, ListChecks, ArrowRight, UserCheck, AlertCircle } from "lucide-react";
 import Card from "../../../components/ui/card";
@@ -7,7 +7,6 @@ import { Skeleton } from "../../../components/ui/skeleton";
 import { ErrorState, LoadingState, EmptyState } from "../../portal/components/StateViews";
 import { TicketCategoryBadge, TicketPriorityBadge, TicketStatusBadge } from "../../portal/components/TicketMeta";
 import { formatDateTime } from "../../portal/utils/format";
-import portalService from "../../portal/services/portalService";
 import type { SupportTicketItem } from "../../portal/types/portal.types";
 import useExecutiveTickets from "../hooks/useExecutiveTickets";
 
@@ -163,31 +162,25 @@ const ExecutiveRecentTicketsTable: React.FC<{ tickets: SupportTicketItem[] }> = 
 
 export const SupportDashboard: React.FC = () => {
   const tickets = useExecutiveTickets();
-  const [username, setUsername] = useState<string | null>(null);
 
-  useEffect(() => {
-    portalService.getProfile().then((profile) => {
-      if (profile && profile.username) setUsername(profile.username);
-    }).catch(() => {});
-  }, []);
-
-  const calculateKpiStats = (allTickets: SupportTicketItem[], currentUsername: string | null): KpiStats => {
-    // Filter tickets assigned to current executive (or all assigned tickets if admin/unspecified)
-    const assignedTickets = currentUsername
-      ? allTickets.filter((t) => t.assigned_username === currentUsername)
-      : allTickets.filter((t) => t.assigned_username !== null);
+  const calculateKpiStats = (allTickets: SupportTicketItem[]): KpiStats => {
+    // The backend already scopes tickets to the current executive's queue
+    // (assigned to them + unassigned). Compute stats over the full API response.
+    const assignedTickets = allTickets.filter((t) => t.assigned_username !== null);
 
     return {
       totalAssigned: assignedTickets.length,
-      openAssigned: assignedTickets.filter((t) => t.status === "open" || t.status === "assigned").length,
-      inProgress: assignedTickets.filter((t) => t.status === "in_progress").length,
-      awaitingClient: assignedTickets.filter((t) => t.status === "awaiting_client").length,
-      resolvedClosed: assignedTickets.filter((t) => t.status === "resolved" || t.status === "closed").length,
-      criticalPriority: assignedTickets.filter((t) => t.priority === "critical").length,
+      openAssigned: allTickets.filter((t) => t.status === "open" || t.status === "assigned").length,
+      inProgress: allTickets.filter((t) => t.status === "in_progress").length,
+      awaitingClient: allTickets.filter((t) => t.status === "awaiting_client").length,
+      resolvedClosed: allTickets.filter((t) => t.status === "resolved" || t.status === "closed").length,
+      criticalPriority: allTickets.filter(
+        (t) => t.priority === "critical" && t.status !== "resolved" && t.status !== "closed"
+      ).length,
     };
   };
 
-  const stats = tickets.data ? calculateKpiStats(tickets.data, username) : null;
+  const stats = tickets.data ? calculateKpiStats(tickets.data) : null;
   const isKpiLoading = tickets.isLoading && !stats;
 
   return (

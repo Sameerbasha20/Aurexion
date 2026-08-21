@@ -1,30 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "wouter";
 import { ArrowUpRight } from "lucide-react";
 
-const DOMAIN_HERO_IMAGES: Record<string, string> = {
-  "Core Engineering": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1600&q=85",
-  "AI & Data Science": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1600&q=85",
-  "Cloud Architecture": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1600&q=85",
-  "Enterprise Products": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=1600&q=85",
-  "Digital Platforms": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=85",
-  "Quality & Advisory": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1600&q=85",
-};
-
-const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1600&q=85";
+const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1600&q=85";
 
 export const ServicesHero: React.FC = () => {
-  const [activeDomain, setActiveDomain] = useState<string>("Core Engineering");
-
-  const currentBgImage = DOMAIN_HERO_IMAGES[activeDomain] || DEFAULT_HERO_IMAGE;
-
   return (
     <section className="subpage-immersive-hero">
-      {/* High-Resolution Dynamic Background Artwork */}
+      {/* High-Resolution Background Artwork */}
       <div
-        className="subpage-hero-art transition-all duration-700 ease-out"
+        className="subpage-hero-art"
         style={{
-          backgroundImage: `url(${currentBgImage})`,
+          backgroundImage: `url(${DEFAULT_HERO_IMAGE})`,
         }}
       />
       <div className="subpage-hero-overlay" />
@@ -47,7 +34,7 @@ export const ServicesHero: React.FC = () => {
             Aurexion provides enterprise technology consulting, custom software development, AI/ML engineering, cloud modernization, and digital transformation capabilities across mission-critical domains.
           </p>
 
-          {/* Interactive Technology Pillars */}
+          {/* Static Technology Pillars */}
           <div className="subpage-tech-row flex flex-wrap gap-2 pt-2">
             {[
               "Core Engineering",
@@ -56,23 +43,14 @@ export const ServicesHero: React.FC = () => {
               "Enterprise Products",
               "Digital Platforms",
               "Quality & Advisory",
-            ].map((item) => {
-              const isSelected = activeDomain === item;
-              return (
-                <button
-                  type="button"
-                  key={item}
-                  onClick={() => setActiveDomain(item)}
-                  className={`subpage-tech-chip cursor-pointer transition-all duration-300 select-none ${
-                    isSelected
-                      ? "border-primary bg-primary/20 text-[#63f5e8] shadow-[0_0_15px_rgba(99,245,232,0.4)] scale-105"
-                      : "hover:border-primary/50 hover:bg-white/5 hover:text-white"
-                  }`}
-                >
-                  {item}
-                </button>
-              );
-            })}
+            ].map((item) => (
+              <span
+                key={item}
+                className="subpage-tech-chip select-none"
+              >
+                {item}
+              </span>
+            ))}
           </div>
 
           {/* Action CTAs */}

@@ -1,16 +1,23 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
-import { useSalesDashboard, useLeads } from "../../hooks/useCrm";
 import { useAuth } from "../../../../hooks/useAuth";
+import { toast } from "sonner";
+import {
+  useSalesDashboardQuery,
+  useLeadsQuery,
+  useMarkLeadWonMutation,
+  useMarkLeadLostMutation,
+  useCompleteFollowUpMutation,
+} from "../../../../queries/useCrmQueries";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
-import crmService from "../../services/crmService";
+import LoadingState from "../../../../components/feedback/LoadingState";
+import ErrorState from "../../../../components/feedback/ErrorState";
+import LeadDetailDrawer from "../../components/LeadDetailDrawer";
 import {
-  TrendingUp,
   Users,
   Clock,
   CheckCircle2,
-  AlertTriangle,
   Flame,
   ArrowUpRight,
   Phone,
@@ -20,16 +27,15 @@ import {
   Plus,
   ChevronRight,
   Activity,
-  FileText,
-  Building,
   Inbox,
   XCircle,
 } from "lucide-react";
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const { data, isLoading, error, refetch } = useSalesDashboard();
-  const { leads: assignedLeads, isLoading: leadsLoading } = useLeads({ page_size: 100 });
+  const { data, isLoading, error, refetch } = useSalesDashboardQuery();
+  const { data: leadsData } = useLeadsQuery({ page_size: 100 });
+  const assignedLeads = leadsData?.results || [];
   const approvedAssignedLeads = assignedLeads.filter((lead) => {
     if (lead.status === "lost" || lead.status === "LOST") return false;
     if (user && user.role === "SALES_EXECUTIVE") {
@@ -44,7 +50,6 @@ export const Dashboard: React.FC = () => {
     return !!lead.assigned_to;
   });
   const [completingId, setCompletingId] = useState<number | null>(null);
-  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   // Lead Detail Modal State
   const [selectedLeadDetail, setSelectedLeadDetail] = useState<any | null>(null);
@@ -55,12 +60,8 @@ export const Dashboard: React.FC = () => {
 
   // Meeting Schedule Modal State
   const [selectedMeetingLead, setSelectedMeetingLead] = useState<any | null>(null);
-  const [scheduledAt, setScheduledAt] = useState("");
-  const [meetingType, setMeetingType] = useState("MEETING");
-  const [meetingLink, setMeetingLink] = useState("");
-  const [meetingNotes, setMeetingNotes] = useState("");
-  const [scheduling, setScheduling] = useState(false);
 
+<<<<<<< HEAD
   // Custom Mark WON Modal State
   const [selectedWonLead, setSelectedWonLead] = useState<any | null>(null);
   const [wonValue, setWonValue] = useState("25000");
@@ -144,10 +145,39 @@ export const Dashboard: React.FC = () => {
     } finally {
       setLostLoading(false);
     }
+=======
+  const wonMutation = useMarkLeadWonMutation();
+  const lostMutation = useMarkLeadLostMutation();
+  const completeFollowUpMutation = useCompleteFollowUpMutation();
+
+  const handleMarkWon = (leadId: number, leadName: string) => {
+    if (!window.confirm(`Mark ${leadName} as WON? This will generate client credentials (default password: client@2026) and email the client.`)) return;
+    wonMutation.mutate(leadId, {
+      onSuccess: () => toast.success(`Lead marked WON! Client User account created (password: client@2026) & credentials email sent.`),
+      onError: (err: any) => toast.error(err?.message || "Failed to mark lead as won."),
+    });
   };
 
-  const handleCompleteFollowUp = async (leadId: number, followUpId: number) => {
+  const handleMarkLost = (leadId: number) => {
+    const reason = window.prompt("Reason for declining/marking lost:");
+    if (reason === null) return;
+    if (!reason.trim()) {
+      toast.error("A reason is required to mark as lost.");
+      return;
+    }
+    lostMutation.mutate(
+      { leadId, reason: reason.trim() },
+      {
+        onSuccess: () => toast.success("Lead marked as lost/declined."),
+        onError: (err: any) => toast.error(err?.message || "Failed to mark lead as lost."),
+      }
+    );
+>>>>>>> 915bc3df0a7fa4e8eb523f34790d0b36596ff108
+  };
+
+  const handleCompleteFollowUp = (leadId: number, followUpId: number) => {
     setCompletingId(followUpId);
+<<<<<<< HEAD
     setActionError(null);
     try {
       await crmService.completeFollowUp(leadId, followUpId);
@@ -159,6 +189,16 @@ export const Dashboard: React.FC = () => {
     } finally {
       setCompletingId(null);
     }
+=======
+    completeFollowUpMutation.mutate(
+      { leadId, followUpId },
+      {
+        onSuccess: () => toast.success("Follow-up successfully marked as completed."),
+        onError: (err: any) => toast.error(err?.message || "Failed to complete follow-up."),
+        onSettled: () => setCompletingId(null),
+      }
+    );
+>>>>>>> 915bc3df0a7fa4e8eb523f34790d0b36596ff108
   };
 
   const handleOpenLeadDetail = (lead: any) => {
@@ -174,15 +214,7 @@ export const Dashboard: React.FC = () => {
             <h1 style={{ fontSize: "2rem", margin: "0.5rem 0 0 0" }}>CRM Performance Console</h1>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.25rem" }}>
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <Card key={n} style={{ padding: "1.5rem", minHeight: "130px", animation: "pulse 1.5s infinite" }}>
-              <div style={{ height: "14px", width: "40%", backgroundColor: "rgba(140, 174, 187, 0.15)", marginBottom: "1rem" }} />
-              <div style={{ height: "32px", width: "60%", backgroundColor: "rgba(99, 245, 232, 0.2)", marginBottom: "0.5rem" }} />
-              <div style={{ height: "12px", width: "80%", backgroundColor: "rgba(140, 174, 187, 0.1)" }} />
-            </Card>
-          ))}
-        </div>
+        <LoadingState message="Loading sales dashboard..." />
       </div>
     );
   }
@@ -194,16 +226,7 @@ export const Dashboard: React.FC = () => {
           <p className="eyebrow">SALES EXECUTIVE DESK</p>
           <h1 style={{ fontSize: "2rem", margin: "0.5rem 0 0 0" }}>CRM Performance Console</h1>
         </div>
-        <Card style={{ padding: "2rem", borderColor: "rgba(239, 68, 68, 0.3)", backgroundColor: "rgba(239, 68, 68, 0.05)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", color: "#ef4444", marginBottom: "1rem" }}>
-            <AlertTriangle size={24} />
-            <h3 style={{ margin: 0, fontSize: "1.2rem" }}>Unable to load Sales Dashboard Data</h3>
-          </div>
-          <p style={{ color: "#cbd5e1", marginBottom: "1.5rem" }}>{error}</p>
-          <Button onClick={() => refetch()} glow style={{ width: "fit-content" }}>
-            <RefreshCw size={16} style={{ marginRight: "0.5rem" }} /> Retry Connection
-          </Button>
-        </Card>
+        <ErrorState error={error} onRetry={refetch} />
       </div>
     );
   }
@@ -270,25 +293,6 @@ export const Dashboard: React.FC = () => {
           </Link>
         </div>
       </div>
-
-      {/* Success Notification Alert */}
-      {actionSuccess && (
-        <div style={{
-          backgroundColor: "rgba(74, 222, 128, 0.1)",
-          border: "1px solid rgba(74, 222, 128, 0.3)",
-          color: "#4ade80",
-          padding: "0.75rem 1rem",
-          borderRadius: "4px",
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          fontSize: "0.85rem",
-          fontFamily: "IBM Plex Mono, monospace",
-        }}>
-          <CheckCircle2 size={16} />
-          {actionSuccess}
-        </div>
-      )}
 
       {/* Primary KPI Metrics Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1.25rem" }}>
@@ -778,6 +782,7 @@ export const Dashboard: React.FC = () => {
           </div>
         )}
       </Card>
+<<<<<<< HEAD
       {/* Schedule Meeting Modal */}
       {selectedMeetingLead && (
         <div style={{
@@ -1263,6 +1268,19 @@ export const Dashboard: React.FC = () => {
           </Card>
         </div>
       )}
+=======
+      {/* Lead Detail Drawer (replaces Modals) */}
+      <LeadDetailDrawer
+        leadId={selectedLeadDetail?.id || selectedMeetingLead?.id || null}
+        open={!!selectedLeadDetail || !!selectedMeetingLead}
+        onClose={() => {
+          setSelectedLeadDetail(null);
+          setSelectedMeetingLead(null);
+        }}
+        onLeadUpdated={refetch}
+      />
+
+>>>>>>> 915bc3df0a7fa4e8eb523f34790d0b36596ff108
     </div>
   );
 };

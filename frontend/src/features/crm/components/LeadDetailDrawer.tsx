@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { 
-  X, 
-  Building2, 
-  Mail, 
-  Phone, 
-  Globe, 
-  UserCheck, 
-  Calendar, 
-  Clock, 
-  MessageSquare, 
-  CheckCircle2, 
-  Plus, 
-  FileText,
-  Send,
-  AlertCircle
-} from "lucide-react";
+import { X, Calendar, Plus, Send } from "lucide-react";
+import { toast } from "sonner";
 import Card from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
-import crmService, { LeadItem, LeadFollowUp, LeadNote, UserOption } from "../services/crmService";
+import {
+  useLeadDetailQuery,
+  useLeadActivitiesQuery,
+  useAssignableUsersQuery,
+  useAssignLeadMutation,
+  useTransitionLeadMutation,
+  useCreateNoteMutation,
+  useCreateFollowUpMutation,
+  useCompleteFollowUpMutation,
+  useMarkLeadLostMutation,
+} from "../../../queries/useCrmQueries";
 
 interface LeadDetailDrawerProps {
   leadId: number | null;
@@ -32,107 +28,79 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   onClose,
   onLeadUpdated,
 }) => {
-  const [lead, setLead] = useState<LeadItem | null>(null);
-  const [followUps, setFollowUps] = useState<LeadFollowUp[]>([]);
-  const [notes, setNotes] = useState<LeadNote[]>([]);
-  const [activities, setActivities] = useState<any[]>([]);
-  const [assignableUsers, setAssignableUsers] = useState<UserOption[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const { lead, followUps, notes, isLoading, error } = useLeadDetailQuery(leadId, open);
+  const { data: activities = [] } = useLeadActivitiesQuery(leadId, open);
+  const { data: assignableUsers = [] } = useAssignableUsersQuery(open);
+
+  const assignMutation = useAssignLeadMutation(leadId);
+  const transitionMutation = useTransitionLeadMutation(leadId);
+  const addNoteMutation = useCreateNoteMutation(leadId);
+  const addFollowUpMutation = useCreateFollowUpMutation(leadId);
+  const completeFollowUpMutation = useCompleteFollowUpMutation();
+  const lostMutation = useMarkLeadLostMutation();
+
   const [activeTab, setActiveTab] = useState<"overview" | "followups" | "notes" | "timeline">("overview");
 
   // Form states
   const [newNoteContent, setNewNoteContent] = useState("");
-  const [addingNote, setAddingNote] = useState(false);
   const [selectedAssignee, setSelectedAssignee] = useState<number | string>("");
-  const [assigning, setAssigning] = useState(false);
-  
-  // Follow-up form
   const [showFollowUpForm, setShowFollowUpForm] = useState(false);
   const [followUpDate, setFollowUpDate] = useState("");
   const [followUpType, setFollowUpType] = useState("meeting");
   const [followUpNotes, setFollowUpNotes] = useState("");
-  const [savingFollowUp, setSavingFollowUp] = useState(false);
-
-  // Lost modal state
   const [showLostDialog, setShowLostDialog] = useState(false);
   const [lostReason, setLostReason] = useState("");
 
+  const assigning = assignMutation.isPending;
+  const addingNote = addNoteMutation.isPending;
+  const savingFollowUp = addFollowUpMutation.isPending;
+
+  // Reset form state when the selected lead changes
   useEffect(() => {
-    if (open && leadId) {
-      loadLeadDetails(leadId);
-    } else {
-      setLead(null);
-      setFollowUps([]);
-      setNotes([]);
-      setActivities([]);
+    if (lead) {
+      setSelectedAssignee(lead.assigned_to || "");
     }
-  }, [open, leadId]);
+    setNewNoteContent("");
+    setFollowUpDate("");
+    setFollowUpNotes("");
+    setShowFollowUpForm(false);
+  }, [lead?.id]);
 
-  const loadLeadDetails = async (id: number) => {
-    setLoading(true);
-    try {
-      const [leadData, followUpsData, notesData, activitiesData, usersData] = await Promise.all([
-        crmService.getLead(id),
-        crmService.getFollowUps(id).catch(() => []),
-        crmService.getNotes(id).catch(() => []),
-        crmService.getActivities(id).catch(() => []),
-        crmService.getAssignableUsers().catch(() => []),
-      ]);
-
-      setLead(leadData);
-      setFollowUps(followUpsData);
-      setNotes(notesData);
-      setActivities(activitiesData);
-      setAssignableUsers(usersData);
-      setSelectedAssignee(leadData.assigned_to || "");
-    } catch (err) {
-      console.error("Failed to load lead details", err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (error && open) {
+      toast.error((error as any)?.message || "Failed to load lead details.");
     }
-  };
+  }, [error, open]);
 
   const handleAssignLead = async (userId: number) => {
     if (!leadId) return;
-    setAssigning(true);
     try {
-      const updated = await crmService.assignLead(leadId, userId);
-      setLead(updated);
+      await assignMutation.mutateAsync(userId);
       setSelectedAssignee(userId);
-      if (onLeadUpdated) onLeadUpdated();
-      const updatedActivities = await crmService.getActivities(leadId).catch(() => []);
-      setActivities(updatedActivities);
-    } catch (err) {
-      console.error("Failed to assign lead", err);
-    } finally {
-      setAssigning(false);
+      onLeadUpdated?.();
+      toast.success("Lead assigned successfully.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to assign lead.");
     }
   };
 
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadId || !newNoteContent.trim()) return;
-    setAddingNote(true);
     try {
-      await crmService.createNote(leadId, newNoteContent.trim());
+      await addNoteMutation.mutateAsync(newNoteContent.trim());
       setNewNoteContent("");
-      const updatedNotes = await crmService.getNotes(leadId);
-      setNotes(updatedNotes);
-      const updatedActivities = await crmService.getActivities(leadId).catch(() => []);
-      setActivities(updatedActivities);
-    } catch (err) {
-      console.error("Failed to add note", err);
-    } finally {
-      setAddingNote(false);
+      toast.success("Note added to lead.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to add note.");
     }
   };
 
   const handleCreateFollowUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadId || !followUpDate) return;
-    setSavingFollowUp(true);
     try {
-      await crmService.createFollowUp(leadId, {
+      await addFollowUpMutation.mutateAsync({
         scheduled_at: new Date(followUpDate).toISOString(),
         follow_up_type: followUpType,
         notes: followUpNotes,
@@ -140,25 +108,19 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
       setShowFollowUpForm(false);
       setFollowUpDate("");
       setFollowUpNotes("");
-      const updatedFollowUps = await crmService.getFollowUps(leadId);
-      setFollowUps(updatedFollowUps);
-    } catch (err) {
-      console.error("Failed to schedule follow up", err);
-    } finally {
-      setSavingFollowUp(false);
+      toast.success("Follow-up scheduled successfully.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to schedule follow up.");
     }
   };
 
   const handleCompleteFollowUp = async (followUpId: number) => {
     if (!leadId) return;
     try {
-      await crmService.completeFollowUp(leadId, followUpId);
-      const updatedFollowUps = await crmService.getFollowUps(leadId);
-      setFollowUps(updatedFollowUps);
-      const updatedLead = await crmService.getLead(leadId);
-      setLead(updatedLead);
-    } catch (err) {
-      console.error("Failed to complete follow up", err);
+      await completeFollowUpMutation.mutateAsync({ leadId, followUpId });
+      toast.success("Follow-up marked as completed.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to complete follow up.");
     }
   };
 
@@ -169,28 +131,24 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
       return;
     }
     try {
-      const updated = await crmService.transitionLead(leadId, newStatus);
-      setLead(updated);
-      if (onLeadUpdated) onLeadUpdated();
-      const updatedActivities = await crmService.getActivities(leadId).catch(() => []);
-      setActivities(updatedActivities);
-    } catch (err) {
-      console.error("Failed to transition status", err);
+      await transitionMutation.mutateAsync(newStatus);
+      onLeadUpdated?.();
+      toast.success(`Lead moved to ${newStatus.replace("_", " ")}.`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to transition status.");
     }
   };
 
   const handleConfirmLost = async () => {
     if (!leadId || !lostReason.trim()) return;
     try {
-      const updated = await crmService.markLeadLost(leadId, lostReason.trim());
-      setLead(updated);
+      await lostMutation.mutateAsync({ leadId, reason: lostReason.trim() });
       setShowLostDialog(false);
       setLostReason("");
-      if (onLeadUpdated) onLeadUpdated();
-      const updatedActivities = await crmService.getActivities(leadId).catch(() => []);
-      setActivities(updatedActivities);
-    } catch (err) {
-      console.error("Failed to mark lead lost", err);
+      onLeadUpdated?.();
+      toast.success("Lead marked as lost.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to mark lead lost.");
     }
   };
 
@@ -318,7 +276,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
 
         {/* Content Body */}
         <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem" }}>
-          {loading ? (
+          {isLoading ? (
             <div style={{ textAlign: "center", padding: "3rem", color: "var(--color-cyan)", fontFamily: "var(--font-mono)" }}>
               LOADING LEAD DOSSIER...
             </div>

@@ -37,8 +37,8 @@ export const ServiceExplorer: React.FC = () => {
     name: apiService.title || apiService.name || "",
     description: apiService.description || "",
     technologies: apiService.tech_stack || [],
-    relatedIndustries: [],
-    relatedCaseStudies: [],
+    relatedIndustries: [] as string[],
+    relatedCaseStudies: [] as string[],
   }));
 
   // Combine static and DB services, prioritizing DB services for duplicates

@@ -1,16 +1,23 @@
 import React, { useState } from "react";
 import { Link, useRoute } from "wouter";
-import { useLeadDetail, useAssignableUsers } from "../../hooks/useCrm";
+import { toast } from "sonner";
+import {
+  useLeadDetailQuery,
+  useAssignableUsersQuery,
+  useUpdateLeadMutation,
+  useTransitionLeadMutation,
+  useQualifyLeadMutation,
+  useMarkLeadWonMutation,
+  useMarkLeadLostMutation,
+  useAssignLeadMutation,
+  useCreateNoteMutation,
+  useCreateFollowUpMutation,
+  useCompleteFollowUpMutation,
+} from "../../../../queries/useCrmQueries";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import {
   ArrowLeft,
-  Phone,
-  Mail,
-  Building,
-  Globe,
-  User,
-  Calendar,
   Clock,
   CheckCircle2,
   AlertTriangle,
@@ -86,27 +93,29 @@ export const LeadDetail: React.FC = () => {
   const params = crmParams || salesParams;
   const leadId = Number(params?.id);
 
-  const {
-    lead,
-    followUps,
-    notes,
-    isLoading,
-    actionLoading,
-    error,
-    refetch,
-    updateLead,
-    transitionStatus,
-    qualify,
-    markWon,
-    markLost,
-    reopen,
-    assign,
-    addNote,
-    addFollowUp,
-    completeFollowUp,
-  } = useLeadDetail(leadId);
+  const { lead, followUps, notes, isLoading, error, refetch } = useLeadDetailQuery(leadId);
+  const { data: users = [] } = useAssignableUsersQuery();
 
-  const { users } = useAssignableUsers();
+  const updateLeadMutation = useUpdateLeadMutation(leadId);
+  const transitionMutation = useTransitionLeadMutation(leadId);
+  const qualifyMutation = useQualifyLeadMutation(leadId);
+  const wonMutation = useMarkLeadWonMutation();
+  const lostMutation = useMarkLeadLostMutation();
+  const assignMutation = useAssignLeadMutation(leadId);
+  const addNoteMutation = useCreateNoteMutation(leadId);
+  const addFollowUpMutation = useCreateFollowUpMutation(leadId);
+  const completeFollowUpMutation = useCompleteFollowUpMutation();
+
+  const actionLoading =
+    updateLeadMutation.isPending ||
+    transitionMutation.isPending ||
+    qualifyMutation.isPending ||
+    wonMutation.isPending ||
+    lostMutation.isPending ||
+    assignMutation.isPending ||
+    addNoteMutation.isPending ||
+    addFollowUpMutation.isPending ||
+    completeFollowUpMutation.isPending;
 
   // Local state for modals & actions
   const [activeTab, setActiveTab] = useState<"overview" | "followups" | "notes" | "timeline">("overview");
@@ -143,12 +152,6 @@ export const LeadDetail: React.FC = () => {
     meeting_link: "",
   });
 
-  const [feedbackMessage, setFeedbackMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-
-  const showFeedback = (type: "success" | "error", text: string) => {
-    setFeedbackMessage({ type, text });
-    setTimeout(() => setFeedbackMessage(null), 4500);
-  };
 
   const handleOpenEdit = () => {
     if (lead) {
@@ -170,11 +173,11 @@ export const LeadDetail: React.FC = () => {
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateLead(editForm);
+      await updateLeadMutation.mutateAsync(editForm);
       setIsEditOpen(false);
-      showFeedback("success", "Lead specification updated successfully.");
+      toast.success("Lead specification updated successfully.");
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to update lead.");
+      toast.error(err?.message || "Failed to update lead.");
     }
   };
 
@@ -190,39 +193,36 @@ export const LeadDetail: React.FC = () => {
   const handleConfirmWon = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await markWon({
-        value: Number(wonForm.value) || 0,
-        notes: wonForm.notes,
-      });
+      await wonMutation.mutateAsync(leadId);
       setIsWonOpen(false);
-      showFeedback("success", `Lead marked WON! Project cost ($${Number(wonForm.value).toLocaleString()}) recorded and forwarded to BDM Dashboard for client credentials dispatch.`);
+      toast.success(`Lead marked WON!`);
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to mark lead as won.");
+      toast.error(err?.message || "Failed to mark lead as won.");
     }
   };
 
   const handleConfirmLost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lostReason.trim() || lostReason.trim().length < 10) {
-      alert("Please provide a reason of at least 10 characters.");
+    if (!lostReason.trim()) {
+      toast.error("Please provide a reason for lost status.");
       return;
     }
     try {
-      await markLost(lostReason.trim());
+      await lostMutation.mutateAsync({ leadId, reason: lostReason.trim() });
       setIsLostOpen(false);
       setLostReason("");
-      showFeedback("success", "Lead marked as LOST. Notification recorded in communication ledger.");
+      toast.success("Lead marked as LOST.");
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to mark lead as lost.");
+      toast.error(err?.message || "Failed to mark lead lost.");
     }
   };
 
   const handleReopen = async () => {
     try {
-      await reopen();
-      showFeedback("success", "Lead re-opened and returned to active pipeline!");
+      await transitionMutation.mutateAsync("NEW");
+      toast.success("Lead re-opened and returned to active pipeline!");
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to re-open lead.");
+      toast.error(err?.message || "Failed to re-open lead.");
     }
   };
 
@@ -230,11 +230,11 @@ export const LeadDetail: React.FC = () => {
     e.preventDefault();
     if (!assignUserId) return;
     try {
-      await assign(Number(assignUserId));
+      await assignMutation.mutateAsync(Number(assignUserId));
       setIsAssignOpen(false);
-      showFeedback("success", "Lead assigned to sales executive.");
+      toast.success("Lead assigned to sales executive.");
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to assign lead.");
+      toast.error(err?.message || "Failed to assign lead.");
     }
   };
 
@@ -242,18 +242,18 @@ export const LeadDetail: React.FC = () => {
     e.preventDefault();
     if (!noteContent.trim()) return;
     try {
-      await addNote(noteContent);
+      await addNoteMutation.mutateAsync(noteContent);
       setNoteContent("");
-      showFeedback("success", "Note appended to communication ledger.");
+      toast.success("Note appended to communication ledger.");
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to add note.");
+      toast.error(err?.message || "Failed to add note.");
     }
   };
 
   const handleScheduleFollowUp = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await addFollowUp({
+      await addFollowUpMutation.mutateAsync({
         ...followUpForm,
         scheduled_at: new Date(followUpForm.scheduled_at).toISOString(),
       });
@@ -264,19 +264,40 @@ export const LeadDetail: React.FC = () => {
         notes: "",
         meeting_link: "",
       });
-      showFeedback("success", "Follow-up scheduled and notifications dispatched.");
+      toast.success("Follow-up scheduled successfully.");
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to schedule follow-up.");
+      toast.error(err?.message || "Failed to schedule follow-up.");
     }
   };
 
   const handleCompleteFollowUpItem = async (followUpId: number) => {
     try {
-      await completeFollowUp(followUpId);
-      showFeedback("success", "Follow-up marked as completed.");
+      await completeFollowUpMutation.mutateAsync({ leadId, followUpId });
+      toast.success("Follow-up marked as completed.");
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to complete follow-up.");
+      toast.error(err?.message || "Failed to complete follow-up.");
     }
+  };
+
+  const handleTransitionContacted = () => {
+    transitionMutation.mutate("CONTACTED", {
+      onSuccess: () => toast.success("Lead marked as CONTACTED."),
+      onError: (err: any) => toast.error(err?.message || "Failed to transition lead."),
+    });
+  };
+
+  const handleQualify = () => {
+    qualifyMutation.mutate(undefined, {
+      onSuccess: () => toast.success("Lead qualified to opportunity."),
+      onError: (err: any) => toast.error(err?.message || "Failed to qualify lead."),
+    });
+  };
+
+  const handleMarkWon = () => {
+    wonMutation.mutate(leadId, {
+      onSuccess: () => toast.success("Lead marked as WON."),
+      onError: (err: any) => toast.error(err?.message || "Failed to mark lead as won."),
+    });
   };
 
   if (isLoading) {
@@ -307,7 +328,7 @@ export const LeadDetail: React.FC = () => {
             <AlertTriangle size={24} />
             <h3 style={{ margin: 0 }}>Lead Record Unavailable</h3>
           </div>
-          <p style={{ color: "#cbd5e1" }}>{error || "The requested lead was not found or access is restricted."}</p>
+          <p style={{ color: "#cbd5e1" }}>{error?.message || "The requested lead was not found or access is restricted."}</p>
           <Button onClick={() => refetch()} style={{ marginTop: "1rem" }}>
             Retry
           </Button>
@@ -329,25 +350,6 @@ export const LeadDetail: React.FC = () => {
           </Button>
         </Link>
 
-        {feedbackMessage && (
-          <div
-            style={{
-              padding: "0.5rem 1rem",
-              borderRadius: "4px",
-              fontSize: "0.82rem",
-              fontFamily: "IBM Plex Mono, monospace",
-              backgroundColor: feedbackMessage.type === "success" ? "rgba(74, 222, 128, 0.15)" : "rgba(239, 68, 68, 0.15)",
-              color: feedbackMessage.type === "success" ? "#4ade80" : "#ef4444",
-              border: feedbackMessage.type === "success" ? "1px solid rgba(74, 222, 128, 0.3)" : "1px solid rgba(239, 68, 68, 0.3)",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem",
-            }}
-          >
-            {feedbackMessage.type === "success" ? <CheckCircle2 size={15} /> : <AlertTriangle size={15} />}
-            {feedbackMessage.text}
-          </div>
-        )}
       </div>
 
       {/* Main Lead Header Card with PRD 4.7 State Machine Flow */}
@@ -454,13 +456,34 @@ export const LeadDetail: React.FC = () => {
 
           {/* Action Buttons */}
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            {cleanStatus === "NEW" && (
+              <Button
+                variant="outline"
+                disabled={actionLoading}
+                onClick={handleTransitionContacted}
+                style={{ fontSize: "0.78rem" }}
+              >
+                Mark Contacted
+              </Button>
+            )}
+
+            {["NEW", "CONTACTED", "UNDER_REVIEW"].includes(cleanStatus) && (
+              <Button
+                variant="outline"
+                disabled={actionLoading}
+                onClick={handleQualify}
+                style={{ fontSize: "0.78rem", color: "#818cf8", borderColor: "rgba(129, 140, 248, 0.4)" }}
+              >
+                <Award size={14} style={{ marginRight: "0.35rem" }} /> Qualify to Opportunity
+              </Button>
+            )}
             {cleanStatus !== "WON" && cleanStatus !== "LOST" && (
               <>
                 <Button
                   glow
                   disabled={actionLoading}
-                  onClick={() => setIsWonOpen(true)}
-                  style={{ fontSize: "0.78rem", backgroundColor: "#22c55e", color: "#ffffff" }}
+                  onClick={handleMarkWon}
+                  style={{ fontSize: "0.78rem", color: "#4ade80", borderColor: "rgba(74, 222, 128, 0.4)" }}
                 >
                   <CheckCircle2 size={13} style={{ marginRight: "0.3rem" }} /> Mark Won Deal
                 </Button>

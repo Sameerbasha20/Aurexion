@@ -31,7 +31,11 @@ export const authService = {
     try {
       await axiosClient.post("/auth/logout/");
     } catch {
-      // Ignore
+      // Safe cleanup even if backend endpoint is unavailable or network is offline
+    } finally {
+      localStorage.removeItem("aurexion_user");
+      localStorage.removeItem("aurexion_token");
+      localStorage.removeItem("access_token");
     }
     return { success: true };
   },

@@ -315,6 +315,7 @@ export const bdmService = {
       { id: "est_101", project: "Ion Cloud Migration Plan", estimate: 540000 },
     ];
   },
+  clearCache: clearBdmCache,
 };
 
 export default bdmService;

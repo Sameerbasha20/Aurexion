@@ -104,6 +104,14 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
       }
 
       const formattedError = handleApiError(error);
+      if (formattedError.statusCode === 401) {
+        // Clear stored token if request failed with 401 on non-login endpoints
+        const requestUrl = error?.config?.url || "";
+        if (!requestUrl.includes("/auth/login/")) {
+          localStorage.removeItem("aurexion_token");
+          localStorage.removeItem("access_token");
+        }
+      }
       return Promise.reject(formattedError);
     }
   );

@@ -1,19 +1,17 @@
 import React from "react";
-import { Link } from "wouter";
-import { useLeads } from "../../hooks/useCrm";
+import { Link, useLocation } from "wouter";
+import { useLeadsQuery } from "../../../../queries/useCrmQueries";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
-import {
-  FileText,
-  AlertCircle,
-  TrendingUp,
-  ArrowUpRight,
-  RefreshCw,
-  ExternalLink,
-} from "lucide-react";
+import LoadingState from "../../../../components/feedback/LoadingState";
+import ErrorState from "../../../../components/feedback/ErrorState";
+import EmptyState from "../../../../components/feedback/EmptyState";
+import { AlertCircle, TrendingUp, ArrowUpRight, RefreshCw } from "lucide-react";
 
 export const Quotations: React.FC = () => {
-  const { leads, isLoading, error, refetch } = useLeads();
+  const [, navigate] = useLocation();
+  const { data, isLoading, error, refetch } = useLeadsQuery({ page_size: 500 });
+  const leads = data?.results || [];
 
   // Filter real leads that are in proposal/negotiation stage
   const proposalLeads = leads.filter((l) =>
@@ -71,23 +69,15 @@ export const Quotations: React.FC = () => {
         </h2>
 
         {isLoading ? (
-          <Card style={{ padding: "3rem", textAlign: "center", color: "#63f5e8" }}>
-            <RefreshCw size={24} style={{ animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
-            <p style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.85rem" }}>
-              SYNCING PROPOSAL PIPELINE...
-            </p>
-          </Card>
+          <LoadingState message="Syncing proposal pipeline..." />
+        ) : error ? (
+          <ErrorState error={error} onRetry={refetch} />
         ) : proposalLeads.length === 0 ? (
-          <Card style={{ padding: "3rem 2rem", textAlign: "center", color: "#94a3b8" }}>
-            <FileText size={36} color="#64748b" style={{ margin: "0 auto 1rem" }} />
-            <h3 style={{ fontSize: "1.1rem", color: "#f8fafc", margin: 0 }}>No leads in Proposal stage</h3>
-            <p style={{ fontSize: "0.85rem", margin: "0.5rem 0 1.5rem" }}>
-              Move qualified leads to Proposal/Negotiation stage in the Leads Funnel.
-            </p>
-            <Link href="/crm/leads">
-              <Button glow>Open Leads Funnel</Button>
-            </Link>
-          </Card>
+          <EmptyState
+            title="No leads in Proposal stage"
+            message="Move qualified leads to Proposal/Negotiation stage in the Leads Funnel."
+            action={{ label: "Open Leads Funnel", onClick: () => navigate("/crm/leads") }}
+          />
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "1.25rem" }}>
             {proposalLeads.map((lead) => (

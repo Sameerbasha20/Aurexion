@@ -1259,7 +1259,7 @@ h3 em {
 
 .final-art {
   z-index: -1;
-  background: radial-gradient(circle at center, rgba(99, 245, 232, .18), transparent 28%), url(/manus-storage/aurexion-texture_30e1da90.png);
+  background: radial-gradient(circle at center, rgba(99, 245, 232, .18), transparent 28%), url(/manus-storage/aurexion-texture_30e1da90.webp);
   background-size: cover;
   opacity: .65;
   animation: pulse 7s ease-in-out infinite alternate;
@@ -2256,20 +2256,16 @@ h3 em {
 .nav-logo {
   display: flex;
   align-items: center;
-  gap: .6rem;
   text-decoration: none;
+  margin-left: 1.75rem;
 }
 
 .nav-logo-mark {
-  width: 26px;
-  height: 26px;
+  height: 38px;
+  width: auto;
+  max-width: 80px;
   object-fit: contain;
-}
-
-.nav-logo-text {
-  font: 700 .88rem 'Space Grotesk', sans-serif;
-  letter-spacing: .2em;
-  color: #eef4f3;
+  display: block;
 }
 
 .nav-desktop {
@@ -2399,7 +2395,7 @@ h3 em {
 }
 
 .nav-mega-col {
-  padding: 0 1.1rem;
+  padding: 0 0.85rem;
   border-right: 1px solid rgba(99, 245, 232, .08);
 }
 
@@ -2409,36 +2405,34 @@ h3 em {
 
 .nav-mega-cat {
   display: flex !important;
-  align-items: flex-start;
-  min-height: 2.85rem;
+  align-items: flex-end;
+  min-height: 2.2rem;
+  height: 2.2rem;
   margin: 0 0 1.25rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid rgba(99, 245, 232, .12);
-  font: 600 .72rem 'IBM Plex Mono', monospace;
-  letter-spacing: .08em;
-  line-height: 1.3;
+  font: 600 .68rem 'IBM Plex Mono', monospace;
+  letter-spacing: .05em;
+  line-height: 1.2;
   color: #63f5e8;
   text-decoration: none;
-  cursor: pointer;
-  transition: color .15s, border-color .15s;
-}
-
-.nav-mega-cat:hover {
-  color: #ffffff;
-  border-bottom-color: rgba(99, 245, 232, .4);
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
 }
 
 .nav-mega-num {
   color: #63f5e8;
   font-weight: 700;
   text-shadow: 0 0 8px rgba(99, 245, 232, 0.6);
-  font-size: .72rem;
+  font-size: .68rem;
   flex-shrink: 0;
   margin-right: 0.35rem;
 }
 
 .nav-mega-cat-title {
   display: inline-block;
+  white-space: nowrap;
 }
 
 .nav-mega-col ul {
@@ -2694,25 +2688,53 @@ h3 em {
 
 @media (max-width: 768px) {
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
   .stat-item {
+    padding: 1.75rem 1rem !important;
     border-bottom: 1px solid rgba(99, 245, 232, .12);
   }
 
   .stat-item:nth-child(even) {
     border-right: none;
   }
+
+  .stat-item:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
 }
 
 @media (max-width: 480px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
   .stat-item {
+    padding: 1.25rem 0.6rem !important;
+    border-bottom: 1px solid rgba(99, 245, 232, .12);
+  }
+
+  .stat-item:nth-child(even) {
     border-right: none;
+  }
+
+  .stat-item:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+
+  .stat-number {
+    font-size: 2.2rem !important;
+  }
+
+  .stat-label {
+    font-size: 0.62rem !important;
+    letter-spacing: 0.08em;
+  }
+
+  .stat-desc {
+    font-size: 0.72rem !important;
+    line-height: 1.25;
   }
 }
 
@@ -3356,6 +3378,9 @@ h3 em {
   padding: 0.35rem 0.75rem;
   font: 500 0.65rem 'IBM Plex Mono', monospace;
   letter-spacing: 0.08em;
+  user-select: none;
+  cursor: default;
+  pointer-events: none;
 }
 
 .subpage-hero-ctas {
@@ -3732,9 +3757,12 @@ table {
     gap: 0.5rem;
   }
 
-  .nav-logo-text {
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
+  .nav-logo {
+    margin-left: 0.5rem;
+  }
+
+  .nav-logo-mark {
+    height: 32px;
   }
 
   .hero-copy h1 {
@@ -3763,8 +3791,25 @@ table {
     padding: 0.75rem 1rem !important;
   }
 
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .stat-item {
+    padding: 1rem 0.4rem !important;
+  }
+
   .stat-number {
-    font-size: 2.5rem !important;
+    font-size: 1.85rem !important;
+  }
+
+  .stat-label {
+    font-size: 0.58rem !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .stat-desc {
+    font-size: 0.68rem !important;
   }
 
   .statement-copy p:first-child,
@@ -3872,10 +3917,14 @@ table {
 
   .services-cat-grid,
   .industries-18-grid,
-  .insight-grid,
-  .stats-grid {
+  .insight-grid {
     grid-template-columns: 1fr !important;
     gap: 1.25rem !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0 !important;
   }
 
   .case-study {

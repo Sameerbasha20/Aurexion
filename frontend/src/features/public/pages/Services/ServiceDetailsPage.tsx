@@ -11,6 +11,9 @@ import { TechnologySection } from "./components/Detail/TechnologySection";
 import { RelatedIndustries } from "./components/Detail/RelatedIndustries";
 import { RelatedCaseStudies } from "./components/Detail/RelatedCaseStudies";
 import { ServiceCTA } from "./components/Detail/ServiceCTA";
+import { SEO } from "../../../../components/seo/SEO";
+import { createServiceSchema } from "../../../../components/seo/structuredData";
+import { getSiteUrl } from "../../../../components/seo/seoConfig";
 
 export const ServiceDetailsPage: React.FC = () => {
   const params = useParams();
@@ -66,61 +69,6 @@ export const ServiceDetailsPage: React.FC = () => {
     window.scrollTo(0, 0);
   }, [slug]);
 
-  // SEO & Schema Mapping (PRD 4.2)
-  useEffect(() => {
-    if (service) {
-      document.title = `${service.meta_title || service.name} | Aurexion Technologies`;
-
-      // Update meta description
-      const descriptionText = service.meta_description || service.description;
-      let metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) {
-        metaDesc.setAttribute("content", descriptionText);
-      } else {
-        const meta = document.createElement("meta");
-        meta.name = "description";
-        meta.content = descriptionText;
-        document.head.appendChild(meta);
-      }
-
-      // Update meta keywords
-      const keywordsText = service.meta_keywords || `${service.name}, engineering, enterprise technology`;
-      let metaKeywords = document.querySelector('meta[name="keywords"]');
-      if (metaKeywords) {
-        metaKeywords.setAttribute("content", keywordsText);
-      } else {
-        const meta = document.createElement("meta");
-        meta.name = "keywords";
-        meta.content = keywordsText;
-        document.head.appendChild(meta);
-      }
-
-      // Inject JSON-LD Schema
-      const schemaId = "jsonld-service-schema";
-      let script = document.getElementById(schemaId) as HTMLScriptElement | null;
-      if (!script) {
-        script = document.createElement("script");
-        script.id = schemaId;
-        script.type = "application/ld+json";
-        document.head.appendChild(script);
-      }
-      
-      const jsonLd = {
-        "@context": "https://schema.org",
-        "@type": "Service",
-        "name": service.name,
-        "description": service.description,
-        "provider": {
-          "@type": "Organization",
-          "name": "Aurexion Technologies",
-          "url": window.location.origin
-        },
-        "url": window.location.href
-      };
-      script.text = JSON.stringify(jsonLd);
-    }
-  }, [service]);
-
   if (loading && !apiService && !staticService) {
     return (
       <div className="bg-background min-h-screen flex items-center justify-center">
@@ -134,8 +82,23 @@ export const ServiceDetailsPage: React.FC = () => {
     return null;
   }
 
+  const siteUrl = getSiteUrl();
+  const serviceJsonLd = createServiceSchema({
+    name: service.name,
+    description: service.meta_description || service.description,
+    url: `/services/${service.slug}`,
+    serviceType: service.category
+  }, siteUrl);
+
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title={service.meta_title || `${service.name} | Technology Services`}
+        description={service.meta_description || service.description}
+        canonical={`/services/${service.slug}`}
+        keywords={service.meta_keywords ? service.meta_keywords.split(",").map((k) => k.trim()) : [service.name, service.category, "enterprise engineering"]}
+        jsonLd={serviceJsonLd}
+      />
       <ServiceHero service={service} />
       <ChallengeSection service={service} />
       <ApproachSection />

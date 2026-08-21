@@ -1,31 +1,99 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
 import { useRecruitmentDashboard } from "../hooks/useRecruitment";
-import recruitmentService from "../services/recruitmentService";
+import recruitmentService, { JobVacancy, CandidateApplication } from "../services/recruitmentService";
 import Card from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
 import {
   Briefcase,
   Users,
   UserCheck,
-  Clock,
   CheckCircle2,
   AlertTriangle,
-  Flame,
   ArrowUpRight,
   RefreshCw,
   Plus,
   ChevronRight,
   FileText,
-  Building,
   Award,
-  Filter,
+  X,
+  Edit,
+  Mail,
+  Phone,
+  MapPin,
+  FileText as FileIcon,
+  Download,
 } from "lucide-react";
 
 export const Dashboard: React.FC = () => {
   const { data, isLoading, error, refetch } = useRecruitmentDashboard();
   const [advancingId, setAdvancingId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Edit vacancy modal state
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<JobVacancy | null>(null);
+  const [editForm, setEditForm] = useState<Partial<JobVacancy>>({});
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+
+  // Candidate review modal state (read-only)
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [reviewApp, setReviewApp] = useState<CandidateApplication | null>(null);
+  const [reviewResumeUrl, setReviewResumeUrl] = useState<string | null>(null);
+  const [reviewResumeLoading, setReviewResumeLoading] = useState(false);
+
+  const handleOpenReview = async (app: CandidateApplication) => {
+    setReviewApp(app);
+    setReviewResumeUrl(null);
+    setIsReviewOpen(true);
+    // Try to fetch resume URL
+    if (app.resume_storage_path) {
+      setReviewResumeLoading(true);
+      try {
+        const result = await recruitmentService.getApplicationResumeUrl(app.tracking_code);
+        setReviewResumeUrl(result.download_url);
+      } catch {
+        setReviewResumeUrl(null);
+      } finally {
+        setReviewResumeLoading(false);
+      }
+    }
+  };
+
+  const handleOpenEdit = (job: JobVacancy) => {
+    setEditingJob(job);
+    setEditForm({
+      title: job.title,
+      department: job.department,
+      location: job.location,
+      experience: job.experience,
+      skills: job.skills,
+      responsibilities: job.responsibilities,
+      status: job.status,
+    });
+    setEditError(null);
+    setIsEditOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingJob) return;
+    setEditError(null);
+    setEditLoading(true);
+    try {
+      await recruitmentService.updateJob(editingJob.job_id, editForm);
+      setIsEditOpen(false);
+      setEditingJob(null);
+      setSuccessMessage(`Vacancy "${editingJob.title}" updated successfully.`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+      refetch();
+    } catch (err: any) {
+      setEditError(err?.response?.data?.detail || err?.message || "Failed to update job vacancy.");
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   const handleAdvanceStage = async (applicationId: number, trackingCode: string, nextStage: string) => {
     setAdvancingId(applicationId);
@@ -359,11 +427,13 @@ export const Dashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  <Link href="/recruitment/jobs">
-                    <Button variant="outline" style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem" }}>
-                      Manage
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleOpenEdit(job)}
+                    style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "0.3rem" }}
+                  >
+                    <Edit size={12} /> Manage
+                  </Button>
                 </div>
               ))}
             </div>
@@ -450,31 +520,13 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                    {app.stage === "APPLIED" && (
-                      <Button
-                        variant="outline"
-                        disabled={advancingId === app.id}
-                        onClick={() => handleAdvanceStage(app.id, app.tracking_code, "SCREENING")}
-                        style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}
-                      >
-                        {advancingId === app.id ? "..." : "Screen Candidate"}
-                      </Button>
-                    )}
-                    {app.stage === "SCREENING" && (
-                      <Button
-                        variant="outline"
-                        disabled={advancingId === app.id}
-                        onClick={() => handleAdvanceStage(app.id, app.tracking_code, "SHORTLISTED")}
-                        style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", color: "#a855f7", borderColor: "rgba(168, 85, 247, 0.4)" }}
-                      >
-                        {advancingId === app.id ? "..." : "Shortlist"}
-                      </Button>
-                    )}
-                    <Link href={`/recruitment/applications?search=${encodeURIComponent(app.tracking_code)}`}>
-                      <Button glow style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}>
-                        Review Application &rarr;
-                      </Button>
-                    </Link>
+                    <Button
+                      glow
+                      onClick={() => handleOpenReview(app)}
+                      style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}
+                    >
+                      Review Application &rarr;
+                    </Button>
                   </div>
                 </div>
               );
@@ -482,6 +534,228 @@ export const Dashboard: React.FC = () => {
           </div>
         )}
       </Card>
+
+      {/* Candidate Application Review Modal (Read-Only) */}
+      {isReviewOpen && reviewApp && (() => {
+        const stage = reviewApp.stage || "APPLIED";
+        const stageColors: Record<string, { color: string; bg: string; border: string }> = {
+          APPLIED:    { color: "#63f5e8", bg: "rgba(99,245,232,0.15)",   border: "rgba(99,245,232,0.3)" },
+          SCREENING:  { color: "#38bdf8", bg: "rgba(56,189,248,0.15)",   border: "rgba(56,189,248,0.3)" },
+          SHORTLISTED:{ color: "#a855f7", bg: "rgba(168,85,247,0.15)",   border: "rgba(168,85,247,0.3)" },
+          INTERVIEW:  { color: "#818cf8", bg: "rgba(129,140,248,0.15)",  border: "rgba(129,140,248,0.3)" },
+          OFFER:      { color: "#facc15", bg: "rgba(250,204,21,0.15)",   border: "rgba(250,204,21,0.3)" },
+          HIRED:      { color: "#4ade80", bg: "rgba(74,222,128,0.15)",   border: "rgba(74,222,128,0.3)" },
+          REJECTED:   { color: "#f87171", bg: "rgba(248,113,113,0.15)",  border: "rgba(248,113,113,0.3)" },
+        };
+        const sc = stageColors[stage.toUpperCase()] || stageColors.APPLIED;
+        return (
+          <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.88)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1.5rem", overflowY: "auto" }}>
+            <Card borderAccent style={{ width: "100%", maxWidth: "560px", maxHeight: "90vh", overflowY: "auto", padding: "2rem", boxSizing: "border-box", margin: "auto" }}>
+
+              {/* Header */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
+                <div>
+                  <p className="eyebrow" style={{ margin: 0, color: "#63f5e8", fontSize: "0.7rem" }}>CANDIDATE APPLICATION REVIEW</p>
+                  <h2 style={{ fontSize: "1.6rem", margin: "0.3rem 0 0 0", color: "#f8fafc" }}>
+                    {reviewApp.first_name} {reviewApp.last_name}
+                  </h2>
+                  <p style={{ fontSize: "0.75rem", color: "#64748b", margin: "0.3rem 0 0 0", fontFamily: "IBM Plex Mono, monospace" }}>
+                    Tracking Code: {reviewApp.tracking_code} &nbsp;◆&nbsp; Applied on {new Date(reviewApp.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <button type="button" onClick={() => setIsReviewOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", padding: "0.25rem", flexShrink: 0 }}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Info Grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem" }}>
+                <div style={{ backgroundColor: "rgba(14,24,38,0.7)", border: "1px solid rgba(140,174,187,0.15)", borderRadius: "6px", padding: "1rem" }}>
+                  <p style={{ fontSize: "0.68rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", margin: "0 0 0.4rem 0" }}>EMAIL ADDRESS</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#63f5e8", fontSize: "0.88rem", fontWeight: 500 }}>
+                    <Mail size={14} />
+                    <span style={{ wordBreak: "break-all" }}>{reviewApp.email}</span>
+                  </div>
+                </div>
+
+                <div style={{ backgroundColor: "rgba(14,24,38,0.7)", border: "1px solid rgba(140,174,187,0.15)", borderRadius: "6px", padding: "1rem" }}>
+                  <p style={{ fontSize: "0.68rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", margin: "0 0 0.4rem 0" }}>PHONE NUMBER</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#f8fafc", fontSize: "0.88rem", fontWeight: 500 }}>
+                    <Phone size={14} color="#64748b" />
+                    <span>{reviewApp.phone || "—"}</span>
+                  </div>
+                </div>
+
+                <div style={{ backgroundColor: "rgba(14,24,38,0.7)", border: "1px solid rgba(140,174,187,0.15)", borderRadius: "6px", padding: "1rem" }}>
+                  <p style={{ fontSize: "0.68rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", margin: "0 0 0.4rem 0" }}>APPLIED POSITION</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#f8fafc", fontSize: "0.88rem", fontWeight: 600 }}>
+                    <FileIcon size={14} color="#64748b" />
+                    <span>{reviewApp.job_title || `Job #${reviewApp.job_vacancy}`}</span>
+                  </div>
+                </div>
+
+                <div style={{ backgroundColor: "rgba(14,24,38,0.7)", border: "1px solid rgba(140,174,187,0.15)", borderRadius: "6px", padding: "1rem" }}>
+                  <p style={{ fontSize: "0.68rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b", margin: "0 0 0.4rem 0" }}>RESUME DOCUMENT</p>
+                  {reviewResumeLoading ? (
+                    <span style={{ fontSize: "0.8rem", color: "#64748b" }}>Loading...</span>
+                  ) : reviewResumeUrl ? (
+                    <a href={reviewResumeUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", color: "#63f5e8", fontSize: "0.85rem", textDecoration: "underline" }}>
+                      <Download size={14} /> Download File
+                    </a>
+                  ) : (
+                    <span style={{ fontSize: "0.8rem", color: "#64748b" }}>No resume attached</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Current Stage — Read Only */}
+              <div style={{ backgroundColor: "rgba(14,24,38,0.7)", border: `1px solid ${sc.border}`, borderRadius: "8px", padding: "1.25rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", textTransform: "uppercase" }}>Current Stage:</span>
+                  <span style={{
+                    fontSize: "0.78rem",
+                    fontFamily: "IBM Plex Mono, monospace",
+                    fontWeight: 700,
+                    padding: "0.25rem 0.75rem",
+                    borderRadius: "3px",
+                    backgroundColor: sc.bg,
+                    color: sc.color,
+                    border: `1px solid ${sc.border}`,
+                    letterSpacing: "0.05em",
+                  }}>
+                    {stage}
+                  </span>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+                <Button variant="outline" onClick={() => setIsReviewOpen(false)}>Close Review</Button>
+              </div>
+            </Card>
+          </div>
+        );
+      })()}
+
+      {/* Edit Job Vacancy Modal */}
+      {isEditOpen && editingJob && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.88)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1.5rem", overflowY: "auto" }}>
+          <Card borderAccent style={{ width: "100%", maxWidth: "620px", maxHeight: "90vh", overflowY: "auto", overflowX: "hidden", padding: "2rem", boxSizing: "border-box", margin: "auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <div>
+                <p className="eyebrow" style={{ margin: 0 }}>EDIT VACANCY // {editingJob.job_id}</p>
+                <h2 style={{ fontSize: "1.5rem", margin: "0.25rem 0 0 0" }}>Update Job Specification</h2>
+              </div>
+              <button type="button" onClick={() => setIsEditOpen(false)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", padding: "0.25rem" }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {editError && (
+              <div style={{
+                color: "#ef4444",
+                backgroundColor: "rgba(239, 68, 68, 0.1)",
+                border: "1px solid rgba(239, 68, 68, 0.2)",
+                padding: "0.75rem",
+                borderRadius: "4px",
+                fontSize: "0.85rem",
+                marginBottom: "1rem",
+                fontFamily: "IBM Plex Mono, monospace",
+              }}>
+                ERROR // {editError}
+              </div>
+            )}
+
+            <form onSubmit={handleEditSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.1rem", width: "100%" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>JOB TITLE</label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.title || ""}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0.85rem" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DEPARTMENT</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Engineering"
+                    value={editForm.department || ""}
+                    onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
+                    style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>LOCATION</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Remote"
+                    value={editForm.location || ""}
+                    onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                    style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EXPERIENCE</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 3+ Years"
+                    value={editForm.experience || ""}
+                    onChange={(e) => setEditForm({ ...editForm, experience: e.target.value })}
+                    style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>STATUS</label>
+                  <select
+                    value={editForm.status || "ACTIVE"}
+                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                    style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="CLOSED">Closed</option>
+                    <option value="DRAFT">Draft</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>REQUIRED SKILLS</label>
+                <input
+                  type="text"
+                  value={editForm.skills || ""}
+                  onChange={(e) => setEditForm({ ...editForm, skills: e.target.value })}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>RESPONSIBILITIES</label>
+                <textarea
+                  rows={3}
+                  value={editForm.responsibilities || ""}
+                  onChange={(e) => setEditForm({ ...editForm, responsibilities: e.target.value })}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", resize: "vertical" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                <Button type="submit" glow disabled={editLoading}>
+                  {editLoading ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

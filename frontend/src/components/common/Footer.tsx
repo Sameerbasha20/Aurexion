@@ -22,9 +22,8 @@ export const Footer: React.FC = () => {
         fontSize: "0.875rem",
         color: "#94a3b8",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <img src="/manus-storage/aurexion-mark_e8f9e729.png" alt="Aurexion" style={{ width: "20px", height: "20px" }} />
-          <span style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 500, color: "#f8fafc" }}>AUREXION</span>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <img src="/images/aurexion-logo.webp" alt="Aurexion" style={{ height: "26px", width: "auto", objectFit: "contain" }} />
         </div>
         <div style={{ display: "flex", gap: "1.5rem" }}>
           <Link href="/privacy-policy">

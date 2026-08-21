@@ -5,7 +5,7 @@ export const APP_LIMITS = {
 
 export const STORAGE_KEYS = {
   USER: "aurexion_user",
-  TOKEN: "aurexion_auth_token",
+  TOKEN: "aurexion_token",
   THEME: "aurexion_theme",
 };
 

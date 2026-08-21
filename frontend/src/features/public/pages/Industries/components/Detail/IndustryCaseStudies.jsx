@@ -62,7 +62,7 @@ export const IndustryCaseStudies = ({ industry }) => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {matchedCaseStudies.map((cs, idx) => (
+          {matchedCaseStudies.map((cs, idx) => { return (
             <Link 
               key={idx}
               href={`/case-studies/${cs.slug}`} 
@@ -96,12 +96,14 @@ export const IndustryCaseStudies = ({ industry }) => {
                     </>
                   )}
                 </div>
+
                 <div className="w-10 h-10 rounded-full border border-[rgba(99,245,232,0.2)] flex items-center justify-center group-hover:bg-[#63f5e8] group-hover:border-[#63f5e8] transition-colors flex-shrink-0">
                   <ArrowRight className="w-5 h-5 text-[#63f5e8] group-hover:text-[#041014]" />
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
 
         <Link
