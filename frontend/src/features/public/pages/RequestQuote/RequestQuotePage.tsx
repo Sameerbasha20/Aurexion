@@ -6,10 +6,20 @@ import { publicService } from "../../services/publicService";
 import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { SEO } from "../../../../components/seo/SEO";
 
+const nameRegex = /^[a-zA-Z\s'-]+$/;
+
 const quoteSchema = z.object({
-  name: z.string().min(2, "Name is required"),
+  name: z
+    .string()
+    .min(1, "Full name is required")
+    .min(2, "Full name must be at least 2 characters")
+    .regex(nameRegex, "Please enter a valid name format (letters, spaces, hyphens, and apostrophes only)")
+    .refine((val) => val.trim().length >= 2, "Please enter a valid full name"),
   email: z.string().email("Valid email is required"),
-  phone: z.string().min(5, "Phone number is required"),
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(/^\d{10}$/, "Phone number must be exactly 10 digits (numbers only)"),
   company: z.string().min(2, "Company name is required"),
   service: z.string().min(2, "Service type is required"),
   requirements: z.string().min(10, "Please provide more detail about your requirements"),
