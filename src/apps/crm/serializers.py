@@ -33,9 +33,45 @@ class LeadSerializer(serializers.ModelSerializer):
     assigned_to_name = serializers.CharField(source="assigned_to.username", read_only=True, default=None)
     assigned_to_email = serializers.CharField(source="assigned_to.email", read_only=True, default=None)
     created_by_name = serializers.CharField(source="created_by.username", read_only=True, default=None)
-    follow_up_count = serializers.IntegerField(read_only=True, default=0)
-    note_count = serializers.IntegerField(read_only=True, default=0)
-    rfp_enquiry_details = RFPEnquirySerializer(source="rfp_enquiry", read_only=True)
+    follow_up_count = serializers.SerializerMethodField()
+    note_count = serializers.SerializerMethodField()
+
+    def get_follow_up_count(self, obj):
+        if hasattr(obj, 'follow_up_count'):
+            return obj.follow_up_count
+        if 'follow_ups' in getattr(obj, '_prefetched_objects_cache', {}):
+            return len(obj.follow_ups.all())
+        return obj.follow_ups.count()
+
+    def get_note_count(self, obj):
+        if hasattr(obj, 'note_count'):
+            return obj.note_count
+        if 'notes' in getattr(obj, '_prefetched_objects_cache', {}):
+            return len(obj.notes.all())
+        return obj.notes.count()
+    rfp_enquiry_details = serializers.SerializerMethodField()
+
+    def get_rfp_enquiry_details(self, obj):
+        if not getattr(obj, 'rfp_enquiry_id', None):
+            return None
+        rfp = getattr(obj, 'rfp_enquiry', None)
+        if not rfp:
+            return None
+        return {
+            "id": rfp.id,
+            "reference_id": rfp.reference_id,
+            "full_name": rfp.full_name,
+            "company_name": rfp.company_name,
+            "work_email": rfp.work_email,
+            "phone": rfp.phone,
+            "designation": rfp.designation,
+            "country": rfp.country,
+            "project_type": rfp.project_type,
+            "budget_range": rfp.budget_range,
+            "project_description": rfp.project_description,
+            "nda_required": rfp.nda_required,
+            "created_at": rfp.created_at,
+        }
 
     class Meta:
         model = Lead

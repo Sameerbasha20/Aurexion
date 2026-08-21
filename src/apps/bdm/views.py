@@ -5,7 +5,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.authentication.models import AuditLog
+from apps.authentication.models import AuditLog, User
 from apps.bdm.serializers import BdmDashboardSerializer
 from apps.crm.models import Lead, LeadFollowUp
 from apps.administration.permissions import BaseRolePermission
@@ -85,10 +85,9 @@ class BdmDashboardView(APIView):
         )
 
         # Compute Sales Team Workload
-        from apps.authentication.models import User
         sales_execs = User.objects.filter(
             models.Q(profile__role="sales_executive") | models.Q(profile__role="SALES_EXECUTIVE")
-        ).annotate(
+        ).select_related("profile").annotate(
             active_count=Count("assigned_leads", filter=~models.Q(assigned_leads__status=Lead.Status.LOST))
         ).order_by("-active_count")
 
@@ -129,7 +128,7 @@ class BdmDashboardView(APIView):
             for lead in won_leads_qs
         ]
 
-        pending_client_onboardings = sum(1 for c in won_clients if not c["client_onboarded"])
+        pending_client_onboardings = Lead.objects.filter(status=Lead.Status.WON, client_onboarded=False).count()
 
         # Count pending RFPs (new/unassigned from rfp_form source)
         pending_rfp_count = Lead.objects.filter(

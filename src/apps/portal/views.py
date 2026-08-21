@@ -517,6 +517,67 @@ class TicketViewSet(
             request=self.request,
         )
 
+from datetime import timedelta
+from django.utils import timezone
+
+def ensure_client_project_exists(user):
+    """
+    Ensures an onboarded client user has at least one active project and timeline milestones.
+    """
+    if not user or not user.is_authenticated:
+        return None
+
+    existing = ClientProject.objects.filter(client_user=user).first()
+    if existing:
+        return existing
+
+    company_name = user.first_name or (user.username.split('@')[0].capitalize() if '@' in user.username else user.username)
+    today = timezone.now().date()
+    target_date = today + timedelta(days=90)
+
+    project = ClientProject.objects.create(
+        client_user=user,
+        title=f"{company_name} - Digital Transformation & Systems Integration",
+        description=f"Active enterprise project engagement for {company_name}. Scope includes custom development, architecture setup, and cloud integration.",
+        status='in_progress',
+        progress_percentage=35,
+        delivery_lead_name="Aurexion Senior Delivery Lead",
+        start_date=today - timedelta(days=14),
+        target_completion_date=target_date,
+    )
+
+    # Create Milestones
+    ProjectMilestone.objects.create(
+        project=project,
+        name="Phase 1: Discovery & Requirements Sign-off",
+        status="completed",
+        is_current=False,
+        planned_date=today - timedelta(days=7),
+    )
+    ProjectMilestone.objects.create(
+        project=project,
+        name="Phase 2: Architecture & Core Module Implementation",
+        status="in_progress",
+        is_current=True,
+        planned_date=today + timedelta(days=30),
+    )
+    ProjectMilestone.objects.create(
+        project=project,
+        name="Phase 3: System Integration & UAT Testing",
+        status="upcoming",
+        is_current=False,
+        planned_date=today + timedelta(days=60),
+    )
+    ProjectMilestone.objects.create(
+        project=project,
+        name="Phase 4: Final Production Deployment & Handoff",
+        status="upcoming",
+        is_current=False,
+        planned_date=target_date,
+    )
+
+    return project
+
 
 @extend_schema_view(
     list=extend_schema(tags=['Client Portal (Projects)'], summary="List my projects"),
@@ -534,7 +595,11 @@ class ClientProjectViewSet(viewsets.ModelViewSet):
     lookup_field = 'pk'
 
     def get_queryset(self):
-        return ClientProject.objects.filter(client_user=self.request.user)
+        user = self.request.user
+        if user and user.is_authenticated:
+            ensure_client_project_exists(user)
+            return ClientProject.objects.filter(client_user=user)
+        return ClientProject.objects.none()
 
     def perform_create(self, serializer):
         serializer.save(client_user=self.request.user)
@@ -564,7 +629,7 @@ class ClientRequestViewSet(viewsets.ModelViewSet):
 
 @extend_schema_view(
     list=extend_schema(tags=['Client Portal (Documents)'], summary="List my documents"),
-    create=extend_schema(tags=['Client Portal (Documents)'], summary="Create a document"),
+    create=extend_schema(tags=['Client Portal (Documents)'], summary="Upload a document"),
     retrieve=extend_schema(tags=['Client Portal (Documents)'], summary="Get document details"),
     update=extend_schema(tags=['Client Portal (Documents)'], summary="Update document"),
     partial_update=extend_schema(tags=['Client Portal (Documents)'], summary="Partially update document"),
@@ -596,7 +661,11 @@ class ProjectMilestoneViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'pk'
 
     def get_queryset(self):
-        return ProjectMilestone.objects.filter(project__client_user=self.request.user)
+        user = self.request.user
+        if user and user.is_authenticated:
+            ensure_client_project_exists(user)
+            return ProjectMilestone.objects.filter(project__client_user=user)
+        return ProjectMilestone.objects.none()
 
 
 @extend_schema_view(

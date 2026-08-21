@@ -15,8 +15,17 @@ const ROLE_DASHBOARD_ROUTES: Record<string, string> = {
   SUPPORT: "/support/dashboard",
 };
 
-export const getRoleDashboardPath = (role: string): string => {
-  return ROLE_DASHBOARD_ROUTES[role.toUpperCase()] || "/";
+export const getRoleDashboardPath = (role?: string): string => {
+  if (!role) return "/portal/dashboard";
+  const r = role.toLowerCase();
+  if (r.includes("client")) return "/portal/dashboard";
+  if (r.includes("admin")) return "/admin/dashboard";
+  if (r.includes("bdm") || r.includes("business_dev")) return "/bdm/dashboard";
+  if (r.includes("sales")) return "/crm/dashboard";
+  if (r.includes("hr") || r.includes("recruitment")) return "/recruitment/dashboard";
+  if (r.includes("content") || r.includes("cms")) return "/cms/dashboard";
+  if (r.includes("support")) return "/support/dashboard";
+  return "/portal/dashboard";
 };
 
 export const extractAuthErrorMessage = (err: any): string => {
@@ -41,12 +50,12 @@ export const extractAuthErrorMessage = (err: any): string => {
     return resData;
   }
   if (status === 400 || status === 401) {
-    return "Invalid username or password. Please verify your credentials and selected role.";
+    return "Invalid username or password. Please verify your credentials.";
   }
   if (err?.code === "ERR_NETWORK" || err?.message?.includes("Network Error")) {
     return "Unable to connect to the authentication server. Please ensure the backend is running.";
   }
-  return "Invalid username or password. Please verify your credentials and selected role.";
+  return "Invalid username or password. Please verify your credentials.";
 };
 
 export const validateLoginCredentials = (username: string, password: string): { username?: string; password?: string } => {
@@ -83,8 +92,9 @@ export const Login: React.FC = () => {
     setFieldErrors({});
 
     try {
-      await login(username, password);
-      setLocation(getRoleDashboardPath(role));
+      const loggedInUser: any = await login(username, password);
+      const targetRole = loggedInUser?.role || loggedInUser?.user?.role || role;
+      setLocation(getRoleDashboardPath(targetRole));
     } catch (err: any) {
       setError(extractAuthErrorMessage(err));
     }

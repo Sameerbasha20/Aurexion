@@ -32,6 +32,8 @@ import {
   Filter,
   Copy,
   Check,
+  Globe,
+  ShieldAlert,
   Search,
 } from "lucide-react";
 
@@ -705,6 +707,11 @@ export const Clients: React.FC = () => {
                 <a href={`mailto:${selectedClient.email}`} style={{ display: "block", marginTop: "0.4rem", color: "#63f5e8", fontWeight: 500, textDecoration: "none", fontSize: "0.95rem" }}>
                   {selectedClient.email}
                 </a>
+                {(selectedClient.rfp_enquiry_details?.designation || selectedClient.designation) && (
+                  <span style={{ fontSize: "0.78rem", color: "#63f5e8", marginTop: "0.35rem", display: "flex", alignItems: "center", gap: "0.3rem", fontWeight: 500 }}>
+                    <Briefcase size={12} /> {selectedClient.rfp_enquiry_details?.designation || selectedClient.designation}
+                  </span>
+                )}
               </div>
 
               <div style={{ backgroundColor: "rgba(10, 17, 28, 0.6)", border: "1px solid rgba(140, 174, 187, 0.15)", padding: "1rem", borderRadius: "6px" }}>
@@ -714,15 +721,26 @@ export const Clients: React.FC = () => {
                 <p style={{ margin: "0.4rem 0 0 0", color: "#f8fafc", fontWeight: 500, fontSize: "0.95rem" }}>
                   {selectedClient.phone || "Not provided"}
                 </p>
+                {(selectedClient.rfp_enquiry_details?.country || selectedClient.country) && (
+                  <p style={{ margin: "0.35rem 0 0 0", fontSize: "0.8rem", color: "#cbd5e1", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                    <Globe size={12} style={{ color: "#38bdf8" }} /> Country: <strong style={{ color: "#f8fafc" }}>{selectedClient.rfp_enquiry_details?.country || selectedClient.country}</strong>
+                  </p>
+                )}
               </div>
 
               <div style={{ backgroundColor: "rgba(10, 17, 28, 0.6)", border: "1px solid rgba(140, 174, 187, 0.15)", padding: "1rem", borderRadius: "6px" }}>
                 <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                  <Building size={12} /> INDUSTRY / SOURCE
+                  <Building size={12} /> INDUSTRY / PROJECT TYPE
                 </span>
                 <p style={{ margin: "0.4rem 0 0 0", color: "#f8fafc", fontWeight: 500, fontSize: "0.9rem" }}>
-                  {selectedClient.industry || selectedClient.source || "Direct Client"}
+                  {selectedClient.rfp_enquiry_details?.project_type || selectedClient.project_type || selectedClient.industry || selectedClient.source || "Direct Client"}
                 </p>
+
+                {(selectedClient.rfp_enquiry_details?.budget_range || selectedClient.budget_range) && (
+                  <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.8rem", color: "#4ade80", fontWeight: 600 }}>
+                    💰 RFP Budget: {selectedClient.rfp_enquiry_details?.budget_range || selectedClient.budget_range}
+                  </p>
+                )}
               </div>
 
               <div style={{ backgroundColor: "rgba(10, 17, 28, 0.6)", border: "1px solid rgba(140, 174, 187, 0.15)", padding: "1rem", borderRadius: "6px" }}>
@@ -735,14 +753,61 @@ export const Clients: React.FC = () => {
               </div>
             </div>
 
+            {/* NDA Status & RFP Document Attachment */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+              <div style={{
+                backgroundColor: (selectedClient.rfp_enquiry_details?.nda_required || selectedClient.nda_required) ? "rgba(245, 158, 11, 0.08)" : "rgba(10, 17, 28, 0.6)",
+                border: `1px solid ${(selectedClient.rfp_enquiry_details?.nda_required || selectedClient.nda_required) ? "rgba(245, 158, 11, 0.3)" : "rgba(140, 174, 187, 0.15)"}`,
+                padding: "1rem",
+                borderRadius: "6px"
+              }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>NDA AGREEMENT STATUS</span>
+                <div style={{ marginTop: "0.4rem" }}>
+                  {(selectedClient.rfp_enquiry_details?.nda_required || selectedClient.nda_required) ? (
+                    <span style={{ color: "#fbbf24", fontWeight: 600, fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                      <ShieldAlert size={15} /> Signed NDA Required Prior to Disclosure
+                    </span>
+                  ) : (
+                    <span style={{ color: "#94a3b8", fontSize: "0.82rem" }}>Standard RFP (No NDA requested)</span>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: "rgba(10, 17, 28, 0.6)", border: "1px solid rgba(140, 174, 187, 0.15)", padding: "1rem", borderRadius: "6px" }}>
+                <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>RFP DOCUMENT ATTACHMENT</span>
+                <div style={{ marginTop: "0.4rem" }}>
+                  {(selectedClient.rfp_enquiry_details?.document_attachment || selectedClient.document_attachment) ? (
+                    <a
+                      href={selectedClient.rfp_enquiry_details?.document_attachment || selectedClient.document_attachment}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: "#63f5e8",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.4rem",
+                        fontSize: "0.85rem",
+                        fontWeight: 600,
+                        textDecoration: "underline",
+                      }}
+                    >
+                      <FileText size={15} /> Download Attached RFP Document 📎
+                    </a>
+                  ) : (
+                    <span style={{ color: "#64748b", fontSize: "0.82rem" }}>No document uploaded</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Scope / Description Brief */}
-            {selectedClient.description && (
+            {(selectedClient.description || selectedClient.rfp_enquiry_details?.project_description) && (
               <div style={{ marginBottom: "1.5rem", padding: "1rem", backgroundColor: "rgba(5, 8, 17, 0.6)", border: "1px solid rgba(140, 174, 187, 0.15)", borderRadius: "6px" }}>
                 <span style={{ fontSize: "0.7rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", display: "flex", alignItems: "center", gap: "0.3rem" }}>
                   <FileText size={12} /> PROJECT SCOPE / CLIENT BRIEF
                 </span>
                 <p style={{ margin: "0.5rem 0 0 0", color: "#cbd5e1", lineHeight: 1.6, fontSize: "0.88rem", whiteSpace: "pre-wrap" }}>
-                  {selectedClient.description}
+                  {selectedClient.description || selectedClient.rfp_enquiry_details?.project_description}
                 </p>
               </div>
             )}

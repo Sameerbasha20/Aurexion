@@ -1,22 +1,32 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Mail, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
 import Card from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
+import axiosClient from "../../../api/axiosClient";
 
 export const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [resetLink, setResetLink] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        setSubmitted(true);
-      }, 500);
+    if (!email) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res: any = await axiosClient.post("auth/forgot-password/", { email });
+      const resetUrl = res?.reset_link || res?.data?.reset_link || null;
+      setResetLink(resetUrl);
+      setSubmitted(true);
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.detail || err?.detail || err?.response?.data?.error || err?.message || "No registered account found with this email address. Please check and try again.";
+      setError(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,17 +71,46 @@ export const ForgotPassword: React.FC = () => {
             }}
           >
             <CheckCircle2 size={24} style={{ color: "#63f5e8" }} />
-            <span>RESET LINK SENT // Check your inbox for instructions to reset your password.</span>
+            <span>RESET LINK DISPATCHED // Registered user verified ({email}). Password reset link has been sent.</span>
           </div>
 
+          {resetLink && (
+            <a
+              href={resetLink}
+              style={{ textDecoration: "none" }}
+            >
+              <Button glow style={{ width: "100%", height: "46px", backgroundColor: "#22c55e", color: "#ffffff" }}>
+                <ExternalLink size={16} style={{ marginRight: "0.5rem" }} /> SET NEW PASSWORD NOW
+              </Button>
+            </a>
+          )}
+
           <Link href="/login">
-            <Button glow style={{ width: "100%", height: "46px" }}>
+            <Button variant="outline" style={{ width: "100%", height: "46px" }}>
               RETURN TO LOGIN
             </Button>
           </Link>
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {error && (
+            <div
+              style={{
+                color: "#ef4444",
+                backgroundColor: "rgba(239, 68, 68, 0.08)",
+                border: "1px solid rgba(239, 68, 68, 0.3)",
+                padding: "0.75rem 1rem",
+                borderRadius: "6px",
+                fontSize: "0.85rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
+              <AlertTriangle size={18} style={{ flexShrink: 0 }} />
+              <span>{error}</span>
+            </div>
+          )}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <label
               htmlFor="email"

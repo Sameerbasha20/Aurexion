@@ -68,11 +68,21 @@ INSTALLED_APPS = [
     'apps.core',
 ]
 
+try:
+    import whitenoise  # noqa: F401
+    HAS_WHITENOISE = True
+except ImportError:
+    HAS_WHITENOISE = False
+
 MIDDLEWARE = [
     'django.middleware.gzip.GZipMiddleware',
     'config.middleware.SecurityHeadersMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+]
+if HAS_WHITENOISE:
+    MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
+
+MIDDLEWARE.extend([
     'config.middleware.RequestBodySizeLimitMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -81,7 +91,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+])
 
 # CORS & CSRF Configuration
 CORS_ALLOWED_ORIGINS = [
@@ -106,7 +116,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
 ]
 
-# Cookie & Session Security Settings
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SAMESITE = 'Lax'
@@ -135,7 +145,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-if os.getenv('DB_ENGINE'):
+use_local = os.getenv('USE_LOCAL_DB', 'false').lower() == 'true'
+if os.getenv('DB_ENGINE') and not use_local:
     db_host = os.getenv('DB_HOST', '')
     is_supabase = 'supabase' in str(db_host).lower()
     default_port = '6543' if is_supabase else '5432'
@@ -148,8 +159,16 @@ if os.getenv('DB_ENGINE'):
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST'),
             'PORT': os.getenv('DB_PORT', '5432'),
-            'CONN_MAX_AGE': 0,
-            'CONN_HEALTH_CHECKS': False,
+            # Performance: reuse DB connections within each Gunicorn worker for up to
+            # 10 minutes instead of opening a new TCP+TLS connection on every request.
+            # With Supabase PgBouncer (port 6543, transaction-pooling mode) this is
+            # safe because PgBouncer itself manages the underlying server connections;
+            # Django only holds the logical PgBouncer connection open.
+            # CONN_HEALTH_CHECKS=True issues a cheap ping before reusing a connection,
+            # protecting against "connection already closed" errors when PgBouncer
+            # evicts an idle connection between requests.
+            'CONN_MAX_AGE': 600,
+            'CONN_HEALTH_CHECKS': True,
         }
     }
 else:
@@ -157,6 +176,7 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
+            'CONN_MAX_AGE': 60,
         }
     }
 
@@ -291,7 +311,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'src' / 'static']
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if HAS_WHITENOISE:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 

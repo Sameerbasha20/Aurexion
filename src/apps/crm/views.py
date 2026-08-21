@@ -39,10 +39,37 @@ from apps.crm.serializers import (
     LeadScheduleMeetingSerializer,
 )
 
+from django.core.paginator import Paginator
+
+class FastPaginator(Paginator):
+    def __init__(self, object_list, per_page, orphans=0, allow_empty_first_page=True):
+        super().__init__(object_list, per_page, orphans, allow_empty_first_page)
+        self._count_override = None
+
+    def page(self, number):
+        number = self.validate_number(number)
+        if number == 1:
+            peek_size = self.per_page + 1
+            items = list(self.object_list[:peek_size])
+            if len(items) <= self.per_page:
+                self._count_override = len(items)
+                return self._get_page(items, number, self)
+            else:
+                self._count_override = None
+                return self._get_page(items[:self.per_page], number, self)
+        return super().page(number)
+
+    @property
+    def count(self):
+        if self._count_override is not None:
+            return self._count_override
+        return super().count
+
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 25
     page_size_query_param = "page_size"
     max_page_size = 100
+    django_paginator_class = FastPaginator
 from apps.crm.services import (
     add_note,
     assign_lead,
@@ -181,12 +208,9 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        from django.db.models import Count
-        
-        queryset = Lead.objects.select_related("created_by", "assigned_to").annotate(
-            follow_up_count=Count("follow_ups", distinct=True),
-            note_count=Count("notes", distinct=True),
-        )
+        queryset = Lead.objects.select_related("created_by", "assigned_to", "rfp_enquiry")
+        if self.action in ("retrieve", "update", "partial_update"):
+            queryset = queryset.prefetch_related("follow_ups", "notes")
 
         role = getattr(getattr(user, "profile", None), "role", None)
         role_lower = str(role or "").lower()

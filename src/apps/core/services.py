@@ -1,6 +1,7 @@
+import logging
+import threading
 from django.conf import settings
 from django.core.mail import send_mail
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -8,25 +9,7 @@ logger = logging.getLogger(__name__)
 PUBLIC_FORM_SOURCES = {"rfp_form", "contact_form", "request_quote", "estimator", "website_form"}
 
 
-def send_email(
-    subject: str,
-    message: str,
-    recipient_list: list,
-    from_email: str = None,
-    fail_silently: bool = False,
-):
-    """
-    Send a plain text email.
-
-    Args:
-        subject: Email subject line
-        message: Plain text message body
-        recipient_list: List of recipient email addresses
-        from_email: Sender email (defaults to DEFAULT_FROM_EMAIL)
-        fail_silently: If True, suppress exceptions
-    """
-    from_email = from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@aurexion.com')
-
+def _send_email_task(subject, message, recipient_list, from_email, fail_silently):
     try:
         send_mail(
             subject=subject,
@@ -35,11 +18,35 @@ def send_email(
             recipient_list=recipient_list,
             fail_silently=fail_silently,
         )
-        logger.info(f"Email sent to {recipient_list}: {subject}")
+        logger.info(f"Email sent successfully to {recipient_list}: {subject}")
     except Exception:
         logger.exception(f"Failed to send email to {recipient_list}")
         if not fail_silently:
             raise
+
+
+def send_email(
+    subject: str,
+    message: str,
+    recipient_list: list,
+    from_email: str = None,
+    fail_silently: bool = True,
+    async_send: bool = True,
+):
+    """
+    Send an email asynchronously in a background thread to prevent blocking HTTP requests.
+    """
+    from_email = from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@aurexion.com')
+
+    if async_send:
+        thread = threading.Thread(
+            target=_send_email_task,
+            args=(subject, message, recipient_list, from_email, fail_silently),
+            daemon=True
+        )
+        thread.start()
+    else:
+        _send_email_task(subject, message, recipient_list, from_email, fail_silently)
 
 
 # ---------------------------------------------------------------------------

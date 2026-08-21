@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "wouter";
-import { Briefcase, CheckCircle2, Clock, FolderLock, LifeBuoy, MessageSquareCode, Plus, UserCircle, RefreshCw, Bell, Flag, Calendar } from "lucide-react";
+import { Briefcase, CheckCircle2, Clock, FolderLock, LifeBuoy, Lock, MessageSquareCode, Plus, UserCircle, RefreshCw, Bell, Flag, Calendar } from "lucide-react";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
@@ -104,6 +104,12 @@ export const Dashboard: React.FC = () => {
               <RefreshCw size={14} style={{ marginRight: "0.35rem" }} />
               Refresh
             </Button>
+            <Link href="/portal/profile">
+              <Button variant="outline" size="sm">
+                <Lock size={14} style={{ marginRight: "0.35rem" }} />
+                Change Password
+              </Button>
+            </Link>
             <Link href="/portal/requests">
               <Button variant="outline" size="sm">
                 <Calendar size={14} style={{ marginRight: "0.35rem" }} />
@@ -141,7 +147,7 @@ export const Dashboard: React.FC = () => {
                   <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#f8fafc", fontWeight: 600 }}>Active Engagements</h3>
                 </div>
                 <Link href="/portal/projects">
-                  <span style={{ fontSize: "0.8rem", color: "#63f5e8", cursor: "pointer" }}>View Project Tracker</span>
+                  <span style={{ fontSize: "0.8rem", color:"#63f5e8", cursor: "pointer" }}>View Project Tracker</span>
                 </Link>
               </div>
 
@@ -202,7 +208,7 @@ export const Dashboard: React.FC = () => {
                   <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#f8fafc", fontWeight: 600 }}>Project Milestones</h3>
                 </div>
                 <Link href="/portal/projects">
-                  <span style={{ fontSize: "0.8rem", color: "#c4b5fd", cursor: "pointer" }}>View Timeline</span>
+                  <span style={{ fontSize: "0.8rem", color:"#c4b5fd", cursor: "pointer" }}>View Timeline</span>
                 </Link>
               </div>
 
@@ -247,7 +253,7 @@ export const Dashboard: React.FC = () => {
                   <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#f8fafc", fontWeight: 600 }}>Recent Technical Tickets</h3>
                 </div>
                 <Link href="/portal/support/tickets">
-                  <span style={{ fontSize: "0.8rem", color: "#38bdf8", cursor: "pointer" }}>View all</span>
+                  <span style={{ fontSize: "0.8rem", color:"#38bdf8", cursor: "pointer" }}>View all</span>
                 </Link>
               </div>
 

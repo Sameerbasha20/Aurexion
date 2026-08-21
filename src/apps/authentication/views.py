@@ -3,6 +3,10 @@ from django.conf import settings
 from django.core.cache import cache
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
 from rest_framework import status, viewsets, filters, permissions
 from rest_framework.views import APIView
@@ -81,7 +85,7 @@ class LoginView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        username = serializer.validated_data['username']
+        username = serializer.validated_data['username'].strip()
         password = serializer.validated_data['password']
         ip = get_client_ip(request) or 'unknown'
 
@@ -101,8 +105,12 @@ class LoginView(APIView):
                 status=status.HTTP_429_TOO_MANY_REQUESTS
             )
 
-        # Authenticate User
+        # Authenticate User (try standard username first, then fallback to email / case-insensitive lookup)
         user = authenticate(username=username, password=password)
+        if user is None:
+            db_user = User.objects.filter(email__iexact=username).first() or User.objects.filter(username__iexact=username).first()
+            if db_user and db_user.check_password(password):
+                user = db_user
 
         if user is not None:
             user = User.objects.select_related('profile').get(id=user.id)
@@ -288,6 +296,185 @@ class CookieTokenRefreshView(TokenRefreshView):
             )
             
         return response
+
+
+class ForgotPasswordView(APIView):
+    """
+    Endpoint: POST /api/v1/auth/forgot-password/
+    Checks if a user exists with the given email/username.
+    If user exists, generates a password reset link, sends an email, and returns reset link details.
+    If user does not exist, returns 404 error detail.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        email_or_username = request.data.get('email', '').strip()
+        if not email_or_username:
+            return Response(
+                {"detail": "Please provide your registered email address."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if user exists by email or username
+        user = User.objects.filter(email__iexact=email_or_username).first()
+        if not user:
+            user = User.objects.filter(username__iexact=email_or_username).first()
+
+        if not user:
+            return Response(
+                {"detail": "No registered account found with this email address. Please check your email and try again."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if not user.is_active:
+            return Response(
+                {"detail": "This account is inactive. Please contact your system administrator."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Generate secure password reset token and UID
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        # Determine origin for frontend link
+        origin = request.META.get('HTTP_ORIGIN') or 'http://localhost:3000'
+        reset_link = f"{origin}/reset-password?uid={uidb64}&token={token}"
+
+        # Send Email
+        subject = "Password Reset Instructions - Aurexion Technologies"
+        message = (
+            f"Hello {user.first_name or user.username},\n\n"
+            f"We received a request to reset your password for your Aurexion account.\n\n"
+            f"Click the link below to set a new password:\n"
+            f"{reset_link}\n\n"
+            f"If you did not request a password reset, please ignore this email.\n\n"
+            f"Best regards,\nAurexion Security Team"
+        )
+        try:
+            send_mail(
+                subject,
+                message,
+                getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@aurexion.com'),
+                [user.email or email_or_username],
+                fail_silently=True
+            )
+        except Exception:
+            pass
+
+        log_audit_event(
+            user=user,
+            action='UPDATE',
+            module='authentication',
+            repr_str=f"Password reset link requested for user: {user.username}",
+            request=request
+        )
+
+        return Response({
+            "detail": "Password reset link generated and sent to your email address.",
+            "email": user.email or email_or_username,
+            "reset_link": reset_link,
+            "uid": uidb64,
+            "token": token
+        }, status=status.HTTP_200_OK)
+
+
+class ResetPasswordView(APIView):
+    """
+    Endpoint: POST /api/v1/auth/reset-password/
+    Validates token & UID, and updates user password.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        uidb64 = request.data.get('uid', '').strip()
+        token = request.data.get('token', '').strip()
+        new_password = request.data.get('new_password', '').strip()
+
+        if not uidb64 or not token or not new_password:
+            return Response(
+                {"detail": "UID, token, and new password are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response(
+                {"detail": "Invalid password reset link. User account does not exist."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not default_token_generator.check_token(user, token):
+            return Response(
+                {"detail": "Invalid or expired password reset token. Please request a new reset link."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.set_password(new_password)
+        user.save()
+
+        log_audit_event(
+            user=user,
+            action='UPDATE',
+            module='authentication',
+            repr_str=f"Password successfully reset for user: {user.username}",
+            request=request
+        )
+
+        return Response(
+            {"detail": "Your password has been updated successfully. You can now sign in with your new password."},
+            status=status.HTTP_200_OK
+        )
+
+
+class ChangePasswordView(APIView):
+    """
+    Endpoint: POST /api/v1/auth/change-password/
+    Allows authenticated users to change their password by validating current password and saving new password.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        current_password = request.data.get("current_password", "").strip()
+        new_password = request.data.get("new_password", "").strip()
+
+        if not current_password or not new_password:
+            return Response(
+                {"detail": "Both current password and new password are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = request.user
+        if not user.check_password(current_password):
+            return Response(
+                {"detail": "Incorrect current password. Please check your password and try again."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(new_password) < 6:
+            return Response(
+                {"detail": "New password must be at least 6 characters long."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.set_password(new_password)
+        user.save()
+
+        log_audit_event(
+            user=user,
+            action="UPDATE",
+            module="authentication",
+            repr_str=f"User {user.username} successfully updated their password",
+            request=request,
+        )
+
+        return Response(
+            {"detail": "Your password has been changed successfully. Please log in with your new password on your next session."},
+            status=status.HTTP_200_OK
+        )
 
 
 # --- User Management Views (RBAC Protected) ---

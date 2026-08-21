@@ -82,36 +82,36 @@ class AdminDashboardView(APIView):
     permission_classes = [IsAdministrator]
 
     def get(self, request, *args, **kwargs):
+        from django.core.cache import cache
+        cache_key = "admin_dashboard_metrics"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data, status=status.HTTP_200_OK)
+
         from django.db.models.functions import TruncDate
         from django.db.models import Count, Q
 
-        # 1. User metrics (case-insensitive role matching)
-        total_users = User.objects.count()
-        active_users = User.objects.filter(is_active=True).count()
-        total_clients = User.objects.filter(
-            Q(profile__role__iexact='client_user') | Q(profile__role__iexact='client')
-        ).count()
-        sales_executives = User.objects.filter(
-            Q(profile__role__iexact='sales_executive') | Q(profile__role__iexact='sales')
-        ).count()
-        bdms = User.objects.filter(
-            Q(profile__role__iexact='bdm') | Q(profile__role__iexact='business_development_manager')
-        ).count()
-        administrators = User.objects.filter(
-            Q(profile__role__iexact='administrator') | Q(profile__role__iexact='admin') | Q(profile__role__iexact='super_admin') | Q(is_superuser=True)
-        ).distinct().count()
+        # 1. User metrics (single pass aggregate)
+        user_agg = User.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(is_active=True)),
+            clients=Count('id', filter=Q(profile__role__iexact='client_user') | Q(profile__role__iexact='client')),
+            sales_executives=Count('id', filter=Q(profile__role__iexact='sales_executive') | Q(profile__role__iexact='sales')),
+            bdms=Count('id', filter=Q(profile__role__iexact='bdm') | Q(profile__role__iexact='business_development_manager')),
+            administrators=Count('id', filter=Q(profile__role__iexact='administrator') | Q(profile__role__iexact='admin') | Q(profile__role__iexact='super_admin') | Q(is_superuser=True)),
+        )
 
-        # 2. Lead metrics (case-insensitive status matching)
-        total_leads = Lead.objects.count()
-        active_leads = Lead.objects.filter(status__in=[
-            LeadStatus.NEW, LeadStatus.UNDER_REVIEW, LeadStatus.CONTACTED,
-            LeadStatus.QUALIFIED, LeadStatus.PROPOSAL_SUBMITTED, LeadStatus.NEGOTIATION,
-            "new", "under_review", "contacted", "qualified", "proposal_submitted", "negotiation",
-            "NEW", "UNDER_REVIEW", "CONTACTED", "QUALIFIED", "PROPOSAL_SUBMITTED", "NEGOTIATION"
-        ]).count()
-        won_leads = Lead.objects.filter(status__iexact='won').count()
-        lost_leads = Lead.objects.filter(status__iexact='lost').count()
-        pending_leads = Lead.objects.filter(status__iexact='new').count()
+        # 2. Lead metrics (single pass aggregate)
+        lead_agg = Lead.objects.aggregate(
+            total=Count('id'),
+            active=Count('id', filter=Q(status__in=[
+                LeadStatus.NEW, LeadStatus.UNDER_REVIEW, LeadStatus.CONTACTED,
+                LeadStatus.QUALIFIED, LeadStatus.PROPOSAL_SUBMITTED, LeadStatus.NEGOTIATION,
+            ])),
+            won=Count('id', filter=Q(status=LeadStatus.WON)),
+            lost=Count('id', filter=Q(status=LeadStatus.LOST)),
+            pending=Count('id', filter=Q(status=LeadStatus.NEW)),
+        )
 
         # 3. Support ticket metrics
         try:
@@ -185,19 +185,19 @@ class AdminDashboardView(APIView):
 
         data = {
             'users': {
-                'total': total_users,
-                'active': active_users,
-                'clients': total_clients,
-                'sales_executives': sales_executives,
-                'bdms': bdms,
-                'administrators': administrators,
+                'total': user_agg['total'],
+                'active': user_agg['active'],
+                'clients': user_agg['clients'],
+                'sales_executives': user_agg['sales_executives'],
+                'bdms': user_agg['bdms'],
+                'administrators': user_agg['administrators'],
             },
             'leads': {
-                'total': total_leads,
-                'active': active_leads,
-                'won': won_leads,
-                'lost': lost_leads,
-                'pending': pending_leads,
+                'total': lead_agg['total'],
+                'active': lead_agg['active'],
+                'won': lead_agg['won'],
+                'lost': lead_agg['lost'],
+                'pending': lead_agg['pending'],
             },
             'support': {
                 'open': open_tickets,
@@ -208,6 +208,7 @@ class AdminDashboardView(APIView):
             'recent_activities': recent_activities,
             'recent_leads': recent_leads,
         }
+        cache.set(cache_key, data, timeout=15)
         return Response(data, status=status.HTTP_200_OK)
 
 

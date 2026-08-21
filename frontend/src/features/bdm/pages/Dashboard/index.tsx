@@ -980,7 +980,7 @@ export const Dashboard: React.FC = () => {
                   </Button>
                 </>
               )}
-              <Button
+              {/* <Button
                 variant="outline"
                 onClick={() => {
                   window.open(`/crm/leads/${selectedLeadDetail.id}`, '_blank');
@@ -989,7 +989,7 @@ export const Dashboard: React.FC = () => {
                 style={{ fontSize: "0.82rem" }}
               >
                 <ArrowUpRight size={14} style={{ marginRight: "0.35rem" }} /> Open Full Workspace
-              </Button>
+              </Button> */}
             </div>
           </Card>
         </div>

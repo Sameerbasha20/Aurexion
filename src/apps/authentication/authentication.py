@@ -63,3 +63,24 @@ class CookieJWTAuthentication(JWTAuthentication):
         reason = check.process_view(request, None, (), {})
         if reason:
             raise exceptions.PermissionDenied(f"CSRF Failed: {reason}")
+
+    def get_user(self, validated_token):
+        from rest_framework_simplejwt.settings import api_settings
+        from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidToken
+
+        try:
+            user_id = validated_token[api_settings.USER_ID_CLAIM]
+        except KeyError:
+            raise InvalidToken("Token contained no recognizable user identification")
+
+        try:
+            user = self.user_model.objects.select_related('profile').get(
+                **{api_settings.USER_ID_FIELD: user_id}
+            )
+        except self.user_model.DoesNotExist:
+            raise AuthenticationFailed("User not found", code="user_not_found")
+
+        if not user.is_active:
+            raise AuthenticationFailed("User is inactive", code="user_inactive")
+
+        return user
