@@ -9,7 +9,7 @@ import { Label } from "../../../../components/ui/label";
 import { EmptyState, ErrorState, LoadingState } from "../../../portal/components/StateViews";
 import { TicketCategoryBadge, TicketPriorityBadge, TicketStatusBadge } from "../../../portal/components/TicketMeta";
 import { formatDateTime } from "../../../portal/utils/format";
-import type { TicketCategory, TicketPriority, TicketStatus } from "../../../portal/types/portal.types";
+import type { ExecutiveTicketUpdateInput, TicketCategory, TicketPriority, TicketStatus } from "../../../portal/types/portal.types";
 import useExecutiveTickets from "../../hooks/useExecutiveTickets";
 import useUpdateExecutiveTicket from "../../hooks/useUpdateExecutiveTicket";
 
@@ -66,10 +66,15 @@ export const TicketList: React.FC = () => {
 
   const handleQuickStatus = async (id: number, nextStatus: TicketStatus) => {
     try {
-      await updateTicket.update(id, { status: nextStatus });
-      tickets.refetch();
-    } catch {
-      // Handled in updateTicket.error
+      const ticket = tickets.data?.find((t) => t.id === id);
+      const payload: ExecutiveTicketUpdateInput = { status: nextStatus };
+      if (nextStatus === "closed") {
+        payload.resolution_notes = (ticket as any)?.resolution_notes || "Resolved and closed";
+      }
+      await updateTicket.update(id, payload);
+      await tickets.refetch();
+    } catch (err) {
+      console.error("Failed to update ticket status:", err);
     }
   };
 
