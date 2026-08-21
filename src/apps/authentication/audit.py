@@ -25,14 +25,34 @@ def get_client_user_agent(request):
         return None
     return request.META.get('HTTP_USER_AGENT', '')
 
+import threading
+
+def _save_audit_log_task(db_user_id, action, module, object_id, repr_str, clean_prev, clean_updated, resolved_ip, resolved_ua):
+    try:
+        from django.contrib.auth.models import User
+        db_user = User.objects.filter(id=db_user_id).first() if db_user_id else None
+        AuditLog.objects.create(
+            user=db_user,
+            action=action,
+            module=module,
+            object_id=str(object_id) if object_id is not None else None,
+            repr=repr_str,
+            previous_state=clean_prev,
+            updated_state=clean_updated,
+            ip_address=resolved_ip,
+            user_agent=resolved_ua
+        )
+    except Exception as exc:
+        logger.debug("Background audit log creation failed: %s", exc)
+
 def log_audit_event(user, action, module, object_id=None, repr_str=None, previous_state=None, updated_state=None, request=None, ip_address=None, user_agent=None):
     """
-    Create and save an AuditLog record.
+    Create and save an AuditLog record asynchronously in a daemon thread.
     If 'request' is provided, automatically extract IP address and User Agent.
     """
-    db_user = None
-    if user and not isinstance(user, AnonymousUser):
-        db_user = user
+    db_user_id = None
+    if user and not isinstance(user, AnonymousUser) and hasattr(user, 'id'):
+        db_user_id = user.id
 
     # Resolve IP and User Agent
     resolved_ip = ip_address
@@ -48,18 +68,14 @@ def log_audit_event(user, action, module, object_id=None, repr_str=None, previou
     clean_prev = previous_state if isinstance(previous_state, dict) else None
     clean_updated = updated_state if isinstance(updated_state, dict) else None
 
-    # Save record
-    return AuditLog.objects.create(
-        user=db_user,
-        action=action,
-        module=module,
-        object_id=str(object_id) if object_id is not None else None,
-        repr=repr_str,
-        previous_state=clean_prev,
-        updated_state=clean_updated,
-        ip_address=resolved_ip,
-        user_agent=resolved_ua
+    # Dispatch to background thread to avoid blocking HTTP request cycle
+    t = threading.Thread(
+        target=_save_audit_log_task,
+        args=(db_user_id, action, module, object_id, repr_str, clean_prev, clean_updated, resolved_ip, resolved_ua),
+        daemon=True
     )
+    t.start()
+    return None
 
 def get_model_state(instance):
     """

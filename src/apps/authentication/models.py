@@ -47,6 +47,18 @@ class AuditLog(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+        indexes = [
+            # Covers ORDER BY timestamp DESC queries (AuditLog list, dashboard recent
+            # activities). Eliminates sequential scan as the table grows.
+            models.Index(fields=['-timestamp'], name='auditlog_timestamp_idx'),
+            # Covers WHERE module='crm' ORDER BY timestamp DESC queries
+            # (BDM dashboard, CRM activity feeds). Composite index satisfies
+            # both the filter and the sort in one index scan.
+            models.Index(fields=['module', '-timestamp'], name='auditlog_module_timestamp_idx'),
+            # Covers WHERE module='crm' AND object_id=X ORDER BY timestamp DESC
+            # (Lead activity history). Eliminates full table scan on LeadViewSet.activities.
+            models.Index(fields=['module', 'object_id', '-timestamp'], name='auditlog_mod_obj_ts_idx'),
+        ]
 
     def __str__(self):
         return f"{self.user} - {self.action} on {self.module} ({self.timestamp})"

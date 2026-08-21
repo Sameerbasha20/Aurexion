@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from rest_framework import permissions
 from apps.administration.models import Role, ModulePermission
 
@@ -13,33 +14,65 @@ def has_module_permission(user, module, action):
     if role_code == 'super_admin':
         return True
         
+    cache_key = f"rbac:{role_code}:{module}:{action}"
+    cached_result = cache.get(cache_key)
+    if cached_result is not None:
+        return cached_result
+
     try:
         role = Role.objects.get(code=role_code)
         perm = ModulePermission.objects.get(role=role, module=module)
         if action == 'create':
-            return perm.can_create
+            result = perm.can_create
         elif action == 'read':
-            return perm.can_read
+            result = perm.can_read
         elif action == 'update':
-            return perm.can_update
+            result = perm.can_update
         elif action == 'delete':
-            return perm.can_delete
+            result = perm.can_delete
+        else:
+            result = False
+        cache.set(cache_key, result, timeout=300)
+        return result
     except (Role.DoesNotExist, ModulePermission.DoesNotExist):
+        cache.set(cache_key, False, timeout=300)
         return False
-    return False
 
 class BaseRolePermission(permissions.BasePermission):
     """
     Base permission class to check dynamic module/action permissions from the database.
     Super Admins are always allowed.
+
+    RBAC lookup results are cached in Redis for 300 seconds per (role, module, action)
+    tuple to eliminate the 2 DB queries fired on every authenticated non-super-admin
+    request. Cache is keyed by role code so that different roles never share entries.
+    Permission changes take effect within 300 seconds without any explicit invalidation.
     """
     allowed_roles = []
+
+    # Cache TTL in seconds.  Roles and ModulePermissions are near-static; 5 minutes
+    # balances freshness with the elimination of 2 DB round-trips per request.
+    _RBAC_CACHE_TTL = 300
+
+    def _get_cached_permission(self, role_code, module, action):
+        """
+        Return the cached boolean permission for (role_code, module, action), or
+        None if the entry is not in the cache.
+        Cache key format: "rbac:{role_code}:{module}:{action}"
+        """
+        cache_key = f"rbac:{role_code}:{module}:{action}"
+        return cache.get(cache_key)
+
+    def _set_cached_permission(self, role_code, module, action, result):
+        """Store a boolean permission result in the cache."""
+        cache_key = f"rbac:{role_code}:{module}:{action}"
+        cache.set(cache_key, result, timeout=self._RBAC_CACHE_TTL)
 
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
             return False
             
-        # Super Admin bypasses all checks
+        # Super Admin bypasses all checks — never cached, always fast
         if request.user.is_superuser or (hasattr(request.user, 'profile') and request.user.profile.role == 'super_admin'):
             return True
 
@@ -63,20 +96,33 @@ class BaseRolePermission(permissions.BasePermission):
         action = action_map.get(request.method, 'read')
 
         role_code = request.user.profile.role if hasattr(request.user, 'profile') else 'client_user'
+
+        # --- Cache lookup: avoids 2 DB queries on every non-super-admin request ---
+        cached_result = self._get_cached_permission(role_code, module, action)
+        if cached_result is not None:
+            return cached_result
+
+        # --- DB lookup (cache miss) ---
         try:
             role = Role.objects.get(code=role_code)
             perm = ModulePermission.objects.get(role=role, module=module)
             if action == 'create':
-                return perm.can_create
+                result = perm.can_create
             elif action == 'read':
-                return perm.can_read
+                result = perm.can_read
             elif action == 'update':
-                return perm.can_update
+                result = perm.can_update
             elif action == 'delete':
-                return perm.can_delete
+                result = perm.can_delete
+            else:
+                result = False
+            self._set_cached_permission(role_code, module, action, result)
+            return result
         except (Role.DoesNotExist, ModulePermission.DoesNotExist):
             # Fallback to the original hardcoded allowed_roles check
             if hasattr(request.user, 'profile') and request.user.profile.role in self.allowed_roles:
+                # Cache the positive fallback result so we don't re-check DB on next request
+                self._set_cached_permission(role_code, module, action, True)
                 return True
         return False
 
