@@ -88,6 +88,7 @@ class Lead(models.Model):
     source = models.CharField(
         max_length=100,
         blank=True,
+        db_index=True,
     )
 
     description = models.TextField(
@@ -197,6 +198,22 @@ class Lead(models.Model):
             models.Index(
                 fields=["next_follow_up_at"],
                 name="crm_lead_next_followup_idx",
+            ),
+            models.Index(
+                fields=["source"],
+                name="crm_lead_source_idx",
+            ),
+            models.Index(
+                fields=["assigned_to", "status"],
+                name="crm_lead_assign_stat_idx",
+            ),
+            models.Index(
+                fields=["source", "status"],
+                name="crm_lead_src_stat_idx",
+            ),
+            models.Index(
+                fields=["status", "client_onboarded"],
+                name="crm_lead_onboard_idx",
             ),
         ]
 

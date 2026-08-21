@@ -527,6 +527,21 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    def list(self, request, *args, **kwargs):
+        from django.core.cache import cache
+        role = request.query_params.get('role')
+        if role and not request.query_params.get('search'):
+            cache_key = f"users_role_{role.lower()}"
+            cached_data = cache.get(cache_key)
+            if cached_data is not None:
+                return Response(cached_data)
+
+            response = super().list(request, *args, **kwargs)
+            if response.status_code == 200:
+                cache.set(cache_key, response.data, timeout=300)
+            return response
+        return super().list(request, *args, **kwargs)
+
 
     def perform_create(self, serializer):
         role = self.request.data.get('role', 'client_user')

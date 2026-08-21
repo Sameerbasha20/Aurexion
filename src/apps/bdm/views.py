@@ -185,5 +185,5 @@ class BdmDashboardView(APIView):
             ],
         }
 
-        cache.set(cache_key, response_data, timeout=15)
+        cache.set(cache_key, response_data, timeout=120)
         return Response(response_data)
