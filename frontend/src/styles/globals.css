@@ -3378,6 +3378,9 @@ h3 em {
   padding: 0.35rem 0.75rem;
   font: 500 0.65rem 'IBM Plex Mono', monospace;
   letter-spacing: 0.08em;
+  user-select: none;
+  cursor: default;
+  pointer-events: none;
 }
 
 .subpage-hero-ctas {
