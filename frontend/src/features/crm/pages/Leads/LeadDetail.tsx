@@ -183,10 +183,10 @@ export const LeadDetail: React.FC = () => {
 
   const handleStageTransition = async (targetStatus: string) => {
     try {
-      await transitionStatus(targetStatus);
-      showFeedback("success", `Lead stage updated to ${targetStatus.replace(/_/g, " ")}.`);
+      await transitionMutation.mutateAsync(targetStatus);
+      toast.success(`Lead stage updated to ${targetStatus.replace(/_/g, " ")}.`);
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to transition lead status.");
+      toast.error(err?.message || "Failed to transition lead status.");
     }
   };
 

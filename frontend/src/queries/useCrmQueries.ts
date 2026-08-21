@@ -116,13 +116,15 @@ export function useUpdateLeadMutation(leadId: number) {
 /**
  * Mutation: Transition Lead Status with targeted cache invalidation
  */
-export function useTransitionLeadMutation(leadId: number) {
+export function useTransitionLeadMutation(leadId: number | null) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (status: string) => crmService.transitionLead(leadId, status),
+    mutationFn: (status: string) => crmService.transitionLead(leadId!, status),
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.leads.detail(leadId) });
+      if (leadId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.leads.detail(leadId) });
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.leads.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.leads.metrics() });
       queryClient.invalidateQueries({ queryKey: queryKeys.bdm.dashboard() });
@@ -255,12 +257,15 @@ export function useAllFollowUpsQuery() {
   });
 }
 
-export function useQualifyLeadMutation() {
+export function useQualifyLeadMutation(leadId?: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (leadId: number) => crmService.qualifyLead(leadId),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.leads.detail(variables) });
+    mutationFn: (overrideId?: number) => crmService.qualifyLead((overrideId ?? leadId)!),
+    onSuccess: (data: any, variables: any) => {
+      const targetId = variables ?? leadId;
+      if (targetId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.leads.detail(targetId) });
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.leads.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.leads.metrics() });
       queryClient.invalidateQueries({ queryKey: queryKeys.bdm.dashboard() });
