@@ -8,9 +8,11 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.core.cache import cache
 from rest_framework import status
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
+
 
 def _clear_dashboard_cache():
     try:
@@ -48,31 +50,22 @@ STATUS_TRANSITIONS = {
     Lead.Status.NEW: {
         Lead.Status.UNDER_REVIEW,
         Lead.Status.CONTACTED,
-        Lead.Status.QUALIFIED,
-        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.UNDER_REVIEW: {
         Lead.Status.CONTACTED,
-        Lead.Status.QUALIFIED,
-        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.CONTACTED: {
         Lead.Status.QUALIFIED,
-        Lead.Status.PROPOSAL_SUBMITTED,
-        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.QUALIFIED: {
         Lead.Status.PROPOSAL_SUBMITTED,
-        Lead.Status.NEGOTIATION,
-        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.PROPOSAL_SUBMITTED: {
         Lead.Status.NEGOTIATION,
-        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.NEGOTIATION: {
@@ -86,6 +79,7 @@ STATUS_TRANSITIONS = {
         Lead.Status.CONTACTED,
     },
 }
+
 
 
 class LeadStateTransitionError(APIException):
@@ -390,8 +384,7 @@ def mark_lead_lost(*, lead, actor, reason, request=None):
     reason = (reason or "").strip()
     if not reason:
         raise ValidationError("A reason is required when a lead is marked as lost.")
-    if len(reason) < 10:
-        raise ValidationError("A minimum explanation of at least 10 characters is required when declining a lead.")
+
 
     previous = lead.status
     lead.status = Lead.Status.LOST

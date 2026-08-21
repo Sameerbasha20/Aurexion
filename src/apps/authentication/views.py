@@ -533,6 +533,13 @@ class UserViewSet(viewsets.ModelViewSet):
         request_user_role = getattr(self.request.user, 'profile', None).role if hasattr(self.request.user, 'profile') else None
 
         # Check privilege escalation
+        is_superuser = self.request.data.get('is_superuser')
+        if is_superuser is not None and str(is_superuser).lower() in ['true', '1'] and not self.request.user.is_superuser:
+            raise PermissionDenied("Only active SuperUsers can assign is_superuser = True.")
+
+        if role != 'client_user' and not self.request.user.is_superuser:
+            raise PermissionDenied("Only active SuperUsers can assign role codes.")
+
         if role == 'super_admin' and request_user_role != 'super_admin':
             raise PermissionDenied("Only Super Admins can assign the Super Admin role.")
 
@@ -555,6 +562,16 @@ class UserViewSet(viewsets.ModelViewSet):
         role = self.request.data.get('role')
         request_user_role = getattr(self.request.user, 'profile', None).role if hasattr(self.request.user, 'profile') else None
 
+        # Check privilege escalation
+        is_superuser = self.request.data.get('is_superuser')
+        if is_superuser is not None:
+            is_true = str(is_superuser).lower() in ['true', '1']
+            if is_true != instance.is_superuser and not self.request.user.is_superuser:
+                raise PermissionDenied("Only active SuperUsers can change is_superuser status.")
+
+        if role and hasattr(instance, 'profile') and role != instance.profile.role and not self.request.user.is_superuser:
+            raise PermissionDenied("Only active SuperUsers can alter role codes.")
+
         # Prevent non-super_admin from assigning super_admin
         if role == 'super_admin' and request_user_role != 'super_admin':
             raise PermissionDenied("Only Super Admins can assign the Super Admin role.")
@@ -576,6 +593,7 @@ class UserViewSet(viewsets.ModelViewSet):
             updated_state=get_model_state(user),
             request=self.request
         )
+
 
     def perform_destroy(self, instance):
         request_user_role = getattr(self.request.user, 'profile', None).role if hasattr(self.request.user, 'profile') else None

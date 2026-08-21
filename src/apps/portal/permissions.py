@@ -29,7 +29,10 @@ class IsSupportTicketAssignee(IsSupportExecutive):
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser:
             return True
-        return obj.assigned_to_id == request.user.id or obj.assigned_to_id is None
+        if request.method in permissions.SAFE_METHODS:
+            return obj.assigned_to_id == request.user.id or obj.assigned_to_id is None
+        return obj.assigned_to_id == request.user.id
+
 
 
 class IsTicketAccessible(permissions.BasePermission):
@@ -83,5 +86,7 @@ class IsTicketAccessible(permissions.BasePermission):
         if role == 'client_user':
             return obj.client_user_id == request.user.id
         if role == 'support_executive':
-            return obj.assigned_to_id == request.user.id or obj.assigned_to_id is None
+            if request.method in permissions.SAFE_METHODS:
+                return obj.assigned_to_id == request.user.id or obj.assigned_to_id is None
+            return obj.assigned_to_id == request.user.id
         return True

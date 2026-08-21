@@ -11,7 +11,20 @@ const VALUE_ICONS: Record<string, React.ElementType> = {
   "06": Users,
 };
 
-export const ValuesSection: React.FC = () => {
+interface ValuesSectionProps {
+  data?: {
+    title?: string;
+    items?: Array<{
+      id: string;
+      title: string;
+    }>;
+  };
+}
+
+export const ValuesSection: React.FC<ValuesSectionProps> = ({ data }) => {
+  const title = data?.title || aboutData.values.title;
+  const items = data?.items || aboutData.values.items;
+
   return (
     <section className="py-24 bg-[#050B14] border-t border-border/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +36,7 @@ export const ValuesSection: React.FC = () => {
             </span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-4">
-            {aboutData.values.title}
+            {title}
           </h2>
           <p className="text-base md:text-lg text-gray-400 leading-relaxed">
             The core architectural and ethical tenets guiding every client engagement and engineering decision.
@@ -31,7 +44,7 @@ export const ValuesSection: React.FC = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {aboutData.values.items.map((value: any, index: number) => {
+          {items && items.map((value: any, index: number) => {
             const Icon = VALUE_ICONS[value.id] || Code;
             return (
               <div
@@ -61,5 +74,6 @@ export const ValuesSection: React.FC = () => {
     </section>
   );
 };
+
 
 export default ValuesSection;

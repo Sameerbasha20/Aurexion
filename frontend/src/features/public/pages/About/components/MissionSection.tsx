@@ -1,20 +1,38 @@
 import React from "react";
 import { aboutData } from "../../../../../data/about";
+import { getIconComponent } from "./IconResolver";
 
-export const MissionSection: React.FC = () => {
+
+interface MissionSectionProps {
+  data?: {
+    title?: string;
+    description?: string;
+    pillars?: Array<{
+      title: string;
+      description: string;
+      icon: any;
+    }>;
+  };
+}
+
+export const MissionSection: React.FC<MissionSectionProps> = ({ data }) => {
+  const title = data?.title || aboutData.mission.title;
+  const description = data?.description || aboutData.mission.description;
+  const pillars = data?.pillars || aboutData.mission.pillars;
+
   return (
     <section className="py-24 bg-[#050B14]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mb-16">
-          <h2 className="text-4xl font-bold text-white mb-6">{aboutData.mission.title}</h2>
+          <h2 className="text-4xl font-bold text-white mb-6">{title}</h2>
           <p className="text-xl text-gray-400 leading-relaxed">
-            {aboutData.mission.description}
+            {description}
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {aboutData.mission.pillars.map((pillar: any, index: number) => {
-            const Icon = pillar.icon;
+          {pillars && pillars.map((pillar: any, index: number) => {
+            const Icon = getIconComponent(pillar.icon);
             return (
               <div 
                 key={index} 
@@ -33,3 +51,4 @@ export const MissionSection: React.FC = () => {
     </section>
   );
 };
+

@@ -67,8 +67,11 @@ export const API_ENDPOINTS = {
     PUBLIC_INDUSTRY_DETAIL: (slug: string) => `/cms/public/industry/${slug}/`,
     PUBLIC_CASE_STUDIES: "/cms/public/case-studies/",
     PUBLIC_BLOG: "/cms/public/blog/",
+    PUBLIC_COMPANY_INFO: "/cms/public/company-info/",
+    ADMIN_COMPANY_INFO: "/cms/admin/company-info/",
   },
-  BDM: {
+
+  BDM: 
     DASHBOARD: "/bdm/dashboard/",
   },
 };

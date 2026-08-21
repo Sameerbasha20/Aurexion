@@ -8,12 +8,14 @@ from django.utils import timezone
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from apps.cms.models import Service, CaseStudy, Industry, Category, BlogPost
+from apps.cms.models import Service, CaseStudy, Industry, Category, BlogPost, CompanyInformation
 from apps.cms.serializers import (
     ServiceSerializer, CaseStudySerializer, IndustrySerializer, 
-    IndustryPublicSerializer, CategorySerializer, BlogPostSerializer
+    IndustryPublicSerializer, CategorySerializer, BlogPostSerializer,
+    CompanyInformationSerializer
 )
 from apps.administration.permissions import IsContentManager
+
 
 # --- Admin/Staff CMS ViewSets (CRUD) ---
 
@@ -215,5 +217,37 @@ class MediaUploadView(APIView):
         file_url = request.build_absolute_uri(settings.MEDIA_URL + 'uploads/' + filename)
         
         return Response({'url': file_url}, status=status.HTTP_200_OK)
+
+
+class AdminCompanyInformationViewSet(viewsets.ModelViewSet):
+    queryset = CompanyInformation.objects.all().order_by('-created_at')
+    serializer_class = CompanyInformationSerializer
+    permission_classes = [IsContentManager]
+    lookup_field = 'slug'
+
+
+@extend_schema_view(
+    get=extend_schema(tags=['CMS (Public)'], auth=[])
+)
+class PublicCompanyInformationView(generics.RetrieveAPIView):
+    """
+    Public API: GET /api/v1/cms/public/company-info/
+    Returns the dynamic published company information.
+    """
+    serializer_class = CompanyInformationSerializer
+    permission_classes = [AllowAny]
+
+    def get_object(self):
+        obj = CompanyInformation.objects.filter(status='published').first()
+        if not obj:
+            obj = CompanyInformation.objects.first()
+        if not obj:
+            obj = CompanyInformation.objects.create(
+                title="Aurexion Technologies", 
+                slug="aurexion", 
+                status="published",
+                hero={"title": "ENGINEERING WHAT COMES NEXT.", "subtitle": "AI. Software. Cloud. Data. Engineered for the enterprise.", "eyebrow": "DIGITAL INTELLIGENCE"}
+            )
+        return obj
 
 

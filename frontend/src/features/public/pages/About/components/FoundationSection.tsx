@@ -1,7 +1,20 @@
 import React from "react";
 import { aboutData } from "../../../../../data/about";
 
-export const FoundationSection: React.FC = () => {
+interface FoundationSectionProps {
+  data?: {
+    title?: string;
+    milestones?: Array<{
+      title: string;
+      description: string;
+    }>;
+  };
+}
+
+export const FoundationSection: React.FC<FoundationSectionProps> = ({ data }) => {
+  const title = data?.title || aboutData.foundation.title;
+  const milestones = data?.milestones || aboutData.foundation.milestones;
+
   return (
     <section className="py-24 bg-[#080d16] border-t border-border/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,12 +27,13 @@ export const FoundationSection: React.FC = () => {
             </span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-4">
-            {aboutData.foundation.title}
+            {title}
           </h2>
           <p className="text-base md:text-lg text-gray-400 leading-relaxed">
             A sustained trajectory of software engineering rigor, systems architecture, and digital transformation.
           </p>
         </div>
+
 
         {/* Enterprise Timeline */}
         <div className="relative max-w-5xl mx-auto">
@@ -27,7 +41,8 @@ export const FoundationSection: React.FC = () => {
           <div className="absolute top-3 bottom-3 left-4 md:left-1/2 w-[1px] bg-[#223244] transform md:-translate-x-1/2" />
 
           <div className="space-y-12">
-            {aboutData.foundation.milestones.map((milestone: any, index: number) => (
+            {milestones && milestones.map((milestone: any, index: number) => (
+
               <div
                 key={index}
                 className={`relative flex flex-col md:flex-row gap-8 ${

@@ -25,7 +25,17 @@ const GOVERNANCE_DETAILS: Record<string, { icon: React.ElementType; desc: string
   },
 };
 
-export const GovernanceSection: React.FC = () => {
+interface GovernanceSectionProps {
+  data?: {
+    title?: string;
+    nodes?: string[];
+  };
+}
+
+export const GovernanceSection: React.FC<GovernanceSectionProps> = ({ data }) => {
+  const title = data?.title || aboutData.governance.title;
+  const nodes = data?.nodes || aboutData.governance.nodes;
+
   return (
     <section className="py-20 bg-[#060c16] border-t border-border/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,7 +47,7 @@ export const GovernanceSection: React.FC = () => {
             </span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-4">
-            {aboutData.governance.title}
+            {title}
           </h2>
           <p className="text-base md:text-lg text-gray-400 leading-relaxed">
             Aurexion operates under strict institutional standards, ensuring every software release adheres to global compliance, auditability, and zero-trust security.
@@ -45,7 +55,7 @@ export const GovernanceSection: React.FC = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
-          {aboutData.governance.nodes.map((node: string, index: number) => {
+          {nodes && nodes.map((node: string, index: number) => {
             const detail = GOVERNANCE_DETAILS[node] || {
               icon: ShieldCheck,
               desc: "Adhering to strict enterprise governance standards.",
@@ -81,5 +91,6 @@ export const GovernanceSection: React.FC = () => {
     </section>
   );
 };
+
 
 export default GovernanceSection;
