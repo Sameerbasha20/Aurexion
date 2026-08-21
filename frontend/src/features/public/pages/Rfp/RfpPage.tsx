@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { publicService } from "../../services/publicService";
 import { CheckCircle2, Loader2, AlertCircle, Upload } from "lucide-react";
+import { SEO } from "../../../../components/seo/SEO";
 
 const COUNTRIES = [
   "United States", "United Kingdom", "India", "Canada", "Australia", "Germany",
@@ -103,6 +104,11 @@ export const RfpPage: React.FC = () => {
 
   return (
     <div style={{ background: "#050811", minHeight: "100vh", paddingTop: "6rem", paddingBottom: "6rem" }}>
+      <SEO
+        title="Submit a Formal RFP | Aurexion Technologies"
+        description="Submit your enterprise project requirements securely for technical scope evaluation, architecture review, and formal commercial proposal."
+        canonical="/rfp"
+      />
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 max(4vw, 1.5rem)" }}>
 
         {/* Header */}

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "wouter";
 import { ArrowUpRight, LucideIcon } from "lucide-react";
+import { SEO } from "../../../../../components/seo/SEO";
 
 export interface LegalSectionItem {
   id: string;
@@ -17,6 +18,7 @@ export interface LegalPageLayoutProps {
   lastUpdated: string;
   sections: LegalSectionItem[];
   relatedLinks: Array<{ title: string; href: string }>;
+  canonical?: string;
 }
 
 export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
@@ -27,9 +29,15 @@ export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
   lastUpdated,
   sections,
   relatedLinks,
+  canonical,
 }) => {
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title={`${title} | Legal & Compliance`}
+        description={description}
+        canonical={canonical}
+      />
       {/* Hero */}
       <section
         style={{

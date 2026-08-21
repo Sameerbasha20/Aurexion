@@ -58,7 +58,7 @@ export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service 
         slug: dbCase.slug,
         title: dbCase.title || "",
         industry: "Technology",
-        coverImage: dbCase.media || COVER_IMAGES.default,
+        coverImage: dbCase.media || INDUSTRY_IMAGES.default,
         outcome: dbCase.outcomes_performance || "Verified architecture delivered"
       });
     });
@@ -71,24 +71,23 @@ export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service 
         slug: staticCs.slug,
         title: staticCs.title || "",
         industry: staticCs.industry || "Enterprise",
-        coverImage: staticCs.coverImage || COVER_IMAGES.default,
+        coverImage: staticCs.coverImage || INDUSTRY_IMAGES.default,
         outcome: staticCs.results?.[0] ? `${staticCs.results[0].label}: ${staticCs.results[0].impact}` : "Verified architecture delivered"
       });
     }
   });
 
-  const matched = service.relatedCaseStudies.map((csId: string) => {
-    return allCaseStudies.find(
-      cs => cs.id === csId || cs.slug === csId || cs.id.toLowerCase() === csId.toLowerCase()
-    ) ?? null;
+  // Lookup matched case studies by slug
+  const matched = service.relatedCaseStudies.map(slug => {
+    return allCaseStudies.find(cs => cs.slug === slug);
   }).filter(Boolean);
 
   if (matched.length === 0) return null;
 
   return (
-    <section className="py-12 bg-background border-t border-border/10">
+    <section className="py-24 bg-[#050b14] border-t border-border/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-end mb-6">
+        <div className="flex justify-between items-end mb-12">
           <div>
             <p className="text-xs font-mono text-[#63f5e8] tracking-widest uppercase mb-2">
               PROVEN RESULTS
@@ -105,7 +104,7 @@ export const RelatedCaseStudies: React.FC<RelatedCaseStudiesProps> = ({ service 
 
         <div className="grid md:grid-cols-2 gap-8">
           {matched.map((cs, index) => {
-            const coverImg = COVER_IMAGES[cs.industry.toLowerCase().replace(/[\s()\/&]+/g, "-")] || cs.coverImage;
+            const coverImg = INDUSTRY_IMAGES[cs.industry.toLowerCase().replace(/[\s()\/&]+/g, "-")] || cs.coverImage;
             return (
               <Link
                 key={index}

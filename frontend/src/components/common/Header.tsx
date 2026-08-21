@@ -88,15 +88,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
           </button>
         )}
         <Link href={getHomePath()}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
-            <img src="/manus-storage/aurexion-mark_e8f9e729.png" alt="Aurexion" style={{ width: "30px", height: "30px" }} />
-            <span style={{
-              fontFamily: "Space Grotesk, sans-serif",
-              fontWeight: 600,
-              fontSize: "1.15rem",
-              letterSpacing: "0.05em",
-              color: "#f8fafc",
-            }}>AUREXION</span>
+          <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+            <img src="/images/aurexion-logo.webp" alt="Aurexion" style={{ height: "36px", width: "auto", objectFit: "contain" }} />
           </div>
         </Link>
       </div>

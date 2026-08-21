@@ -10,6 +10,9 @@ import { AuthorCard } from "./components/Detail/AuthorCard";
 import { ShareButtons } from "./components/Detail/ShareButtons";
 import { RelatedContent } from "./components/Detail/RelatedContent";
 import { InsightsCTA } from "./components/Hub/InsightsCTA";
+import { SEO } from "../../../../components/seo/SEO";
+import { createArticleSchema } from "../../../../components/seo/structuredData";
+import { getSiteUrl } from "../../../../components/seo/seoConfig";
 
 export const ArticleDetailPage = () => {
   const params = useParams();
@@ -69,69 +72,6 @@ export const ArticleDetailPage = () => {
     window.scrollTo(0, 0);
   }, [slug]);
 
-  // SEO & Schema Mapping (PRD 4.11)
-  useEffect(() => {
-    if (article) {
-      document.title = `${article.meta_title || article.title} | Aurexion Insights`;
-
-      // Meta Description
-      const descText = article.meta_description || article.excerpt || article.content.substring(0, 150);
-      let metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) {
-        metaDesc.setAttribute("content", descText);
-      } else {
-        const meta = document.createElement("meta");
-        meta.name = "description";
-        meta.content = descText;
-        document.head.appendChild(meta);
-      }
-
-      // Meta Keywords
-      const keywordsText = article.meta_keywords || article.tags.join(", ") || "aurexion, insights, engineering";
-      let metaKeywords = document.querySelector('meta[name="keywords"]');
-      if (metaKeywords) {
-        metaKeywords.setAttribute("content", keywordsText);
-      } else {
-        const meta = document.createElement("meta");
-        meta.name = "keywords";
-        meta.content = keywordsText;
-        document.head.appendChild(meta);
-      }
-
-      // Inject JSON-LD Schema
-      const schemaId = "jsonld-blog-post-schema";
-      let script = document.getElementById(schemaId);
-      if (!script) {
-        script = document.createElement("script");
-        script.id = schemaId;
-        script.type = "application/ld+json";
-        document.head.appendChild(script);
-      }
-      
-      const jsonLd = {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        "headline": article.title,
-        "description": descText,
-        "datePublished": article.publishedAt,
-        "author": {
-          "@type": "Organization",
-          "name": "Aurexion Technologies"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "Aurexion Technologies",
-          "url": window.location.origin
-        },
-        "mainEntityOfPage": {
-          "@type": "WebPage",
-          "@id": window.location.href
-        }
-      };
-      script.text = JSON.stringify(jsonLd);
-    }
-  }, [article]);
-
   if (loading && !apiArticle && !staticArticle) {
     return (
       <div className="bg-background min-h-screen flex items-center justify-center">
@@ -145,8 +85,29 @@ export const ArticleDetailPage = () => {
     return null;
   }
 
+  const siteUrl = getSiteUrl();
+  const descText = article.meta_description || article.excerpt || article.content.substring(0, 150);
+  const articleSchema = createArticleSchema({
+    title: article.title,
+    description: descText,
+    url: `/blogengine/${article.slug}`,
+    image: article.coverImage,
+    datePublished: article.publishedAt,
+    authorName: "Aurexion Engineering Team"
+  }, siteUrl);
+
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title={article.meta_title || `${article.title} | Insights`}
+        description={descText}
+        canonical={`/blogengine/${article.slug}`}
+        ogImage={article.coverImage}
+        ogType="article"
+        publishedTime={article.publishedAt}
+        keywords={article.meta_keywords ? article.meta_keywords.split(",").map((k) => k.trim()) : article.tags}
+        jsonLd={articleSchema}
+      />
       <ReadingProgress />
       <ArticleHero article={article} />
       

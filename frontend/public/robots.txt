@@ -1,20 +1,42 @@
+# Aurexion Technologies robots.txt
 User-agent: *
 Allow: /
+Allow: /images/
+Allow: /manus-storage/
+Allow: /videos/
+Allow: /services/
+Allow: /industries/
+Allow: /case-studies/
+Allow: /careers/
+Allow: /blogengine/
+Allow: /about
+Allow: /why-us
+Allow: /contact
+Allow: /request-quote
+Allow: /rfp
+Allow: /estimator
+Allow: /privacy-policy
+Allow: /terms
+Allow: /cookie-policy
+Allow: /security
 
-# Sitemap
-Sitemap: https://aurexion.io/sitemap.xml
-
-# Disallow admin and authenticated areas
+# Disallow private and administrative workspaces
 Disallow: /admin/
-Disallow: /portal/
 Disallow: /bdm/
 Disallow: /crm/
-Disallow: /cms/
-Disallow: /content/
+Disallow: /sales/
+Disallow: /portal/
+Disallow: /client/
 Disallow: /recruitment/
 Disallow: /hr/
 Disallow: /support/
+Disallow: /cms/
+Disallow: /content/
+Disallow: /login/
 Disallow: /login
 Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /verify-email
+
+# Sitemap index
+Sitemap: https://aurexion.com/sitemap.xml

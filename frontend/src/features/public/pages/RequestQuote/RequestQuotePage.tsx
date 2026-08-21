@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { publicService } from "../../services/publicService";
 import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { SEO } from "../../../../components/seo/SEO";
 
 const quoteSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -42,6 +43,11 @@ export const RequestQuotePage: React.FC = () => {
 
   return (
     <div className="bg-background pt-24 pb-24">
+      <SEO
+        title="Request a Custom Engineering Quote | Aurexion"
+        description="Request a formal commercial proposal and technical scope assessment for your enterprise software, cloud migration, or AI project."
+        canonical="/request-quote"
+      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         <div className="text-center mb-16">
           <p className="text-primary font-mono text-sm tracking-widest mb-6">PROJECT INQUIRY</p>

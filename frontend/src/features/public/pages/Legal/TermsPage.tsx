@@ -79,6 +79,7 @@ export const TermsPage: React.FC = () => {
       badgeLabel="LEGAL / TERMS"
       title="Terms & Conditions"
       description="Please read these Terms and Conditions carefully before using the Aurexion Technologies platform. By accessing our services, you agree to be bound by these terms."
+      canonical="/terms"
       lastUpdated={LAST_UPDATED}
       sections={sections}
       relatedLinks={[

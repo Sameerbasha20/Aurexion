@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { publicService } from "../services/publicService";
-import { BlogPost, CaseStudy, Industry, Job, ServiceApiDetail } from "../types/website.types";
+import { BlogPost, CaseStudy, Industry, Job, Service, ServiceApiDetail } from "../types/website.types";
 import { caseStudiesData } from "../../../data/caseStudies";
 import { blogPosts } from "../../../data/blogPosts";
 
