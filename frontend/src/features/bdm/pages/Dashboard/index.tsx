@@ -3,7 +3,7 @@ import { useBdmDashboard } from "../../hooks/useBdmDashboard";
 import bdmService, { FormSubmission } from "../../services/bdmService";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
-import Button from "../../../../components/ui/button";
+import { Button } from "../../../../components/ui/button";
 import {
   ChartContainer,
   ChartTooltip,
@@ -117,7 +117,9 @@ export const Dashboard: React.FC = () => {
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    bdmService.getAssignableUsers().then(setSalesExecs);
+    bdmService.getAssignableUsers().then(setSalesExecs).catch((err) => {
+      console.error("Failed to fetch assignable sales executives:", err);
+    });
   }, []);
 
   const showFeedback = (type: "success" | "error", text: string) => {
@@ -700,8 +702,27 @@ export const Dashboard: React.FC = () => {
 
       {/* Modal: Assign Submission */}
       {modalMode === "assign" && selectedSubmission && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "500px", padding: "1.5rem" }}>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5, 8, 17, 0.85)",
+          backdropFilter: "blur(6px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "500px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <div>
                 <p className="eyebrow" style={{ margin: 0 }}>ASSIGN LEAD TO SALES EXECUTIVE</p>
@@ -734,6 +755,7 @@ export const Dashboard: React.FC = () => {
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.85rem",
+                    boxSizing: "border-box",
                   }}
                 >
                   <option value="">-- Choose Sales Executive --</option>
@@ -745,7 +767,7 @@ export const Dashboard: React.FC = () => {
                 </select>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
                 <Button type="button" variant="outline" onClick={() => setModalMode(null)}>Cancel</Button>
                 <Button type="submit" glow disabled={actionLoading}>
                   {actionLoading ? "Assigning..." : "Confirm Assignment"}
@@ -758,8 +780,28 @@ export const Dashboard: React.FC = () => {
 
       {/* Modal: Decline Submission */}
       {modalMode === "decline" && selectedSubmission && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(6px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1rem" }}>
-          <Card style={{ width: "100%", maxWidth: "500px", padding: "1.5rem", borderColor: "rgba(239, 68, 68, 0.3)" }}>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5, 8, 17, 0.85)",
+          backdropFilter: "blur(6px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card style={{
+            width: "100%",
+            maxWidth: "500px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            borderColor: "rgba(239, 68, 68, 0.3)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <div>
                 <p className="eyebrow" style={{ margin: 0, color: "#f87171" }}>DECLINE / REJECT INBOUND SUBMISSION</p>
@@ -796,6 +838,7 @@ export const Dashboard: React.FC = () => {
                     borderRadius: "4px",
                     fontSize: "0.85rem",
                     outline: "none",
+                    boxSizing: "border-box",
                   }}
                 />
                 {declineReason.trim().length > 0 && declineReason.trim().length < 10 && (
@@ -808,7 +851,7 @@ export const Dashboard: React.FC = () => {
                 </p>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
                 <Button type="button" variant="outline" onClick={() => setModalMode(null)}>Cancel</Button>
                 <Button 
                   type="submit" 
@@ -825,8 +868,27 @@ export const Dashboard: React.FC = () => {
 
       {/* Modal: BDM Lead Detail View */}
       {selectedLeadDetail && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5, 8, 17, 0.85)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "600px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <div>
                 <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>

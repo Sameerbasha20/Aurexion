@@ -398,10 +398,17 @@ class RFPEnquiry(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.reference_id:
-            import datetime
+            import datetime, secrets, string
             year = datetime.datetime.now().year
-            count = RFPEnquiry.objects.filter(created_at__year=year).count() + 1
-            self.reference_id = f"AUR-RFP-{year}-{count:05d}"
+            alphabet = string.ascii_uppercase + string.digits
+            for _ in range(5):
+                suffix = "".join(secrets.choice(alphabet) for _ in range(6))
+                candidate_id = f"AUR-RFP-{year}-{suffix}"
+                if not RFPEnquiry.objects.filter(reference_id=candidate_id).exists():
+                    self.reference_id = candidate_id
+                    break
+            if not self.reference_id:
+                self.reference_id = f"AUR-RFP-{year}-{"".join(secrets.choice(alphabet) for _ in range(8))}"
         super().save(*args, **kwargs)
 
 

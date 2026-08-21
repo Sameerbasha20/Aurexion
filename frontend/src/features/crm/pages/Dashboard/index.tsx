@@ -49,6 +49,10 @@ export const Dashboard: React.FC = () => {
   // Lead Detail Modal State
   const [selectedLeadDetail, setSelectedLeadDetail] = useState<any | null>(null);
 
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const [scheduledLeadIds, setScheduledLeadIds] = useState<Set<number>>(new Set());
+
   // Meeting Schedule Modal State
   const [selectedMeetingLead, setSelectedMeetingLead] = useState<any | null>(null);
   const [scheduledAt, setScheduledAt] = useState("");
@@ -57,10 +61,22 @@ export const Dashboard: React.FC = () => {
   const [meetingNotes, setMeetingNotes] = useState("");
   const [scheduling, setScheduling] = useState(false);
 
+  // Custom Mark WON Modal State
+  const [selectedWonLead, setSelectedWonLead] = useState<any | null>(null);
+  const [wonValue, setWonValue] = useState("25000");
+  const [wonNotes, setWonNotes] = useState("Client agreed to project scope and signed proposal.");
+  const [wonLoading, setWonLoading] = useState(false);
+
+  // Custom Decline / Mark LOST Modal State
+  const [selectedLostLead, setSelectedLostLead] = useState<any | null>(null);
+  const [lostReason, setLostReason] = useState("");
+  const [lostLoading, setLostLoading] = useState(false);
+
   const handleScheduleMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMeetingLead || !scheduledAt) return;
     setScheduling(true);
+    setActionError(null);
     try {
       // datetime-local sends YYYY-MM-DDTHH:mm - add seconds for Django parse_datetime
       const scheduledAtWithSeconds = scheduledAt.length === 16 ? scheduledAt + ":00" : scheduledAt;
@@ -70,6 +86,7 @@ export const Dashboard: React.FC = () => {
         meeting_link: meetingLink,
         notes: meetingNotes,
       });
+      setScheduledLeadIds((prev) => new Set(prev).add(selectedMeetingLead.id));
       setActionSuccess(`Meeting scheduled and notification email sent to ${selectedMeetingLead.email || selectedMeetingLead.name}!`);
       setSelectedMeetingLead(null);
       setScheduledAt("");
@@ -77,52 +94,68 @@ export const Dashboard: React.FC = () => {
       setMeetingNotes("");
       refetch();
     } catch (err: any) {
-      alert(err?.message || "Failed to schedule meeting.");
+      setActionError(err?.message || "Failed to schedule meeting.");
     } finally {
       setScheduling(false);
     }
   };
 
-  const handleMarkWon = async (leadId: number, leadName: string) => {
-    const valInput = window.prompt(`Enter agreed Project Cost / Deal Value ($) for ${leadName}:`, "25000");
-    if (valInput === null) return;
-    const value = parseFloat(valInput) || 0;
-    const notesInput = window.prompt(`Enter closing notes / scope summary for ${leadName}:`, "Client agreed to project scope and signed proposal.") || "";
-
+  const handleMarkWonSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedWonLead) return;
+    setWonLoading(true);
+    setActionError(null);
     try {
-      await crmService.markLeadWon(leadId, { value, notes: notesInput });
-      setActionSuccess(`Lead marked WON! Project cost ($${value.toLocaleString()}) & closing notes recorded. Forwarded to BDM Dashboard for client portal credentials dispatch.`);
+      const val = parseFloat(wonValue) || 0;
+      await crmService.markLeadWon(selectedWonLead.id, { value: val, notes: wonNotes });
+      setActionSuccess(`Lead ${selectedWonLead.name} marked WON! Project cost ($${val.toLocaleString()}) & closing notes recorded. Client credentials dispatched.`);
+      setSelectedWonLead(null);
+      if (selectedLeadDetail?.id === selectedWonLead.id) {
+        setSelectedLeadDetail(null);
+      }
       refetch();
     } catch (err: any) {
-      alert(err?.message || "Failed to mark lead as won.");
+      setActionError(err?.message || "Failed to mark lead as won.");
+    } finally {
+      setWonLoading(false);
     }
   };
 
-  const handleMarkLost = async (leadId: number) => {
-    const reason = window.prompt("Reason for declining/marking lost (minimum 10 characters):");
-    if (reason === null) return;
-    if (reason.trim().length < 10) {
-      alert("Please enter a reason of at least 10 characters to decline or mark as lost.");
+  const handleMarkLostSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedLostLead) return;
+    if (lostReason.trim().length < 10) {
+      setActionError("Please enter a decline reason of at least 10 characters.");
       return;
     }
+    setLostLoading(true);
+    setActionError(null);
     try {
-      await crmService.markLeadLost(leadId, reason.trim());
-      setActionSuccess("Lead marked as lost/declined & email notification sent to client.");
+      await crmService.markLeadLost(selectedLostLead.id, lostReason.trim());
+      setActionSuccess(`Lead ${selectedLostLead.name} marked as lost/declined. Notification email dispatched.`);
+      setSelectedLostLead(null);
+      setLostReason("");
+      if (selectedLeadDetail?.id === selectedLostLead.id) {
+        setSelectedLeadDetail(null);
+      }
       refetch();
     } catch (err: any) {
-      alert(err?.message || "Failed to mark lead as lost.");
+      setActionError(err?.message || "Failed to mark lead as lost.");
+    } finally {
+      setLostLoading(false);
     }
   };
 
   const handleCompleteFollowUp = async (leadId: number, followUpId: number) => {
     setCompletingId(followUpId);
+    setActionError(null);
     try {
       await crmService.completeFollowUp(leadId, followUpId);
       setActionSuccess("Follow-up successfully marked as completed.");
       setTimeout(() => setActionSuccess(null), 3000);
       refetch();
     } catch (err: any) {
-      alert(err?.message || "Failed to complete follow-up");
+      setActionError(err?.message || "Failed to complete follow-up");
     } finally {
       setCompletingId(null);
     }
@@ -217,13 +250,13 @@ export const Dashboard: React.FC = () => {
             </span>
           </div>
           <h1 style={{ fontSize: "2.2rem", margin: "0.35rem 0 0 0", letterSpacing: "-0.04em" }}>
-            Sales Performance Desk
+            Sales Executive Dashboard
           </h1>
         </div>
 
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           <Button variant="outline" onClick={() => refetch()} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <RefreshCw size={14} /> Refresh
+            <RefreshCw size={14} /> Refresh Metrics
           </Button>
           <Link href="/crm/follow-ups">
             <Button variant="outline" style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
@@ -596,18 +629,41 @@ export const Dashboard: React.FC = () => {
                     >
                       <ArrowUpRight size={13} style={{ marginRight: "0.3rem" }} /> Details
                     </Button>
-                    <Button
-                      glow
-                      size="sm"
-                      onClick={() => setSelectedMeetingLead(lead)}
-                      style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}
-                    >
-                      <Calendar size={13} style={{ marginRight: "0.3rem" }} /> Meeting
-                    </Button>
+
+                    {(lead as any).next_follow_up_at || lead.status === "contacted" || lead.status === "qualified" || lead.status === "proposal_submitted" || lead.status === "negotiation" || lead.status === "won" || ((lead as any).follow_up_count && (lead as any).follow_up_count > 0) || scheduledLeadIds.has(lead.id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedMeetingLead(lead)}
+                        style={{
+                          fontSize: "0.75rem",
+                          padding: "0.35rem 0.65rem",
+                          borderColor: "rgba(52, 211, 153, 0.5)",
+                          color: "#34d399",
+                          backgroundColor: "rgba(52, 211, 153, 0.12)",
+                        }}
+                      >
+                        <CheckCircle2 size={13} style={{ marginRight: "0.3rem" }} /> Scheduled Meet
+                      </Button>
+                    ) : (
+                      <Button
+                        glow
+                        size="sm"
+                        onClick={() => setSelectedMeetingLead(lead)}
+                        style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}
+                      >
+                        <Calendar size={13} style={{ marginRight: "0.3rem" }} /> Meeting
+                      </Button>
+                    )}
+
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleMarkWon(lead.id, lead.name)}
+                      onClick={() => {
+                        setSelectedWonLead(lead);
+                        setWonValue(lead.value ? String(lead.value) : "25000");
+                        setWonNotes("Client agreed to project scope and signed proposal.");
+                      }}
                       style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", borderColor: "rgba(74, 222, 128, 0.4)", color: "#4ade80" }}
                     >
                       <CheckCircle2 size={13} style={{ marginRight: "0.3rem" }} /> Won
@@ -615,7 +671,10 @@ export const Dashboard: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleMarkLost(lead.id)}
+                      onClick={() => {
+                        setSelectedLostLead(lead);
+                        setLostReason("");
+                      }}
                       style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", borderColor: "rgba(248, 113, 113, 0.4)", color: "#f87171" }}
                     >
                       Decline
@@ -721,8 +780,27 @@ export const Dashboard: React.FC = () => {
       </Card>
       {/* Schedule Meeting Modal */}
       {selectedMeetingLead && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5,8,17,0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "520px", padding: "2rem" }}>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5,8,17,0.85)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "520px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
               <div>
                 <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
@@ -763,6 +841,8 @@ export const Dashboard: React.FC = () => {
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.88rem",
+                    width: "100%",
+                    boxSizing: "border-box",
                   }}
                 />
               </div>
@@ -779,6 +859,8 @@ export const Dashboard: React.FC = () => {
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.88rem",
+                    width: "100%",
+                    boxSizing: "border-box",
                   }}
                 >
                   <option value="MEETING">Video Meeting</option>
@@ -801,6 +883,8 @@ export const Dashboard: React.FC = () => {
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.88rem",
+                    width: "100%",
+                    boxSizing: "border-box",
                   }}
                 />
               </div>
@@ -819,11 +903,13 @@ export const Dashboard: React.FC = () => {
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.85rem",
+                    width: "100%",
+                    boxSizing: "border-box",
                   }}
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
                 <Button type="button" variant="outline" onClick={() => setSelectedMeetingLead(null)}>
                   Cancel
                 </Button>
@@ -838,8 +924,27 @@ export const Dashboard: React.FC = () => {
 
       {/* Lead Detail Modal */}
       {selectedLeadDetail && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5, 8, 17, 0.85)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "600px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <div>
                 <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
@@ -904,26 +1009,58 @@ export const Dashboard: React.FC = () => {
 
             {/* Action Buttons */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginBottom: "1.5rem" }}>
-              <Button
-                glow
-                onClick={() => {
-                  setSelectedLeadDetail(null);
-                  setSelectedMeetingLead(selectedLeadDetail);
-                }}
-                style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
-              >
-                <Calendar size={14} /> Schedule Meeting
-              </Button>
+              {selectedLeadDetail.next_follow_up_at || selectedLeadDetail.status === "contacted" || selectedLeadDetail.status === "qualified" || selectedLeadDetail.status === "proposal_submitted" || selectedLeadDetail.status === "negotiation" || selectedLeadDetail.status === "won" || (selectedLeadDetail.follow_up_count && selectedLeadDetail.follow_up_count > 0) || scheduledLeadIds.has(selectedLeadDetail.id) ? (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const l = selectedLeadDetail;
+                    setSelectedLeadDetail(null);
+                    setSelectedMeetingLead(l);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    borderColor: "rgba(52, 211, 153, 0.5)",
+                    color: "#34d399",
+                    backgroundColor: "rgba(52, 211, 153, 0.12)",
+                  }}
+                >
+                  <CheckCircle2 size={14} /> Scheduled Meet
+                </Button>
+              ) : (
+                <Button
+                  glow
+                  onClick={() => {
+                    const l = selectedLeadDetail;
+                    setSelectedLeadDetail(null);
+                    setSelectedMeetingLead(l);
+                  }}
+                  style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
+                >
+                  <Calendar size={14} /> Schedule Meeting
+                </Button>
+              )}
+
               <Button
                 variant="outline"
-                onClick={() => handleMarkWon(selectedLeadDetail.id, selectedLeadDetail.name)}
+                onClick={() => {
+                  const l = selectedLeadDetail;
+                  setSelectedWonLead(l);
+                  setWonValue(l.value ? String(l.value) : "25000");
+                  setWonNotes("Client agreed to project scope and signed proposal.");
+                }}
                 style={{ display: "flex", alignItems: "center", gap: "0.4rem", borderColor: "rgba(74, 222, 128, 0.4)", color: "#4ade80" }}
               >
                 <CheckCircle2 size={14} /> Mark Won
               </Button>
               <Button
                 variant="outline"
-                onClick={() => handleMarkLost(selectedLeadDetail.id)}
+                onClick={() => {
+                  const l = selectedLeadDetail;
+                  setSelectedLostLead(l);
+                  setLostReason("");
+                }}
                 style={{ display: "flex", alignItems: "center", gap: "0.4rem", borderColor: "rgba(248, 113, 113, 0.4)", color: "#f87171" }}
               >
                 <XCircle size={14} /> Mark Lost
@@ -936,6 +1073,193 @@ export const Dashboard: React.FC = () => {
                 <ArrowUpRight size={14} /> Full Lead Desk
               </Button>
             </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Custom Mark WON Confirmation Modal */}
+      {selectedWonLead && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5,8,17,0.85)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "520px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+              <div>
+                <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#4ade80" }}>
+                  DEAL WON & CLIENT ONBOARDING
+                </span>
+                <h2 style={{ fontSize: "1.25rem", color: "#f8fafc", margin: "0.2rem 0 0 0" }}>
+                  Mark Lead as WON
+                </h2>
+              </div>
+              <button onClick={() => setSelectedWonLead(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", fontSize: "1.2rem" }}>
+                ✕
+              </button>
+            </div>
+
+            <div style={{ backgroundColor: "rgba(74, 222, 128, 0.08)", border: "1px solid rgba(74, 222, 128, 0.25)", padding: "1rem", borderRadius: "4px", marginBottom: "1.25rem" }}>
+              <p style={{ margin: 0, fontSize: "0.88rem", color: "#f8fafc", fontWeight: 600 }}>
+                {selectedWonLead.name} {selectedWonLead.company ? `(${selectedWonLead.company})` : ""}
+              </p>
+              <p style={{ margin: "0.3rem 0 0 0", fontSize: "0.78rem", color: "#94a3b8" }}>
+                Marking this deal as WON will register project scope notes, notify the client, and forward to BDM for client portal account creation (default password: <code style={{ color: "#63f5e8" }}>client@2026</code>).
+              </p>
+            </div>
+
+            <form onSubmit={handleMarkWonSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>AGREED PROJECT COST / DEAL VALUE ($) *</label>
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="25000"
+                  value={wonValue}
+                  onChange={(e) => setWonValue(e.target.value)}
+                  style={{
+                    padding: "0.65rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140,174,187,0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                    fontSize: "0.88rem",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>CLOSING SCOPE & AGREEMENT NOTES</label>
+                <textarea
+                  rows={3}
+                  placeholder="Client agreed to proposal scope. Kick-off meeting to be scheduled."
+                  value={wonNotes}
+                  onChange={(e) => setWonNotes(e.target.value)}
+                  style={{
+                    padding: "0.65rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140,174,187,0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                    fontSize: "0.85rem",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
+                <Button type="button" variant="outline" onClick={() => setSelectedWonLead(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" glow disabled={wonLoading} style={{ backgroundColor: "#16a34a", borderColor: "#22c55e", color: "#ffffff" }}>
+                  {wonLoading ? "Processing..." : "✓ Confirm Deal WON & Onboard"}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Custom Decline / Mark LOST Confirmation Modal */}
+      {selectedLostLead && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5,8,17,0.85)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "520px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+              <div>
+                <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#f87171" }}>
+                  DECLINE INQUIRY & NOTIFY
+                </span>
+                <h2 style={{ fontSize: "1.25rem", color: "#f8fafc", margin: "0.2rem 0 0 0" }}>
+                  Decline Lead / Mark Lost
+                </h2>
+              </div>
+              <button onClick={() => setSelectedLostLead(null)} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer", fontSize: "1.2rem" }}>
+                ✕
+              </button>
+            </div>
+
+            <div style={{ backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", padding: "1rem", borderRadius: "4px", marginBottom: "1.25rem" }}>
+              <p style={{ margin: 0, fontSize: "0.88rem", color: "#f8fafc", fontWeight: 600 }}>
+                {selectedLostLead.name} {selectedLostLead.company ? `(${selectedLostLead.company})` : ""}
+              </p>
+              <p style={{ margin: "0.3rem 0 0 0", fontSize: "0.78rem", color: "#94a3b8" }}>
+                Please provide a business reason for declining this inquiry (minimum 10 characters). A review feedback email will be sent to <strong style={{ color: "#f87171" }}>{selectedLostLead.email || "client"}</strong>.
+              </p>
+            </div>
+
+            <form onSubmit={handleMarkLostSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>REASON FOR DECLINING (MIN 10 CHARS) *</label>
+                <textarea
+                  required
+                  rows={4}
+                  placeholder="Project scope outside operational focus or budget mismatch..."
+                  value={lostReason}
+                  onChange={(e) => setLostReason(e.target.value)}
+                  style={{
+                    padding: "0.65rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140,174,187,0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                    fontSize: "0.85rem",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                />
+                <span style={{ fontSize: "0.72rem", color: lostReason.trim().length >= 10 ? "#4ade80" : "#94a3b8", textAlign: "right" }}>
+                  {lostReason.trim().length} / 10 min characters
+                </span>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
+                <Button type="button" variant="outline" onClick={() => setSelectedLostLead(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="outline" disabled={lostLoading || lostReason.trim().length < 10} style={{ borderColor: "rgba(248, 113, 113, 0.6)", color: "#f87171", backgroundColor: "rgba(239, 68, 68, 0.1)" }}>
+                  {lostLoading ? "Sending Notification..." : "Decline & Send Email"}
+                </Button>
+              </div>
+            </form>
           </Card>
         </div>
       )}

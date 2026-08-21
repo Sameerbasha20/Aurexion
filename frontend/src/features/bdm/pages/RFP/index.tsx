@@ -25,7 +25,7 @@ import {
 } from "../../../../components/ui/dialog";
 import { AlertCircle, CheckCircle, UserCheck, XCircle, Eye, ArrowUpRight, Mail, Phone } from "lucide-react";
 import type { Lead } from "../../services/bdmService";
-import { bdmService } from "../../services/bdmService";
+import bdmService from "../../services/bdmService";
 
 const STATUS_COLORS: Record<string, string> = {
   new: "bg-blue-500/20 text-blue-400 border-blue-500/30",
@@ -274,7 +274,7 @@ export const RFP: React.FC = () => {
                 Retry
               </Button>
             </div>
-          ) : rfpLeads.length === 0 ? (
+          ) : !rfpLeads || rfpLeads.length === 0 ? (
             <div style={{ textAlign: "center", padding: "3rem" }}>
               <p style={{ color: "#64748b" }}>No RFP submissions found</p>
             </div>
@@ -493,8 +493,27 @@ export const RFP: React.FC = () => {
 
       {/* Modal: BDM RFP / Lead Detail View */}
       {selectedLeadDetail && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5, 8, 17, 0.85)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "600px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <div>
                 <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>

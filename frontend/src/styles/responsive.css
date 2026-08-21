@@ -70,3 +70,22 @@
   }
 }
 
+/* Modal Viewport Responsiveness */
+[data-slot="dialog-content"],
+.modal-content {
+  max-height: calc(100vh - 2rem) !important;
+  max-height: calc(100dvh - 2rem) !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-height: 700px) {
+  [data-slot="dialog-content"],
+  .modal-content {
+    max-height: calc(100vh - 1rem) !important;
+    max-height: calc(100dvh - 1rem) !important;
+    padding: 1.25rem !important;
+  }
+}
+
+

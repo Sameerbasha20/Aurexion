@@ -13,6 +13,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from rest_framework.throttling import AnonRateThrottle
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+
+from rest_framework.pagination import PageNumberPagination
 
 from apps.authentication.audit import get_model_state, log_audit_event
 from apps.authentication.models import AuditLog
@@ -31,7 +35,14 @@ from apps.crm.serializers import (
     LeadStatusTransitionSerializer,
     LeadUpdateSerializer,
     PublicLeadCreateSerializer,
+    LeadWonSerializer,
+    LeadScheduleMeetingSerializer,
 )
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 25
+    page_size_query_param = "page_size"
+    max_page_size = 100
 from apps.crm.services import (
     add_note,
     assign_lead,
@@ -139,6 +150,7 @@ class LeadViewSet(viewsets.ModelViewSet):
     """
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    pagination_class = StandardResultsSetPagination
     search_fields = ["reference_id", "name", "company", "email", "phone"]
     ordering_fields = [
         "created_at",
@@ -334,13 +346,15 @@ class LeadViewSet(viewsets.ModelViewSet):
         lead = qualify_lead(lead=lead, actor=request.user, request=request)
         return Response(LeadSerializer(lead, context=self.get_serializer_context()).data)
 
-    @extend_schema(tags=["CRM Leads"], responses=LeadSerializer)
+    @extend_schema(tags=["CRM Leads"], request=LeadWonSerializer, responses=LeadSerializer)
     @action(detail=True, methods=["post"])
     def won(self, request, pk=None):
         """Mark a lead as WON. Accepts optional value (project cost) and notes."""
         lead = self.get_object()
-        value = request.data.get("value")
-        notes = request.data.get("notes")
+        serializer = LeadWonSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        value = serializer.validated_data.get("value")
+        notes = serializer.validated_data.get("notes")
         lead = mark_lead_won(lead=lead, actor=request.user, value=value, notes=notes, request=request)
         return Response(LeadSerializer(lead, context=self.get_serializer_context()).data)
 
@@ -360,17 +374,18 @@ class LeadViewSet(viewsets.ModelViewSet):
             "username": user.username,
         })
 
+    @extend_schema(tags=["CRM Leads"], request=LeadScheduleMeetingSerializer)
     @action(detail=True, methods=["post"], url_path="schedule-meeting")
     def schedule_meeting(self, request, pk=None):
         """Schedule a meeting with client, record follow-up, and dispatch email notification."""
         lead = self.get_object()
-        scheduled_at = request.data.get("scheduled_at")
-        follow_up_type = request.data.get("follow_up_type", "meeting")
-        meeting_link = request.data.get("meeting_link", "")
-        notes = request.data.get("notes", "")
+        serializer = LeadScheduleMeetingSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if not scheduled_at:
-            return Response({"scheduled_at": ["A scheduled date and time is required."]}, status=status.HTTP_400_BAD_REQUEST)
+        scheduled_at = serializer.validated_data["scheduled_at"]
+        follow_up_type = serializer.validated_data.get("follow_up_type", "meeting")
+        meeting_link = serializer.validated_data.get("meeting_link", "")
+        notes = serializer.validated_data.get("notes", "")
 
         followup = schedule_meeting_and_notify(
             lead=lead,
@@ -413,7 +428,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         """List or create follow-ups for a lead."""
         lead = self.get_object()
         if request.method == "GET":
-            queryset = lead.follow_ups.select_related("assigned_to", "created_by").all()
+            queryset = lead.follow_ups.select_related("assigned_to", "created_by").order_by("-scheduled_at")[:100]
             serializer = LeadFollowUpSerializer(queryset, many=True, context=self.get_serializer_context())
             return Response(serializer.data)
 
@@ -463,7 +478,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         """List or create notes for a lead."""
         lead = self.get_object()
         if request.method == "GET":
-            queryset = lead.notes.select_related("created_by").all()
+            queryset = lead.notes.select_related("created_by").order_by("-created_at")[:100]
             serializer = LeadNoteSerializer(queryset, many=True, context=self.get_serializer_context())
             return Response(serializer.data)
 
@@ -539,6 +554,7 @@ class PublicLeadCreateView(APIView):
     """
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [AnonRateThrottle]
 
     @extend_schema(
         tags=["Public Forms"],
@@ -575,6 +591,7 @@ class EstimatorCalculateView(APIView):
     """
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [AnonRateThrottle]
 
     @extend_schema(
         tags=["Estimator"],
@@ -628,6 +645,7 @@ class RFPSubmitView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
     throttle_classes = [AnonRateThrottle]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     @extend_schema(
         tags=["Public Forms"],

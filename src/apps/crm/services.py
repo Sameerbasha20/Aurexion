@@ -8,9 +8,15 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
 from django.utils import timezone
-from django.utils.dateparse import parse_datetime
+from django.core.cache import cache
 from rest_framework import status
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
+
+def _clear_dashboard_cache():
+    try:
+        cache.delete("bdm_dashboard_metrics")
+    except Exception:
+        pass
 
 from apps.authentication.audit import get_model_state, log_audit_event
 from apps.authentication.models import UserProfile
@@ -43,16 +49,19 @@ STATUS_TRANSITIONS = {
         Lead.Status.UNDER_REVIEW,
         Lead.Status.CONTACTED,
         Lead.Status.QUALIFIED,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.UNDER_REVIEW: {
         Lead.Status.CONTACTED,
         Lead.Status.QUALIFIED,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.CONTACTED: {
         Lead.Status.QUALIFIED,
         Lead.Status.PROPOSAL_SUBMITTED,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.QUALIFIED: {
@@ -186,6 +195,7 @@ def create_lead(*, actor, request=None, **data):
         except Exception:
             logger.exception(f"Failed to send form submission confirmation email for lead {lead.reference_id}")
 
+    _clear_dashboard_cache()
     return lead
 
 
@@ -231,6 +241,7 @@ def change_lead_stage(*, lead, new_status, actor, request=None):
         except Exception:
             logger.exception(f"Failed to send status update email for lead {lead.reference_id}")
 
+    _clear_dashboard_cache()
     return lead
 
 
@@ -250,19 +261,20 @@ def mark_lead_won(*, lead, actor, value=None, notes=None, request=None):
     Records agreed project cost (value) and closing notes.
     The lead transitions to WON and awaits BDM onboarding & credential dispatch.
     """
-    if value is not None:
-        try:
-            lead.value = float(value)
-            lead.save(update_fields=["value"])
-        except (ValueError, TypeError):
-            pass
-
+    # B-01 Fix: Validate transition first before updating lead value
     lead = change_lead_stage(
         lead=lead,
         new_status=Lead.Status.WON,
         actor=actor,
         request=request,
     )
+
+    if value is not None:
+        try:
+            lead.value = float(value)
+            lead.save(update_fields=["value"])
+        except (ValueError, TypeError):
+            pass
 
     if notes and str(notes).strip():
         try:
@@ -290,7 +302,15 @@ def onboard_lead_as_client(*, lead, actor, password=None, request=None):
     if lead.status != Lead.Status.WON:
         raise LeadStateTransitionError(f"Lead {lead.reference_id} must be marked as WON before onboarding as client.")
 
-    default_password = password or getattr(settings, 'DEFAULT_CLIENT_PASSWORD', '') or 'client@2026'
+    # D-02 Fix: Generate a secure 12-char random password if no password/setting provided
+    if password:
+        default_password = password
+    elif getattr(settings, 'DEFAULT_CLIENT_PASSWORD', ''):
+        default_password = settings.DEFAULT_CLIENT_PASSWORD
+    else:
+        alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+        default_password = "".join(secrets.choice(alphabet) for _ in range(12))
+
     login_url = getattr(settings, 'CLIENT_PORTAL_LOGIN_URL', 'http://localhost:3000/login')
 
     if not lead.email:
@@ -456,6 +476,7 @@ def assign_lead(*, lead, target_user, actor, request=None):
         updated_state={"assigned_to": target_user.username},
         request=request,
     )
+    _clear_dashboard_cache()
     return lead
 
 
@@ -666,10 +687,17 @@ def schedule_meeting_and_notify(*, lead, scheduled_at, follow_up_type="meeting",
 
     _sync_lead_next_follow_up(lead)
 
-    # Transition lead to contacted if new/under_review
+    # B-02 Fix: Transition lead to contacted via change_lead_stage for proper audit logging and email notification
     if lead.status in (Lead.Status.NEW, Lead.Status.UNDER_REVIEW):
-        lead.status = Lead.Status.CONTACTED
-        lead.save(update_fields=["status", "updated_at"])
+        try:
+            change_lead_stage(
+                lead=lead,
+                new_status=Lead.Status.CONTACTED,
+                actor=actor,
+                request=request,
+            )
+        except Exception:
+            pass
 
     # Dispatch email if lead has an email address
     if lead.email:
