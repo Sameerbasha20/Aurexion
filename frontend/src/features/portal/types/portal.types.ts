@@ -127,6 +127,7 @@ export interface SupportTicketItem {
   project_title?: string | null;
   created_at: string;
   updated_at: string;
+  resolution_notes?: string;
 }
 
 export interface SupportTicketDetail {
