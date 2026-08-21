@@ -1,10 +1,12 @@
-import React from "react";
-import { Lock, UserCheck, Shield, Mail, Calendar, User } from "lucide-react";
+import React, { useState } from "react";
+import { Lock, UserCheck, Shield, Mail, Calendar, User, CheckCircle2, AlertTriangle } from "lucide-react";
 import Card from "../../../../components/ui/card";
+import Button from "../../../../components/ui/button";
 import PageHeader from "../../components/PageHeader";
 import { ErrorState, LoadingState } from "../../components/StateViews";
 import { formatDate } from "../../utils/format";
 import useProfile from "../../hooks/useProfile";
+import axiosClient from "../../../../api/axiosClient";
 
 interface ProfileFieldProps {
   label: string;
@@ -109,30 +111,188 @@ export const Profile: React.FC = () => {
             </div>
           </Card>
 
+          {/* Security & Password Management Card */}
           <Card
+            borderAccent
             style={{
-              backgroundColor: "rgba(8, 14, 26, 0.7)",
-              border: "1px solid #1e293b",
+              backgroundColor: "rgba(8, 14, 26, 0.9)",
               display: "flex",
               flexDirection: "column",
-              gap: "0.75rem",
+              gap: "1.25rem",
+              padding: "1.5rem",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8" }}>
-              <Lock size={16} />
-              <span style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", letterSpacing: "0.1em", fontWeight: 600 }}>
-                ACCESS NOTES
-              </span>
+              <Lock size={18} />
+              <h3 style={{ margin: 0, color: "#63f5e8", fontSize: "1.1rem" }}>Security & Change Password</h3>
             </div>
-            <p style={{ color: "#94a3b8", fontSize: "0.875rem", margin: 0, lineHeight: 1.7 }}>
-              This profile is read-only. The backend does not currently expose a profile update endpoint for client
-              users, so no frontend-only editing is provided. Data shown above is fetched from the live
-              <span style={{ fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}> /auth/me/</span> endpoint.
+            <p style={{ color: "#94a3b8", fontSize: "0.85rem", margin: 0, lineHeight: 1.5 }}>
+              Update your account password. For maximum security, use a combination of uppercase letters, numbers, and special characters.
             </p>
+
+            <ChangePasswordForm />
           </Card>
         </>
       ) : null}
     </div>
+  );
+};
+
+const ChangePasswordForm: React.FC = () => {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError("Please fill in all password fields.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("New password and confirmation password do not match.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError("New password must be at least 6 characters long.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await axiosClient.post("auth/change-password/", {
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      setSuccess(response.data?.detail || "Password changed successfully! Please use your new password on your next login.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || err?.message || "Failed to update password. Please check your current password.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      {success && (
+        <div style={{
+          padding: "0.75rem 1rem",
+          backgroundColor: "rgba(74, 222, 128, 0.12)",
+          border: "1px solid rgba(74, 222, 128, 0.3)",
+          color: "#4ade80",
+          borderRadius: "6px",
+          fontSize: "0.85rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          fontFamily: "IBM Plex Mono, monospace",
+        }}>
+          <CheckCircle2 size={16} />
+          {success}
+        </div>
+      )}
+
+      {error && (
+        <div style={{
+          padding: "0.75rem 1rem",
+          backgroundColor: "rgba(239, 68, 68, 0.12)",
+          border: "1px solid rgba(239, 68, 68, 0.3)",
+          color: "#ef4444",
+          borderRadius: "6px",
+          fontSize: "0.85rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          fontFamily: "IBM Plex Mono, monospace",
+        }}>
+          <AlertTriangle size={16} />
+          {error}
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+          <label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", textTransform: "uppercase" }}>
+            Current Password *
+          </label>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+            placeholder="••••••••"
+            style={{
+              padding: "0.6rem 0.85rem",
+              backgroundColor: "#050811",
+              border: "1px solid #1e293b",
+              borderRadius: "6px",
+              color: "#f8fafc",
+              fontSize: "0.88rem",
+              outline: "none",
+            }}
+          />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+          <label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", textTransform: "uppercase" }}>
+            New Password *
+          </label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+            placeholder="••••••••"
+            style={{
+              padding: "0.6rem 0.85rem",
+              backgroundColor: "#050811",
+              border: "1px solid #1e293b",
+              borderRadius: "6px",
+              color: "#f8fafc",
+              fontSize: "0.88rem",
+              outline: "none",
+            }}
+          />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+          <label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", textTransform: "uppercase" }}>
+            Confirm New Password *
+          </label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            placeholder="••••••••"
+            style={{
+              padding: "0.6rem 0.85rem",
+              backgroundColor: "#050811",
+              border: "1px solid #1e293b",
+              borderRadius: "6px",
+              color: "#f8fafc",
+              fontSize: "0.88rem",
+              outline: "none",
+            }}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.5rem" }}>
+        <Button glow type="submit" disabled={isLoading} style={{ minWidth: "160px" }}>
+          {isLoading ? "Updating Password..." : "Update Password"}
+        </Button>
+      </div>
+    </form>
   );
 };
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "wouter";
-import { Briefcase, CheckCircle2, Clock, FolderLock, LifeBuoy, MessageSquareCode, Plus, UserCircle } from "lucide-react";
+import { Briefcase, CheckCircle2, Clock, FolderLock, LifeBuoy, Lock, MessageSquareCode, Plus, UserCircle } from "lucide-react";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import PageHeader from "../../components/PageHeader";
@@ -165,31 +165,40 @@ const PortalModulesCard: React.FC = () => (
 );
 
 const PortalAccountSummaryCard: React.FC<{ profile: any }> = ({ profile }) => (
-  <Card>
-    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8", marginBottom: "0.5rem" }}>
-      <Clock size={16} />
-      <span style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem", letterSpacing: "0.1em" }}>
-        ACCOUNT SUMMARY
-      </span>
+  <Card style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8", marginBottom: "0.5rem" }}>
+        <Clock size={16} />
+        <span style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem", letterSpacing: "0.1em" }}>
+          ACCOUNT SUMMARY
+        </span>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", color: "#cbd5e1", fontSize: "0.9rem" }}>
+        <div>
+          <div style={{ fontSize: "0.7rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>USERNAME</div>
+          <div style={{ marginTop: "0.25rem" }}>{profile.data?.username || "—"}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: "0.7rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>EMAIL</div>
+          <div style={{ marginTop: "0.25rem" }}>{profile.data?.email || "—"}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: "0.7rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>ROLE</div>
+          <div style={{ marginTop: "0.25rem" }}>{profile.data?.role || "—"}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: "0.7rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>MEMBER SINCE</div>
+          <div style={{ marginTop: "0.25rem" }}>{formatDateTime(profile.data?.date_joined)}</div>
+        </div>
+      </div>
     </div>
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", color: "#cbd5e1", fontSize: "0.9rem" }}>
-      <div>
-        <div style={{ fontSize: "0.7rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>USERNAME</div>
-        <div style={{ marginTop: "0.25rem" }}>{profile.data?.username || "—"}</div>
-      </div>
-      <div>
-        <div style={{ fontSize: "0.7rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>EMAIL</div>
-        <div style={{ marginTop: "0.25rem" }}>{profile.data?.email || "—"}</div>
-      </div>
-      <div>
-        <div style={{ fontSize: "0.7rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>ROLE</div>
-        <div style={{ marginTop: "0.25rem" }}>{profile.data?.role || "—"}</div>
-      </div>
-      <div>
-        <div style={{ fontSize: "0.7rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>MEMBER SINCE</div>
-        <div style={{ marginTop: "0.25rem" }}>{formatDateTime(profile.data?.date_joined)}</div>
-      </div>
-    </div>
+
+    <Link href="/portal/profile">
+      <Button variant="outline" size="sm">
+        <Lock size={14} style={{ marginRight: "0.4rem" }} />
+        Change Password
+      </Button>
+    </Link>
   </Card>
 );
 
@@ -213,12 +222,20 @@ export const Dashboard: React.FC = () => {
         title="Client Dashboard"
         description={`Welcome, ${displayName}. Live operational overview scoped to your account.`}
         actions={
-          <Link href="/portal/support/tickets/create">
-            <Button glow size="sm">
-              <Plus size={14} />
-              New Support Ticket
-            </Button>
-          </Link>
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+            <Link href="/portal/profile">
+              <Button variant="outline" size="sm">
+                <Lock size={14} />
+                Change Password
+              </Button>
+            </Link>
+            <Link href="/portal/support/tickets/create">
+              <Button glow size="sm">
+                <Plus size={14} />
+                New Support Ticket
+              </Button>
+            </Link>
+          </div>
         }
       />
 

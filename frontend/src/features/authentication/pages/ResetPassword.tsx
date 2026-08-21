@@ -3,23 +3,41 @@ import { Link, useLocation } from "wouter";
 import { ArrowLeft, Lock, CheckCircle2 } from "lucide-react";
 import Card from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
+import axiosClient from "../../../api/axiosClient";
 
 export const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [, setLocation] = useLocation();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const uid = searchParams.get("uid") || "";
+  const token = searchParams.get("token") || "";
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password || !confirmPassword) return;
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
+    setIsLoading(true);
     setError("");
-    setSubmitted(true);
+    try {
+      await axiosClient.post("auth/reset-password/", {
+        uid,
+        token,
+        new_password: password,
+      });
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || "Invalid or expired password reset link. Please request a new link.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

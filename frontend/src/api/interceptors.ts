@@ -32,6 +32,8 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
       const token = localStorage.getItem("aurexion_token") || localStorage.getItem("access_token");
       const isPublicEndpoint = config.url && (
         config.url.includes("/auth/login") ||
+        config.url.includes("/auth/forgot-password") ||
+        config.url.includes("/auth/reset-password") ||
         config.url.includes("/auth/token/refresh")
       );
 
@@ -65,6 +67,8 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
         originalRequest &&
         !originalRequest._retry &&
         !originalRequest.url?.includes("/auth/login") &&
+        !originalRequest.url?.includes("/auth/forgot-password") &&
+        !originalRequest.url?.includes("/auth/reset-password") &&
         !originalRequest.url?.includes("/auth/token/refresh")
       ) {
         originalRequest._retry = true;
