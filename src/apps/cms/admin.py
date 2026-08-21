@@ -1,5 +1,6 @@
 from django.contrib import admin
-from apps.cms.models import Service, CaseStudy, Industry, Category, BlogPost
+from apps.cms.models import Service, CaseStudy, Industry, Category, BlogPost, CompanyInformation
+
 
 class CustomNoRedirectAdmin(admin.ModelAdmin):
     def response_add(self, request, obj, post_url_continue=None):
@@ -49,4 +50,12 @@ class BlogPostAdmin(CustomNoRedirectAdmin):
     list_filter = ('status', 'category')
     search_fields = ('title', 'slug', 'content')
     prepopulated_fields = {'slug': ('title',)}
+
+@admin.register(CompanyInformation)
+class CompanyInformationAdmin(CustomNoRedirectAdmin):
+    list_display = ('title', 'slug', 'status', 'created_at')
+    list_filter = ('status',)
+    search_fields = ('title', 'slug')
+    prepopulated_fields = {'slug': ('title',)}
+
 

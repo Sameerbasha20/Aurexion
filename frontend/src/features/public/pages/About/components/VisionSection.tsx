@@ -10,7 +10,23 @@ const LIFECYCLE_STEPS = [
   { step: "06", name: "TRANSFORMATION", desc: "Enterprise value realized" },
 ];
 
-export const VisionSection: React.FC = () => {
+interface VisionSectionProps {
+  data?: {
+    title?: string;
+    description?: string;
+    steps?: Array<{
+      step: string;
+      name: string;
+      desc: string;
+    }>;
+  };
+}
+
+export const VisionSection: React.FC<VisionSectionProps> = ({ data }) => {
+  const title = data?.title || "End-to-End Enterprise Transformation Lifecycle";
+  const description = data?.description || "How we translate complex business objectives into resilient, high-velocity digital capabilities.";
+  const steps = data?.steps || LIFECYCLE_STEPS;
+
   return (
     <section className="py-20 bg-[#060c16] border-y border-border/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -22,20 +38,20 @@ export const VisionSection: React.FC = () => {
             </span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-4">
-            End-to-End Enterprise Transformation Lifecycle
+            {title}
           </h2>
           <p className="text-base md:text-lg text-gray-400 leading-relaxed">
-            How we translate complex business objectives into resilient, high-velocity digital capabilities.
+            {description}
           </p>
         </div>
 
         {/* Responsive Horizontal / Grid Lifecycle Flow */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {LIFECYCLE_STEPS.map((item, index) => (
+          {steps && steps.map((item, index) => (
             <div
               key={item.step}
               className={`p-5 rounded-lg border transition-all duration-200 flex flex-col justify-between ${
-                index === LIFECYCLE_STEPS.length - 1
+                index === steps.length - 1
                   ? "bg-[#0c1c2e] border-[#63f5e8]/50 shadow-[0_0_20px_rgba(99,245,232,0.15)]"
                   : "bg-[#0b1420] border-[#1b2b3d] hover:border-[#63f5e8]/30 hover:bg-[#0e1a2b]"
               }`}
@@ -45,7 +61,7 @@ export const VisionSection: React.FC = () => {
                   <span className="font-mono text-xs font-semibold text-[#63f5e8] bg-[#63f5e8]/10 border border-[#63f5e8]/20 px-2 py-0.5 rounded">
                     {item.step}
                   </span>
-                  {index < LIFECYCLE_STEPS.length - 1 ? (
+                  {index < steps.length - 1 ? (
                     <ArrowRight className="w-3.5 h-3.5 text-gray-500 hidden lg:block" />
                   ) : (
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#63f5e8]" />
@@ -65,5 +81,6 @@ export const VisionSection: React.FC = () => {
     </section>
   );
 };
+
 
 export default VisionSection;

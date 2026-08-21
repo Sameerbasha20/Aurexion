@@ -3,6 +3,8 @@ import { publicService } from "../services/publicService";
 import { BlogPost, CaseStudy, Industry, Job, Service, ServiceApiDetail } from "../types/website.types";
 import { caseStudiesData } from "../../../data/caseStudies";
 import { blogPosts } from "../../../data/blogPosts";
+import { aboutData } from "../../../data/about";
+
 
 export const useCaseStudies = () => {
   const [data, setData] = useState<any[]>(caseStudiesData);
@@ -278,3 +280,32 @@ export const useJobDetails = (id: string) => {
 
   return { data, loading, error };
 };
+
+export const useCompanyInfo = () => {
+  const [data, setData] = useState<any>(aboutData);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const result = await publicService.getCompanyInfo();
+        if (result) {
+          setData(result);
+        } else {
+          setData(aboutData);
+        }
+      } catch (err: any) {
+        setData(aboutData);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, []);
+
+  return { data, loading, error };
+};
+
