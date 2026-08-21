@@ -36,7 +36,26 @@ const HUBS = [
   }
 ];
 
-export const GlobalPresence: React.FC = () => {
+interface GlobalPresenceProps {
+  data?: {
+    title?: string;
+    description?: string;
+    hubs?: Array<{
+      region: string;
+      cities: string;
+      focus: string;
+      latency: string;
+      sla: string;
+      status: string;
+    }>;
+  };
+}
+
+export const GlobalPresence: React.FC<GlobalPresenceProps> = ({ data }) => {
+  const title = data?.title || "Built for a Global Enterprise Landscape";
+  const description = data?.description || "Architecting solutions that scale across borders with 24/7 follow-the-sun engineering delivery.";
+  const hubs = data?.hubs || HUBS;
+
   return (
     <section className="py-24 bg-[#050811] border-y border-[rgba(99,245,232,0.12)] relative overflow-hidden">
       {/* Ambient background glow */}
@@ -51,16 +70,16 @@ export const GlobalPresence: React.FC = () => {
             </span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-4">
-            Built for a Global Enterprise Landscape
+            {title}
           </h2>
           <p className="text-lg text-[#8da5ae] leading-relaxed">
-            Architecting solutions that scale across borders with 24/7 follow-the-sun engineering delivery.
+            {description}
           </p>
         </div>
 
         {/* Global Hubs 4-Column Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
-          {HUBS.map((hub, index) => (
+          {hubs && hubs.map((hub, index) => (
             <div
               key={index}
               className="p-6 bg-[#08101a] border border-[rgba(140,174,187,0.18)] hover:border-[#63f5e8] hover:bg-[#0c1828] rounded-xl transition-all duration-300 flex flex-col justify-between group"
@@ -126,3 +145,4 @@ export const GlobalPresence: React.FC = () => {
 };
 
 export default GlobalPresence;
+

@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from apps.cms.models import Service, CaseStudy, Industry, Category, BlogPost
+from apps.cms.models import Service, CaseStudy, Industry, Category, BlogPost, CompanyInformation
 
 class ServiceSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Service
         fields = '__all__'
@@ -50,3 +51,9 @@ class BlogPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogPost
         fields = '__all__'
+
+class CompanyInformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompanyInformation
+        fields = '__all__'
+

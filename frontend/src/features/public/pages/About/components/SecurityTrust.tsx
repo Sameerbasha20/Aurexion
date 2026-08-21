@@ -1,7 +1,23 @@
 import React from "react";
 import { aboutData } from "../../../../../data/about";
 
-export const SecurityTrust: React.FC = () => {
+import { getIconComponent } from "./IconResolver";
+
+interface SecurityTrustProps {
+  data?: {
+    title?: string;
+    items?: Array<{
+      title: string;
+      description: string;
+      icon: any;
+    }>;
+  };
+}
+
+export const SecurityTrust: React.FC<SecurityTrustProps> = ({ data }) => {
+  const title = data?.title || aboutData.security.title;
+  const items = data?.items || aboutData.security.items;
+
   return (
     <section className="py-20 bg-[#050B14] border-t border-border/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,7 +29,7 @@ export const SecurityTrust: React.FC = () => {
             </span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-4">
-            {aboutData.security.title}
+            {title}
           </h2>
           <p className="text-base md:text-lg text-gray-400 leading-relaxed">
             Enterprise software engineered with defense-in-depth protocols across every storage, network, and application layer.
@@ -21,8 +37,8 @@ export const SecurityTrust: React.FC = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
-          {aboutData.security.items.map((item: any, index: number) => {
-            const Icon = item.icon;
+          {items && items.map((item: any, index: number) => {
+            const Icon = getIconComponent(item.icon);
             return (
               <div
                 key={index}
@@ -52,5 +68,6 @@ export const SecurityTrust: React.FC = () => {
     </section>
   );
 };
+
 
 export default SecurityTrust;

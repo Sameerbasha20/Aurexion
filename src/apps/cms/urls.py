@@ -4,7 +4,8 @@ from rest_framework.routers import DefaultRouter
 from apps.cms.views import (
     AdminServiceViewSet, AdminCaseStudyViewSet, AdminIndustryViewSet, AdminCategoryViewSet, AdminBlogPostViewSet,
     PublicServiceDetailView, PublicIndustryDetailView, PublicCaseStudyViewSet, PublicBlogPostViewSet,
-    PublicServiceListView, PublicIndustryListView, MediaUploadView
+    PublicServiceListView, PublicIndustryListView, MediaUploadView,
+    AdminCompanyInformationViewSet, PublicCompanyInformationView
 )
 
 router = DefaultRouter()
@@ -14,13 +15,16 @@ router.register(r'cms/admin/case-studies', AdminCaseStudyViewSet, basename='admi
 router.register(r'cms/admin/industries', AdminIndustryViewSet, basename='admin-industry')
 router.register(r'cms/admin/categories', AdminCategoryViewSet, basename='admin-categories')
 router.register(r'cms/admin/blog', AdminBlogPostViewSet, basename='admin-blog')
+router.register(r'cms/admin/company-info', AdminCompanyInformationViewSet, basename='admin-company-info')
 
 # Public viewsets
 router.register(r'cms/public/case-studies', PublicCaseStudyViewSet, basename='public-case-studies')
 router.register(r'cms/public/blog', PublicBlogPostViewSet, basename='public-blog')
 
+
 urlpatterns = [
     # Public detail views
+    path('cms/public/company-info/', PublicCompanyInformationView.as_view(), name='public-company-info'),
     path('cms/public/services/', PublicServiceListView.as_view(), name='public-service-list'),
     path('cms/public/service/<slug:slug>/', PublicServiceDetailView.as_view(), name='public-service-detail'),
     path('cms/public/industries/', PublicIndustryListView.as_view(), name='public-industry-list'),
@@ -31,3 +35,4 @@ urlpatterns = [
     
     path('', include(router.urls)),
 ]
+

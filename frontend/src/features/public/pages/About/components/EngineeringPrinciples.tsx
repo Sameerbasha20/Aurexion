@@ -1,15 +1,30 @@
 import React from "react";
 import { aboutData } from "../../../../../data/about";
+import { getIconComponent } from "./IconResolver";
 
-export const EngineeringPrinciples: React.FC = () => {
+interface EngineeringPrinciplesProps {
+  data?: {
+    title?: string;
+    items?: Array<{
+      title: string;
+      description: string;
+      icon: any;
+    }>;
+  };
+}
+
+export const EngineeringPrinciples: React.FC<EngineeringPrinciplesProps> = ({ data }) => {
+  const title = data?.title || aboutData.principles.title;
+  const items = data?.items || aboutData.principles.items;
+
   return (
     <section className="py-24 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold mb-16 text-center">{aboutData.principles.title}</h2>
+        <h2 className="text-3xl md:text-4xl font-bold mb-16 text-center">{title}</h2>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-          {aboutData.principles.items.map((principle: any, index: number) => {
-            const Icon = principle.icon;
+          {items && items.map((principle: any, index: number) => {
+            const Icon = getIconComponent(principle.icon);
             return (
               <div key={index} className="group cursor-pointer">
                 <div className="flex items-center gap-4 mb-4">
@@ -29,3 +44,4 @@ export const EngineeringPrinciples: React.FC = () => {
     </section>
   );
 };
+

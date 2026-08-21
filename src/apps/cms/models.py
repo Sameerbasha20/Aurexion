@@ -104,11 +104,41 @@ class BlogPost(models.Model):
     def __str__(self):
         return self.title
 
+class CompanyInformation(models.Model):
+    title = models.CharField(max_length=200, default="Aurexion Technologies")
+    slug = models.SlugField(max_length=200, unique=True, default="aurexion")
+    
+    hero = models.JSONField(default=dict, blank=True)
+    overview = models.JSONField(default=dict, blank=True)
+    foundation = models.JSONField(default=dict, blank=True)
+    vision = models.JSONField(default=dict, blank=True)
+    mission = models.JSONField(default=dict, blank=True)
+    global_presence = models.JSONField(default=dict, blank=True)
+    leadership = models.JSONField(default=dict, blank=True)
+    governance = models.JSONField(default=dict, blank=True)
+    values = models.JSONField(default=dict, blank=True)
+    security = models.JSONField(default=dict, blank=True)
+    differentiators = models.JSONField(default=dict, blank=True)
+    principles = models.JSONField(default=dict, blank=True)
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Company Information"
+        verbose_name_plural = "Company Information"
+
+    def __str__(self):
+        return f"{self.title} ({self.status})"
+
 # Signal to invalidate cache when any CMS object is saved or deleted
 @receiver([post_save, post_delete], sender=Service)
 @receiver([post_save, post_delete], sender=Industry)
 @receiver([post_save, post_delete], sender=CaseStudy)
 @receiver([post_save, post_delete], sender=Category)
 @receiver([post_save, post_delete], sender=BlogPost)
+@receiver([post_save, post_delete], sender=CompanyInformation)
 def invalidate_cms_cache(sender, **kwargs):
     cache.clear()
+

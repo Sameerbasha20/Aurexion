@@ -2,7 +2,23 @@ import React from "react";
 import { aboutData } from "../../../../../data/about";
 import { Linkedin } from "lucide-react";
 
-export const LeadershipSection: React.FC = () => {
+interface LeadershipSectionProps {
+  data?: {
+    title?: string;
+    items?: Array<{
+      name: string;
+      designation: string;
+      image: string;
+      bio: string;
+      linkedin: string;
+    }>;
+  };
+}
+
+export const LeadershipSection: React.FC<LeadershipSectionProps> = ({ data }) => {
+  const title = data?.title || aboutData.leadership.title;
+  const items = data?.items || aboutData.leadership.items;
+
   return (
     <section className="py-24 bg-[#050B14] border-t border-border/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,7 +30,7 @@ export const LeadershipSection: React.FC = () => {
             </span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-4">
-            {aboutData.leadership.title}
+            {title}
           </h2>
           <p className="text-base md:text-lg text-gray-400 leading-relaxed">
             Seasoned technology executives and enterprise architects guiding our global engineering strategy.
@@ -22,7 +38,7 @@ export const LeadershipSection: React.FC = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {aboutData.leadership.items.map((leader: any, index: number) => (
+          {items && items.map((leader: any, index: number) => (
             <div
               key={index}
               className="group border border-[#1b2b3d] bg-[#0b1420] rounded-xl overflow-hidden hover:border-[#63f5e8]/40 hover:bg-[#0e1a2b] transition-all duration-200 flex flex-col"
@@ -73,5 +89,6 @@ export const LeadershipSection: React.FC = () => {
     </section>
   );
 };
+
 
 export default LeadershipSection;

@@ -3,7 +3,15 @@ import { Link } from "wouter";
 import { ArrowUpRight } from "lucide-react";
 import { aboutData } from "../../../../../data/about";
 
-export const AboutHero: React.FC = () => {
+interface AboutHeroProps {
+  data?: {
+    eyebrow?: string;
+    heading?: string;
+    description?: string;
+  };
+}
+
+export const AboutHero: React.FC<AboutHeroProps> = ({ data }) => {
   return (
     <section className="subpage-immersive-hero">
       {/* High-Resolution Brightened Background Artwork */}
@@ -20,19 +28,18 @@ export const AboutHero: React.FC = () => {
       <div className="subpage-hero-container">
         <div style={{ maxWidth: "880px" }}>
           <div className="subpage-hero-eyebrow">
-            <span className="subpage-cat-tag">ABOUT AUREXION</span>
+            <span className="subpage-cat-tag">{data?.eyebrow || "ABOUT AUREXION"}</span>
             <span className="subpage-signal-divider" />
             <span className="subpage-code-tag">ENGINEERING HERITAGE</span>
           </div>
 
-          <h1 className="subpage-hero-title">
-            Engineering the Foundations of the <em>Digital Future</em>
-          </h1>
+          <h1 className="subpage-hero-title" dangerouslySetInnerHTML={{ __html: data?.heading || "Engineering the Foundations of the <em>Digital Future</em>" }} />
 
           <p className="subpage-hero-desc">
-            {aboutData.hero.description ||
+            {data?.description || aboutData.hero.description ||
               "Aurexion is a global technology consulting and software engineering firm dedicated to designing resilient, scalable, and intelligent software systems for forward-looking enterprises."}
           </p>
+
 
           {/* Core Values / Focus */}
           <div className="subpage-tech-row">
