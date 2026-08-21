@@ -1,36 +1,32 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "../../../../hooks/useAuth";
-import { useLeadsQuery, useMarkLeadWonMutation, useMarkLeadLostMutation } from "../../../../queries/useCrmQueries";
+import { useLeadsQuery } from "../../../../queries/useCrmQueries";
+import crmService from "../../services/crmService";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import LoadingState from "../../../../components/feedback/LoadingState";
 import ErrorState from "../../../../components/feedback/ErrorState";
 import EmptyState from "../../../../components/feedback/EmptyState";
-import LeadDetailDrawer from "../../components/LeadDetailDrawer";
-import { toast } from "sonner";
 import { Mail, Phone, Search, RefreshCw, MessageSquare, CheckCircle2, Calendar } from "lucide-react";
 
 export const ContactForms: React.FC = () => {
   const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
-<<<<<<< HEAD
-  const { leads, isLoading, error, refetch } = useLeads({ page_size: 50 });
+  const { data, isLoading, error, refetch } = useLeadsQuery({ page_size: 50 });
+  const leads = data?.results || [];
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [scheduledLeadIds, setScheduledLeadIds] = useState<Set<number>>(new Set());
-=======
-  const { data, isLoading, error, refetch } = useLeadsQuery({ page_size: 50 });
-  const leads = data?.results || [];
-
-  const wonMutation = useMarkLeadWonMutation();
-  const lostMutation = useMarkLeadLostMutation();
->>>>>>> 915bc3df0a7fa4e8eb523f34790d0b36596ff108
 
   // Meeting Schedule Modal State
   const [selectedMeetingLead, setSelectedMeetingLead] = useState<any | null>(null);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [meetingType, setMeetingType] = useState("MEETING");
+  const [meetingLink, setMeetingLink] = useState("");
+  const [meetingNotes, setMeetingNotes] = useState("");
+  const [scheduling, setScheduling] = useState(false);
 
-<<<<<<< HEAD
   // Custom Mark WON Modal State
   const [selectedWonLead, setSelectedWonLead] = useState<any | null>(null);
   const [wonValue, setWonValue] = useState("25000");
@@ -108,35 +104,11 @@ export const ContactForms: React.FC = () => {
     } finally {
       setLostLoading(false);
     }
-=======
-  const handleMarkWon = (leadId: number, leadName: string) => {
-    if (!window.confirm(`Mark ${leadName} as WON? This will generate client credentials (default password: client@2026) and email the client.`)) return;
-    wonMutation.mutate(leadId, {
-      onSuccess: () => toast.success(`Lead marked WON! Client User account created (password: client@2026) & credentials email sent.`),
-      onError: (err: any) => toast.error(err?.message || "Failed to mark lead as won."),
-    });
-  };
-
-  const handleMarkLost = (leadId: number) => {
-    const reason = window.prompt("Reason for declining/marking lost:");
-    if (reason === null) return;
-    if (!reason.trim()) {
-      toast.error("A reason is required to mark as lost.");
-      return;
-    }
-    lostMutation.mutate(
-      { leadId, reason: reason.trim() },
-      {
-        onSuccess: () => toast.success("Lead marked as lost/declined."),
-        onError: (err: any) => toast.error(err?.message || "Failed to mark lead as lost."),
-      }
-    );
->>>>>>> 915bc3df0a7fa4e8eb523f34790d0b36596ff108
   };
 
   const { user } = useAuth();
 
-  const contactLeads = leads.filter((lead) => {
+  const contactLeads = leads.filter((lead: any) => {
     // Sales Executive role scope: only display leads assigned to current executive
     if (user && user.role === "SALES_EXECUTIVE") {
       const isAssignedToMe =
@@ -241,7 +213,7 @@ export const ContactForms: React.FC = () => {
           />
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {contactLeads.map((lead) => (
+            {contactLeads.map((lead: any) => (
               <div
                 key={lead.id}
                 style={{
@@ -393,7 +365,6 @@ export const ContactForms: React.FC = () => {
         )}
       </Card>
 
-<<<<<<< HEAD
       {/* Schedule Meeting Modal */}
       {selectedMeetingLead && (
         <div style={{
@@ -748,15 +719,6 @@ export const ContactForms: React.FC = () => {
           </Card>
         </div>
       )}
-=======
-      {/* Lead Detail Drawer (replaces Schedule Meeting Modal) */}
-      <LeadDetailDrawer
-        leadId={selectedMeetingLead?.id || null}
-        open={!!selectedMeetingLead}
-        onClose={() => setSelectedMeetingLead(null)}
-        onLeadUpdated={refetch}
-      />
->>>>>>> 915bc3df0a7fa4e8eb523f34790d0b36596ff108
     </div>
   );
 };

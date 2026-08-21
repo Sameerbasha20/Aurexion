@@ -32,10 +32,10 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const { data: activities = [] } = useLeadActivitiesQuery(leadId, open);
   const { data: assignableUsers = [] } = useAssignableUsersQuery(open);
 
-  const assignMutation = useAssignLeadMutation(leadId);
-  const transitionMutation = useTransitionLeadMutation(leadId);
-  const addNoteMutation = useCreateNoteMutation(leadId);
-  const addFollowUpMutation = useCreateFollowUpMutation(leadId);
+  const assignMutation = useAssignLeadMutation(leadId || 0);
+  const transitionMutation = useTransitionLeadMutation(leadId || 0);
+  const addNoteMutation = useCreateNoteMutation(leadId || 0);
+  const addFollowUpMutation = useCreateFollowUpMutation(leadId || 0);
   const completeFollowUpMutation = useCompleteFollowUpMutation();
   const lostMutation = useMarkLeadLostMutation();
 

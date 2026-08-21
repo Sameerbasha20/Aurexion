@@ -98,7 +98,7 @@ export const LeadDetail: React.FC = () => {
 
   const updateLeadMutation = useUpdateLeadMutation(leadId);
   const transitionMutation = useTransitionLeadMutation(leadId);
-  const qualifyMutation = useQualifyLeadMutation(leadId);
+  const qualifyMutation = useQualifyLeadMutation();
   const wonMutation = useMarkLeadWonMutation();
   const lostMutation = useMarkLeadLostMutation();
   const assignMutation = useAssignLeadMutation(leadId);
@@ -183,10 +183,10 @@ export const LeadDetail: React.FC = () => {
 
   const handleStageTransition = async (targetStatus: string) => {
     try {
-      await transitionStatus(targetStatus);
-      showFeedback("success", `Lead stage updated to ${targetStatus.replace(/_/g, " ")}.`);
+      await transitionMutation.mutateAsync(targetStatus);
+      toast.success(`Lead stage updated to ${targetStatus.replace(/_/g, " ")}.`);
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to transition lead status.");
+      toast.error(err?.message || "Failed to transition lead status.");
     }
   };
 
@@ -287,7 +287,7 @@ export const LeadDetail: React.FC = () => {
   };
 
   const handleQualify = () => {
-    qualifyMutation.mutate(undefined, {
+    qualifyMutation.mutate(leadId, {
       onSuccess: () => toast.success("Lead qualified to opportunity."),
       onError: (err: any) => toast.error(err?.message || "Failed to qualify lead."),
     });

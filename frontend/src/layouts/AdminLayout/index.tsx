@@ -11,9 +11,9 @@ interface AdminLayoutProps {
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
-  const sidebarOpen = useUIStore((state) => state.sidebarOpen);
-  const setSidebarOpen = useUIStore((state) => state.setSidebarOpen);
-  const toggleSidebar = useUIStore((state) => state.toggleSidebar);
+  const sidebarOpen = useUIStore((state: any) => state.sidebarOpen);
+  const setSidebarOpen = useUIStore((state: any) => state.setSidebarOpen);
+  const toggleSidebar = useUIStore((state: any) => state.toggleSidebar);
 
   useEffect(() => {
     setSidebarOpen(!isMobile);
