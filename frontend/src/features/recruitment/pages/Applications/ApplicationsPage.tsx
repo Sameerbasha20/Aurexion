@@ -362,7 +362,7 @@ export const Applications: React.FC = () => {
                   <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
                     RESUME
                   </th>
-                  <th style={{ padding: "0.85rem 1rem", textAlign: "right", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                  <th style={{ padding: "0.85rem 1rem", textAlign: "center", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
                     ACTION
                   </th>
                 </tr>
@@ -443,14 +443,16 @@ export const Applications: React.FC = () => {
                         )}
                       </td>
 
-                      <td style={{ padding: "1rem", textAlign: "right" }}>
-                        <Button
-                          variant="outline"
-                          onClick={() => setReviewApp(app)}
-                          style={{ padding: "0.3rem 0.65rem", fontSize: "0.75rem" }}
-                        >
-                          Inspect Desk
-                        </Button>
+                      <td style={{ padding: "1rem", textAlign: "center" }}>
+                        <div style={{ display: "flex", justifyContent: "center" }}>
+                          <Button
+                            variant="outline"
+                            onClick={() => setReviewApp(app)}
+                            style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem" }}
+                          >
+                            Inspect Desk
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );

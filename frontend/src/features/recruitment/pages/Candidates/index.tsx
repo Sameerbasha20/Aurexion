@@ -295,7 +295,7 @@ export const Candidates: React.FC = () => {
                   <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
                     RESUME
                   </th>
-                  <th style={{ padding: "0.85rem 1rem", textAlign: "right", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                  <th style={{ padding: "0.85rem 1rem", textAlign: "center", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
                     ACTIONS
                   </th>
                 </tr>
@@ -373,15 +373,8 @@ export const Candidates: React.FC = () => {
                         )}
                       </td>
 
-                      <td style={{ padding: "1rem", textAlign: "right" }}>
-                        <div style={{ display: "flex", gap: "0.4rem", justifyContent: "flex-end" }}>
-                          <Button
-                            variant="outline"
-                            onClick={() => handleOpenStageModal(candidate)}
-                            style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem" }}
-                          >
-                            Update Stage
-                          </Button>
+                      <td style={{ padding: "1rem", textAlign: "center" }}>
+                        <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center" }}>
                           <Button
                             glow
                             onClick={() => handleOpenReview(candidate)}
