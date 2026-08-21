@@ -8,13 +8,16 @@ import { Label } from "../../../../components/ui/label";
 import Card from "../../../../components/ui/card";
 import PageHeader from "../../components/PageHeader";
 import { getErrorMessage } from "../../components/StateViews";
-import type { TicketCategory, TicketPriority } from "../../types/portal.types";
+import type { TicketCategory, TicketPriority, ClientProjectItem } from "../../types/portal.types";
 import useCreateTicket from "../../hooks/useCreateTicket";
+import usePortalQuery from "../../hooks/usePortalQuery";
+import portalService from "../../services/portalService";
 
 const CATEGORY_OPTIONS: { value: TicketCategory; label: string }[] = [
   { value: "general", label: "General Inquiry" },
   { value: "bug", label: "Bug Report" },
-  { value: "enhancement", label: "Feature Request / Enhancement" },
+  { value: "incident", label: "Operational Incident" },
+  { value: "enhancement", label: "Feature Request / Change Request" },
   { value: "security", label: "Security Incident" },
   { value: "infrastructure", label: "Infrastructure / Server Issue" },
 ];
@@ -30,9 +33,16 @@ export const CreateTicket: React.FC = () => {
   const create = useCreateTicket();
   const [, setLocation] = useLocation();
 
+  const projectsQuery = usePortalQuery<ClientProjectItem[]>(
+    ["portal", "projects"],
+    () => portalService.getProjects()
+  );
+  const projects = projectsQuery.data || [];
+
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState<TicketCategory>("general");
   const [priority, setPriority] = useState<TicketPriority>("medium");
+  const [projectId, setProjectId] = useState<string>("none");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -52,6 +62,7 @@ export const CreateTicket: React.FC = () => {
         subject: subject.trim(),
         category,
         priority,
+        project: projectId && projectId !== "none" ? Number(projectId) : null,
       });
       setSubmitted(true);
       window.setTimeout(() => setLocation("/portal/support/tickets"), 1200);
@@ -73,8 +84,8 @@ export const CreateTicket: React.FC = () => {
 
       <PageHeader
         eyebrow="CLIENT SUPPORT"
-        title="Create Support Ticket"
-        description="Submit a support request to the Aurexion technical engineering team. We will process your ticket promptly."
+        title="Create Support Ticket / Incident"
+        description="Submit a support request or operational incident to the Aurexion technical engineering team."
       />
 
       {submitted ? (
@@ -121,10 +132,29 @@ export const CreateTicket: React.FC = () => {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 maxLength={255}
-                placeholder="Brief summary of the issue or request"
+                placeholder="Brief summary of the issue or operational incident"
                 aria-invalid={!!errors.subject}
               />
               {errors.subject && <span style={{ color: "#f87171", fontSize: "0.78rem" }}>{errors.subject}</span>}
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+              <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+                RELATED PROJECT (OPTIONAL)
+              </Label>
+              <Select value={projectId} onValueChange={(v) => setProjectId(v)}>
+                <SelectTrigger style={{ width: "100%" }}>
+                  <SelectValue placeholder="Select a project" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">General (No specific project)</SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={String(p.id)}>
+                      {p.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
@@ -176,4 +206,4 @@ export const CreateTicket: React.FC = () => {
   );
 };
 
-export default CreateTicket;
+export default CreateTicket;

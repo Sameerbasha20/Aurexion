@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "wouter";
-import { LifeBuoy, Clock, ShieldAlert, CheckCircle2, ListChecks, ArrowRight, UserCheck, AlertCircle } from "lucide-react";
+import { LifeBuoy, Clock, ShieldAlert, CheckCircle2, ListChecks, ArrowRight, UserCheck, AlertCircle, RefreshCw } from "lucide-react";
 import Card from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
@@ -9,6 +9,7 @@ import { TicketCategoryBadge, TicketPriorityBadge, TicketStatusBadge } from "../
 import { formatDateTime } from "../../portal/utils/format";
 import type { SupportTicketItem } from "../../portal/types/portal.types";
 import useExecutiveTickets from "../hooks/useExecutiveTickets";
+import useExecutiveDashboardStats from "../hooks/useExecutiveDashboardStats";
 
 interface ExecutiveKpiCardProps {
   label: string;
@@ -162,12 +163,10 @@ const ExecutiveRecentTicketsTable: React.FC<{ tickets: SupportTicketItem[] }> = 
 
 export const SupportDashboard: React.FC = () => {
   const tickets = useExecutiveTickets();
+  const statsQuery = useExecutiveDashboardStats();
 
   const calculateKpiStats = (allTickets: SupportTicketItem[]): KpiStats => {
-    // The backend already scopes tickets to the current executive's queue
-    // (assigned to them + unassigned). Compute stats over the full API response.
     const assignedTickets = allTickets.filter((t) => t.assigned_username !== null);
-
     return {
       totalAssigned: assignedTickets.length,
       openAssigned: allTickets.filter((t) => t.status === "open" || t.status === "assigned").length,
@@ -180,8 +179,18 @@ export const SupportDashboard: React.FC = () => {
     };
   };
 
-  const stats = tickets.data ? calculateKpiStats(tickets.data) : null;
-  const isKpiLoading = tickets.isLoading && !stats;
+  const stats = statsQuery.data
+    ? statsQuery.data
+    : tickets.data
+    ? calculateKpiStats(tickets.data)
+    : null;
+
+  const isKpiLoading = (statsQuery.isLoading || tickets.isLoading) && !stats;
+
+  const handleRefresh = () => {
+    statsQuery.refetch();
+    tickets.refetch();
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem", width: "100%", maxWidth: "100%" }}>
@@ -198,16 +207,22 @@ export const SupportDashboard: React.FC = () => {
             Real-time control center for client inquiries, ticket assignments, and issue resolutions.
           </p>
         </div>
-        <Link href="/support/tickets" style={{ flexShrink: 0 }}>
-          <Button glow size="sm" style={{ height: "40px", display: "flex", alignItems: "center", gap: "8px" }}>
-            <ListChecks size={14} />
-            View All Tickets
+        <div style={{ display: "flex", gap: "0.75rem", flexShrink: 0 }}>
+          <Button variant="outline" size="sm" onClick={handleRefresh} style={{ height: "40px", display: "flex", alignItems: "center", gap: "6px" }}>
+            <RefreshCw size={14} />
+            Refresh Dashboard
           </Button>
-        </Link>
+          <Link href="/support/tickets">
+            <Button glow size="sm" style={{ height: "40px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <ListChecks size={14} />
+              View All Tickets
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {tickets.isError && !tickets.data ? (
-        <ErrorState error={tickets.error} onRetry={tickets.refetch} title="Unable to load support tickets queue" />
+        <ErrorState error={tickets.error} onRetry={handleRefresh} title="Unable to load support tickets queue" />
       ) : (
         <>
           <ExecutiveKpiSection stats={stats} isLoading={isKpiLoading} />

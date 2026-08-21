@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ApiError } from "../../../api/apiErrorHandler";
+import { subscribeSupportDataChanged } from "../../support/services/supportEvents";
 
 export interface PortalQueryResult<T> {
   data: T | null;
@@ -42,6 +43,18 @@ export function usePortalQuery<T>(
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick, ...queryKey]);
+
+  useEffect(() => {
+    const isSupportQuery = queryKey.some(
+      (k) => typeof k === "string" && (k === "support" || k.includes("ticket"))
+    );
+    if (isSupportQuery) {
+      const unsubscribe = subscribeSupportDataChanged(() => {
+        setTick((t) => t + 1);
+      });
+      return unsubscribe;
+    }
+  }, [queryKey]);
 
   const refetch = useCallback(() => {
     setTick((t) => t + 1);
