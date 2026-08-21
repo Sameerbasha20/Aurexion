@@ -2,13 +2,23 @@ from django.http import Http404
 
 from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema, extend_schema_view
 from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from rest_framework.authentication import SessionAuthentication
 from apps.authentication.audit import log_audit_event
 from apps.administration.permissions import IsAdministrator, IsClientUser
-from apps.portal.models import SupportTicket, ClientProject, ClientRequest, ClientDocument
+from apps.portal.models import (
+    SupportTicket,
+    ClientProject,
+    ProjectMilestone,
+    SprintDeliverable,
+    ClientRequest,
+    ConsultationRequest,
+    ClientDocument,
+    ClientNotification,
+)
 from apps.portal.authentication import ProfileJWTAuthentication
 from apps.portal.permissions import (
     IsClientTicketOwner,
@@ -23,8 +33,12 @@ from apps.portal.serializers import (
     SupportExecutiveTicketUpdateSerializer,
     AdministratorTicketUpdateSerializer,
     ClientProjectSerializer,
+    ProjectMilestoneSerializer,
+    SprintDeliverableSerializer,
     ClientRequestSerializer,
+    ConsultationRequestSerializer,
     ClientDocumentSerializer,
+    ClientNotificationSerializer,
 )
 from apps.portal.services import SupportTicketService
 
@@ -268,6 +282,27 @@ class SupportExecutiveTicketViewSet(
             request=self.request,
         )
 
+    @action(detail=False, methods=['get'], url_path='stats')
+    def stats(self, request):
+        user = request.user
+        role = getattr(getattr(user, 'profile', None), 'role', None)
+        if user.is_superuser or role in ('administrator', 'super_admin'):
+            qs = SupportTicket.objects.all()
+            assigned_qs = qs.filter(assigned_to__isnull=False)
+        else:
+            qs = SupportTicketService.get_support_tickets(user)
+            assigned_qs = qs.filter(assigned_to=user)
+
+        stats_data = {
+            'totalAssigned': assigned_qs.count(),
+            'openAssigned': qs.filter(status__in=['open', 'assigned']).count(),
+            'inProgress': qs.filter(status='in_progress').count(),
+            'awaitingClient': qs.filter(status='awaiting_client').count(),
+            'resolvedClosed': qs.filter(status__in=['resolved', 'closed']).count(),
+            'criticalPriority': qs.filter(priority='critical').exclude(status__in=['resolved', 'closed']).count(),
+        }
+        return Response(stats_data)
+
 
 @extend_schema_view(
     list=extend_schema(tags=['Support (Administrator)'], summary="List all support tickets"),
@@ -482,6 +517,67 @@ class TicketViewSet(
             request=self.request,
         )
 
+from datetime import timedelta
+from django.utils import timezone
+
+def ensure_client_project_exists(user):
+    """
+    Ensures an onboarded client user has at least one active project and timeline milestones.
+    """
+    if not user or not user.is_authenticated:
+        return None
+
+    existing = ClientProject.objects.filter(client_user=user).first()
+    if existing:
+        return existing
+
+    company_name = user.first_name or (user.username.split('@')[0].capitalize() if '@' in user.username else user.username)
+    today = timezone.now().date()
+    target_date = today + timedelta(days=90)
+
+    project = ClientProject.objects.create(
+        client_user=user,
+        title=f"{company_name} - Digital Transformation & Systems Integration",
+        description=f"Active enterprise project engagement for {company_name}. Scope includes custom development, architecture setup, and cloud integration.",
+        status='in_progress',
+        progress_percentage=35,
+        delivery_lead_name="Aurexion Senior Delivery Lead",
+        start_date=today - timedelta(days=14),
+        target_completion_date=target_date,
+    )
+
+    # Create Milestones
+    ProjectMilestone.objects.create(
+        project=project,
+        name="Phase 1: Discovery & Requirements Sign-off",
+        status="completed",
+        is_current=False,
+        planned_date=today - timedelta(days=7),
+    )
+    ProjectMilestone.objects.create(
+        project=project,
+        name="Phase 2: Architecture & Core Module Implementation",
+        status="in_progress",
+        is_current=True,
+        planned_date=today + timedelta(days=30),
+    )
+    ProjectMilestone.objects.create(
+        project=project,
+        name="Phase 3: System Integration & UAT Testing",
+        status="upcoming",
+        is_current=False,
+        planned_date=today + timedelta(days=60),
+    )
+    ProjectMilestone.objects.create(
+        project=project,
+        name="Phase 4: Final Production Deployment & Handoff",
+        status="upcoming",
+        is_current=False,
+        planned_date=target_date,
+    )
+
+    return project
+
 
 @extend_schema_view(
     list=extend_schema(tags=['Client Portal (Projects)'], summary="List my projects"),
@@ -499,7 +595,11 @@ class ClientProjectViewSet(viewsets.ModelViewSet):
     lookup_field = 'pk'
 
     def get_queryset(self):
-        return ClientProject.objects.filter(client_user=self.request.user)
+        user = self.request.user
+        if user and user.is_authenticated:
+            ensure_client_project_exists(user)
+            return ClientProject.objects.filter(client_user=user)
+        return ClientProject.objects.none()
 
     def perform_create(self, serializer):
         serializer.save(client_user=self.request.user)
@@ -529,7 +629,7 @@ class ClientRequestViewSet(viewsets.ModelViewSet):
 
 @extend_schema_view(
     list=extend_schema(tags=['Client Portal (Documents)'], summary="List my documents"),
-    create=extend_schema(tags=['Client Portal (Documents)'], summary="Create a document"),
+    create=extend_schema(tags=['Client Portal (Documents)'], summary="Upload a document"),
     retrieve=extend_schema(tags=['Client Portal (Documents)'], summary="Get document details"),
     update=extend_schema(tags=['Client Portal (Documents)'], summary="Update document"),
     partial_update=extend_schema(tags=['Client Portal (Documents)'], summary="Partially update document"),
@@ -547,3 +647,125 @@ class ClientDocumentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(client_user=self.request.user)
+
+
+@extend_schema_view(
+    list=extend_schema(tags=['Client Portal (Milestones)'], summary="List project milestones"),
+    retrieve=extend_schema(tags=['Client Portal (Milestones)'], summary="Get milestone details"),
+)
+class ProjectMilestoneViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsClientUser]
+    authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
+    serializer_class = ProjectMilestoneSerializer
+    queryset = ProjectMilestone.objects.none()
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        user = self.request.user
+        if user and user.is_authenticated:
+            ensure_client_project_exists(user)
+            return ProjectMilestone.objects.filter(project__client_user=user)
+        return ProjectMilestone.objects.none()
+
+
+@extend_schema_view(
+    list=extend_schema(tags=['Client Portal (Deliverables)'], summary="List sprint deliverables"),
+    retrieve=extend_schema(tags=['Client Portal (Deliverables)'], summary="Get deliverable details"),
+)
+class SprintDeliverableViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsClientUser]
+    authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
+    serializer_class = SprintDeliverableSerializer
+    queryset = SprintDeliverable.objects.none()
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        return SprintDeliverable.objects.filter(project__client_user=self.request.user)
+
+
+@extend_schema_view(
+    list=extend_schema(tags=['Client Portal (Consultations)'], summary="List my consultation requests"),
+    create=extend_schema(tags=['Client Portal (Consultations)'], summary="Request a consultation"),
+    retrieve=extend_schema(tags=['Client Portal (Consultations)'], summary="Get consultation details"),
+    destroy=extend_schema(tags=['Client Portal (Consultations)'], summary="Cancel consultation request"),
+)
+class ConsultationRequestViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsClientUser]
+    authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
+    serializer_class = ConsultationRequestSerializer
+    queryset = ConsultationRequest.objects.none()
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        return ConsultationRequest.objects.filter(client_user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(client_user=self.request.user)
+
+
+@extend_schema_view(
+    list=extend_schema(tags=['Client Portal (Notifications)'], summary="List my notifications"),
+    retrieve=extend_schema(tags=['Client Portal (Notifications)'], summary="Get notification details"),
+)
+class ClientNotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsClientUser]
+    authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
+    serializer_class = ClientNotificationSerializer
+    queryset = ClientNotification.objects.none()
+    lookup_field = 'pk'
+
+    def get_queryset(self):
+        return ClientNotification.objects.filter(client_user=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def read(self, request, pk=None):
+        notification = self.get_object()
+        notification.is_read = True
+        notification.save()
+        return Response({'status': 'marked as read'})
+
+    @action(detail=False, methods=['post'], url_path='read-all')
+    def read_all(self, request):
+        ClientNotification.objects.filter(client_user=request.user, is_read=False).update(is_read=True)
+        return Response({'status': 'all notifications marked as read'})
+
+
+class DocumentDownloadView(viewsets.ViewSet):
+    permission_classes = [IsClientUser]
+    authentication_classes = [ProfileJWTAuthentication, SessionAuthentication]
+
+    def retrieve(self, request, pk=None):
+        try:
+            document = ClientDocument.objects.get(pk=pk)
+        except ClientDocument.DoesNotExist:
+            raise Http404("Document not found.")
+
+        if document.client_user_id != request.user.id and not request.user.is_superuser:
+            log_audit_event(
+                user=request.user,
+                action='ACCESS_DENIED',
+                module='portal',
+                object_id=pk,
+                repr_str=f"Unauthorized download attempt for document ID {pk} belonging to user ID {document.client_user_id}",
+                request=request
+            )
+            raise PermissionDenied("You are not authorized to download this document.")
+
+        log_audit_event(
+            user=request.user,
+            action='DOWNLOAD',
+            module='portal',
+            object_id=document.id,
+            repr_str=f"Downloaded document {document.title}",
+            request=request
+        )
+
+        return Response({
+            'id': document.id,
+            'title': document.title,
+            'document_type': document.document_type,
+            'file_url': document.file_url,
+            'file_size': document.file_size,
+            'download_allowed': True
+        })
+

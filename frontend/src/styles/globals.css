@@ -348,11 +348,13 @@ h3 {
   letter-spacing: -.065em;
 }
 
-h1 {
+.hero h1,
+.public-hero h1,
+.hero-title {
   max-width: 970px;
   margin: 1.4rem 0 1.6rem;
-  font-size: clamp(4.4rem, 10vw, 9.2rem);
-  line-height: .86;
+  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  line-height: .9;
 }
 
 h1 em,

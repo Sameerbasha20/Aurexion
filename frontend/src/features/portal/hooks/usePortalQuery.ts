@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import type { ApiError } from "../../../api/apiErrorHandler";
+import { subscribeSupportDataChanged } from "../../support/services/supportEvents";
 
 export interface PortalQueryResult<T> {
   data: T | null;
@@ -13,41 +15,39 @@ export function usePortalQuery<T>(
   queryKey: unknown[],
   queryFn: () => Promise<T>
 ): PortalQueryResult<T> {
-  const [data, setData] = useState<T | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<ApiError | null>(null);
-  const [tick, setTick] = useState(0);
-  const queryFnRef = useRef(queryFn);
-  queryFnRef.current = queryFn;
+  const queryClient = useQueryClient();
+
+  const query = useQuery<T, ApiError>({
+    queryKey,
+    queryFn,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000,   // Keep in memory for 10 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
 
   useEffect(() => {
-    let cancelled = false;
-    setIsLoading(true);
-    setError(null);
-    queryFnRef.current()
-      .then((result) => {
-        if (!cancelled) {
-          setData(result);
-          setIsLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err as ApiError);
-          setIsLoading(false);
-        }
+    const isSupportQuery = queryKey.some(
+      (k) => typeof k === "string" && (k === "support" || k.includes("ticket"))
+    );
+    if (isSupportQuery) {
+      const unsubscribe = subscribeSupportDataChanged(() => {
+        queryClient.invalidateQueries({ queryKey });
       });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, ...queryKey]);
+      return unsubscribe;
+    }
+  }, [queryKey, queryClient]);
 
-  const refetch = useCallback(() => {
-    setTick((t) => t + 1);
-  }, []);
-
-  return { data, isLoading, isError: !!error, error, refetch };
+  return {
+    data: query.data ?? null,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error ?? null,
+    refetch: () => {
+      query.refetch();
+    },
+  };
 }
 
 export default usePortalQuery;

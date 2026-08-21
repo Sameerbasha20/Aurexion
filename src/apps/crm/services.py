@@ -336,6 +336,13 @@ def onboard_lead_as_client(*, lead, actor, password=None, request=None):
     profile.role = 'client_user'
     profile.save()
 
+    # Provision initial ClientProject & Milestones for Client Dashboard
+    try:
+        from apps.portal.views import ensure_client_project_exists
+        ensure_client_project_exists(user)
+    except Exception:
+        pass
+
     # Dispatch welcome credentials email
     send_welcome_credentials_email(user, default_password, login_url)
 

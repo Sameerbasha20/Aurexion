@@ -36,15 +36,34 @@ const generateRef = () => {
   return `AUR-RFP-${year}-${seqNum}`;
 };
 
+const nameRegex = /^[a-zA-Z\s'-]+$/;
+
 const rfpSchema = z.object({
-  full_name: z.string().min(2, "Full name is required"),
+  full_name: z
+    .string()
+    .min(1, "Full name is required")
+    .min(2, "Full name must be at least 2 characters")
+    .regex(nameRegex, "Please enter a valid name format (letters, spaces, hyphens, and apostrophes only)")
+    .refine((val) => val.trim().length >= 2, "Please enter a valid full name"),
   company_name: z.string().min(2, "Company name is required"),
   work_email: z.string().email("Valid work email is required"),
-  phone: z.string().min(7, "Phone number is required"),
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(/^\d{10}$/, "Phone number must be exactly 10 digits (numbers only)"),
   designation: z.string().min(2, "Designation / job title is required"),
-  country: z.string().min(1, "Please select your country"),
-  project_type: z.string().min(1, "Please select a project type"),
-  budget_range: z.string().min(1, "Please select a budget range"),
+  country: z
+    .string()
+    .min(1, "Please select your country")
+    .refine((val) => COUNTRIES.includes(val), "Please select a valid country from the dropdown"),
+  project_type: z
+    .string()
+    .min(1, "Please select a project type")
+    .refine((val) => PROJECT_TYPES.includes(val), "Please select a valid project type"),
+  budget_range: z
+    .string()
+    .min(1, "Please select a budget range")
+    .refine((val) => BUDGET_RANGES.includes(val), "Please select a valid budget range"),
   project_description: z.string().min(50, "Please provide at least 50 characters describing your project"),
   nda_required: z.boolean().optional(),
 });
@@ -181,7 +200,7 @@ export const RfpPage: React.FC = () => {
                   </div>
                   <div>
                     <label className={labelClass}>Phone Number <span style={{ color: "#63f5e8" }}>*</span></label>
-                    <input {...register("phone")} type="tel" className={fieldClass} placeholder="+1 (555) 000-0000" />
+                    <input {...register("phone")} type="tel" className={fieldClass} placeholder="Enter 10-digit number" maxLength={10} />
                     {errors.phone && <p className={errorClass}>{errors.phone.message}</p>}
                   </div>
                 </div>

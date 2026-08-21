@@ -7,10 +7,19 @@ import Button from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 
+const nameRegex = /^[a-zA-Z\s'-]+$/;
+
 const leadSchema = z.object({
-  name: z.string().min(2, "Lead name must be at least 2 characters."),
+  name: z
+    .string()
+    .min(1, "Lead name is required.")
+    .min(2, "Lead name must be at least 2 characters.")
+    .regex(nameRegex, "Please enter a valid name format (letters, spaces, hyphens, and apostrophes only)"),
   email: z.string().email("Please enter a valid email address."),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d{10}$/.test(val), "Phone number must be exactly 10 digits (numbers only)."),
   company: z.string().optional(),
   website: z.string().optional(),
   industry: z.string().optional(),

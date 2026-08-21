@@ -198,6 +198,9 @@ export const Navbar: React.FC = () => {
 
         {/* Desktop CTAs */}
         <div className="nav-ctas">
+          <Link href="/contact" className="nav-cta-secondary" onClick={closeAll}>
+            CONTACT
+          </Link>
           <Link href="/login" className="nav-cta-secondary" onClick={closeAll}>
             LOGIN
           </Link>
@@ -265,6 +268,9 @@ export const Navbar: React.FC = () => {
             ))}
           </div>
           <div className="nav-mobile-ctas">
+            <Link href="/contact" className="nav-cta-secondary w-full text-center" onClick={closeAll} style={{ marginBottom: "0.75rem", display: "block" }}>
+              CONTACT
+            </Link>
             <Link href="/login" className="nav-cta-secondary w-full text-center" onClick={closeAll} style={{ marginBottom: "0.75rem", display: "block" }}>
               LOGIN
             </Link>

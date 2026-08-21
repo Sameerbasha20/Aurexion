@@ -92,8 +92,15 @@ export const validateResumeFile = (file: File): { isValid: boolean; error: strin
   return { isValid: true, error: "" };
 };
 
+const nameRegex = /^[a-zA-Z\s'-]+$/;
+
 const applySchema = z.object({
-  name: z.string().min(2, "Full name is required"),
+  name: z
+    .string()
+    .min(1, "Full name is required")
+    .min(2, "Full name must be at least 2 characters")
+    .regex(nameRegex, "Please enter a valid name format (letters, spaces, hyphens, and apostrophes only)")
+    .refine((val) => val.trim().length >= 2, "Please enter a valid full name"),
   email: z.string().email("Valid email address is required"),
   coverLetter: z.string().optional(),
 });

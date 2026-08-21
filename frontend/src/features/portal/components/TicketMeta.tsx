@@ -19,6 +19,7 @@ const STATUS_COLORS: Record<TicketStatus, TagColors> = {
 
 const CATEGORY_LABELS: Record<TicketCategory, string> = {
   bug: "Bug",
+  incident: "Incident",
   enhancement: "Enhancement",
   security: "Security",
   infrastructure: "Infrastructure",

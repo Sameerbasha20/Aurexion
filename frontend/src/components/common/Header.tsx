@@ -22,8 +22,11 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
     const r = (user.role || "").toUpperCase();
     if (r.includes("ADMIN")) return "/admin/dashboard";
     if (r === "BDM" || r.includes("BUSINESS")) return "/bdm/dashboard";
-    if (r.includes("SALES")) return "/crm/dashboard";
-    if (r.includes("CLIENT")) return "/portal/dashboard";
+    if (r.includes("SALES") || r.includes("CRM")) return "/crm/dashboard";
+    if (r.includes("CLIENT") || r.includes("PORTAL")) return "/portal/dashboard";
+    if (r.includes("HR") || r.includes("RECRUIT")) return "/recruitment/dashboard";
+    if (r.includes("CONTENT") || r.includes("CMS")) return "/cms/dashboard";
+    if (r.includes("SUPPORT")) return "/support/dashboard";
     return "/";
   };
 
@@ -33,6 +36,9 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
     if (r === "BDM" || r.includes("BUSINESS")) return "BDM";
     if (r.includes("ADMIN")) return "ADMIN";
     if (r.includes("CLIENT")) return "CLIENT";
+    if (r.includes("HR") || r.includes("RECRUIT")) return "HR_MANAGER";
+    if (r.includes("CONTENT") || r.includes("CMS")) return "CONTENT_MANAGER";
+    if (r.includes("SUPPORT")) return "SUPPORT_EXECUTIVE";
     return role;
   };
 

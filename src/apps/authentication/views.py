@@ -494,7 +494,7 @@ class CanViewOrManageUsers(permissions.BasePermission):
             return True
         role = request.user.profile.role if hasattr(request.user, 'profile') else None
         if request.method in permissions.SAFE_METHODS:
-            return role in ['super_admin', 'administrator', 'bdm', 'sales_executive', 'hr_manager']
+            return role in ['super_admin', 'administrator', 'bdm', 'sales_executive', 'hr_manager', 'support_executive']
         return role in ['super_admin', 'administrator']
 
 

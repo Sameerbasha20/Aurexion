@@ -7,6 +7,19 @@ import type { ApiError } from "../../../api/apiErrorHandler";
 
 export function getErrorMessage(error: ApiError | null): string {
   if (!error) return "An unexpected error occurred.";
+  if (error.errors && typeof error.errors === "object") {
+    const messages: string[] = [];
+    for (const [key, val] of Object.entries(error.errors)) {
+      if (Array.isArray(val)) {
+        messages.push(...val);
+      } else if (typeof val === "string") {
+        messages.push(val);
+      }
+    }
+    if (messages.length > 0) {
+      return messages.join(" ");
+    }
+  }
   if (error.statusCode === 401) return "Your session has expired. Please sign in again.";
   if (error.statusCode === 403) return "You do not have permission to access this resource.";
   if (error.statusCode === 404) return "The requested resource could not be found.";
