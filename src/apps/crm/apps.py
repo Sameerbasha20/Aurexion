@@ -5,3 +5,6 @@ class CrmConfig(AppConfig):
     name = "apps.crm"
     verbose_name = "CRM - Customer Relationship Management"
 
+    def ready(self):
+        import apps.crm.signals
+
