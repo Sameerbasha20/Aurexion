@@ -71,7 +71,7 @@ export const API_ENDPOINTS = {
     ADMIN_COMPANY_INFO: "/cms/admin/company-info/",
   },
 
-  BDM: 
+  BDM: {
     DASHBOARD: "/bdm/dashboard/",
   },
 };
