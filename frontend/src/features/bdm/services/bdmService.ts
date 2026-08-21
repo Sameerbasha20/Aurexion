@@ -125,6 +125,13 @@ export interface Lead {
   created_at: string;
   updated_at: string;
   client_onboarded?: boolean;
+  rfp_enquiry_details?: any;
+  designation?: string;
+  country?: string;
+  project_type?: string;
+  budget_range?: string;
+  nda_required?: boolean;
+  document_attachment?: string | null;
 }
 
 export interface LeadsResponse {
