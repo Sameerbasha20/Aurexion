@@ -40,16 +40,19 @@ def _resolve_secret_key(debug=False):
 
 SECRET_KEY = _resolve_secret_key(debug=DEBUG)
 
+ALLOWED_HOSTS = [
+    'aurexion.onrender.com',
+    'localhost',
+    '127.0.0.1',
+    'testserver',
+    'aurexion-one.vercel.app',
+]
 _env_hosts = os.getenv('ALLOWED_HOSTS', '')
 if _env_hosts:
-    ALLOWED_HOSTS = [h.strip() for h in _env_hosts.split(',') if h.strip()]
-else:
-    ALLOWED_HOSTS = [
-        'aurexion.onrender.com',
-        'localhost',
-        '127.0.0.1',
-        'testserver',
-    ]
+    for h in _env_hosts.split(','):
+        h_clean = h.strip()
+        if h_clean and h_clean not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(h_clean)
 
 INSTALLED_APPS = [
     'django.contrib.admin',

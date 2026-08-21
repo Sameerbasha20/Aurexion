@@ -23,5 +23,5 @@ USER appuser
 
 EXPOSE 8000
 
-# Use gunicorn with WhiteNoise-configured WSGI
-CMD ["gunicorn", "--chdir", "src", "config.wsgi:application"]
+# Use gunicorn with WhiteNoise-configured WSGI and threaded concurrency
+CMD ["gunicorn", "--chdir", "src", "--bind", "0.0.0.0:8000", "--workers", "2", "--threads", "2", "--worker-class", "gthread", "config.wsgi:application"]
