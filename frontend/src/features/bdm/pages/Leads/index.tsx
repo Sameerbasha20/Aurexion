@@ -140,7 +140,7 @@ export const Leads: React.FC = () => {
                 Retry
               </Button>
             </div>
-          ) : leads.length === 0 ? (
+          ) : !leads || leads.length === 0 ? (
             <div style={{ textAlign: "center", padding: "3rem" }}>
               <p style={{ color: "#64748b" }}>No leads found</p>
             </div>

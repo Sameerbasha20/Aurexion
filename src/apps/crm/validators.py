@@ -1,4 +1,3 @@
-import magic
 from django.core.exceptions import ValidationError
 
 ALLOWED_MIME_TYPES = [
@@ -19,6 +18,7 @@ def validate_magic_bytes(file_obj):
         raise ValidationError("Security Warning: File signature is not allowed. Only PDF, DOCX, and ZIP files are allowed.")
 
     try:
+        import magic
         sample = file_obj.read(2048)
         file_obj.seek(0)
         mime_type = magic.from_buffer(sample, mime=True)

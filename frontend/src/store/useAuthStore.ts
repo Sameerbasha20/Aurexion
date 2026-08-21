@@ -19,7 +19,7 @@ interface AuthState {
   hasRole: (role: string) => boolean;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set: any, get: any) => ({
   user: (() => {
     try {
       const storedUser = localStorage.getItem("aurexion_user");
@@ -31,7 +31,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   token: localStorage.getItem("aurexion_token") || localStorage.getItem("access_token"),
   isAuthenticated: !!(localStorage.getItem("aurexion_token") || localStorage.getItem("access_token")),
 
-  setUser: (user, token) => {
+  setUser: (user: any, token?: any) => {
     if (user) {
       localStorage.setItem("aurexion_user", JSON.stringify(user));
       if (token) {

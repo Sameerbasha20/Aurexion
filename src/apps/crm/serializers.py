@@ -319,5 +319,18 @@ class LeadActivitySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class LeadWonSerializer(serializers.Serializer):
+    value = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, min_value=0, allow_null=True)
+    notes = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class LeadScheduleMeetingSerializer(serializers.Serializer):
+    scheduled_at = serializers.DateTimeField(required=True)
+    follow_up_type = serializers.CharField(required=False, default="meeting")
+    meeting_link = serializers.URLField(required=False, allow_blank=True, default="")
+    notes = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+
 
 

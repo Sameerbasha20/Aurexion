@@ -3,7 +3,7 @@ import { useBdmDashboard } from "../../hooks/useBdmDashboard";
 import bdmService, { FormSubmission } from "../../services/bdmService";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
-import Button from "../../../../components/ui/button";
+import { Button } from "../../../../components/ui/button";
 import {
   Mail,
   Phone,
@@ -77,7 +77,6 @@ export const ContactForms: React.FC = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Sync team workload from dashboard metrics if available
   useEffect(() => {
     if (data?.team_workload && data.team_workload.length > 0) {
       setSalesExecs(data.team_workload.map((u) => ({ id: u.id, username: u.username, name: u.name || u.username })));
@@ -86,6 +85,8 @@ export const ContactForms: React.FC = () => {
         if (users && users.length > 0) {
           setSalesExecs(users.map((u) => ({ id: u.id, username: u.username, name: u.name })));
         }
+      }).catch((err) => {
+        console.error("Failed to fetch assignable users:", err);
       });
     }
   }, [data?.team_workload]);
@@ -104,6 +105,8 @@ export const ContactForms: React.FC = () => {
         if (users && users.length > 0) {
           setSalesExecs(users.map((u) => ({ id: u.id, username: u.username, name: u.name })));
         }
+      }).catch((err) => {
+        console.error("Failed to force refresh assignable users:", err);
       });
     }
   };
@@ -448,8 +451,27 @@ export const ContactForms: React.FC = () => {
 
       {/* Assign Sales Executive Modal */}
       {modalMode === "assign" && selectedSubmission && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5, 8, 17, 0.85)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "480px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <h2 style={{ fontSize: "1.3rem", color: "#63f5e8", margin: 0 }}>Assign Lead to Sales Executive</h2>
               <button
@@ -480,6 +502,8 @@ export const ContactForms: React.FC = () => {
                     color: "#f8fafc",
                     borderRadius: "4px",
                     fontSize: "0.88rem",
+                    width: "100%",
+                    boxSizing: "border-box",
                   }}
                 >
                   <option value="">-- Choose Sales Executive --</option>
@@ -491,7 +515,7 @@ export const ContactForms: React.FC = () => {
                 </select>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem", flexWrap: "wrap" }}>
                 <Button type="button" variant="outline" onClick={() => setModalMode(null)}>Cancel</Button>
                 <Button type="submit" glow disabled={actionLoading || !targetExecId}>
                   {actionLoading ? "Assigning..." : "Assign Lead"}
@@ -504,8 +528,27 @@ export const ContactForms: React.FC = () => {
 
       {/* Decline Lead Modal */}
       {modalMode === "decline" && selectedSubmission && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5, 8, 17, 0.85)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "480px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: 0 }}>Decline Contact Submission</h2>
               <button
@@ -545,6 +588,8 @@ export const ContactForms: React.FC = () => {
                     borderRadius: "4px",
                     fontSize: "0.85rem",
                     outline: "none",
+                    width: "100%",
+                    boxSizing: "border-box",
                   }}
                 />
                 {declineReason.trim().length > 0 && declineReason.trim().length < 10 && (
@@ -557,7 +602,7 @@ export const ContactForms: React.FC = () => {
                 </p>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
                 <Button type="button" variant="outline" onClick={() => setModalMode(null)}>Cancel</Button>
                 <Button 
                   type="submit" 
@@ -574,8 +619,27 @@ export const ContactForms: React.FC = () => {
 
       {/* Modal: BDM Lead Detail View */}
       {selectedLeadDetail && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5, 8, 17, 0.85)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "1rem",
+          overflowY: "auto",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "600px",
+            maxHeight: "calc(100vh - 2rem)",
+            overflowY: "auto",
+            padding: "clamp(1.25rem, 3vw, 2rem)",
+            margin: "auto",
+            boxSizing: "border-box",
+          }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <div>
                 <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>

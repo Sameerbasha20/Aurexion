@@ -9,6 +9,7 @@ from apps.authentication.models import AuditLog
 from apps.bdm.serializers import BdmDashboardSerializer
 from apps.crm.models import Lead, LeadFollowUp
 from apps.administration.permissions import BaseRolePermission
+from django.core.cache import cache
 
 
 class CanViewBdmDashboard(BaseRolePermission):
@@ -23,17 +24,21 @@ class CanViewBdmDashboard(BaseRolePermission):
     description="Real-time pipeline metrics aggregated from PostgreSQL CRM data.",
     responses=BdmDashboardSerializer,
 )
+
 class BdmDashboardView(APIView):
     """
-    BDM dashboard: every metric is computed from the live Lead/FollowUp tables.
-    No static or mock values are returned.
-    Optimized with conditional aggregation to reduce query count.
+    BDM dashboard: live metrics aggregated from Lead/FollowUp tables with a short 15s cache.
     """
 
     permission_classes = [CanViewBdmDashboard]
     serializer_class = BdmDashboardSerializer
 
     def get(self, request):
+        cache_key = "bdm_dashboard_metrics"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+
         now = timezone.now()
 
         # Single query with conditional aggregation for all lead metrics
@@ -132,7 +137,7 @@ class BdmDashboardView(APIView):
             status=Lead.Status.NEW,
         ).count()
 
-        return Response({
+        response_data = {
             "total_leads": agg["total_leads"],
             "assigned_leads": agg["assigned_leads"],
             "unassigned_leads": agg["unassigned_leads"],
@@ -179,4 +184,7 @@ class BdmDashboardView(APIView):
                 }
                 for lead in recent_form_submissions
             ],
-        })
+        }
+
+        cache.set(cache_key, response_data, timeout=15)
+        return Response(response_data)

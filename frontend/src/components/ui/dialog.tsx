@@ -141,6 +141,9 @@ function DialogContent({
           backgroundColor: "#0c1222",
           border: "1px solid var(--color-border)",
           color: "var(--color-text-primary)",
+          maxHeight: "calc(100vh - 2rem)",
+          overflowY: "auto",
+          boxSizing: "border-box",
           zIndex: 50,
           ...style
         }}

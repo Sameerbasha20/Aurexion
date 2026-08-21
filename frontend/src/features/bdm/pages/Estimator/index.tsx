@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Card from "../../../../components/ui/card";
-import Button from "../../../../components/ui/button";
+import { Card } from "../../../../components/ui/card";
+import { Button } from "../../../../components/ui/button";
 
 export const Estimator: React.FC = () => {
   const [developerCount, setDeveloperCount] = useState<number | "">("");

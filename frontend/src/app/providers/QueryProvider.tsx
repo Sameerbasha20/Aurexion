@@ -10,7 +10,7 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: 60 * 1000, // 1 minute
       gcTime: 5 * 60 * 1000, // 5 minutes
-      retry: (failureCount, error: any) => {
+      retry: (failureCount: number, error: any) => {
         if (error?.statusCode === 401 || error?.statusCode === 403 || error?.statusCode === 404) {
           return false;
         }

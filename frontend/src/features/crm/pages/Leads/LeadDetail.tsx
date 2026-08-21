@@ -98,7 +98,7 @@ export const LeadDetail: React.FC = () => {
 
   const updateLeadMutation = useUpdateLeadMutation(leadId);
   const transitionMutation = useTransitionLeadMutation(leadId);
-  const qualifyMutation = useQualifyLeadMutation(leadId);
+  const qualifyMutation = useQualifyLeadMutation();
   const wonMutation = useMarkLeadWonMutation();
   const lostMutation = useMarkLeadLostMutation();
   const assignMutation = useAssignLeadMutation(leadId);
@@ -183,10 +183,10 @@ export const LeadDetail: React.FC = () => {
 
   const handleStageTransition = async (targetStatus: string) => {
     try {
-      await transitionStatus(targetStatus);
-      showFeedback("success", `Lead stage updated to ${targetStatus.replace(/_/g, " ")}.`);
+      await transitionMutation.mutateAsync(targetStatus);
+      toast.success(`Lead stage updated to ${targetStatus.replace(/_/g, " ")}.`);
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to transition lead status.");
+      toast.error(err?.message || "Failed to transition lead status.");
     }
   };
 
@@ -287,7 +287,7 @@ export const LeadDetail: React.FC = () => {
   };
 
   const handleQualify = () => {
-    qualifyMutation.mutate(undefined, {
+    qualifyMutation.mutate(leadId, {
       onSuccess: () => toast.success("Lead qualified to opportunity."),
       onError: (err: any) => toast.error(err?.message || "Failed to qualify lead."),
     });
@@ -607,33 +607,33 @@ export const LeadDetail: React.FC = () => {
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", fontSize: "0.85rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(140, 174, 187, 0.05)" }}>
                     <span style={{ color: "#94a3b8" }}>RFP Reference ID:</span>
-                    <span style={{ color: "#cbd5e1", fontFamily: "IBM Plex Mono, monospace" }}>{lead.rfp_enquiry_details.reference_id}</span>
+                    <span style={{ color: "#cbd5e1", fontFamily: "IBM Plex Mono, monospace" }}>{lead.rfp_enquiry_details?.reference_id}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(140, 174, 187, 0.05)" }}>
                     <span style={{ color: "#94a3b8" }}>Designation:</span>
-                    <span style={{ color: "#f8fafc" }}>{lead.rfp_enquiry_details.designation}</span>
+                    <span style={{ color: "#f8fafc" }}>{lead.rfp_enquiry_details?.designation}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(140, 174, 187, 0.05)" }}>
                     <span style={{ color: "#94a3b8" }}>Country:</span>
-                    <span style={{ color: "#f8fafc" }}>{lead.rfp_enquiry_details.country}</span>
+                    <span style={{ color: "#f8fafc" }}>{lead.rfp_enquiry_details?.country}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(140, 174, 187, 0.05)" }}>
                     <span style={{ color: "#94a3b8" }}>Budget Range:</span>
-                    <span style={{ color: "#f8fafc" }}>{lead.rfp_enquiry_details.budget_range}</span>
+                    <span style={{ color: "#f8fafc" }}>{lead.rfp_enquiry_details?.budget_range}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "0.4rem", borderBottom: "1px solid rgba(140, 174, 187, 0.05)" }}>
                     <span style={{ color: "#94a3b8" }}>NDA Status:</span>
                     <span style={{
-                      color: lead.rfp_enquiry_details.nda_required ? "#f87171" : "#4ade80",
+                      color: lead.rfp_enquiry_details?.nda_required ? "#f87171" : "#4ade80",
                       fontWeight: 600,
                       fontSize: "0.75rem",
                       fontFamily: "IBM Plex Mono, monospace"
                     }}>
-                      {lead.rfp_enquiry_details.nda_required ? "NDA REQUIRED" : "NO NDA REQUIRED"}
+                      {lead.rfp_enquiry_details?.nda_required ? "NDA REQUIRED" : "NO NDA REQUIRED"}
                     </span>
                   </div>
                   
-                  {lead.rfp_enquiry_details.document_attachment && (
+                  {lead.rfp_enquiry_details?.document_attachment && (
                     <div style={{
                       marginTop: "0.5rem",
                       padding: "0.75rem",
@@ -900,8 +900,27 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
 }) => {
   if (!isOpen) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-      <Card borderAccent style={{ width: "100%", maxWidth: "600px", padding: "2rem", maxHeight: "90vh", overflowY: "auto" }}>
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      backgroundColor: "rgba(5, 8, 17, 0.85)",
+      backdropFilter: "blur(8px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+      padding: "1rem",
+      overflowY: "auto",
+    }}>
+      <Card borderAccent style={{
+        width: "100%",
+        maxWidth: "600px",
+        padding: "clamp(1.25rem, 3vw, 2rem)",
+        maxHeight: "calc(100vh - 2rem)",
+        overflowY: "auto",
+        margin: "auto",
+        boxSizing: "border-box",
+      }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "1.3rem", margin: 0 }}>Edit Lead Specification</h2>
           <button type="button" onClick={onClose} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
@@ -910,14 +929,14 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
         </div>
 
         <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>FULL NAME *</label>
               <input
                 required
                 value={editForm.name}
                 onChange={(e) => onFormChange({ ...editForm, name: e.target.value })}
-                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
@@ -927,18 +946,18 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
                 required
                 value={editForm.email}
                 onChange={(e) => onFormChange({ ...editForm, email: e.target.value })}
-                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
               />
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PHONE NUMBER</label>
               <input
                 value={editForm.phone}
                 onChange={(e) => onFormChange({ ...editForm, phone: e.target.value })}
-                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
@@ -946,18 +965,18 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
               <input
                 value={editForm.company}
                 onChange={(e) => onFormChange({ ...editForm, company: e.target.value })}
-                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
               />
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>INDUSTRY</label>
               <input
                 value={editForm.industry}
                 onChange={(e) => onFormChange({ ...editForm, industry: e.target.value })}
-                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
@@ -965,7 +984,7 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
               <select
                 value={editForm.priority}
                 onChange={(e) => onFormChange({ ...editForm, priority: e.target.value })}
-                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -981,11 +1000,11 @@ const LeadEditModal: React.FC<LeadEditModalProps> = ({
               rows={3}
               value={editForm.description}
               onChange={(e) => onFormChange({ ...editForm, description: e.target.value })}
-              style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
             />
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem", flexWrap: "wrap" }}>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             <Button type="submit" glow disabled={actionLoading}>Save Changes</Button>
           </div>
@@ -1014,8 +1033,27 @@ const LeadLostModal: React.FC<LeadLostModalProps> = ({
 }) => {
   if (!isOpen) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-      <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      backgroundColor: "rgba(5, 8, 17, 0.85)",
+      backdropFilter: "blur(8px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+      padding: "1rem",
+      overflowY: "auto",
+    }}>
+      <Card borderAccent style={{
+        width: "100%",
+        maxWidth: "480px",
+        maxHeight: "calc(100vh - 2rem)",
+        overflowY: "auto",
+        padding: "clamp(1.25rem, 3vw, 2rem)",
+        margin: "auto",
+        boxSizing: "border-box",
+      }}>
         <h2 style={{ fontSize: "1.3rem", color: "#f87171", margin: "0 0 0.5rem 0" }}>Mark Lead as Lost</h2>
         <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: "0 0 1rem 0" }}>
           Please enter the specific reason why this opportunity was lost (minimum 10 characters):
@@ -1027,11 +1065,11 @@ const LeadLostModal: React.FC<LeadLostModalProps> = ({
             placeholder="e.g. Client budget constraints, selected competing vendor, or postponed project..."
             value={lostReason}
             onChange={(e) => onReasonChange(e.target.value)}
-            style={{ padding: "0.75rem", backgroundColor: "#050811", border: "1px solid rgba(248, 113, 113, 0.4)", color: "#f8fafc", borderRadius: "4px" }}
+            style={{ padding: "0.75rem", backgroundColor: "#050811", border: "1px solid rgba(248, 113, 113, 0.4)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
           />
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", flexWrap: "wrap" }}>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={actionLoading} style={{ backgroundColor: "#f87171", color: "#000", fontWeight: 600 }}>
+            <Button type="submit" variant="outline" disabled={actionLoading || lostReason.trim().length < 10} style={{ borderColor: "rgba(248, 113, 113, 0.4)", color: "#f87171" }}>
               Confirm Lost
             </Button>
           </div>
@@ -1060,8 +1098,27 @@ const LeadWonModal: React.FC<LeadWonModalProps> = ({
 }) => {
   if (!isOpen) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-      <Card borderAccent style={{ width: "100%", maxWidth: "500px", padding: "2rem" }}>
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      backgroundColor: "rgba(5, 8, 17, 0.85)",
+      backdropFilter: "blur(8px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+      padding: "1rem",
+      overflowY: "auto",
+    }}>
+      <Card borderAccent style={{
+        width: "100%",
+        maxWidth: "500px",
+        maxHeight: "calc(100vh - 2rem)",
+        overflowY: "auto",
+        padding: "clamp(1.25rem, 3vw, 2rem)",
+        margin: "auto",
+        boxSizing: "border-box",
+      }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
           <CheckCircle2 size={22} color="#4ade80" />
           <h2 style={{ fontSize: "1.3rem", color: "#4ade80", margin: 0 }}>Mark Deal as WON</h2>
@@ -1116,12 +1173,13 @@ const LeadWonModal: React.FC<LeadWonModalProps> = ({
                 color: "#f8fafc",
                 borderRadius: "4px",
                 fontSize: "0.85rem",
+                width: "100%",
                 boxSizing: "border-box",
               }}
             />
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             <Button type="submit" glow disabled={actionLoading} style={{ backgroundColor: "#22c55e", color: "#ffffff" }}>
               Confirm Won & Forward to BDM
@@ -1154,15 +1212,34 @@ const LeadAssignModal: React.FC<LeadAssignModalProps> = ({
 }) => {
   if (!isOpen) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-      <Card borderAccent style={{ width: "100%", maxWidth: "480px", padding: "2rem" }}>
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      backgroundColor: "rgba(5, 8, 17, 0.85)",
+      backdropFilter: "blur(8px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+      padding: "1rem",
+      overflowY: "auto",
+    }}>
+      <Card borderAccent style={{
+        width: "100%",
+        maxWidth: "480px",
+        maxHeight: "calc(100vh - 2rem)",
+        overflowY: "auto",
+        padding: "clamp(1.25rem, 3vw, 2rem)",
+        margin: "auto",
+        boxSizing: "border-box",
+      }}>
         <h2 style={{ fontSize: "1.3rem", margin: "0 0 1rem 0" }}>Assign Lead to Executive</h2>
         <form onSubmit={onAssign} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <select
             required
             value={assignUserId}
             onChange={(e) => onUserChange(Number(e.target.value))}
-            style={{ padding: "0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+            style={{ padding: "0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
           >
             <option value="">Select Team Member...</option>
             {users.map((u) => (
@@ -1171,7 +1248,7 @@ const LeadAssignModal: React.FC<LeadAssignModalProps> = ({
               </option>
             ))}
           </select>
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", flexWrap: "wrap" }}>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             <Button type="submit" glow disabled={actionLoading || !assignUserId}>Assign Lead</Button>
           </div>
@@ -1200,8 +1277,27 @@ const LeadScheduleFollowUpModal: React.FC<LeadScheduleFollowUpModalProps> = ({
 }) => {
   if (!isOpen) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(5, 8, 17, 0.8)", backdropFilter: "blur(8px)", display: "grid", placeItems: "center", zIndex: 1000, padding: "1.5rem" }}>
-      <Card borderAccent style={{ width: "100%", maxWidth: "500px", padding: "2rem" }}>
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      backgroundColor: "rgba(5, 8, 17, 0.85)",
+      backdropFilter: "blur(8px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+      padding: "1rem",
+      overflowY: "auto",
+    }}>
+      <Card borderAccent style={{
+        width: "100%",
+        maxWidth: "500px",
+        maxHeight: "calc(100vh - 2rem)",
+        overflowY: "auto",
+        padding: "clamp(1.25rem, 3vw, 2rem)",
+        margin: "auto",
+        boxSizing: "border-box",
+      }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "1.3rem", margin: 0 }}>Schedule Client Follow-up</h2>
           <button type="button" onClick={onClose} style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}>
@@ -1215,7 +1311,7 @@ const LeadScheduleFollowUpModal: React.FC<LeadScheduleFollowUpModalProps> = ({
             <select
               value={followUpForm.follow_up_type}
               onChange={(e) => onFormChange({ ...followUpForm, follow_up_type: e.target.value })}
-              style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
             >
               <option value="CALL">Phone Call</option>
               <option value="MEETING">Video / In-person Meeting</option>
