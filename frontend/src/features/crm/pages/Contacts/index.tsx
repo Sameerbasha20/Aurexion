@@ -1,21 +1,16 @@
 import React, { useState } from "react";
-import { Link } from "wouter";
-import { useContacts } from "../../hooks/useCrm";
+import { Link, useLocation } from "wouter";
+import { useContactsQuery } from "../../../../queries/useCrmQueries";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
-import {
-  Users,
-  Search,
-  Mail,
-  Phone,
-  Building,
-  RefreshCw,
-  AlertTriangle,
-  ExternalLink,
-} from "lucide-react";
+import LoadingState from "../../../../components/feedback/LoadingState";
+import ErrorState from "../../../../components/feedback/ErrorState";
+import EmptyState from "../../../../components/feedback/EmptyState";
+import { Users, Search, Mail, Phone, RefreshCw, ExternalLink } from "lucide-react";
 
 export const Contacts: React.FC = () => {
-  const { contacts, isLoading, error, refetch } = useContacts();
+  const [, navigate] = useLocation();
+  const { data: contacts = [], isLoading, error, refetch } = useContactsQuery();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredContacts = contacts.filter((c) => {
@@ -82,29 +77,15 @@ export const Contacts: React.FC = () => {
       {/* Contacts Table */}
       <Card style={{ padding: 0, overflow: "hidden" }}>
         {isLoading ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "#63f5e8" }}>
-            <RefreshCw size={24} style={{ animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
-            <p style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.85rem" }}>
-              FETCHING CLIENT DIRECTORY...
-            </p>
-          </div>
+          <LoadingState message="Fetching client directory..." />
         ) : error ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "#ef4444" }}>
-            <AlertTriangle size={32} style={{ margin: "0 auto 1rem" }} />
-            <p>{error}</p>
-            <Button onClick={() => refetch()} style={{ marginTop: "1rem" }}>Retry</Button>
-          </div>
+          <ErrorState error={error} onRetry={refetch} />
         ) : filteredContacts.length === 0 ? (
-          <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#94a3b8" }}>
-            <Users size={36} color="#64748b" style={{ margin: "0 auto 1rem" }} />
-            <h3 style={{ fontSize: "1.1rem", color: "#f8fafc", margin: 0 }}>No contacts found</h3>
-            <p style={{ fontSize: "0.85rem", margin: "0.5rem 0 1.5rem" }}>
-              Contacts will automatically appear as you establish leads in the system.
-            </p>
-            <Link href="/crm/leads">
-              <Button glow>Create Lead</Button>
-            </Link>
-          </div>
+          <EmptyState
+            title="No contacts found"
+            message="Contacts will automatically appear as you establish leads in the system."
+            action={{ label: "Create Lead", onClick: () => navigate("/crm/leads") }}
+          />
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>

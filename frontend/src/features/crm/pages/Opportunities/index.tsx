@@ -1,23 +1,16 @@
 import React, { useState } from "react";
-import { Link } from "wouter";
-import { useOpportunities } from "../../hooks/useCrm";
+import { Link, useLocation } from "wouter";
+import { useOpportunitiesQuery } from "../../../../queries/useCrmQueries";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
-import {
-  TrendingUp,
-  Award,
-  Filter,
-  DollarSign,
-  Briefcase,
-  CheckCircle2,
-  AlertTriangle,
-  ArrowUpRight,
-  RefreshCw,
-  Search,
-} from "lucide-react";
+import LoadingState from "../../../../components/feedback/LoadingState";
+import ErrorState from "../../../../components/feedback/ErrorState";
+import EmptyState from "../../../../components/feedback/EmptyState";
+import { TrendingUp, RefreshCw, Search } from "lucide-react";
 
 export const Opportunities: React.FC = () => {
-  const { opportunities, isLoading, error, refetch } = useOpportunities();
+  const [, navigate] = useLocation();
+  const { data: opportunities = [], isLoading, error, refetch } = useOpportunitiesQuery();
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("");
 
@@ -170,31 +163,15 @@ export const Opportunities: React.FC = () => {
       {/* Main Opportunities Table */}
       <Card style={{ padding: 0, overflow: "hidden" }}>
         {isLoading ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "#63f5e8" }}>
-            <RefreshCw size={24} style={{ animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
-            <p style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.85rem" }}>
-              SYNCING PIPELINE OPPORTUNITIES...
-            </p>
-          </div>
+          <LoadingState message="Syncing pipeline opportunities..." />
         ) : error ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "#ef4444" }}>
-            <AlertTriangle size={32} style={{ margin: "0 auto 1rem" }} />
-            <p style={{ margin: 0 }}>{error}</p>
-            <Button onClick={() => refetch()} style={{ marginTop: "1rem" }}>
-              Retry
-            </Button>
-          </div>
+          <ErrorState error={error} onRetry={refetch} />
         ) : filteredOpps.length === 0 ? (
-          <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#94a3b8" }}>
-            <Award size={36} color="#64748b" style={{ margin: "0 auto 1rem" }} />
-            <h3 style={{ fontSize: "1.1rem", color: "#f8fafc", margin: 0 }}>No active opportunities match</h3>
-            <p style={{ fontSize: "0.85rem", margin: "0.5rem 0 1.5rem" }}>
-              Qualify active leads in the Leads Funnel to populate your opportunity pipeline.
-            </p>
-            <Link href="/crm/leads">
-              <Button glow>Go to Leads Funnel</Button>
-            </Link>
-          </div>
+          <EmptyState
+            title="No active opportunities match"
+            message="Qualify active leads in the Leads Funnel to populate your opportunity pipeline."
+            action={{ label: "Go to Leads Funnel", onClick: () => navigate("/crm/leads") }}
+          />
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>

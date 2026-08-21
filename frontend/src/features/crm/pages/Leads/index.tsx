@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { Link } from "wouter";
-import { useLeads } from "../../hooks/useCrm";
-import crmService, { LeadItem } from "../../services/crmService";
+import { useLeadsQuery, useCreateLeadMutation } from "../../../../queries/useCrmQueries";
+import crmService, { LeadItem, LeadQueryParams } from "../../services/crmService";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
+import SearchInput from "../../../../components/common/SearchInput";
+import TableSkeleton from "../../../../components/common/TableSkeleton";
+import EmptyState from "../../../../components/common/EmptyState";
+import QueryErrorBanner from "../../../../components/common/QueryErrorBanner";
+import LeadFormModal, { LeadFormValues } from "../../../../components/forms/LeadFormModal";
 import {
-  Search,
   Filter,
   Plus,
   Download,
@@ -24,46 +28,41 @@ import {
 } from "lucide-react";
 
 export const Leads: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [priorityFilter, setPriorityFilter] = useState("");
+  const [params, setParams] = useState<LeadQueryParams>({
+    page: 1,
+    page_size: 10,
+    search: "",
+    status: "",
+    priority: "",
+  });
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [serverErrors, setServerErrors] = useState<Record<string, string[] | string> | null>(null);
 
-  // Lead creation form state
-  const [createForm, setCreateForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    website: "",
-    industry: "",
-    source: "website",
-    priority: "medium",
-    description: "",
-  });
-  const [createError, setCreateError] = useState<string | null>(null);
-  const [createLoading, setCreateLoading] = useState(false);
+  // TanStack Query for server state
+  const { data, isLoading, isFetching, error, refetch } = useLeadsQuery(params);
+  const createLeadMutation = useCreateLeadMutation();
 
-  const { leads, totalCount, params, isLoading, error, refetch, updateFilters, setPage } = useLeads({
-    page_size: 10,
-    page: 1,
-  });
+  const leads: LeadItem[] = data?.results || [];
+  const totalCount = data?.count || 0;
+  const totalPages = Math.ceil(totalCount / (params.page_size || 10)) || 1;
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateFilters({ search: searchTerm });
+  const handleDebouncedSearch = (searchVal: string) => {
+    setParams((prev) => ({ ...prev, search: searchVal, page: 1 }));
   };
 
   const handleStatusChange = (status: string) => {
-    setStatusFilter(status);
-    updateFilters({ status: status || undefined });
+    setParams((prev) => ({ ...prev, status: status || undefined, page: 1 }));
   };
 
   const handlePriorityChange = (priority: string) => {
-    setPriorityFilter(priority);
-    updateFilters({ priority: priority || undefined });
+    setParams((prev) => ({ ...prev, priority: priority || undefined, page: 1 }));
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setParams((prev) => ({ ...prev, page: newPage }));
   };
 
   const handleExport = async () => {
@@ -86,85 +85,19 @@ export const Leads: React.FC = () => {
     }
   };
 
-  const handleQuickStatusTransition = async (lead: LeadItem, newStatus: string) => {
-    const currentClean = lead.status?.toUpperCase();
-    if (newStatus === currentClean || newStatus === lead.status) return;
-
-    if (newStatus === "WON") {
-      const valInput = window.prompt(`Enter agreed Project Cost ($) for ${lead.name}:`, "25000");
-      if (valInput === null) return;
-      const value = parseFloat(valInput) || 0;
-      const notes = window.prompt(`Enter closing notes for ${lead.name}:`, "Client accepted commercial proposal.") || "";
-      try {
-        await crmService.markLeadWon(lead.id, { value, notes });
-        setActionSuccess(`Lead ${lead.name} marked WON! Value ($${value.toLocaleString()}) recorded & forwarded to BDM.`);
-        setTimeout(() => setActionSuccess(null), 4000);
-        refetch();
-      } catch (err: any) {
-        alert(err?.message || "Failed to mark lead as won.");
-      }
-      return;
-    }
-
-    if (newStatus === "LOST") {
-      const reason = window.prompt(`Enter reason for marking ${lead.name} as lost (minimum 10 characters):`);
-      if (reason === null) return;
-      if (reason.trim().length < 10) {
-        alert("Please enter a reason of at least 10 characters.");
-        return;
-      }
-      try {
-        await crmService.markLeadLost(lead.id, reason.trim());
-        setActionSuccess(`Lead ${lead.name} marked LOST.`);
-        setTimeout(() => setActionSuccess(null), 4000);
-        refetch();
-      } catch (err: any) {
-        alert(err?.message || "Failed to mark lead lost.");
-      }
-      return;
-    }
-
+  const handleCreateSubmit = async (values: LeadFormValues) => {
+    setServerErrors(null);
     try {
-      await crmService.transitionLead(lead.id, newStatus);
-      setActionSuccess(`Lead ${lead.name} stage updated to ${newStatus.replace(/_/g, " ")}.`);
-      setTimeout(() => setActionSuccess(null), 4000);
-      refetch();
-    } catch (err: any) {
-      alert(err?.message || "Failed to transition lead status.");
-    }
-  };
-
-  const handleCreateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCreateError(null);
-
-    if (!createForm.name || !createForm.email) {
-      setCreateError("Name and Email are required.");
-      return;
-    }
-
-    setCreateLoading(true);
-    try {
-      await crmService.createLead(createForm);
+      await createLeadMutation.mutateAsync(values);
       setIsCreateOpen(false);
-      setCreateForm({
-        name: "",
-        email: "",
-        phone: "",
-        company: "",
-        website: "",
-        industry: "",
-        source: "WEBSITE",
-        priority: "MEDIUM",
-        description: "",
-      });
       setActionSuccess("New lead established successfully.");
       setTimeout(() => setActionSuccess(null), 3000);
-      refetch();
     } catch (err: any) {
-      setCreateError(err?.response?.data?.detail || err?.message || "Failed to create lead.");
-    } finally {
-      setCreateLoading(false);
+      if (err?.errors) {
+        setServerErrors(err.errors);
+      } else {
+        alert(err?.userMessage || err?.message || "Failed to create lead.");
+      }
     }
   };
 
@@ -198,144 +131,81 @@ export const Leads: React.FC = () => {
         return { color: "#fb923c", bg: "rgba(251, 146, 60, 0.15)" };
       case "MEDIUM":
         return { color: "#38bdf8", bg: "rgba(56, 189, 248, 0.15)" };
-      case "LOW":
       default:
         return { color: "#94a3b8", bg: "rgba(148, 163, 184, 0.15)" };
     }
   };
 
-  const currentPage = params.page || 1;
-  const pageSize = params.page_size || 10;
-  const totalPages = Math.ceil(totalCount / pageSize) || 1;
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
-      {/* Header & Controls */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+    <div className="space-y-6">
+      {/* Top Banner & Action Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <p className="eyebrow" style={{ margin: 0 }}>CRM SALES FUNNEL</p>
-            <span style={{
-              fontFamily: "IBM Plex Mono, monospace",
-              fontSize: "0.72rem",
-              color: "#63f5e8",
-              backgroundColor: "rgba(99, 245, 232, 0.1)",
-              padding: "0.1rem 0.5rem",
-              borderRadius: "2px",
-            }}>
-              {totalCount} Total Leads
-            </span>
-          </div>
-          <h1 style={{ fontSize: "2.2rem", margin: "0.35rem 0 0 0", letterSpacing: "-0.04em" }}>
-            Leads Pipeline Desk
+          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
+            CRM Lead Management
+            {isFetching && <RefreshCw className="w-4 h-4 text-cyan-400 animate-spin" />}
           </h1>
+          <p className="text-slate-400 text-sm">
+            Track, qualify, and convert commercial leads through automated enterprise pipeline stages.
+          </p>
         </div>
-
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+        <div className="flex items-center space-x-3">
           <Button
             variant="outline"
             onClick={handleExport}
             disabled={isExporting}
-            style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
+            className="border-slate-700 hover:bg-slate-800 text-slate-300 flex items-center gap-2"
           >
-            <Download size={14} /> {isExporting ? "Exporting..." : "Export CSV"}
+            <Download className="w-4 h-4" />
+            {isExporting ? "Exporting..." : "Export CSV"}
           </Button>
           <Button
-            glow
             onClick={() => setIsCreateOpen(true)}
-            style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
+            className="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-medium flex items-center gap-2 shadow-lg shadow-cyan-500/20"
           >
-            <Plus size={14} /> Create Lead
+            <Plus className="w-4 h-4" />
+            Establish New Lead
           </Button>
         </div>
       </div>
 
-      {/* Action Notification */}
+      {/* Alert Banners */}
       {actionSuccess && (
-        <div style={{
-          backgroundColor: "rgba(74, 222, 128, 0.1)",
-          border: "1px solid rgba(74, 222, 128, 0.3)",
-          color: "#4ade80",
-          padding: "0.75rem 1rem",
-          borderRadius: "4px",
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          fontSize: "0.85rem",
-          fontFamily: "IBM Plex Mono, monospace",
-        }}>
-          <CheckCircle2 size={16} />
+        <div className="p-3 bg-emerald-950/40 border border-emerald-800/40 text-emerald-300 rounded-xl flex items-center gap-2 text-sm animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
           {actionSuccess}
         </div>
       )}
 
-      {/* Filter and Search Bar */}
-      <Card style={{ padding: "1.25rem" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center", justifyContent: "space-between" }}>
-          {/* Search form */}
-          <form onSubmit={handleSearch} style={{ display: "flex", gap: "0.5rem", flex: 1, minWidth: "260px" }}>
-            <div style={{ position: "relative", width: "100%" }}>
-              <Search size={16} color="#64748b" style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)" }} />
-              <input
-                type="text"
-                placeholder="Search leads by name, email, company, or ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.6rem 0.75rem 0.6rem 2.2rem",
-                  backgroundColor: "rgba(5, 8, 17, 0.7)",
-                  border: "1px solid rgba(140, 174, 187, 0.2)",
-                  borderRadius: "4px",
-                  color: "#f8fafc",
-                  fontSize: "0.85rem",
-                  outline: "none",
-                }}
-              />
-            </div>
-            <Button type="submit" variant="outline" style={{ padding: "0.6rem 1rem" }}>
-              Filter
-            </Button>
-          </form>
+      {error && <QueryErrorBanner error={error} onRetry={refetch} />}
 
-          {/* Quick Dropdown Filters */}
-          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+      {/* Filter Toolbar */}
+      <Card className="bg-slate-900/60 border-slate-800 p-4">
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <SearchInput
+            placeholder="Search leads by name, email, company..."
+            onDebouncedChange={handleDebouncedSearch}
+          />
+          <div className="flex items-center gap-3 w-full md:w-auto">
             <select
-              value={statusFilter}
+              value={params.status || ""}
               onChange={(e) => handleStatusChange(e.target.value)}
-              style={{
-                padding: "0.6rem 0.85rem",
-                backgroundColor: "rgba(5, 8, 17, 0.7)",
-                border: "1px solid rgba(140, 174, 187, 0.2)",
-                borderRadius: "4px",
-                color: "#f8fafc",
-                fontSize: "0.82rem",
-                outline: "none",
-                cursor: "pointer",
-              }}
+              className="h-10 px-3 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 flex-1 md:w-40"
             >
               <option value="">All Statuses</option>
               <option value="NEW">New</option>
               <option value="CONTACTED">Contacted</option>
-              <option value="UNDER_REVIEW">Under Review</option>
               <option value="QUALIFIED">Qualified</option>
+              <option value="PROPOSAL">Proposal</option>
+              <option value="NEGOTIATION">Negotiation</option>
               <option value="WON">Won</option>
               <option value="LOST">Lost</option>
             </select>
 
             <select
-              value={priorityFilter}
+              value={params.priority || ""}
               onChange={(e) => handlePriorityChange(e.target.value)}
-              style={{
-                padding: "0.6rem 0.85rem",
-                backgroundColor: "rgba(5, 8, 17, 0.7)",
-                border: "1px solid rgba(140, 174, 187, 0.2)",
-                borderRadius: "4px",
-                color: "#f8fafc",
-                fontSize: "0.82rem",
-                outline: "none",
-                cursor: "pointer",
-              }}
+              className="h-10 px-3 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 flex-1 md:w-36"
             >
               <option value="">All Priorities</option>
               <option value="URGENT">Urgent</option>
@@ -344,16 +214,12 @@ export const Leads: React.FC = () => {
               <option value="LOW">Low</option>
             </select>
 
-            {(searchTerm || statusFilter || priorityFilter) && (
+            {(params.search || params.status || params.priority) && (
               <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchTerm("");
-                  setStatusFilter("");
-                  setPriorityFilter("");
-                  updateFilters({ search: undefined, status: undefined, priority: undefined });
-                }}
-                style={{ fontSize: "0.75rem" }}
+                variant="ghost"
+                size="sm"
+                onClick={() => setParams({ page: 1, page_size: 10, search: "", status: "", priority: "" })}
+                className="text-slate-400 hover:text-slate-200"
               >
                 Reset
               </Button>
@@ -362,193 +228,93 @@ export const Leads: React.FC = () => {
         </div>
       </Card>
 
-      {/* Main Leads Table */}
-      <Card style={{ padding: 0, overflow: "hidden" }}>
-        {isLoading ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "#63f5e8" }}>
-            <RefreshCw size={24} style={{ animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
-            <p style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.85rem" }}>
-              SYNCING LEADS DATABASE...
-            </p>
-          </div>
-        ) : error ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "#ef4444" }}>
-            <AlertTriangle size={32} style={{ margin: "0 auto 1rem" }} />
-            <p style={{ margin: 0 }}>{error}</p>
-            <Button onClick={() => refetch()} style={{ marginTop: "1rem" }}>
-              Retry
-            </Button>
-          </div>
-        ) : leads.length === 0 ? (
-          <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#94a3b8" }}>
-            <Building size={36} color="#64748b" style={{ margin: "0 auto 1rem" }} />
-            <h3 style={{ fontSize: "1.1rem", color: "#f8fafc", margin: 0 }}>No leads match the current criteria</h3>
-            <p style={{ fontSize: "0.85rem", margin: "0.5rem 0 1.5rem" }}>
-              Try adjusting your search query or status filter.
-            </p>
-            <Button glow onClick={() => setIsCreateOpen(true)}>
-              <Plus size={14} style={{ marginRight: "0.4rem" }} /> Create First Lead
-            </Button>
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
+      {/* Main Content Area */}
+      {isLoading ? (
+        <TableSkeleton rows={6} cols={6} />
+      ) : leads.length === 0 ? (
+        <EmptyState
+          isSearchEmpty={!!(params.search || params.status || params.priority)}
+          onReset={() => setParams({ page: 1, page_size: 10, search: "", status: "", priority: "" })}
+          actionLabel="Establish New Lead"
+          onAction={() => setIsCreateOpen(true)}
+        />
+      ) : (
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.8)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)" }}>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    REF ID / DATE
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    LEAD & COMPANY
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    CONTACT INFO
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    SOURCE
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    PRIORITY
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    STATUS
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    ASSIGNED
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", textAlign: "right", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    ACTION
-                  </th>
+                <tr className="border-b border-slate-800 bg-slate-950/60 text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                  <th className="py-3.5 px-4">Lead Name & Contact</th>
+                  <th className="py-3.5 px-4">Company</th>
+                  <th className="py-3.5 px-4">Source</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4">Priority</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-800/60 text-sm text-slate-200">
                 {leads.map((lead) => {
                   const statusStyle = getStatusBadgeStyle(lead.status);
                   const priorityStyle = getPriorityBadgeStyle(lead.priority);
                   return (
-                    <tr
-                      key={lead.id}
-                      style={{
-                        borderBottom: "1px solid rgba(140, 174, 187, 0.1)",
-                        transition: "background-color 150ms",
-                      }}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      <td style={{ padding: "1rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
-                        <div>{lead.reference_id || `#LD-${lead.id}`}</div>
-                        <div style={{ color: "#64748b", fontSize: "0.68rem" }}>
-                          {new Date(lead.created_at).toLocaleDateString()}
-                        </div>
-                      </td>
-
-                      <td style={{ padding: "1rem" }}>
-                        <Link href={`/crm/leads/${lead.id}`}>
-                          <div style={{ fontWeight: 600, color: "#f8fafc", cursor: "pointer" }}>
-                            {lead.company || lead.name}
-                          </div>
-                        </Link>
-                        {lead.company && (
-                          <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                            Contact: {lead.name}
-                          </div>
-                        )}
-                        {lead.industry && (
-                          <div style={{ fontSize: "0.7rem", color: "#64748b" }}>
-                            {lead.industry}
-                          </div>
-                        )}
-                      </td>
-
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-                          <a
-                            href={`mailto:${lead.email}`}
-                            style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "#cbd5e1", textDecoration: "none", fontSize: "0.78rem" }}
-                          >
-                            <Mail size={12} color="#63f5e8" /> {lead.email}
-                          </a>
+                    <tr key={lead.id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="font-medium text-slate-100">{lead.name}</div>
+                        <div className="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
+                          <span className="flex items-center gap-1">
+                            <Mail className="w-3 h-3 text-slate-500" />
+                            {lead.email}
+                          </span>
                           {lead.phone && (
-                            <a
-                              href={`tel:${lead.phone}`}
-                              style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "#94a3b8", textDecoration: "none", fontSize: "0.75rem" }}
-                            >
-                              <Phone size={12} color="#64748b" /> {lead.phone}
-                            </a>
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-3 h-3 text-slate-500" />
+                              {lead.phone}
+                            </span>
                           )}
                         </div>
                       </td>
-
-                      <td style={{ padding: "1rem", fontSize: "0.78rem", color: "#cbd5e1" }}>
-                        {lead.source || "Website"}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-1.5 text-slate-300">
+                          <Building className="w-3.5 h-3.5 text-slate-500" />
+                          {lead.company || "Individual Lead"}
+                        </div>
                       </td>
-
-                      <td style={{ padding: "1rem" }}>
+                      <td className="py-3.5 px-4 text-xs text-slate-400 capitalize">
+                        {lead.source?.toLowerCase().replace("_", " ") || "Website"}
+                      </td>
+                      <td className="py-3.5 px-4">
                         <span
+                          className="px-2.5 py-1 text-xs font-medium rounded-full border"
                           style={{
-                            display: "inline-block",
-                            padding: "0.2rem 0.5rem",
-                            borderRadius: "3px",
-                            fontSize: "0.68rem",
-                            fontFamily: "IBM Plex Mono, monospace",
-                            fontWeight: 600,
-                            backgroundColor: priorityStyle.bg,
-                            color: priorityStyle.color,
-                          }}
-                        >
-                          {lead.priority_display || lead.priority || "MEDIUM"}
-                        </span>
-                      </td>
-
-                      <td style={{ padding: "1rem" }}>
-                        <select
-                          value={lead.status?.toUpperCase() || "NEW"}
-                          disabled={lead.status?.toUpperCase() === "WON"}
-                          onChange={(e) => handleQuickStatusTransition(lead, e.target.value)}
-                          style={{
-                            padding: "0.3rem 0.65rem",
                             backgroundColor: statusStyle.bg,
-                            border: `1px solid ${statusStyle.border}`,
                             color: statusStyle.color,
-                            fontSize: "0.72rem",
-                            fontWeight: 600,
-                            borderRadius: "4px",
-                            fontFamily: "IBM Plex Mono, monospace",
-                            cursor: lead.status?.toUpperCase() === "WON" ? "not-allowed" : "pointer",
-                            opacity: lead.status?.toUpperCase() === "WON" ? 0.8 : 1,
-                            outline: "none",
-                            transition: "all 150ms ease",
+                            borderColor: statusStyle.border,
                           }}
                           title={lead.status?.toUpperCase() === "WON" ? "Won deal is locked (managed by BDM)" : "Change lead stage"}
                         >
-                          <option value="NEW" style={{ backgroundColor: "#0c1222", color: "#63f5e8" }}> NEW</option>
-                          <option value="UNDER_REVIEW" style={{ backgroundColor: "#0c1222", color: "#38bdf8" }}> UNDER REVIEW</option>
-                          <option value="CONTACTED" style={{ backgroundColor: "#0c1222", color: "#38bdf8" }}>CONTACTED</option>
-                          <option value="QUALIFIED" style={{ backgroundColor: "#0c1222", color: "#818cf8" }}> QUALIFIED</option>
-                          <option value="PROPOSAL_SUBMITTED" style={{ backgroundColor: "#0c1222", color: "#818cf8" }}> PROPOSAL</option>
-                          <option value="NEGOTIATION" style={{ backgroundColor: "#0c1222", color: "#818cf8" }}> NEGOTIATION</option>
-                          <option value="WON" style={{ backgroundColor: "#0c1222", color: "#4ade80" }}>WON</option>
-                          <option value="LOST" style={{ backgroundColor: "#0c1222", color: "#f87171" }}>LOST</option>
-                        </select>
+                          {lead.status_display || lead.status}
+                        </span>
                       </td>
-
-                      <td style={{ padding: "1rem", fontSize: "0.8rem", color: "#cbd5e1" }}>
-                        {lead.assigned_to_name ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                            <User size={13} color="#63f5e8" />
-                            {lead.assigned_to_name}
-                          </div>
-                        ) : (
-                          <span style={{ color: "#64748b", fontStyle: "italic", fontSize: "0.75rem" }}>Unassigned</span>
-                        )}
+                      <td className="py-3.5 px-4">
+                        <span
+                          className="px-2 py-0.5 text-xs font-semibold rounded uppercase"
+                          style={{
+                            color: priorityStyle.color,
+                            backgroundColor: priorityStyle.bg,
+                          }}
+                        >
+                          {lead.priority}
+                        </span>
                       </td>
-
-                      <td style={{ padding: "1rem", textAlign: "right" }}>
+                      <td className="py-3.5 px-4 text-right">
                         <Link href={`/crm/leads/${lead.id}`}>
-                          <Button variant="outline" style={{ padding: "0.35rem 0.75rem", fontSize: "0.75rem" }}>
-                            Open Desk &rarr;
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-950/40 flex items-center gap-1 ml-auto"
+                          >
+                            Manage
+                            <ExternalLink className="w-3.5 h-3.5" />
                           </Button>
                         </Link>
                       </td>
@@ -558,270 +324,48 @@ export const Leads: React.FC = () => {
               </tbody>
             </table>
           </div>
-        )}
 
-        {/* Table Pagination Bar */}
-        {totalCount > pageSize && (
-          <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "1rem 1.25rem",
-            borderTop: "1px solid rgba(140, 174, 187, 0.15)",
-            backgroundColor: "rgba(10, 17, 28, 0.4)",
-          }}>
-            <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace" }}>
-              Page {currentPage} of {totalPages} ({totalCount} total entries)
-            </span>
-
-            <div style={{ display: "flex", gap: "0.5rem" }}>
+          {/* Pagination Footer */}
+          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800 bg-slate-950/40 text-sm text-slate-400">
+            <div>
+              Showing <span className="font-semibold text-slate-200">{leads.length}</span> of{" "}
+              <span className="font-semibold text-slate-200">{totalCount}</span> total records
+            </div>
+            <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
-                disabled={currentPage <= 1}
-                onClick={() => setPage(currentPage - 1)}
-                style={{ padding: "0.35rem 0.6rem" }}
+                size="sm"
+                onClick={() => handlePageChange((params.page || 1) - 1)}
+                disabled={(params.page || 1) <= 1 || isFetching}
+                className="border-slate-800 text-slate-300 disabled:opacity-40"
               >
-                <ChevronLeft size={16} /> Prev
+                <ChevronLeft className="w-4 h-4" />
               </Button>
+              <span className="text-xs px-2 text-slate-300">
+                Page {params.page || 1} of {totalPages}
+              </span>
               <Button
                 variant="outline"
-                disabled={currentPage >= totalPages}
-                onClick={() => setPage(currentPage + 1)}
-                style={{ padding: "0.35rem 0.6rem" }}
+                size="sm"
+                onClick={() => handlePageChange((params.page || 1) + 1)}
+                disabled={(params.page || 1) >= totalPages || isFetching}
+                className="border-slate-800 text-slate-300 disabled:opacity-40"
               >
-                Next <ChevronRight size={16} />
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
-        )}
-      </Card>
-
-      {/* Create Lead Modal */}
-      {isCreateOpen && (
-        <div style={{
-          position: "fixed",
-          inset: 0,
-          backgroundColor: "rgba(5, 8, 17, 0.8)",
-          backdropFilter: "blur(8px)",
-          display: "grid",
-          placeItems: "center",
-          zIndex: 1000,
-          padding: "1.5rem",
-        }}>
-          <Card borderAccent style={{ width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "2rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <div>
-                <p className="eyebrow" style={{ margin: 0 }}>NEW CRM ENTRY</p>
-                <h2 style={{ fontSize: "1.5rem", margin: "0.25rem 0 0 0" }}>Create Sales Lead</h2>
-              </div>
-              <button type="button"
-                onClick={() => setIsCreateOpen(false)}
-                style={{ background: "none", border: 0, color: "#94a3b8", cursor: "pointer" }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {createError && (
-              <div style={{
-                color: "#ef4444",
-                backgroundColor: "rgba(239, 68, 68, 0.1)",
-                border: "1px solid rgba(239, 68, 68, 0.2)",
-                padding: "0.75rem",
-                borderRadius: "4px",
-                fontSize: "0.85rem",
-                marginBottom: "1rem",
-                fontFamily: "IBM Plex Mono, monospace",
-              }}>
-                ERROR // {createError}
-              </div>
-            )}
-
-            <form onSubmit={handleCreateSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                    CONTACT NAME <span style={{ color: "#ef4444", fontWeight: "bold" }} title="Contact Name is a mandatory required field">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    aria-required="true"
-                    title="Please enter contact name"
-                    placeholder="e.g. John Doe"
-                    value={createForm.name}
-                    onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                    style={{
-                      padding: "0.6rem 0.75rem",
-                      backgroundColor: "#050811",
-                      border: "1px solid rgba(140, 174, 187, 0.25)",
-                      color: "#f8fafc",
-                      borderRadius: "4px",
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                    EMAIL ADDRESS <span style={{ color: "#ef4444", fontWeight: "bold" }} title="Email Address is a mandatory required field">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    aria-required="true"
-                    title="Please enter a valid email address"
-                    placeholder="john@company.com"
-                    value={createForm.email}
-                    onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                    style={{
-                      padding: "0.6rem 0.75rem",
-                      backgroundColor: "#050811",
-                      border: "1px solid rgba(140, 174, 187, 0.25)",
-                      color: "#f8fafc",
-                      borderRadius: "4px",
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                    COMPANY NAME
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Apex Innovations"
-                    value={createForm.company}
-                    onChange={(e) => setCreateForm({ ...createForm, company: e.target.value })}
-                    style={{
-                      padding: "0.6rem 0.75rem",
-                      backgroundColor: "#050811",
-                      border: "1px solid rgba(140, 174, 187, 0.25)",
-                      color: "#f8fafc",
-                      borderRadius: "4px",
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                    PHONE NUMBER
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="+1 (555) 019-2834"
-                    value={createForm.phone}
-                    onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
-                    style={{
-                      padding: "0.6rem 0.75rem",
-                      backgroundColor: "#050811",
-                      border: "1px solid rgba(140, 174, 187, 0.25)",
-                      color: "#f8fafc",
-                      borderRadius: "4px",
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                    SOURCE
-                  </label>
-                  <select
-                    value={createForm.source}
-                    onChange={(e) => setCreateForm({ ...createForm, source: e.target.value })}
-                    style={{
-                      padding: "0.6rem 0.75rem",
-                      backgroundColor: "#050811",
-                      border: "1px solid rgba(140, 174, 187, 0.25)",
-                      color: "#f8fafc",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    <option value="website">Website</option>
-                    <option value="linkedin">LinkedIn</option>
-                    <option value="referral">Referral</option>
-                    <option value="cold_outreach">Cold Outreach</option>
-                    <option value="conference">Conference</option>
-                  </select>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                    PRIORITY
-                  </label>
-                  <select
-                    value={createForm.priority}
-                    onChange={(e) => setCreateForm({ ...createForm, priority: e.target.value })}
-                    style={{
-                      padding: "0.6rem 0.75rem",
-                      backgroundColor: "#050811",
-                      border: "1px solid rgba(140, 174, 187, 0.25)",
-                      color: "#f8fafc",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                    INDUSTRY
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Fintech, AI, etc."
-                    value={createForm.industry}
-                    onChange={(e) => setCreateForm({ ...createForm, industry: e.target.value })}
-                    style={{
-                      padding: "0.6rem 0.75rem",
-                      backgroundColor: "#050811",
-                      border: "1px solid rgba(140, 174, 187, 0.25)",
-                      color: "#f8fafc",
-                      borderRadius: "4px",
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                  INITIAL NOTES / DESCRIPTION
-                </label>
-                <textarea
-                  rows={3}
-                  placeholder="Enter initial client scope or requirements..."
-                  value={createForm.description}
-                  onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-                  style={{
-                    padding: "0.6rem 0.75rem",
-                    backgroundColor: "#050811",
-                    border: "1px solid rgba(140, 174, 187, 0.25)",
-                    color: "#f8fafc",
-                    borderRadius: "4px",
-                    resize: "vertical",
-                  }}
-                />
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem" }}>
-                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" glow disabled={createLoading}>
-                  {createLoading ? "Creating Lead..." : "Establish Lead"}
-                </Button>
-              </div>
-            </form>
-          </Card>
         </div>
       )}
+
+      {/* Lead Form Modal */}
+      <LeadFormModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onSubmit={handleCreateSubmit}
+        isLoading={createLeadMutation.isPending}
+        serverErrors={serverErrors}
+      />
     </div>
   );
 };

@@ -39,7 +39,7 @@ export const InsightsHero = () => {
           </div>
 
           <h1 className="subpage-hero-title">
-            Signals Worth <em>Following.</em>
+            Signals Worth <em>following.</em>
           </h1>
 
           <p className="subpage-hero-desc">

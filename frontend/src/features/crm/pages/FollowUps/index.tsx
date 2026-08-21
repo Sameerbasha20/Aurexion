@@ -1,18 +1,13 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "wouter";
-import { useFollowUps } from "../../hooks/useCrm";
+import { Link, useLocation } from "wouter";
+import { useAllFollowUpsQuery, useCompleteFollowUpMutation } from "../../../../queries/useCrmQueries";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
-import {
-  Clock,
-  Phone,
-  Mail,
-  Calendar,
-  CheckCircle2,
-  AlertTriangle,
-  RefreshCw,
-  ExternalLink,
-} from "lucide-react";
+import LoadingState from "../../../../components/feedback/LoadingState";
+import ErrorState from "../../../../components/feedback/ErrorState";
+import EmptyState from "../../../../components/feedback/EmptyState";
+import { toast } from "sonner";
+import { Clock, Phone, Mail, Calendar, RefreshCw, ExternalLink } from "lucide-react";
 
 type FilterTabKey = "all" | "today" | "overdue" | "upcoming" | "completed";
 
@@ -21,13 +16,15 @@ export const categorizeFollowUps = (followUps: any[]) => {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const endOfToday = startOfToday + 24 * 60 * 60 * 1000;
 
-  const overdue = followUps.filter((f) => f.status !== "COMPLETED" && new Date(f.scheduled_at).getTime() < startOfToday);
+  const isOpen = (f: any) => f.status !== "COMPLETED" && f.status !== "CANCELLED";
+
+  const overdue = followUps.filter((f) => isOpen(f) && new Date(f.scheduled_at).getTime() < startOfToday);
   const today = followUps.filter((f) => {
-    if (f.status === "COMPLETED") return false;
+    if (!isOpen(f)) return false;
     const t = new Date(f.scheduled_at).getTime();
     return t >= startOfToday && t < endOfToday;
   });
-  const upcoming = followUps.filter((f) => f.status !== "COMPLETED" && new Date(f.scheduled_at).getTime() >= endOfToday);
+  const upcoming = followUps.filter((f) => isOpen(f) && new Date(f.scheduled_at).getTime() >= endOfToday);
   const completed = followUps.filter((f) => f.status === "COMPLETED");
 
   return { overdue, today, upcoming, completed, startOfToday };
@@ -241,10 +238,12 @@ const FollowUpItemCard: React.FC<FollowUpItemCardProps> = ({
 };
 
 export const FollowUps: React.FC = () => {
-  const { followUps, isLoading, error, refetch, markComplete } = useFollowUps();
+  const [, navigate] = useLocation();
+  const { data, isLoading, error, refetch } = useAllFollowUpsQuery();
+  const completeMutation = useCompleteFollowUpMutation();
+  const followUps = data || [];
   const [filterTab, setFilterTab] = useState<FilterTabKey>("today");
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { overdue, today, upcoming, completed, startOfToday } = useMemo(
     () => categorizeFollowUps(followUps),
@@ -268,16 +267,14 @@ export const FollowUps: React.FC = () => {
 
   const handleComplete = async (leadId: number, followUpId: number) => {
     setActionLoadingId(followUpId);
-    try {
-      await markComplete(leadId, followUpId);
-      setSuccessMessage("Follow-up marked as completed.");
-      setTimeout(() => setSuccessMessage(null), 3000);
-      refetch();
-    } catch (err: any) {
-      alert(err?.message || "Failed to complete follow-up.");
-    } finally {
-      setActionLoadingId(null);
-    }
+    completeMutation.mutate(
+      { leadId, followUpId },
+      {
+        onSuccess: () => toast.success("Follow-up marked as completed."),
+        onError: (err: any) => toast.error(err?.message || "Failed to complete follow-up."),
+        onSettled: () => setActionLoadingId(null),
+      }
+    );
   };
 
   return (
@@ -303,24 +300,6 @@ export const FollowUps: React.FC = () => {
         </div>
       </div>
 
-      {successMessage && (
-        <div style={{
-          backgroundColor: "rgba(74, 222, 128, 0.1)",
-          border: "1px solid rgba(74, 222, 128, 0.3)",
-          color: "#4ade80",
-          padding: "0.75rem 1rem",
-          borderRadius: "4px",
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          fontSize: "0.85rem",
-          fontFamily: "IBM Plex Mono, monospace",
-        }}>
-          <CheckCircle2 size={16} />
-          {successMessage}
-        </div>
-      )}
-
       <FollowUpKpiSection
         overdueCount={overdue.length}
         todayCount={today.length}
@@ -341,31 +320,15 @@ export const FollowUps: React.FC = () => {
 
       {/* Follow-ups List */}
       {isLoading ? (
-        <Card style={{ padding: "3rem", textAlign: "center", color: "#63f5e8" }}>
-          <RefreshCw size={24} style={{ animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
-          <p style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.85rem" }}>
-            SYNCING FOLLOW-UP SCHEDULE...
-          </p>
-        </Card>
+        <LoadingState message="Syncing follow-up schedule..." />
       ) : error ? (
-        <Card style={{ padding: "3rem", textAlign: "center", color: "#ef4444" }}>
-          <AlertTriangle size={32} style={{ margin: "0 auto 1rem" }} />
-          <p>{error}</p>
-          <Button onClick={() => refetch()} style={{ marginTop: "1rem" }}>Retry</Button>
-        </Card>
+        <ErrorState error={error} onRetry={refetch} />
       ) : displayedList.length === 0 ? (
-        <Card style={{ padding: "4rem 2rem", textAlign: "center", color: "#94a3b8" }}>
-          <CheckCircle2 size={36} color="#4ade80" style={{ margin: "0 auto 1rem" }} />
-          <h3 style={{ fontSize: "1.1rem", color: "#f8fafc", margin: 0 }}>
-            No follow-ups found in this category
-          </h3>
-          <p style={{ fontSize: "0.85rem", margin: "0.5rem 0 1.5rem" }}>
-            Check other tabs or schedule follow-ups through the Leads Funnel.
-          </p>
-          <Link href="/crm/leads">
-            <Button glow>Open Leads Funnel</Button>
-          </Link>
-        </Card>
+        <EmptyState
+          title="No follow-ups found in this category"
+          message="Check other tabs or schedule follow-ups through the Leads Funnel."
+          action={{ label: "Open Leads Funnel", onClick: () => navigate("/crm/leads") }}
+        />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
           {displayedList.map((fu) => (

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import Header from "../../components/common/Header";
 import Sidebar from "../../components/common/Sidebar";
 import Footer from "../../components/common/Footer";
 import { useIsMobile } from "../../hooks/useMobile";
-import { PrivatePageSEO } from "../../components/seo/PrivatePageSEO";
+import { useUIStore } from "../../store/useUIStore";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -11,11 +11,13 @@ interface AdminLayoutProps {
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const sidebarOpen = useUIStore((state) => state.sidebarOpen);
+  const setSidebarOpen = useUIStore((state) => state.setSidebarOpen);
+  const toggleSidebar = useUIStore((state) => state.toggleSidebar);
 
   useEffect(() => {
     setSidebarOpen(!isMobile);
-  }, [isMobile]);
+  }, [isMobile, setSidebarOpen]);
 
   return (
     <div style={{
@@ -26,8 +28,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       overflow: "hidden",
       backgroundColor: "#050811",
     }}>
-      <PrivatePageSEO title="Internal Console" />
-      <Header showToggle onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
+      <Header showToggle onToggleSidebar={toggleSidebar} />
       <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main style={{

@@ -1,22 +1,16 @@
 import React, { useState } from "react";
-import { Link } from "wouter";
-import { useCompanies } from "../../hooks/useCrm";
+import { Link, useLocation } from "wouter";
+import { useCompaniesQuery } from "../../../../queries/useCrmQueries";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
-import {
-  Building,
-  Search,
-  Globe,
-  Mail,
-  Phone,
-  RefreshCw,
-  AlertTriangle,
-  ArrowUpRight,
-  ExternalLink,
-} from "lucide-react";
+import LoadingState from "../../../../components/feedback/LoadingState";
+import ErrorState from "../../../../components/feedback/ErrorState";
+import EmptyState from "../../../../components/feedback/EmptyState";
+import { Building, Search, Globe, Mail, Phone, RefreshCw } from "lucide-react";
 
 export const Companies: React.FC = () => {
-  const { companies, isLoading, error, refetch } = useCompanies();
+  const [, navigate] = useLocation();
+  const { data: companies = [], isLoading, error, refetch } = useCompaniesQuery();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredCompanies = companies.filter((c) => {
@@ -81,29 +75,15 @@ export const Companies: React.FC = () => {
 
       {/* Companies Grid / Table */}
       {isLoading ? (
-        <Card style={{ padding: "3rem", textAlign: "center", color: "#63f5e8" }}>
-          <RefreshCw size={24} style={{ animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
-          <p style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.85rem" }}>
-            INITIALIZING COMPANY REGISTRY...
-          </p>
-        </Card>
+        <LoadingState message="Initializing company registry..." />
       ) : error ? (
-        <Card style={{ padding: "3rem", textAlign: "center", color: "#ef4444" }}>
-          <AlertTriangle size={32} style={{ margin: "0 auto 1rem" }} />
-          <p>{error}</p>
-          <Button onClick={() => refetch()} style={{ marginTop: "1rem" }}>Retry</Button>
-        </Card>
+        <ErrorState error={error} onRetry={refetch} />
       ) : filteredCompanies.length === 0 ? (
-        <Card style={{ padding: "4rem 2rem", textAlign: "center", color: "#94a3b8" }}>
-          <Building size={36} color="#64748b" style={{ margin: "0 auto 1rem" }} />
-          <h3 style={{ fontSize: "1.1rem", color: "#f8fafc", margin: 0 }}>No companies found</h3>
-          <p style={{ fontSize: "0.85rem", margin: "0.5rem 0 1.5rem" }}>
-            Companies are automatically registered as you establish enterprise leads.
-          </p>
-          <Link href="/crm/leads">
-            <Button glow>Create Lead</Button>
-          </Link>
-        </Card>
+        <EmptyState
+          title="No companies found"
+          message="Companies are automatically registered as you establish enterprise leads."
+          action={{ label: "Create Lead", onClick: () => navigate("/crm/leads") }}
+        />
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.25rem" }}>
           {filteredCompanies.map((company) => (

@@ -1,23 +1,16 @@
 import React, { useState } from "react";
-import { Link } from "wouter";
-import { useActivities } from "../../hooks/useCrm";
+import { Link, useLocation } from "wouter";
+import { useActivitiesQuery } from "../../../../queries/useCrmQueries";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
-import {
-  History,
-  Activity,
-  Phone,
-  Mail,
-  Calendar,
-  FileText,
-  CheckCircle2,
-  AlertTriangle,
-  RefreshCw,
-  Filter,
-} from "lucide-react";
+import LoadingState from "../../../../components/feedback/LoadingState";
+import ErrorState from "../../../../components/feedback/ErrorState";
+import EmptyState from "../../../../components/feedback/EmptyState";
+import { Activity, Phone, Mail, Calendar, FileText, CheckCircle2, AlertTriangle, RefreshCw } from "lucide-react";
 
 export const Activities: React.FC = () => {
-  const { activities, isLoading, error, refetch } = useActivities();
+  const [, navigate] = useLocation();
+  const { data: activities = [], isLoading, error, refetch } = useActivitiesQuery();
   const [typeFilter, setTypeFilter] = useState("");
 
   const filteredActivities = activities.filter((act) => {
@@ -109,29 +102,15 @@ export const Activities: React.FC = () => {
 
       {/* Activity Timeline List */}
       {isLoading ? (
-        <Card style={{ padding: "3rem", textAlign: "center", color: "#63f5e8" }}>
-          <RefreshCw size={24} style={{ animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
-          <p style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: "0.85rem" }}>
-            LOADING SALES ACTIVITIES FEED...
-          </p>
-        </Card>
+        <LoadingState message="Loading sales activities feed..." />
       ) : error ? (
-        <Card style={{ padding: "3rem", textAlign: "center", color: "#ef4444" }}>
-          <AlertTriangle size={32} style={{ margin: "0 auto 1rem" }} />
-          <p>{error}</p>
-          <Button onClick={() => refetch()} style={{ marginTop: "1rem" }}>Retry</Button>
-        </Card>
+        <ErrorState error={error} onRetry={refetch} />
       ) : filteredActivities.length === 0 ? (
-        <Card style={{ padding: "4rem 2rem", textAlign: "center", color: "#94a3b8" }}>
-          <History size={36} color="#64748b" style={{ margin: "0 auto 1rem" }} />
-          <h3 style={{ fontSize: "1.1rem", color: "#f8fafc", margin: 0 }}>No activities recorded</h3>
-          <p style={{ fontSize: "0.85rem", margin: "0.5rem 0 1.5rem" }}>
-            Interact with leads in the Leads Funnel to generate live communication records.
-          </p>
-          <Link href="/crm/leads">
-            <Button glow>Go to Leads Funnel</Button>
-          </Link>
-        </Card>
+        <EmptyState
+          title="No activities recorded"
+          message="Interact with leads in the Leads Funnel to generate live communication records."
+          action={{ label: "Go to Leads Funnel", onClick: () => navigate("/crm/leads") }}
+        />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
           {filteredActivities.map((act) => (
