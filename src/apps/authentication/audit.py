@@ -68,6 +68,12 @@ def log_audit_event(user, action, module, object_id=None, repr_str=None, previou
     clean_prev = previous_state if isinstance(previous_state, dict) else None
     clean_updated = updated_state if isinstance(updated_state, dict) else None
 
+    from django.conf import settings
+    is_testing = getattr(settings, 'IS_TESTING', False)
+    if is_testing:
+        _save_audit_log_task(db_user_id, action, module, object_id, repr_str, clean_prev, clean_updated, resolved_ip, resolved_ua)
+        return None
+
     # Dispatch to background thread to avoid blocking HTTP request cycle
     t = threading.Thread(
         target=_save_audit_log_task,

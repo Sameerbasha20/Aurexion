@@ -45,7 +45,11 @@ celerybeat.pid
 
 # Testing & Coverage
 .coverage
+.coverage.*
 htmlcov/
+reports/
+.pytest_cache/
+junit.xml
 nosetests.xml
 coverage.xml
 *.cover

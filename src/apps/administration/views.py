@@ -42,6 +42,9 @@ class RoleViewSet(viewsets.ModelViewSet):
                 if perm.module in ['administration', 'authentication'] and not (perm.can_create and perm.can_read and perm.can_update and perm.can_delete):
                     raise serializers.ValidationError("Super Admin must have full permissions (CRUD) for 'administration' and 'authentication' modules.")
         
+        from django.core.cache import cache
+        cache.clear()
+
         log_audit_event(
             user=self.request.user,
             action='UPDATE',

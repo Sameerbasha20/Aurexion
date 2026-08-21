@@ -7,4 +7,5 @@ services:
     volumes:
       - .:/app
     environment:
-      - DEBUG=1
+      - DEBUG=${DEBUG:-0}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-dev-insecure-docker-key}

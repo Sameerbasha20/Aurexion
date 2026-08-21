@@ -284,16 +284,7 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
           </div>
-          <Button
-            glow
-            onClick={() => {
-              const el = document.getElementById("inbound-submissions-table");
-              if (el) el.scrollIntoView({ behavior: "smooth" });
-            }}
-            style={{ fontSize: "0.8rem", padding: "0.4rem 0.85rem" }}
-          >
-            Review Inbound Queue
-          </Button>
+        
         </div>
       )}
 

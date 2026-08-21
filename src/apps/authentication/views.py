@@ -105,12 +105,12 @@ class LoginView(APIView):
                 status=status.HTTP_429_TOO_MANY_REQUESTS
             )
 
-        # Authenticate User (try standard username first, then fallback to email / case-insensitive lookup)
-        user = authenticate(username=username, password=password)
-        if user is None:
-            db_user = User.objects.filter(email__iexact=username).first() or User.objects.filter(username__iexact=username).first()
-            if db_user and db_user.check_password(password):
-                user = db_user
+        # Fast single-pass User authentication (email or username case-insensitive)
+        db_user = User.objects.filter(username__iexact=username).first() or User.objects.filter(email__iexact=username).first()
+        if db_user and db_user.check_password(password):
+            user = db_user
+        else:
+            user = None
 
         if user is not None:
             user = User.objects.select_related('profile').get(id=user.id)

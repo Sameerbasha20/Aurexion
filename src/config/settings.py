@@ -45,7 +45,14 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'testserver',
+    'aurexion-one.vercel.app',
 ]
+_env_hosts = os.getenv('ALLOWED_HOSTS', '')
+if _env_hosts:
+    for h in _env_hosts.split(','):
+        h_clean = h.strip()
+        if h_clean and h_clean not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(h_clean)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -125,12 +132,21 @@ CSRF_COOKIE_HTTPONLY = False  # Let frontend read the csrf token cookie to pass 
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = 'Lax'
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+if not DEBUG:
+    SECURE_SSL_REDIRECT = _env_flag('SECURE_SSL_REDIRECT', default=True)
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
 ROOT_URLCONF = 'config.urls'
+
+_templates_dir = (BASE_DIR / 'src' / 'templates') if (BASE_DIR / 'src' / 'templates').exists() else (BASE_DIR / 'templates')
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'src' / 'templates'],
+        'DIRS': [_templates_dir] if _templates_dir.exists() else [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -145,7 +161,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-use_local = os.getenv('USE_LOCAL_DB', 'false').lower() == 'true'
+import sys
+IS_TESTING = 'test' in sys.argv or 'pytest' in sys.modules or any('pytest' in arg for arg in sys.argv)
+
+use_local = (os.getenv('USE_LOCAL_DB', 'false').lower() == 'true') or IS_TESTING
 if os.getenv('DB_ENGINE') and not use_local:
     db_host = os.getenv('DB_HOST', '')
     is_supabase = 'supabase' in str(db_host).lower()
@@ -310,7 +329,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'src' / 'static']
+
+_static_dir = (BASE_DIR / 'src' / 'static') if (BASE_DIR / 'src' / 'static').exists() else (BASE_DIR / 'static')
+STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
+
 if HAS_WHITENOISE:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
