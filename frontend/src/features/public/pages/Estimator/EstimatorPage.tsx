@@ -68,10 +68,20 @@ const getBudgetRange = (selections: number[]): string => {
   return "$350,000+";
 };
 
+const nameRegex = /^[a-zA-Z\s'-]+$/;
+
 const followUpSchema = z.object({
-  name: z.string().min(2, "Name is required"),
+  name: z
+    .string()
+    .min(1, "Full name is required")
+    .min(2, "Full name must be at least 2 characters")
+    .regex(nameRegex, "Please enter a valid name format (letters, spaces, hyphens, and apostrophes only)")
+    .refine((val) => val.trim().length >= 2, "Please enter a valid full name"),
   email: z.string().email("Valid email is required"),
-  phone: z.string().min(7, "Phone number is required"),
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(/^\d{10}$/, "Phone number must be exactly 10 digits (numbers only)"),
   company: z.string().optional(),
   message: z.string().optional(),
 });
