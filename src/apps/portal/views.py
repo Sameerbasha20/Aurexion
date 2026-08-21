@@ -527,9 +527,12 @@ def ensure_client_project_exists(user):
     if not user or not user.is_authenticated:
         return None
 
-    existing = ClientProject.objects.filter(client_user=user).first()
-    if existing:
-        return existing
+    if getattr(user, '_has_checked_project', False):
+        return None
+    user._has_checked_project = True
+
+    if ClientProject.objects.filter(client_user=user).exists():
+        return None
 
     company_name = user.first_name or (user.username.split('@')[0].capitalize() if '@' in user.username else user.username)
     today = timezone.now().date()
@@ -664,7 +667,7 @@ class ProjectMilestoneViewSet(viewsets.ReadOnlyModelViewSet):
         user = self.request.user
         if user and user.is_authenticated:
             ensure_client_project_exists(user)
-            return ProjectMilestone.objects.filter(project__client_user=user)
+            return ProjectMilestone.objects.filter(project__client_user=user).select_related('project')
         return ProjectMilestone.objects.none()
 
 

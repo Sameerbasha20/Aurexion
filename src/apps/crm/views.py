@@ -208,9 +208,10 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Lead.objects.select_related("created_by", "assigned_to", "rfp_enquiry")
-        if self.action in ("retrieve", "update", "partial_update"):
-            queryset = queryset.prefetch_related("follow_ups", "notes")
+        queryset = Lead.objects.select_related("created_by", "assigned_to", "rfp_enquiry").annotate(
+            follow_up_count=Count("follow_ups", distinct=True),
+            note_count=Count("notes", distinct=True)
+        )
 
         role = getattr(getattr(user, "profile", None), "role", None)
         role_lower = str(role or "").lower()
