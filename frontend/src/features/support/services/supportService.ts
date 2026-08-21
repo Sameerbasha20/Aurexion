@@ -1,5 +1,6 @@
 import axiosClient from "../../../api/axiosClient";
 import API_ENDPOINTS from "../../../api/endpoints";
+import { notifySupportDataChanged } from "./supportEvents";
 import type {
   AdminTicketUpdateInput,
   AssignableUser,
@@ -9,6 +10,15 @@ import type {
   SupportTicketItem,
   SupportTicketUpdateInput,
 } from "../../portal/types/portal.types";
+
+export interface ExecutiveDashboardStats {
+  totalAssigned: number;
+  openAssigned: number;
+  inProgress: number;
+  awaitingClient: number;
+  resolvedClosed: number;
+  criticalPriority: number;
+}
 
 export const supportService = {
   // Client APIs
@@ -24,15 +34,25 @@ export const supportService = {
 
   createMyTicket: async (ticket: SupportTicketCreateInput): Promise<SupportTicketDetail> => {
     const data = await axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.MY_TICKETS, ticket);
+    notifySupportDataChanged();
     return data;
   },
 
   updateMyTicket: async (id: number, ticket: SupportTicketUpdateInput): Promise<SupportTicketDetail> => {
     const data = await axiosClient.patch<any, any>(`${API_ENDPOINTS.PORTAL.MY_TICKETS}${id}/`, ticket);
+    notifySupportDataChanged();
     return data;
   },
 
   // Support Executive APIs
+  getExecutiveDashboardStats: async (): Promise<ExecutiveDashboardStats> => {
+    const data = await axiosClient.get<any, any>(`${API_ENDPOINTS.PORTAL.TICKETS}stats/`);
+    if (data && typeof data === 'object' && 'data' in data && data.data) {
+      return data.data;
+    }
+    return data;
+  },
+
   getExecutiveTickets: async (): Promise<SupportTicketItem[]> => {
     const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.TICKETS);
     return Array.isArray(data) ? data : (data.results || []);
@@ -45,6 +65,7 @@ export const supportService = {
 
   updateExecutiveTicket: async (id: number, ticket: ExecutiveTicketUpdateInput): Promise<SupportTicketDetail> => {
     const data = await axiosClient.patch<any, any>(`${API_ENDPOINTS.PORTAL.TICKETS}${id}/`, ticket);
+    notifySupportDataChanged();
     return data;
   },
 
@@ -61,6 +82,7 @@ export const supportService = {
 
   updateAdminTicket: async (id: number, ticket: AdminTicketUpdateInput): Promise<SupportTicketDetail> => {
     const data = await axiosClient.patch<any, any>(`${API_ENDPOINTS.PORTAL.ADMIN_TICKETS}${id}/`, ticket);
+    notifySupportDataChanged();
     return data;
   },
 

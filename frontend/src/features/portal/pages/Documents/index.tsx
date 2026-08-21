@@ -1,69 +1,99 @@
-import React from "react";
+import React, { useState } from "react";
 import PageHeader from "../../components/PageHeader";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
 import portalService from "../../services/portalService";
 import usePortalQuery from "../../hooks/usePortalQuery";
-import { ErrorState, LoadingState } from "../../components/StateViews";
-import { FolderLock, Download, RefreshCw, FileText } from "lucide-react";
-
-interface DocumentItem {
-  id: number;
-  title: string;
-  document_type: string;
-  document_type_display: string;
-  project_title: string | null;
-  file_url: string;
-  file_size: string;
-  uploaded_at: string;
-}
+import { ErrorState, LoadingState, EmptyState } from "../../components/StateViews";
+import type { ClientDocumentItem } from "../../types/portal.types";
+import { FolderLock, Download, RefreshCw, FileText, Lock, AlertTriangle } from "lucide-react";
 
 const TYPE_COLORS: Record<string, string> = {
-  contract: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  invoice: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  deliverable: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  specification: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  requirements: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+  architecture: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
+  sow: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+  report: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  contract: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  invoice: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  deliverable: "bg-teal-500/20 text-teal-400 border-teal-500/30",
+  specification: "bg-pink-500/20 text-pink-400 border-pink-500/30",
   other: "bg-gray-500/20 text-gray-400 border-gray-500/30",
 };
 
 export const Documents: React.FC = () => {
-  const { data: documents, isLoading, isError, error, refetch } = usePortalQuery<DocumentItem[]>(
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  const { data: documents, isLoading, isError, error, refetch } = usePortalQuery<ClientDocumentItem[]>(
     ["portal", "documents"],
     () => portalService.getDocuments()
   );
 
+  const handleDownload = async (doc: ClientDocumentItem) => {
+    setDownloadingId(doc.id);
+    setDownloadError(null);
+    try {
+      const res = await portalService.downloadDocument(doc.id);
+      if (res.file_url) {
+        window.open(res.file_url, "_blank");
+      } else {
+        setDownloadError(`File URL not available for ${doc.title}`);
+      }
+    } catch (err: any) {
+      setDownloadError(err?.message || "Unauthorized document download request.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       <PageHeader
-        eyebrow="ACCOUNT REPOSITORY"
-        title="Documents & Deliverables"
-        description="Access contracts, invoices, specifications, and project deliverables."
+        eyebrow="DOCUMENT VAULT"
+        title="Secure Document Repository"
+        description="Access project requirements, architecture diagrams, SOWs, reports, and deliverables."
         actions={
-          <Button variant="outline" size="sm" onClick={refetch}>
-            <RefreshCw size={14} style={{ marginRight: "0.35rem" }} />
-            Refresh Repository
-          </Button>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <span style={{ fontSize: "0.75rem", color: "#64748b", display: "flex", alignItems: "center", gap: "0.3rem", fontFamily: "IBM Plex Mono, monospace" }}>
+              <Lock size={12} /> AUTHENTICATED ACCESS ONLY
+            </span>
+            <Button variant="outline" size="sm" onClick={refetch}>
+              <RefreshCw size={14} style={{ marginRight: "0.35rem" }} />
+              Refresh Repository
+            </Button>
+          </div>
         }
       />
+
+      {downloadError && (
+        <div style={{
+          backgroundColor: "rgba(239, 68, 68, 0.15)",
+          color: "#ef4444",
+          border: "1px solid rgba(239, 68, 68, 0.3)",
+          padding: "0.75rem 1rem",
+          borderRadius: "4px",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          fontSize: "0.85rem",
+        }}>
+          <AlertTriangle size={16} />
+          {downloadError}
+        </div>
+      )}
 
       {isLoading ? (
         <LoadingState label="LOADING REPOSITORY DOCUMENTS..." rows={3} />
       ) : isError ? (
         <ErrorState error={error} onRetry={refetch} title="Unable to load documents" />
       ) : !documents || documents.length === 0 ? (
-        <Card style={{ padding: "3rem", textAlign: "center" }}>
-          <FolderLock size={36} color="#64748b" style={{ margin: "0 auto 1rem" }} />
-          <h3 style={{ fontSize: "1.2rem", color: "#f8fafc", margin: 0 }}>No documents found</h3>
-          <p style={{ color: "#94a3b8", fontSize: "0.88rem", margin: "0.5rem 0 0 0" }}>
-            Official account documents, signed contracts, and project deliverables will be published here.
-          </p>
-        </Card>
+        <EmptyState title="No project documents available" description="Official account documents, project requirements, SOWs, and architectural diagrams will be published here." />
       ) : (
-        <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
+        <div style={{ display: "grid", gap: "1.25rem", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
           {documents.map((doc) => (
-            <Card key={doc.id} style={{ padding: "1.25rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
+            <Card key={doc.id} glowOnHover style={{ padding: "1.25rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <FileText size={18} color="#63f5e8" />
                   <h3 style={{ margin: 0, fontSize: "1rem", color: "#f8fafc", fontWeight: 600 }}>
@@ -86,17 +116,16 @@ export const Documents: React.FC = () => {
                   {doc.file_size} · {new Date(doc.uploaded_at).toLocaleDateString()}
                 </span>
 
-                {doc.file_url ? (
-                  <a href={doc.file_url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
-                    <Button variant="outline" size="sm" style={{ fontSize: "0.75rem" }}>
-                      <Download size={13} style={{ marginRight: "0.3rem" }} /> View / Download
-                    </Button>
-                  </a>
-                ) : (
-                  <Button variant="outline" size="sm" disabled style={{ fontSize: "0.75rem", opacity: 0.5 }}>
-                    Processing
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={downloadingId === doc.id}
+                  onClick={() => handleDownload(doc)}
+                  style={{ fontSize: "0.75rem" }}
+                >
+                  <Download size={13} style={{ marginRight: "0.3rem" }} />
+                  {downloadingId === doc.id ? "Authorizing..." : "Secure Download"}
+                </Button>
               </div>
             </Card>
           ))}

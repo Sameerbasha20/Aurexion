@@ -67,11 +67,11 @@ export const TicketList: React.FC = () => {
   const handleQuickStatus = async (id: number, nextStatus: TicketStatus) => {
     try {
       const ticket = tickets.data?.find((t) => t.id === id);
-      const payload: ExecutiveTicketUpdateInput = { status: nextStatus };
-      if (nextStatus === "closed") {
-        payload.resolution_notes = (ticket as any)?.resolution_notes || "Resolved and closed";
+      if (nextStatus === "closed" && (!ticket?.resolution_notes || !ticket.resolution_notes.trim())) {
+        alert("Cannot close ticket: Resolution notes are required before closing this ticket. Please open ticket details to enter resolution notes.");
+        return;
       }
-      await updateTicket.update(id, payload);
+      await updateTicket.update(id, { status: nextStatus });
       await tickets.refetch();
     } catch (err) {
       console.error("Failed to update ticket status:", err);

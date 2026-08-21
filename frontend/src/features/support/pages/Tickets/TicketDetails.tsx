@@ -249,6 +249,8 @@ export const TicketDetails: React.FC = () => {
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [successMessage, setSuccessMessage] = useState(false);
 
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   useEffect(() => {
     if (ticket.data) {
       setStatus(ticket.data.status);
@@ -262,6 +264,12 @@ export const TicketDetails: React.FC = () => {
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!ticket.data) return;
+
+    setValidationError(null);
+    if (status === "closed" && !resolutionNotes.trim()) {
+      setValidationError("Resolution notes are required before closing this ticket.");
+      return;
+    }
 
     try {
       await updateTicket.update(ticket.data.id, {
@@ -319,6 +327,12 @@ export const TicketDetails: React.FC = () => {
           {successMessage && (
             <div style={{ color: "#4ade80", backgroundColor: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", padding: "0.75rem 1rem", borderRadius: "6px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <CheckCircle2 size={16} /> Ticket updated successfully.
+            </div>
+          )}
+
+          {validationError && (
+            <div style={{ color: "#ef4444", backgroundColor: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", padding: "0.75rem 1rem", borderRadius: "6px", fontSize: "0.85rem" }}>
+              Cannot close ticket: {validationError}
             </div>
           )}
 
