@@ -2,7 +2,12 @@ from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
 from apps.administration.views import RoleViewSet, AdminDashboardView, UserRoleChoicesView
 
-router = DefaultRouter()
+class OptionalSlashRouter(DefaultRouter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.trailing_slash = '/?'
+
+router = OptionalSlashRouter()
 router.register(r'roles', RoleViewSet, basename='role')
 
 urlpatterns = [

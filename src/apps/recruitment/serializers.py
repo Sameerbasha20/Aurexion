@@ -17,9 +17,21 @@ class ApplySerializer(serializers.Serializer):
     resume = serializers.FileField(validators=[validate_resume])
 
 class AdminJobVacancySerializer(serializers.ModelSerializer):
+    job_id = serializers.CharField(required=False, allow_blank=True)
+    location = serializers.CharField(required=False, allow_blank=True, default='Remote')
+    experience = serializers.CharField(required=False, allow_blank=True, default='0-2 years')
+    skills = serializers.CharField(required=False, allow_blank=True, default='')
+    responsibilities = serializers.CharField(required=False, allow_blank=True, default='')
+
     class Meta:
         model = JobVacancy
         fields = '__all__'
+
+    def create(self, validated_data):
+        if not validated_data.get('job_id'):
+            import uuid
+            validated_data['job_id'] = f"JOB-{uuid.uuid4().hex[:6].upper()}"
+        return super().create(validated_data)
 
 class AdminCandidateApplicationSerializer(serializers.ModelSerializer):
     class Meta:

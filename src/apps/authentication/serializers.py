@@ -17,6 +17,22 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'profile', 'role', 'password', 'date_joined')
         read_only_fields = ('date_joined',)
 
+    def validate_email(self, value):
+        if value:
+            val = value.strip().lower()
+            qs = User.objects.filter(email__iexact=val)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError("A user with this email address already exists.")
+            return val
+        return value
+
+    def validate_password(self, value):
+        if value and len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+        return value
+
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         if hasattr(instance, 'profile') and instance.profile:

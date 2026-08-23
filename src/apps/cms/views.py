@@ -125,8 +125,8 @@ class PublicBlogPostViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         now = timezone.now()
-        # Include Published, or Scheduled posts whose time has passed
-        queryset = BlogPost.objects.filter(
+        # Include Published, or Scheduled posts whose time has passed with single-query join
+        queryset = BlogPost.objects.select_related('author', 'category').filter(
             Q(status='published') | Q(status='scheduled', published_at__lte=now)
         ).order_by('-created_at')
         
@@ -141,7 +141,22 @@ class PublicBlogPostViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        cache_key = f"public_blog_list_{request.query_params.urlencode()}"
+        try:
+            from django.core.cache import cache
+            cached = cache.get(cache_key)
+            if cached is not None:
+                return Response(cached)
+        except Exception:
+            pass
+        response = super().list(request, *args, **kwargs)
+        if response.status_code == 200:
+            try:
+                from django.core.cache import cache
+                cache.set(cache_key, response.data, timeout=60)
+            except Exception:
+                pass
+        return response
 
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
@@ -184,10 +199,30 @@ class PublicIndustryListView(generics.ListAPIView):
     Public API: GET /api/v1/cms/public/industries/
     Returns a list of published industries.
     """
-    queryset = Industry.objects.filter(status='published').order_by('-created_at')
     serializer_class = IndustrySerializer
     permission_classes = [AllowAny]
     authentication_classes = []
+
+    def get_queryset(self):
+        return Industry.objects.prefetch_related('services', 'case_studies').filter(status='published').order_by('-created_at')
+
+    def list(self, request, *args, **kwargs):
+        cache_key = "public_industries_list"
+        try:
+            from django.core.cache import cache
+            cached = cache.get(cache_key)
+            if cached is not None:
+                return Response(cached)
+        except Exception:
+            pass
+        response = super().list(request, *args, **kwargs)
+        if response.status_code == 200:
+            try:
+                from django.core.cache import cache
+                cache.set(cache_key, response.data, timeout=60)
+            except Exception:
+                pass
+        return response
 
 
 from rest_framework.views import APIView

@@ -13,6 +13,17 @@ class RoleSerializer(serializers.ModelSerializer):
         model = Role
         fields = ['id', 'code', 'name', 'description', 'permissions']
 
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            data = data.copy()
+            if 'name' in data and not data.get('code'):
+                data['code'] = data['name'].lower().replace(' ', '_')
+            if 'display_name' in data and not data.get('name'):
+                data['name'] = data['display_name']
+            if 'code' in data and not data.get('name'):
+                data['name'] = data['code'].replace('_', ' ').title()
+        return super().to_internal_value(data)
+
     def create(self, validated_data):
         permissions_data = validated_data.pop('permissions', [])
         role = Role.objects.create(**validated_data)

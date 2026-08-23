@@ -1,16 +1,47 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
 from apps.cms.models import Service, CaseStudy, Industry, Category, BlogPost, CompanyInformation
 
 class ServiceSerializer(serializers.ModelSerializer):
+    slug = serializers.CharField(required=False, allow_blank=True)
+    problem = serializers.CharField(required=False, allow_blank=True, default='')
+    solution = serializers.CharField(required=False, allow_blank=True, default='')
 
     class Meta:
         model = Service
         fields = '__all__'
 
+    def create(self, validated_data):
+        if not validated_data.get('slug') and validated_data.get('title'):
+            from django.utils.text import slugify
+            base_slug = slugify(validated_data['title']) or "service"
+            slug = base_slug
+            counter = 1
+            while Service.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            validated_data['slug'] = slug
+        return super().create(validated_data)
+
 class CaseStudySerializer(serializers.ModelSerializer):
+    slug = serializers.CharField(required=False, allow_blank=True)
+    client = serializers.CharField(required=False, allow_blank=True, default='Client')
+
     class Meta:
         model = CaseStudy
         fields = '__all__'
+
+    def create(self, validated_data):
+        if not validated_data.get('slug') and validated_data.get('title'):
+            from django.utils.text import slugify
+            base_slug = slugify(validated_data['title']) or "case-study"
+            slug = base_slug
+            counter = 1
+            while CaseStudy.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            validated_data['slug'] = slug
+        return super().create(validated_data)
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -46,11 +77,39 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class BlogPostSerializer(serializers.ModelSerializer):
     author_username = serializers.ReadOnlyField(source='author.username')
-    category_name = serializers.ReadOnlyField(source='category.name')
+    category_name = serializers.ReadOnlyField(source='category.name', default='General')
+    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), required=False, allow_null=True)
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True)
+    slug = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = BlogPost
         fields = '__all__'
+
+    def create(self, validated_data):
+        if not validated_data.get('category'):
+            default_cat, _ = Category.objects.get_or_create(name='General', defaults={'slug': 'general'})
+            validated_data['category'] = default_cat
+
+        if not validated_data.get('author'):
+            request = self.context.get('request')
+            if request and hasattr(request, 'user') and request.user.is_authenticated:
+                validated_data['author'] = request.user
+            else:
+                validated_data['author'] = User.objects.filter(is_superuser=True).first() or User.objects.first()
+
+        if not validated_data.get('slug') and validated_data.get('title'):
+            from django.utils.text import slugify
+            import uuid
+            base_slug = slugify(validated_data['title']) or "blog-post"
+            slug = base_slug
+            counter = 1
+            while BlogPost.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            validated_data['slug'] = slug
+
+        return super().create(validated_data)
 
 class CompanyInformationSerializer(serializers.ModelSerializer):
     class Meta:

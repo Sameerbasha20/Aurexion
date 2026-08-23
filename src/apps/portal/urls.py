@@ -16,7 +16,12 @@ from apps.portal.views import (
     DocumentDownloadView,
 )
 
-router = DefaultRouter()
+class OptionalSlashRouter(DefaultRouter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.trailing_slash = '/?'
+
+router = OptionalSlashRouter()
 router.register(r'support/my-tickets', ClientTicketViewSet, basename='client-ticket')
 router.register(r'support/tickets', SupportExecutiveTicketViewSet, basename='support-ticket')
 router.register(r'support/admin/tickets', AdministratorTicketViewSet, basename='admin-ticket')

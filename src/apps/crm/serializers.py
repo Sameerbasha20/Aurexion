@@ -7,9 +7,34 @@ from django.utils.html import strip_tags
 
 
 class RFPEnquirySerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(required=False, allow_blank=True, default='Client')
+    company_name = serializers.CharField(required=False, allow_blank=True, default='')
+    work_email = serializers.EmailField(required=False, allow_blank=True)
+    phone = serializers.CharField(required=False, allow_blank=True, default='')
+    designation = serializers.CharField(required=False, allow_blank=True, default='')
+    country = serializers.CharField(required=False, allow_blank=True, default='')
+    project_type = serializers.CharField(required=False, allow_blank=True, default='')
+    budget_range = serializers.CharField(required=False, allow_blank=True, default='')
+    project_description = serializers.CharField(required=False, allow_blank=True, default='')
+
     class Meta:
         model = RFPEnquiry
         fields = '__all__'
+
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            data = data.copy()
+            if 'name' in data and not data.get('full_name'):
+                data['full_name'] = data['name']
+            if 'company' in data and not data.get('company_name'):
+                data['company_name'] = data['company']
+            if 'email' in data and not data.get('work_email'):
+                data['work_email'] = data['email']
+            if 'description' in data and not data.get('project_description'):
+                data['project_description'] = data['description']
+            if 'project_scope' in data and not data.get('project_description'):
+                data['project_description'] = data['project_scope']
+        return super().to_internal_value(data)
 
     def validate_document_attachment(self, value):
         if value:
@@ -336,13 +361,24 @@ class PublicLeadCreateSerializer(serializers.ModelSerializer):
     def validate_name(self, value):
         if not value or not value.strip():
             raise serializers.ValidationError("Name is required.")
-        return value.strip()
+        return strip_tags(value.strip())
+
+    def validate_company(self, value):
+        if value:
+            return strip_tags(value.strip())
+        return value
+
+    def validate_description(self, value):
+        if value:
+            return strip_tags(value)
+        return value
 
     def validate(self, attrs):
         subject = attrs.pop("subject", None)
         if subject:
+            cleaned_subject = strip_tags(subject)
             desc = attrs.get("description", "")
-            attrs["description"] = f"Subject: {subject}\n\n{desc}" if desc else f"Subject: {subject}"
+            attrs["description"] = f"Subject: {cleaned_subject}\n\n{desc}" if desc else f"Subject: {cleaned_subject}"
         return attrs
 
 

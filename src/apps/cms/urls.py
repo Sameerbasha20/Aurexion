@@ -8,7 +8,12 @@ from apps.cms.views import (
     AdminCompanyInformationViewSet, PublicCompanyInformationView
 )
 
-router = DefaultRouter()
+class OptionalSlashRouter(DefaultRouter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.trailing_slash = '/?'
+
+router = OptionalSlashRouter()
 # Admin routes
 router.register(r'cms/admin/services', AdminServiceViewSet, basename='admin-service')
 router.register(r'cms/admin/case-studies', AdminCaseStudyViewSet, basename='admin-case-studies')
