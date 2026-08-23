@@ -5,7 +5,12 @@ from .views import (
     AdminJobVacancyViewSet, AdminCandidateApplicationViewSet
 )
 
-router = DefaultRouter()
+class OptionalSlashRouter(DefaultRouter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.trailing_slash = '/?'
+
+router = OptionalSlashRouter()
 router.register(r'careers/admin/jobs', AdminJobVacancyViewSet, basename='admin-jobs')
 router.register(r'careers/admin/applications', AdminCandidateApplicationViewSet, basename='admin-applications')
 

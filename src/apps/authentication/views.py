@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.core.mail import send_mail
+from apps.core.services import send_email
 from django.core.exceptions import PermissionDenied
 from rest_framework import status, viewsets, filters, permissions
 from rest_framework.views import APIView
@@ -253,13 +253,19 @@ class LogoutView(APIView):
 class CookieTokenRefreshView(TokenRefreshView):
     """
     Endpoint: POST /api/v1/auth/token/refresh/
-    Re-issues access (and rotated refresh) tokens via HttpOnly cookies.
+    Re-issues access (and rotated refresh) tokens via HttpOnly cookies and JSON response body.
+    Supports refresh tokens passed via JSON body ({'refresh': '...'}) or HttpOnly cookies.
     """
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def post(self, request, *args, **kwargs):
-        refresh_token = request.COOKIES.get('refresh_token')
+        refresh_token = None
+        if isinstance(request.data, dict):
+            refresh_token = request.data.get('refresh') or request.data.get('refresh_token')
+        if not refresh_token:
+            refresh_token = request.COOKIES.get('refresh_token') or request.COOKIES.get('refresh')
+
         if not refresh_token:
             return Response({"detail": "Refresh token is missing."}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -270,9 +276,13 @@ class CookieTokenRefreshView(TokenRefreshView):
             raise InvalidToken(e.args[0])
             
         access = serializer.validated_data.get('access')
-        refresh = serializer.validated_data.get('refresh')
+        refresh = serializer.validated_data.get('refresh') or refresh_token
         
-        response = Response({"success": True}, status=status.HTTP_200_OK)
+        response_data = {
+            "access": access,
+            "refresh": refresh,
+        }
+        response = Response(response_data, status=status.HTTP_200_OK)
         
         access_token_lifetime = api_settings.ACCESS_TOKEN_LIFETIME.total_seconds()
         response.set_cookie(
@@ -352,12 +362,12 @@ class ForgotPasswordView(APIView):
             f"Best regards,\nAurexion Security Team"
         )
         try:
-            send_mail(
-                subject,
-                message,
-                getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@aurexion.com'),
-                [user.email or email_or_username],
-                fail_silently=True
+            send_email(
+                subject=subject,
+                message=message,
+                recipient_list=[user.email or email_or_username],
+                fail_silently=True,
+                async_send=True
             )
         except Exception:
             pass

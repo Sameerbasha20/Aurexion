@@ -243,11 +243,11 @@ if IS_TESTING:
             'LOCATION': 'aurexion-cache-testing',
         }
     }
-elif os.getenv('REDIS_URL') or not DEBUG:
+elif os.getenv('REDIS_URL'):
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+            'LOCATION': os.getenv('REDIS_URL'),
         }
     }
 else:

@@ -61,9 +61,15 @@ class Industry(models.Model):
     services = models.ManyToManyField(Service, blank=True, related_name='industries')
     case_studies = models.ManyToManyField(CaseStudy, blank=True, related_name='industries')
     
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+        ]
 
     def __str__(self):
         return self.name
@@ -85,13 +91,13 @@ class BlogPost(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, unique=True)
     content = models.TextField()
-    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='posts')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='posts', null=True, blank=True)
     tags = models.JSONField(default=list, blank=True)
     media = models.CharField(max_length=255, blank=True, null=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts')
     
-    published_at = models.DateTimeField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    published_at = models.DateTimeField(blank=True, null=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     # SEO
@@ -99,7 +105,13 @@ class BlogPost(models.Model):
     meta_description = models.TextField(blank=True, null=True)
     meta_keywords = models.CharField(max_length=255, blank=True, null=True)
     
-    status = models.CharField(max_length=20, choices=BLOG_STATUS_CHOICES, default='draft')
+    status = models.CharField(max_length=20, choices=BLOG_STATUS_CHOICES, default='draft', db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+        ]
 
     def __str__(self):
         return self.title

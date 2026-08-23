@@ -257,6 +257,7 @@ class AdministratorTicketUpdateSerializer(serializers.ModelSerializer):
 
 
 class ClientProjectSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False, allow_blank=True, default='New Project')
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     milestones = ProjectMilestoneSerializer(many=True, read_only=True)
     deliverables = SprintDeliverableSerializer(many=True, read_only=True)
@@ -273,6 +274,13 @@ class ClientProjectSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
 
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            data = data.copy()
+            if 'name' in data and not data.get('title'):
+                data['title'] = data['name']
+        return super().to_internal_value(data)
+
     def get_current_milestone(self, obj):
         curr = obj.milestones.filter(is_current=True).first()
         if not curr:
@@ -285,6 +293,7 @@ class ClientProjectSerializer(serializers.ModelSerializer):
 
 
 class ClientRequestSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False, allow_blank=True, default='New Request')
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     project_title = serializers.CharField(source='project.title', read_only=True, allow_null=True)
 
@@ -296,8 +305,18 @@ class ClientRequestSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('id', 'status', 'created_at', 'updated_at')
 
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            data = data.copy()
+            if 'subject' in data and not data.get('title'):
+                data['title'] = data['subject']
+            if 'topic' in data and not data.get('title'):
+                data['title'] = data['topic']
+        return super().to_internal_value(data)
+
 
 class ConsultationRequestSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False, allow_blank=True, default='Consultation Meeting')
     request_type_display = serializers.CharField(source='get_request_type_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     project_title = serializers.CharField(source='project.title', read_only=True, allow_null=True)
@@ -310,6 +329,15 @@ class ConsultationRequestSerializer(serializers.ModelSerializer):
             'status', 'status_display', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'status', 'scheduled_at', 'meeting_link', 'created_at', 'updated_at')
+
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            data = data.copy()
+            if 'subject' in data and not data.get('title'):
+                data['title'] = data['subject']
+            if 'topic' in data and not data.get('title'):
+                data['title'] = data['topic']
+        return super().to_internal_value(data)
 
 
 class ClientDocumentSerializer(serializers.ModelSerializer):

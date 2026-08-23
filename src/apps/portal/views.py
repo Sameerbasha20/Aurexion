@@ -459,8 +459,8 @@ class TicketViewSet(
         ticket = SupportTicketService.create_ticket(
             client_user=self.request.user,
             subject=data['subject'],
-            category=data['category'],
-            priority=data['priority'],
+            category=data.get('category', 'technical'),
+            priority=data.get('priority', 'medium'),
         )
         serializer.instance = ticket
         log_audit_event(

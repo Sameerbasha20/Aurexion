@@ -97,6 +97,7 @@ https://aurexion.com
         message=message,
         recipient_list=[lead.email],
         fail_silently=True,
+        async_send=True,
     )
 
 
