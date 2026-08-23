@@ -8,6 +8,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from apps.core.services import send_email
 from django.core.exceptions import PermissionDenied
+from django.middleware.csrf import get_token
 from rest_framework import status, viewsets, filters, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -27,12 +28,15 @@ from apps.administration.permissions import IsSuperAdmin, IsAdministrator
 # --- Lockout Throttling Utilities ---
 
 def get_lockout_keys(username, ip):
+    import hashlib
+    # Hash user-controlled username to avoid memcached invalid chars and key injection
+    safe_user = hashlib.md5(username.encode()).hexdigest()
     return {
-        'fail_user': f"login_failures:u:{username}",
+        'fail_user': f"login_failures:u:{safe_user}",
         'fail_ip': f"login_failures:ip:{ip}",
-        'lock_user': f"login_lockout:u:{username}",
+        'lock_user': f"login_lockout:u:{safe_user}",
         'lock_ip': f"login_lockout:ip:{ip}",
-        'release_user': f"login_lockout_release:u:{username}",
+        'release_user': f"login_lockout_release:u:{safe_user}",
         'release_ip': f"login_lockout_release:ip:{ip}",
     }
 
@@ -100,20 +104,21 @@ class LoginView(APIView):
                 repr_str=f"Throttled login attempt for user: {username} (Locked out)",
                 request=request
             )
-            return Response(
+            resp = Response(
                 {"detail": f"Too many failed login attempts. Please try again in {cooldown} seconds."},
                 status=status.HTTP_429_TOO_MANY_REQUESTS
             )
+            resp["Retry-After"] = str(cooldown)
+            return resp
 
         # Fast single-pass User authentication (email or username case-insensitive)
-        db_user = User.objects.filter(username__iexact=username).first() or User.objects.filter(email__iexact=username).first()
+        db_user = User.objects.select_related('profile').filter(username__iexact=username).first() or User.objects.select_related('profile').filter(email__iexact=username).first()
         if db_user and db_user.check_password(password):
             user = db_user
         else:
             user = None
 
         if user is not None:
-            user = User.objects.select_related('profile').get(id=user.id)
             if user.is_active:
                 clear_failed_attempts(username, ip)
                 refresh = RefreshToken.for_user(user)
@@ -129,22 +134,16 @@ class LoginView(APIView):
 
                 # Prevent session fixation by cycling session key / rotating session ID
                 django_login(request, user)
+                # Ensure CSRF token is initialized for state-changing requests
+                get_token(request)
 
                 role = user.profile.role if hasattr(user, 'profile') else 'client_user'
-                access_str = str(refresh.access_token)
-                refresh_str = str(refresh)
                 response_data = {
                     'user': {
                         'id': user.id,
                         'username': user.username,
                         'email': user.email,
                         'role': role
-                    },
-                    'access': access_str,
-                    'refresh': refresh_str,
-                    'tokens': {
-                        'access': access_str,
-                        'refresh': refresh_str,
                     }
                 }
                 response = Response(response_data, status=status.HTTP_200_OK)
@@ -159,7 +158,7 @@ class LoginView(APIView):
                     max_age=int(access_token_lifetime),
                     httponly=True,
                     secure=settings.SESSION_COOKIE_SECURE,
-                    samesite='Lax'
+                    samesite=settings.SESSION_COOKIE_SAMESITE
                 )
                 response.set_cookie(
                     'refresh_token',
@@ -167,7 +166,7 @@ class LoginView(APIView):
                     max_age=int(refresh_token_lifetime),
                     httponly=True,
                     secure=settings.SESSION_COOKIE_SECURE,
-                    samesite='Lax'
+                    samesite=settings.SESSION_COOKIE_SAMESITE
                 )
 
                 return response
@@ -233,19 +232,25 @@ class UserProfileView(APIView):
 class LogoutView(APIView):
     """
     Endpoint: POST /api/v1/auth/logout/
-    Clears cookies and invalidates the session.
+    Clears cookies and invalidates the server session.
     """
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
-        response = Response({"success": True}, status=status.HTTP_200_OK)
-        response.delete_cookie('access_token')
-        response.delete_cookie('refresh_token')
-        
-        # Invalidate active Django session
+        # Invalidate server-side session
+        try:
+            if hasattr(request, 'session'):
+                request.session.flush()
+        except Exception:
+            pass
+
         if request.user and request.user.is_authenticated:
             django_logout(request)
+
+        response = Response({"success": True}, status=status.HTTP_200_OK)
+        response.delete_cookie('access_token', path='/', samesite=settings.SESSION_COOKIE_SAMESITE)
+        response.delete_cookie('refresh_token', path='/', samesite=settings.SESSION_COOKIE_SAMESITE)
+        response.delete_cookie(settings.SESSION_COOKIE_NAME, path='/', samesite=settings.SESSION_COOKIE_SAMESITE)
             
         return response
 
@@ -260,8 +265,9 @@ class CookieTokenRefreshView(TokenRefreshView):
     authentication_classes = []
 
     def post(self, request, *args, **kwargs):
+        is_from_body = bool(isinstance(request.data, dict) and (request.data.get('refresh') or request.data.get('refresh_token')))
         refresh_token = None
-        if isinstance(request.data, dict):
+        if is_from_body:
             refresh_token = request.data.get('refresh') or request.data.get('refresh_token')
         if not refresh_token:
             refresh_token = request.COOKIES.get('refresh_token') or request.COOKIES.get('refresh')
@@ -278,10 +284,12 @@ class CookieTokenRefreshView(TokenRefreshView):
         access = serializer.validated_data.get('access')
         refresh = serializer.validated_data.get('refresh') or refresh_token
         
-        response_data = {
-            "access": access,
-            "refresh": refresh,
-        }
+        response_data = {"success": True}
+        if is_from_body:
+            response_data["access"] = access
+            if refresh:
+                response_data["refresh"] = refresh
+                
         response = Response(response_data, status=status.HTTP_200_OK)
         
         access_token_lifetime = api_settings.ACCESS_TOKEN_LIFETIME.total_seconds()
@@ -291,7 +299,7 @@ class CookieTokenRefreshView(TokenRefreshView):
             max_age=int(access_token_lifetime),
             httponly=True,
             secure=settings.SESSION_COOKIE_SECURE,
-            samesite='Lax'
+            samesite=settings.SESSION_COOKIE_SAMESITE
         )
         
         if refresh:
@@ -302,7 +310,7 @@ class CookieTokenRefreshView(TokenRefreshView):
                 max_age=int(refresh_token_lifetime),
                 httponly=True,
                 secure=settings.SESSION_COOKIE_SECURE,
-                samesite='Lax'
+                samesite=settings.SESSION_COOKIE_SAMESITE
             )
             
         return response
@@ -503,8 +511,6 @@ class CanViewOrManageUsers(permissions.BasePermission):
         if request.user.is_superuser:
             return True
         role = request.user.profile.role if hasattr(request.user, 'profile') else None
-        if request.method in permissions.SAFE_METHODS:
-            return role in ['super_admin', 'administrator', 'bdm', 'sales_executive', 'hr_manager', 'support_executive']
         return role in ['super_admin', 'administrator']
 
 
@@ -523,7 +529,11 @@ class UserViewSet(viewsets.ModelViewSet):
     ordering = ['-date_joined']
 
     def get_queryset(self):
-        queryset = User.objects.select_related('profile').all().order_by('-date_joined')
+        from apps.crm.models import Lead
+        from django.db.models import Count, Q
+        queryset = User.objects.select_related('profile').annotate(
+            annotated_active_leads=Count('assigned_leads', filter=~Q(assigned_leads__status=Lead.Status.LOST))
+        ).order_by('-date_joined')
         role = self.request.query_params.get('role')
         if role and role.upper() != 'ALL':
             queryset = queryset.filter(profile__role__iexact=role)
@@ -556,17 +566,18 @@ class UserViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         role = self.request.data.get('role', 'client_user')
         request_user_role = getattr(self.request.user, 'profile', None).role if hasattr(self.request.user, 'profile') else None
+        is_super = self.request.user.is_superuser or request_user_role == 'super_admin'
 
         # Check privilege escalation
         is_superuser = self.request.data.get('is_superuser')
         if is_superuser is not None and str(is_superuser).lower() in ['true', '1'] and not self.request.user.is_superuser:
             raise PermissionDenied("Only active SuperUsers can assign is_superuser = True.")
 
-        if role != 'client_user' and not self.request.user.is_superuser:
-            raise PermissionDenied("Only active SuperUsers can assign role codes.")
-
-        if role == 'super_admin' and request_user_role != 'super_admin':
+        if role == 'super_admin' and not is_super:
             raise PermissionDenied("Only Super Admins can assign the Super Admin role.")
+
+        if role != 'client_user' and not (is_super or request_user_role == 'administrator'):
+            raise PermissionDenied("Only Administrators and Super Admins can assign role codes.")
 
         user = serializer.save()
         
@@ -586,6 +597,7 @@ class UserViewSet(viewsets.ModelViewSet):
         prev_state = get_model_state(instance)
         role = self.request.data.get('role')
         request_user_role = getattr(self.request.user, 'profile', None).role if hasattr(self.request.user, 'profile') else None
+        is_super = self.request.user.is_superuser or request_user_role == 'super_admin'
 
         # Check privilege escalation
         is_superuser = self.request.data.get('is_superuser')
@@ -594,16 +606,16 @@ class UserViewSet(viewsets.ModelViewSet):
             if is_true != instance.is_superuser and not self.request.user.is_superuser:
                 raise PermissionDenied("Only active SuperUsers can change is_superuser status.")
 
-        if role and hasattr(instance, 'profile') and role != instance.profile.role and not self.request.user.is_superuser:
-            raise PermissionDenied("Only active SuperUsers can alter role codes.")
-
         # Prevent non-super_admin from assigning super_admin
-        if role == 'super_admin' and request_user_role != 'super_admin':
+        if role == 'super_admin' and not is_super:
             raise PermissionDenied("Only Super Admins can assign the Super Admin role.")
 
         # Prevent non-super_admin from modifying super_admin accounts
-        if hasattr(instance, 'profile') and instance.profile.role == 'super_admin' and request_user_role != 'super_admin':
+        if hasattr(instance, 'profile') and instance.profile.role == 'super_admin' and not is_super:
             raise PermissionDenied("Only Super Admins can modify Super Admin accounts.")
+
+        if role and hasattr(instance, 'profile') and role != instance.profile.role and not (is_super or request_user_role == 'administrator'):
+            raise PermissionDenied("Only Administrators and Super Admins can alter role codes.")
 
         user = serializer.save()
         

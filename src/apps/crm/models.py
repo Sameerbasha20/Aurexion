@@ -425,7 +425,7 @@ class RFPEnquiry(models.Model):
                     self.reference_id = candidate_id
                     break
             if not self.reference_id:
-                self.reference_id = f"AUR-RFP-{year}-{"".join(secrets.choice(alphabet) for _ in range(8))}"
+                self.reference_id = f"AUR-RFP-{year}-{''.join(secrets.choice(alphabet) for _ in range(8))}"
         super().save(*args, **kwargs)
 
 

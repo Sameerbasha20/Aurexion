@@ -16,7 +16,7 @@ class CanAccessLead(BaseRolePermission):
 
 class CanCreateLead(BaseRolePermission):
     """Roles that may create leads in the CRM."""
-    allowed_roles = ["super_admin", "administrator", "bdm", "sales_executive"]
+    allowed_roles = ["super_admin", "administrator", "bdm"]
 
 
 class CanAssignLead(BaseRolePermission):

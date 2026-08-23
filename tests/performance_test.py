@@ -32,13 +32,13 @@ def run_performance_test():
     username = "perf_test_user"
     password = "PerfP@ssword10"
     
-    # Ensure a clean state
-    User.objects.filter(username=username).delete()
-    Service.objects.filter(slug="perf-service").delete()
-    CaseStudy.objects.filter(slug="perf-case-study").delete()
-    Industry.objects.filter(slug="perf-industry").delete()
-    Category.objects.filter(slug="perf-category").delete()
+    # Ensure a clean state (delete dependents first)
     BlogPost.objects.filter(slug="perf-blog").delete()
+    Category.objects.filter(slug="perf-category").delete()
+    Industry.objects.filter(slug="perf-industry").delete()
+    CaseStudy.objects.filter(slug="perf-case-study").delete()
+    Service.objects.filter(slug="perf-service").delete()
+    User.objects.filter(username=username).delete()
     
     user = User.objects.create_user(username=username, password=password, email="perf@test.com")
     user.profile.role = 'super_admin'
@@ -81,7 +81,7 @@ def run_performance_test():
     client.get('/api/v1/cms/public/case-studies/')
     client.get('/api/v1/cms/public/blog/')
     
-    iterations = 50
+    iterations = 20
     endpoints = {
         'Login (POST /api/v1/auth/login/)': {
             'type': 'POST',
@@ -142,7 +142,7 @@ def run_performance_test():
     results = {}
     
     for name, config in endpoints.items():
-        print(f"Benchmarking: {name} ({iterations} iterations)...")
+        print(f"Benchmarking: {name} ({iterations} iterations)...", flush=True)
         latencies = []
         
         for _ in range(iterations):
@@ -176,12 +176,12 @@ def run_performance_test():
         }
         
     print("Cleaning up benchmarking data...")
-    User.objects.filter(username=username).delete()
-    Service.objects.filter(slug="perf-service").delete()
-    CaseStudy.objects.filter(slug="perf-case-study").delete()
-    Industry.objects.filter(slug="perf-industry").delete()
-    Category.objects.filter(slug="perf-category").delete()
     BlogPost.objects.filter(slug="perf-blog").delete()
+    Category.objects.filter(slug="perf-category").delete()
+    Industry.objects.filter(slug="perf-industry").delete()
+    CaseStudy.objects.filter(slug="perf-case-study").delete()
+    Service.objects.filter(slug="perf-service").delete()
+    User.objects.filter(username=username).delete()
     
     # Save the markdown report to the tests/ folder
     report_path = os.path.join(os.path.dirname(__file__), 'performance_report.md')

@@ -88,8 +88,14 @@ class SupportTicket(models.Model):
     def generate_ticket_id():
         year = timezone.now().year
         prefix = f"TKT-{year}-"
-        last_ticket = SupportTicket.objects.filter(ticket_id__startswith=prefix).order_by('-id').first()
-        num = (last_ticket.id + 1) if last_ticket else (SupportTicket.objects.count() + 1)
+        last_ticket = SupportTicket.objects.filter(ticket_id__startswith=prefix).order_by('-created_at', '-id').first()
+        if last_ticket:
+            try:
+                num = int(last_ticket.ticket_id.rsplit('-', 1)[1]) + 1
+            except (ValueError, IndexError):
+                num = SupportTicket.objects.filter(ticket_id__startswith=prefix).count() + 1
+        else:
+            num = 1
         candidate = f"{prefix}{num:05d}"
         while SupportTicket.objects.filter(ticket_id=candidate).exists():
             num += 1

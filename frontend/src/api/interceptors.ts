@@ -25,22 +25,12 @@ function unpackApiResponse(res: any): any {
 }
 
 export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
-  // Request Interceptor
+  // Request Interceptor — secure cookie transport, no Authorization header from localStorage
   axiosInstance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      // Attach JWT Bearer Token if present (except on public endpoints)
-      const token = localStorage.getItem("aurexion_token") || localStorage.getItem("access_token");
-      const isPublicEndpoint = config.url && (
-        config.url.includes("/auth/login") ||
-        config.url.includes("/auth/forgot-password") ||
-        config.url.includes("/auth/reset-password") ||
-        config.url.includes("/auth/token/refresh")
-      );
-
-      if (token && !isPublicEndpoint && !config.headers["Authorization"]) {
-        config.headers["Authorization"] = `Bearer ${token}`;
-      }
-
+      // HttpOnly cookies (access_token, refresh_token) are sent automatically via withCredentials.
+      // Never expose JWTs via localStorage/sessionStorage.
+      // Only attach CSRF token for unsafe methods.
       if (config.method && !["get", "head", "options"].includes(config.method.toLowerCase())) {
         const csrfToken = document.cookie
           .split("; ")
@@ -56,7 +46,7 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
     (error) => Promise.reject(error)
   );
 
-  // Response Interceptor
+  // Response Interceptor — secure cookie refresh
   axiosInstance.interceptors.response.use(
     (response: AxiosResponse) => unpackApiResponse(response.data),
     async (error) => {
@@ -72,48 +62,25 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
         !originalRequest.url?.includes("/auth/token/refresh")
       ) {
         originalRequest._retry = true;
-        const refreshToken = localStorage.getItem("aurexion_refresh_token");
-
-        if (refreshToken) {
-          try {
-            const refreshData = await axiosInstance.post<any, any>("/auth/token/refresh/", {
-              refresh: refreshToken,
-            });
-
-            const newAccessToken = refreshData?.access;
-            if (newAccessToken) {
-              localStorage.setItem("aurexion_token", newAccessToken);
-              if (refreshData.refresh) {
-                localStorage.setItem("aurexion_refresh_token", refreshData.refresh);
-              }
-              originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-              return axiosInstance(originalRequest);
-            }
-          } catch (refreshError) {
-            localStorage.removeItem("aurexion_user");
-            localStorage.removeItem("aurexion_token");
-            localStorage.removeItem("aurexion_refresh_token");
-            if (window.location.pathname.startsWith("/portal") || window.location.pathname.startsWith("/client")) {
-              window.location.href = "/login";
-            }
-            return Promise.reject(handleApiError(refreshError));
-          }
-        } else {
+        try {
+          // Refresh via HttpOnly cookies (no body, withCredentials sends refresh_token)
+          await axiosInstance.post("/auth/token/refresh/");
+          // Retry original request with new access_token cookie
+          return axiosInstance(originalRequest);
+        } catch (refreshError) {
           localStorage.removeItem("aurexion_user");
-          localStorage.removeItem("aurexion_token");
-          if (window.location.pathname.startsWith("/portal") || window.location.pathname.startsWith("/client")) {
+          if (window.location.pathname.startsWith("/portal") || window.location.pathname.startsWith("/client") || window.location.pathname.startsWith("/admin") || window.location.pathname.startsWith("/bdm") || window.location.pathname.startsWith("/cms")) {
             window.location.href = "/login";
           }
+          return Promise.reject(handleApiError(refreshError));
         }
       }
 
       const formattedError = handleApiError(error);
       if (formattedError.statusCode === 401) {
-        // Clear stored token if request failed with 401 on non-login endpoints
         const requestUrl = error?.config?.url || "";
-        if (!requestUrl.includes("/auth/login/")) {
-          localStorage.removeItem("aurexion_token");
-          localStorage.removeItem("access_token");
+        if (!requestUrl.includes("/auth/login/") && !requestUrl.includes("/auth/token/refresh")) {
+          localStorage.removeItem("aurexion_user");
         }
       }
       return Promise.reject(formattedError);

@@ -113,7 +113,7 @@ class TicketsRestAPITestCase(APITestCase):
             reverse('login'), {'username': 'client_a', 'password': 'ClientA@10'}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
+        self.assertIn('access_token', response.cookies)
 
     # ------------------------------------------------------------------
     # CREATE: POST /api/v1/tickets/

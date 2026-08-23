@@ -186,8 +186,8 @@ class LoginInjectionTests(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("access", response.data)
-        self.assertIn("refresh", response.data)
+        self.assertIn("access_token", response.cookies)
+        self.assertIn("refresh_token", response.cookies)
 
 
 class SupportTicketInjectionTests(APITestCase):
@@ -269,6 +269,7 @@ class TicketIdGenerationInjectionTests(APITestCase):
     """generate_ticket_id uses an ORM query and remains collision-free."""
 
     def setUp(self):
+        SupportTicket.objects.all().delete()
         self.client_user = User.objects.create_user(
             username="ticket_gen_client", password="ClientP@ss10"
         )

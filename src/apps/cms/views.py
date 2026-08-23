@@ -29,7 +29,7 @@ class AdminCaseStudyViewSet(viewsets.ModelViewSet):
     queryset = CaseStudy.objects.all().order_by('-created_at')
     serializer_class = CaseStudySerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'pk'
+    lookup_field = 'slug'
 
 class AdminIndustryViewSet(viewsets.ModelViewSet):
     queryset = Industry.objects.all().prefetch_related('services', 'case_studies').order_by('-created_at')
@@ -58,7 +58,7 @@ class AdminBlogPostViewSet(viewsets.ModelViewSet):
 class PublicServiceDetailView(generics.RetrieveAPIView):
     """
     Public API: GET /api/v1/cms/public/services/{slug}/
-    Resolves active services by slug.
+    Retrieves full details for a published service.
     """
     queryset = Service.objects.filter(status='published')
     serializer_class = ServiceSerializer
@@ -85,19 +85,22 @@ class PublicIndustryDetailView(generics.RetrieveAPIView):
 class PublicCaseStudyViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Public API: GET /api/v1/cms/public/case-studies/
-    Retrieve list or detail of non-draft case studies.
-    Supports portfolio filters: ?tech_stack=Python
+    Lists published case studies with tech stack filtering and detail view.
     """
     serializer_class = CaseStudySerializer
     permission_classes = [AllowAny]
+    pagination_class = None
     lookup_field = 'slug'
 
     def get_queryset(self):
         queryset = CaseStudy.objects.filter(status='published').order_by('-created_at')
         tech_stack = self.request.query_params.get('tech_stack')
         if tech_stack:
-            # Filter if tech_stack contains the value
-            queryset = queryset.filter(tech_stack__icontains=tech_stack)
+            from django.db import connection
+            if connection.vendor == 'postgresql':
+                queryset = queryset.filter(tech_stack__contains=[tech_stack])
+            else:
+                queryset = queryset.filter(tech_stack__icontains=tech_stack)
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -125,7 +128,7 @@ class PublicBlogPostViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         now = timezone.now()
-        # Include Published, or Scheduled posts whose time has passed with single-query join
+        # Include Published, or Scheduled posts whose time has passed
         queryset = BlogPost.objects.select_related('author', 'category').filter(
             Q(status='published') | Q(status='scheduled', published_at__lte=now)
         ).order_by('-created_at')
@@ -141,22 +144,23 @@ class PublicBlogPostViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
     def list(self, request, *args, **kwargs):
-        cache_key = f"public_blog_list_{request.query_params.urlencode()}"
-        try:
-            from django.core.cache import cache
+        from django.core.cache import cache
+        import hashlib
+        category = request.query_params.get('category', '')
+        tag = request.query_params.get('tag', '')
+        search = request.query_params.get('search', '')
+        if not search:
+            raw_key = f"{category}:{tag}"
+            hashed = hashlib.md5(raw_key.encode()).hexdigest()
+            cache_key = f"cms_blog_list_{hashed}"
             cached = cache.get(cache_key)
             if cached is not None:
                 return Response(cached)
-        except Exception:
-            pass
-        response = super().list(request, *args, **kwargs)
-        if response.status_code == 200:
-            try:
-                from django.core.cache import cache
-                cache.set(cache_key, response.data, timeout=60)
-            except Exception:
-                pass
-        return response
+            resp = super().list(request, *args, **kwargs)
+            if resp.status_code == 200:
+                cache.set(cache_key, resp.data, timeout=300)
+            return resp
+        return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
@@ -193,36 +197,38 @@ class PublicServiceListView(generics.ListAPIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    def list(self, request, *args, **kwargs):
+        from django.core.cache import cache
+        cache_key = "cms_service_list"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+        resp = super().list(request, *args, **kwargs)
+        if resp.status_code == 200:
+            cache.set(cache_key, resp.data, timeout=300)
+        return resp
+
 
 class PublicIndustryListView(generics.ListAPIView):
     """
     Public API: GET /api/v1/cms/public/industries/
     Returns a list of published industries.
     """
+    queryset = Industry.objects.filter(status='published').prefetch_related('services', 'case_studies').order_by('-created_at')
     serializer_class = IndustrySerializer
     permission_classes = [AllowAny]
     authentication_classes = []
 
-    def get_queryset(self):
-        return Industry.objects.prefetch_related('services', 'case_studies').filter(status='published').order_by('-created_at')
-
     def list(self, request, *args, **kwargs):
-        cache_key = "public_industries_list"
-        try:
-            from django.core.cache import cache
-            cached = cache.get(cache_key)
-            if cached is not None:
-                return Response(cached)
-        except Exception:
-            pass
-        response = super().list(request, *args, **kwargs)
-        if response.status_code == 200:
-            try:
-                from django.core.cache import cache
-                cache.set(cache_key, response.data, timeout=60)
-            except Exception:
-                pass
-        return response
+        from django.core.cache import cache
+        cache_key = "cms_industry_list"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+        resp = super().list(request, *args, **kwargs)
+        if resp.status_code == 200:
+            cache.set(cache_key, resp.data, timeout=300)
+        return resp
 
 
 from rest_framework.views import APIView
@@ -249,7 +255,13 @@ class MediaUploadView(APIView):
         
         fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
         filename = fs.save(file_obj.name, file_obj)
-        file_url = request.build_absolute_uri(settings.MEDIA_URL + 'uploads/' + filename)
+        # Use MEDIA_BASE_URL env var if set (production CDN/Render), otherwise build from request.
+        # This prevents localhost URLs in production when behind proxy.
+        media_base = getattr(settings, 'MEDIA_BASE_URL', '')
+        if media_base:
+            file_url = f"{media_base}{settings.MEDIA_URL}uploads/{filename}"
+        else:
+            file_url = request.build_absolute_uri(settings.MEDIA_URL + 'uploads/' + filename)
         
         return Response({'url': file_url}, status=status.HTTP_200_OK)
 
