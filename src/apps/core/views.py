@@ -13,10 +13,12 @@ class HealthCheckView(View):
             "services": {}
         }
         
-        # Check database
+        # Check database with active query
         try:
             db_conn = connections['default']
-            db_conn.ensure_connection()
+            with db_conn.cursor() as cursor:
+                cursor.execute("SELECT 1;")
+                cursor.fetchone()
             health_status["services"]["database"] = "connected"
         except Exception as e:
             health_status["services"]["database"] = f"error: {str(e)}"
@@ -53,7 +55,9 @@ def health_check(request):
     
     try:
         db_conn = connections['default']
-        db_conn.ensure_connection()
+        with db_conn.cursor() as cursor:
+            cursor.execute("SELECT 1;")
+            cursor.fetchone()
         db_status = "ok"
     except Exception:
         db_status = "error"
@@ -74,3 +78,9 @@ def health_check(request):
             "api": "v1",
         }
     }, status=status_code)
+
+
+@require_GET
+def readiness_check(request):
+    """Readiness probe endpoint confirming DB readiness for traffic routing."""
+    return HealthCheckView.as_view()(request)

@@ -23,10 +23,10 @@ export const useCaseStudies = () => {
             challenge: item.challenge || item.business_challenge || item.context || "",
             solution: item.solution || item.proposed_architecture || (typeof item.architecture === "object" ? item.architecture?.description : item.architecture) || "",
             results: Array.isArray(item.results) ? item.results : (item.outcomes_performance ? [{ impact: item.outcomes_performance, label: "Key Outcome" }] : []),
-            coverImage: item.coverImage || item.imageUrl || "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80",
+            coverImage: item.coverImage || item.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
           }));
-          // Keep rich local case studies and merge any backend updates
-          setData(caseStudiesData.length > 0 ? caseStudiesData : normalizedBackend);
+          // Prefer backend when it has data; fall back to local fixtures only when backend empty
+          setData(normalizedBackend.length > 0 ? normalizedBackend : caseStudiesData);
         } else {
           setData(caseStudiesData);
         }
@@ -84,7 +84,7 @@ export const useBlogPosts = (filters?: { category?: string; tag?: string; search
             coverImage: item.coverImage || item.media || item.imageUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
             publishedAt: item.publishedAt || item.published_at || item.created_at || "2026-06-18T09:00:00Z"
           }));
-          setData(blogPosts.length > 0 ? blogPosts : normalized);
+          setData(normalized.length > 0 ? normalized : blogPosts);
         } else {
           setData(blogPosts);
         }

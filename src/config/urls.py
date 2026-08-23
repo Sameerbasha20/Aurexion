@@ -3,7 +3,7 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
-from apps.core.views import health_check
+from apps.core.views import health_check, readiness_check, HealthCheckView
 
 @require_GET
 def devtools_empty_view(request):
@@ -16,6 +16,8 @@ urlpatterns = [
     path('.well-known/appspecific/com.chrome.devtools.json', devtools_empty_view),
     path('', health_check, name='health-check'),
     path('api/v1/health/', health_check, name='api-health-check'),
+    path('api/v1/health/readiness/', readiness_check, name='api-readiness-check'),
+    path('health/readiness/', readiness_check, name='readiness-check'),
     path('admin/', admin.site.urls),
     path('api/v1/', include('apps.authentication.urls')),
     path('api/v1/', include('apps.administration.urls')),
@@ -33,6 +35,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    # Production media fallback: serve local uploads when MEDIA is on local disk
+    # (Supabase/S3 should be used for large scale; this ensures localhost URLs are never returned)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler400 = 'config.views.error_400'

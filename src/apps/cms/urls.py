@@ -16,9 +16,13 @@ class OptionalSlashRouter(DefaultRouter):
 router = OptionalSlashRouter()
 # Admin routes
 router.register(r'cms/admin/services', AdminServiceViewSet, basename='admin-service')
+router.register(r'cms/admin/service', AdminServiceViewSet, basename='admin-service-alias')
 router.register(r'cms/admin/case-studies', AdminCaseStudyViewSet, basename='admin-case-studies')
+router.register(r'cms/admin/case-study', AdminCaseStudyViewSet, basename='admin-case-study-alias')
 router.register(r'cms/admin/industries', AdminIndustryViewSet, basename='admin-industry')
+router.register(r'cms/admin/industry', AdminIndustryViewSet, basename='admin-industry-alias')
 router.register(r'cms/admin/categories', AdminCategoryViewSet, basename='admin-categories')
+router.register(r'cms/admin/category', AdminCategoryViewSet, basename='admin-category-alias')
 router.register(r'cms/admin/blog', AdminBlogPostViewSet, basename='admin-blog')
 router.register(r'cms/admin/company-info', AdminCompanyInformationViewSet, basename='admin-company-info')
 
@@ -32,8 +36,10 @@ urlpatterns = [
     path('cms/public/company-info/', PublicCompanyInformationView.as_view(), name='public-company-info'),
     path('cms/public/services/', PublicServiceListView.as_view(), name='public-service-list'),
     path('cms/public/service/<slug:slug>/', PublicServiceDetailView.as_view(), name='public-service-detail'),
+    path('cms/public/services/<slug:slug>/', PublicServiceDetailView.as_view(), name='public-service-detail-alias'),
     path('cms/public/industries/', PublicIndustryListView.as_view(), name='public-industry-list'),
     path('cms/public/industry/<slug:slug>/', PublicIndustryDetailView.as_view(), name='public-industry-detail'),
+    path('cms/public/industries/<slug:slug>/', PublicIndustryDetailView.as_view(), name='public-industry-detail-alias'),
     
     # Media upload
     path('cms/admin/upload/', MediaUploadView.as_view(), name='admin-media-upload'),

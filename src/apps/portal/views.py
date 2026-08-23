@@ -133,6 +133,7 @@ class ClientTicketViewSet(
         ProfileJWTAuthentication,
         SessionAuthentication,
     ]
+    pagination_class = None
 
     def get_queryset(self):
         return (
@@ -237,6 +238,7 @@ class SupportExecutiveTicketViewSet(
         ProfileJWTAuthentication,
         SessionAuthentication,
     ]
+    pagination_class = None
 
     def get_queryset(self):
         return SupportTicketService.get_support_tickets(self.request.user)
@@ -335,6 +337,7 @@ class AdministratorTicketViewSet(
         ProfileJWTAuthentication,
         SessionAuthentication,
     ]
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.action in ('update', 'partial_update'):
@@ -408,6 +411,7 @@ class TicketViewSet(
         ProfileJWTAuthentication,
         SessionAuthentication,
     ]
+    pagination_class = None
     http_method_names = ['get', 'post', 'patch', 'head', 'options']
 
     @staticmethod

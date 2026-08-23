@@ -64,14 +64,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       setUser(activeUser);
       localStorage.setItem("aurexion_user", JSON.stringify(activeUser));
-      const token = response.access || (response as any).tokens?.access;
-      if (token) {
-        localStorage.setItem("aurexion_token", token);
-      }
-      const refreshToken = response.refresh || (response as any).tokens?.refresh;
-      if (refreshToken) {
-        localStorage.setItem("aurexion_refresh_token", refreshToken);
-      }
+      // Secure session: JWTs are stored in HttpOnly cookies by the backend, not in localStorage.
+      // Do not store access/refresh tokens in JavaScript storage.
       // Invalidate in-memory caches on user switch
       crmService.clearCache();
       bdmService.clearCache();

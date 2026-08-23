@@ -126,11 +126,12 @@ CSRF_TRUSTED_ORIGINS = [
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = not DEBUG
-SESSION_COOKIE_SAMESITE = 'Lax'
+# Lax in dev (same-site localhost:3000 ↔ localhost:8000 is same-site via eTLD+1), None in prod cross-site (vercel.app ↔ onrender.com)
+SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE') or ('Lax' if DEBUG else 'None')
 
 CSRF_COOKIE_HTTPONLY = False  # Let frontend read the csrf token cookie to pass in request headers
 CSRF_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE') or ('Lax' if DEBUG else 'None')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 if not DEBUG:
@@ -164,12 +165,16 @@ WSGI_APPLICATION = 'config.wsgi.application'
 import sys
 IS_TESTING = 'test' in sys.argv or 'pytest' in sys.modules or any('pytest' in arg for arg in sys.argv)
 
-use_local = (os.getenv('USE_LOCAL_DB', 'false').lower() == 'true') or IS_TESTING
+use_local = _env_flag('USE_LOCAL_DB', default=False) or IS_TESTING
 if os.getenv('DB_ENGINE') and not use_local:
     db_host = os.getenv('DB_HOST', '')
     is_supabase = 'supabase' in str(db_host).lower()
     default_port = '6543' if is_supabase else '5432'
     
+    conn_max_age = int(os.getenv('CONN_MAX_AGE', '600'))
+    conn_health_checks = _env_flag('CONN_HEALTH_CHECKS', default=True)
+    connect_timeout = int(os.getenv('DB_CONNECT_TIMEOUT', '10'))
+
     DATABASES = {
         'default': {
             'ENGINE': os.getenv('DB_ENGINE'),
@@ -177,17 +182,18 @@ if os.getenv('DB_ENGINE') and not use_local:
             'USER': os.getenv('DB_USER'),
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-            # Performance: reuse DB connections within each Gunicorn worker for up to
-            # 10 minutes instead of opening a new TCP+TLS connection on every request.
-            # With Supabase PgBouncer (port 6543, transaction-pooling mode) this is
-            # safe because PgBouncer itself manages the underlying server connections;
-            # Django only holds the logical PgBouncer connection open.
-            # CONN_HEALTH_CHECKS=True issues a cheap ping before reusing a connection,
-            # protecting against "connection already closed" errors when PgBouncer
-            # evicts an idle connection between requests.
-            'CONN_MAX_AGE': 600,
-            'CONN_HEALTH_CHECKS': True,
+            'PORT': os.getenv('DB_PORT') or default_port,
+            # Performance & Stability: reuse DB connections within workers for up to
+            # CONN_MAX_AGE seconds to avoid TCP+TLS handshake on every request.
+            # Supabase PgBouncer (port 6543, transaction-pooling mode) multiplexes
+            # backend server connections safely.
+            # CONN_HEALTH_CHECKS=True issues a lightweight ping prior to reuse,
+            # preventing stale-connection errors when pooler drops idle sessions.
+            'CONN_MAX_AGE': conn_max_age,
+            'CONN_HEALTH_CHECKS': conn_health_checks,
+            'OPTIONS': {
+                'connect_timeout': connect_timeout,
+            },
         }
     }
 else:
@@ -337,6 +343,9 @@ if HAS_WHITENOISE:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+# Production media base URL: when set (e.g., https://aurexion.onrender.com or CDN), upload view returns absolute URL with that base.
+# Falls back to request.build_absolute_uri() which respects X-Forwarded-Proto in production.
+MEDIA_BASE_URL = os.getenv('MEDIA_BASE_URL', '').rstrip('/')
 
 # Email Configuration
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
