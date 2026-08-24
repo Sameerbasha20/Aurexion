@@ -3,7 +3,7 @@ import { ArrowDown } from "lucide-react";
 
 export const ChallengeSolutionFlow = () => {
   const steps = [
-    { label: "INDUSTRY CHALLENGE", color: "text-destructive" },
+    { label: "INDUSTRY CHALLENGE", color: "text-amber-400" },
     { label: "BUSINESS REQUIREMENT", color: "text-orange-400" },
     { label: "AUREXION SOLUTION", color: "text-primary" },
     { label: "TECHNOLOGY", color: "text-cyan-400" },

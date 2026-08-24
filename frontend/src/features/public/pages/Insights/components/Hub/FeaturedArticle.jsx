@@ -41,8 +41,8 @@ export const FeaturedArticle = ({ article }) => {
                   <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span>{article.readingTime}</span>
+                  <Clock className="w-4 h-4 text-[#63f5e8]" />
+                  <span>{article.readingTime || "5 min read"}</span>
                 </div>
               </div>
 
@@ -59,7 +59,7 @@ export const FeaturedArticle = ({ article }) => {
 
             <div className="flex-1 bg-[#0a0f18] relative overflow-hidden hidden lg:block">
               <img
-                src={article.coverImage || "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80"}
+                src={article.coverImage || "/webp_images/unsplash_1563986768609-32.webp"}
                 alt={article.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />

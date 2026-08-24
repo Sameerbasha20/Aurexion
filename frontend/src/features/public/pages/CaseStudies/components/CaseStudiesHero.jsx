@@ -9,7 +9,7 @@ export const CaseStudiesHero = () => {
       <div
         className="subpage-hero-art"
         style={{
-          backgroundImage: `url(https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=85)`,
+          backgroundImage: `url(/webp_images/unsplash_1504384308090-c8.webp)`,
         }}
       />
       <div className="subpage-hero-overlay" />

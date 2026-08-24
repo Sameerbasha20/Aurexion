@@ -44,18 +44,18 @@ export const InsightsPage = () => {
         let coverImage = post.media || staticPost?.coverImage;
         if (!coverImage) {
           const categoryImages = {
-            "cybersecurity": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80",
-            "software-engineering": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
-            "ai-ml": "https://images.unsplash.com/photo-1527474305487-b87b222841cc?auto=format&fit=crop&w=600&q=80",
-            "cloud": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80",
-            "data": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
-            "devops": "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=600&q=80",
-            "enterprise": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
-            "digital-transformation": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
-            "ui-ux": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=600&q=80"
+            "cybersecurity": "/webp_images/unsplash_1563986768609-32.webp",
+            "software-engineering": "/webp_images/unsplash_1555066931-4365d.webp",
+            "ai-ml": "/webp_images/unsplash_1527474305487-b8.webp",
+            "cloud": "/webp_images/unsplash_1558494949-ef010.webp",
+            "data": "/webp_images/unsplash_1551288049-bebda.webp",
+            "devops": "/webp_images/unsplash_1618401471353-b9.webp",
+            "enterprise": "/webp_images/unsplash_1486406146926-c6.webp",
+            "digital-transformation": "/webp_images/unsplash_1460925895917-af.webp",
+            "ui-ux": "/webp_images/unsplash_1581291518633-83.webp"
           };
           const cat = post.category_name || post.category || "";
-          coverImage = categoryImages[cat.toLowerCase()] || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80";
+          coverImage = categoryImages[cat.toLowerCase()] || "/webp_images/unsplash_1486406146926-c6.webp";
         }
 
         // Resolve author
@@ -81,6 +81,7 @@ export const InsightsPage = () => {
           tags: (Array.isArray(post.tags) && post.tags.length > 0) ? post.tags : (staticPost?.tags || []),
           authorId,
           publishedAt: post.published_at || post.created_at,
+          readingTime: post.reading_time || staticPost?.readingTime || "5 min read",
           featured: post.is_featured || staticPost?.featured || false,
           coverImage
         };

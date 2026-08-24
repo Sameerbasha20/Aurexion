@@ -11,8 +11,8 @@ export const TransformationSection = () => {
 
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-8">
           
-          <div className="flex-1 bg-card border border-destructive/30 rounded-xl p-8 w-full text-center opacity-80">
-            <span className="text-xs font-mono font-bold text-destructive tracking-widest mb-6 block">BEFORE</span>
+          <div className="flex-1 bg-card border border-amber-500/30 rounded-xl p-8 w-full text-center opacity-90">
+            <span className="text-xs font-mono font-bold text-amber-400 tracking-widest mb-6 block">BEFORE</span>
             <ul className="space-y-4 text-muted-foreground font-medium">
               <li>Legacy Architecture</li>
               <li>Manual Processes</li>

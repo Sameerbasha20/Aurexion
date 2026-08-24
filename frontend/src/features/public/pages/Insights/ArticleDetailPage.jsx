@@ -53,18 +53,18 @@ export const ArticleDetailPage = () => {
     meta_keywords: apiArticle.meta_keywords,
     coverImage: apiArticle.media || staticArticle?.coverImage || (() => {
       const categoryImages = {
-        "cybersecurity": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80",
-        "software-engineering": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
-        "ai-ml": "https://images.unsplash.com/photo-1527474305487-b87b222841cc?auto=format&fit=crop&w=600&q=80",
-        "cloud": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80",
-        "data": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
-        "devops": "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=600&q=80",
-        "enterprise": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
-        "digital-transformation": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
-        "ui-ux": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=600&q=80"
+        "cybersecurity": "/webp_images/unsplash_1563986768609-32.webp",
+        "software-engineering": "/webp_images/unsplash_1555066931-4365d.webp",
+        "ai-ml": "/webp_images/unsplash_1527474305487-b8.webp",
+        "cloud": "/webp_images/unsplash_1558494949-ef010.webp",
+        "data": "/webp_images/unsplash_1551288049-bebda.webp",
+        "devops": "/webp_images/unsplash_1618401471353-b9.webp",
+        "enterprise": "/webp_images/unsplash_1486406146926-c6.webp",
+        "digital-transformation": "/webp_images/unsplash_1460925895917-af.webp",
+        "ui-ux": "/webp_images/unsplash_1581291518633-83.webp"
       };
       const cat = apiArticle.category_name || apiArticle.category || "";
-      return categoryImages[cat.toLowerCase()] || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80";
+      return categoryImages[cat.toLowerCase()] || "/webp_images/unsplash_1486406146926-c6.webp";
     })()
   } : staticArticle;
 
@@ -111,43 +111,74 @@ export const ArticleDetailPage = () => {
       <ReadingProgress />
       <ArticleHero article={article} />
       
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          
-          {/* Main Content Area (8 Cols) */}
-          <div className="lg:col-span-8 min-w-0">
-            <ArticleContent content={article.content} />
-            <AuthorCard authorId={article.authorId} />
-            <ShareButtons title={article.title} />
+      <div className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+        {/* Table of Contents & Quick Meta Header Card */}
+        <div className="mb-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 p-6 bg-[#080f1a] border border-border/20 rounded-xl shadow-lg">
+            <TableOfContents content={article.content} />
           </div>
 
-          {/* Sticky Sidebar (4 Cols) */}
-          <aside className="lg:col-span-4 space-y-8 lg:sticky lg:top-24">
-            {/* Table of Contents */}
-            <div className="p-6 bg-[#080f1a] border border-border/20 rounded-xl">
-              <TableOfContents content={article.content} />
+          <div className="p-6 bg-[#080f1a] border border-border/20 rounded-xl flex flex-col justify-between">
+            <div>
+              <span className="text-[10px] font-mono font-bold text-[#63f5e8] tracking-widest uppercase mb-3 block">ARTICLE INSIGHT</span>
+              <div className="space-y-2.5 text-xs font-mono text-gray-300">
+                <div className="flex justify-between py-1 border-b border-white/5">
+                  <span className="text-gray-400">CATEGORY</span>
+                  <span className="text-[#63f5e8] font-bold capitalize">{(article.category || "Technology").replace('-', ' ')}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-white/5">
+                  <span className="text-gray-400">EST. READ TIME</span>
+                  <span className="text-white font-semibold">{article.readingTime || "6 min read"}</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-gray-400">PUBLISHED</span>
+                  <span className="text-white">{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : "Recent"}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Enterprise Consultation Sidebar Widget */}
-            <div className="p-6 bg-gradient-to-br from-[#0a1424] to-[#050b14] border border-[rgba(99,245,232,0.25)] rounded-xl shadow-xl">
-              <span className="text-[10px] font-mono font-bold text-[#63f5e8] tracking-widest uppercase mb-2 block">EXECUTIVE ADVISORY</span>
-              <h4 className="text-lg font-bold text-white mb-2">Architect Your Cloud & AI Strategy</h4>
-              <p className="text-xs text-[#8da5ae] leading-relaxed mb-5">
-                Schedule a 1-on-1 architecture review with our principal engineers to evaluate your infrastructure.
-              </p>
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center w-full py-2.5 px-4 bg-[#63f5e8] text-[#041014] text-xs font-mono font-bold rounded hover:bg-[#86f8ee] transition-colors"
-              >
-                BOOK ARCHITECTURE REVIEW
-              </Link>
-            </div>
-          </aside>
+            <Link
+              href="/contact"
+              className="mt-4 inline-flex items-center justify-center w-full py-2 px-3 bg-[#63f5e8] text-[#041014] text-xs font-mono font-bold rounded hover:bg-[#86f8ee] transition-colors"
+            >
+              DISCUSS ARCHITECTURE
+            </Link>
+          </div>
+        </div>
 
+        {/* Main Content Area */}
+        <article className="bg-[#080f1a]/80 border border-border/20 rounded-2xl p-6 sm:p-12 shadow-2xl backdrop-blur-sm">
+          <ArticleContent content={article.content} />
+          
+          <div className="border-t border-border/30 mt-12 pt-8">
+            <ShareButtons title={article.title} />
+          </div>
+        </article>
+
+        {/* Author Spotlight */}
+        <div className="mt-10">
+          <AuthorCard authorId={article.authorId} />
+        </div>
+
+        {/* Executive Consultation Box */}
+        <div className="mt-10 p-8 bg-gradient-to-br from-[#0a1424] to-[#050b14] border border-[rgba(99,245,232,0.25)] rounded-2xl shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="max-w-xl">
+            <span className="text-[10px] font-mono font-bold text-[#63f5e8] tracking-widest uppercase mb-2 block">EXECUTIVE ADVISORY</span>
+            <h4 className="text-xl font-bold text-white mb-2">Architect Your Cloud &amp; AI Strategy</h4>
+            <p className="text-sm text-[#8da5ae] leading-relaxed">
+              Schedule a 1-on-1 architecture review with our principal engineers to evaluate your infrastructure, security postures, and digital roadmap.
+            </p>
+          </div>
+          <Link
+            href="/contact"
+            className="flex-shrink-0 inline-flex items-center justify-center py-3.5 px-6 bg-[#63f5e8] text-[#041014] text-sm font-mono font-bold rounded-lg hover:bg-[#86f8ee] transition-all shadow-[0_0_20px_rgba(99,245,232,0.25)]"
+          >
+            SCHEDULE REVIEW
+          </Link>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <RelatedContent currentArticle={article} />
       </div>
 

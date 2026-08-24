@@ -9,7 +9,7 @@ export const caseStudiesData = [
     industry: "banking",
     country: "United States",
     category: "Cloud Modernization",
-    coverImage: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1563986768609-32.webp",
 
     challenge: "The client operated on a highly fragmented, 15-year-old monolithic core banking architecture. The system struggled to handle peak transaction volumes, suffered from localized outages, and posed significant security vulnerabilities due to outdated technology stacks. Regulatory compliance across PCI DSS and GDPR was increasingly difficult to maintain.",
 
@@ -95,7 +95,7 @@ export const caseStudiesData = [
     industry: "financial-services",
     country: "United Kingdom",
     category: "Data Engineering",
-    coverImage: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1611974789855-9c.webp",
 
     challenge: "A leading investment management firm faced mounting operational overhead from manual reconciliation across disparate trading platforms. Latency in data pipelines was degrading algorithmic trading performance, and fragmented data lakes created serious auditability and governance risks ahead of upcoming regulatory inspections.",
 
@@ -179,7 +179,7 @@ export const caseStudiesData = [
     industry: "insurance",
     country: "Australia",
     category: "AI/ML Engineering",
-    coverImage: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1554224155-6726b.webp",
 
     challenge: "A major general insurer was processing claims through a largely manual, paper-based workflow averaging 14 business days per claim. Underwriters had no predictive tooling, leading to mispriced risk. Customer satisfaction scores were falling, and escalating operational costs made the legacy model unsustainable.",
 
@@ -264,7 +264,7 @@ export const caseStudiesData = [
     industry: "healthcare",
     country: "United Kingdom",
     category: "Custom Software Development",
-    coverImage: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1576091160399-11.webp",
 
     challenge: "A national healthcare network urgently needed a HIPAA and NHS-compliant interoperability layer connecting 27 disconnected EHR systems. Simultaneously, rising demand for telemedicine required a secure, scalable video consultation platform capable of supporting 100,000+ concurrent sessions without compromising patient data security.",
 
@@ -350,7 +350,7 @@ export const caseStudiesData = [
     industry: "education",
     country: "India",
     category: "Custom Software Development",
-    coverImage: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1519389950473-47.webp",
 
     challenge: "A pan-Asian EdTech provider serving 5 million students across 14 countries needed a unified LMS platform that could handle massive concurrent video streaming, support multilingual content, and deliver an adaptive learning experience — all while complying with local student data privacy laws including FERPA and PDPA.",
 
@@ -436,7 +436,7 @@ export const caseStudiesData = [
     industry: "manufacturing",
     country: "Germany",
     category: "Data Engineering",
-    coverImage: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1504917595217-d4.webp",
 
     challenge: "A European automotive components manufacturer was suffering $18M annually in unplanned downtime across 9 production facilities. Factory floor IoT sensors generated terabytes of telemetry data that was never properly ingested or analyzed. Quality traceability across the supply chain was insufficient for ISO and OEM audit requirements.",
 
@@ -521,7 +521,7 @@ export const caseStudiesData = [
     industry: "retail",
     country: "United States",
     category: "Custom Software Development",
-    coverImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1441986300917-64.webp",
 
     challenge: "A major US retail chain with 800+ stores and a growing e-commerce presence was experiencing chronic inventory discrepancies between digital and physical channels — leading to overselling, stockouts, and customer dissatisfaction. Their monolithic e-commerce platform routinely crashed during high-traffic events like Black Friday.",
 
@@ -607,7 +607,7 @@ export const caseStudiesData = [
     industry: "e-commerce",
     country: "Singapore",
     category: "Custom Software Development",
-    coverImage: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1557821552-17105.webp",
 
     challenge: "An industrial procurement startup needed to launch a B2B marketplace connecting 5,000+ suppliers to enterprise buyers across Southeast Asia — with complex multi-currency support, automated RFQ workflows, and enterprise-grade compliance — all within a 6-month timeline to market.",
 
@@ -693,7 +693,7 @@ export const caseStudiesData = [
     industry: "logistics-supply-chain",
     country: "Germany",
     category: "AI/ML Engineering",
-    coverImage: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1586528116311-ad.webp",
 
     challenge: "A leading European logistics provider with 8,000 vehicles was suffering from chronic delivery delays, inefficient routing, and rising fuel costs due to manual dispatch operations. Real-time fleet visibility was non-existent, and predictive maintenance was entirely reactive — resulting in costly roadside breakdowns.",
 
@@ -779,7 +779,7 @@ export const caseStudiesData = [
     industry: "real-estate",
     country: "United Arab Emirates",
     category: "Custom Software Development",
-    coverImage: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1560518883-ce090.webp",
 
     challenge: "A UAE-based real estate investment firm managing 12,000 residential units and $2.4B in assets was relying on disconnected spreadsheets for lease management, maintenance tracking, and investor reporting. Tenant onboarding took 3 weeks, and investors had no real-time visibility into portfolio performance.",
 
@@ -865,7 +865,7 @@ export const caseStudiesData = [
     industry: "construction",
     country: "Saudi Arabia",
     category: "Custom Software Development",
-    coverImage: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1504307651254-35.webp",
 
     challenge: "A major GCC-based construction contractor managing $3B worth of infrastructure projects across 35 active sites faced critical challenges: field teams used WhatsApp for project communication, safety incidents went unreported for days, and resource allocation across sites was entirely manual. Many sites had limited or no internet connectivity.",
 
@@ -951,7 +951,7 @@ export const caseStudiesData = [
     industry: "hospitality",
     country: "Thailand",
     category: "Custom Software Development",
-    coverImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1566073771259-6a.webp",
 
     challenge: "A Southeast Asian luxury hotel group operating 22 properties struggled with fragmented guest data across legacy PMS, separate loyalty systems, and disconnected dining and spa booking. Guests expected seamless digital-first experiences; the technology stack was delivering the opposite.",
 
@@ -1037,7 +1037,7 @@ export const caseStudiesData = [
     industry: "travel",
     country: "India",
     category: "Custom Software Development",
-    coverImage: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1436491865332-7a.webp",
 
     challenge: "An Indian online travel agency needed to rebuild its legacy booking engine that was timing out under moderate load, showing stale availability, and offering no personalization. The system queried Global Distribution Systems (GDS) synchronously, creating 8-12 second search latencies that drove users to competitors.",
 
@@ -1123,7 +1123,7 @@ export const caseStudiesData = [
     industry: "automotive",
     country: "Japan",
     category: "Data Engineering",
-    coverImage: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1492144534655-ae.webp",
 
     challenge: "A major Japanese automotive OEM was collecting telematics data from 4 million connected vehicles but had no infrastructure to process it at scale. Dealership networks operated on disconnected CRM and inventory systems, preventing cross-selling and proactive service outreach. Vehicle recall alerts took weeks to reach owners.",
 
@@ -1209,7 +1209,7 @@ export const caseStudiesData = [
     industry: "telecommunications",
     country: "Brazil",
     category: "Cloud Modernization",
-    coverImage: "https://images.unsplash.com/photo-1588600878108-578307a3cc9d?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1588600878108-57.webp",
 
     challenge: "Brazil's second-largest mobile operator was locked into a 20-year-old monolithic billing system incapable of supporting 5G micro-transaction billing models. The system processed nightly batch billing runs with a 16-hour window, making real-time charging impossible. Subscriber churn was accelerating due to billing errors and poor self-service tooling.",
 
@@ -1295,7 +1295,7 @@ export const caseStudiesData = [
     industry: "professional-services",
     country: "Netherlands",
     category: "Custom Software Development",
-    coverImage: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1454165804606-c3.webp",
 
     challenge: "A 2,000-person management consulting firm across 12 European offices was managing consultant utilization, billing, and project delivery through a patchwork of spreadsheets and generic project tools. Sub-optimal resource deployment was costing an estimated €8M in lost billable hours annually. Client billing disputes were frequent due to lack of granular timesheet transparency.",
 
@@ -1381,7 +1381,7 @@ export const caseStudiesData = [
     industry: "government",
     country: "Canada",
     category: "Cloud Modernization",
-    coverImage: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1529107386315-e1.webp",
 
     challenge: "A Canadian federal agency operating 14 critical citizen-facing services on IBM mainframe infrastructure from the 1990s faced increasing public criticism over slow, inaccessible digital services. Services required in-person visits for processes that should have been online. The aging COBOL codebase had no developers available for maintenance.",
 
@@ -1469,7 +1469,7 @@ export const caseStudiesData = [
     industry: "startups",
     country: "United States",
     category: "SaaS Product Engineering",
-    coverImage: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/webp_images/unsplash_1559136555-9303b.webp",
 
     challenge: "An early-stage B2B SaaS startup in the HR-tech space had successfully validated their product with 40 paying customers but faced a critical inflection point: their MVP codebase — built for speed — was buckling under growth, their security posture wasn't enterprise-ready for Fortune 500 procurement reviews, and they had 6 months of runway to close a Series B.",
 

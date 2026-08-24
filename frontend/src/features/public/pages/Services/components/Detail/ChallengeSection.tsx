@@ -8,8 +8,8 @@ export const ChallengeSection: React.FC<{ service?: ServiceDetail }> = ({ servic
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded bg-destructive/10 mb-6">
-              <ShieldAlert className="w-6 h-6 text-destructive" />
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded bg-amber-500/10 mb-6">
+              <ShieldAlert className="w-6 h-6 text-amber-400" />
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Enterprise Challenges We Address</h2>
             <div className="w-16 h-1 bg-primary mb-8" />
