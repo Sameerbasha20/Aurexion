@@ -41,31 +41,36 @@ REFERENCE_SUFFIX_LENGTH = 8
 REFERENCE_MAX_RETRIES = 5
 
 # Roles that are valid lead assignment targets (BDM / Sales pipeline users).
-ASSIGNABLE_ROLES = {"super_admin", "administrator", "bdm", "sales_executive"}
+ASSIGNABLE_ROLES = {"super_admin", "administrator", "admin", "bdm", "business_dev_manager", "sales_executive", "sales", "sales_user"}
 
 # Roles allowed to update any note (admins) vs. only own notes.
-NOTE_ADMIN_ROLES = {"super_admin", "administrator", "bdm"}
+NOTE_ADMIN_ROLES = {"super_admin", "administrator", "admin", "bdm", "business_dev_manager"}
 
 STATUS_TRANSITIONS = {
     Lead.Status.NEW: {
         Lead.Status.UNDER_REVIEW,
         Lead.Status.CONTACTED,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.UNDER_REVIEW: {
         Lead.Status.CONTACTED,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.CONTACTED: {
         Lead.Status.QUALIFIED,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.QUALIFIED: {
         Lead.Status.PROPOSAL_SUBMITTED,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.PROPOSAL_SUBMITTED: {
         Lead.Status.NEGOTIATION,
+        Lead.Status.WON,
         Lead.Status.LOST,
     },
     Lead.Status.NEGOTIATION: {
@@ -582,7 +587,7 @@ def update_followup(*, followup, actor, request=None, **data):
 def delete_followup(*, followup, actor, request=None):
     """Delete a follow-up (restricted to BDM/administrator roles)."""
     role = get_user_role(actor)
-    if role not in ("super_admin", "administrator", "bdm"):
+    if role not in ("super_admin", "administrator", "admin", "bdm", "business_dev_manager"):
         raise PermissionDenied("You are not allowed to delete this follow-up.")
 
     lead = followup.lead

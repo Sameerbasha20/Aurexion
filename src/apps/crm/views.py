@@ -21,7 +21,7 @@ from rest_framework.pagination import PageNumberPagination
 from apps.authentication.audit import get_model_state, log_audit_event
 from apps.authentication.models import AuditLog
 from apps.crm.models import Lead, LeadFollowUp, LeadNote, EstimatorSubmission
-from apps.crm.permissions import CanAccessLead, CanAssignLead, CanCreateLead, CanDeleteLead
+from apps.crm.permissions import CanAccessLead, CanAssignLead, CanCreateLead, CanDeleteLead, IsSalesOrBdm, CanAccessObjectLead
 from apps.crm.serializers import (
     LeadActivitySerializer,
     LeadAssignSerializer,
@@ -202,8 +202,10 @@ class LeadViewSet(viewsets.ModelViewSet):
             return [CanCreateLead()]
         if self.action == "destroy":
             return [CanDeleteLead()]
-        if self.action == "assign":
+        if self.action in ("assign", "onboard_client"):
             return [CanAssignLead()]
+        if self.action in ("lost", "won", "reopen", "qualify", "schedule_meeting"):
+            return [IsSalesOrBdm()]
         return [CanAccessLead()]
 
     def get_queryset(self):
@@ -217,7 +219,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         role_lower = str(role or "").lower()
         if role_lower in ("sales_executive", "sales", "sales_rep"):
             queryset = queryset.filter(assigned_to=user)
-        elif user.is_superuser or role_lower in ("super_admin", "administrator", "bdm"):
+        elif user.is_superuser or role_lower in ("super_admin", "administrator", "admin", "bdm", "business_dev_manager"):
             pass
         else:
             queryset = queryset.none()

@@ -4,6 +4,7 @@ import bdmService, { FormSubmission } from "../../services/bdmService";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../../../../components/ui/select";
 import {
   Mail,
   Phone,
@@ -566,28 +567,22 @@ export const ContactForms: React.FC = () => {
             <form onSubmit={handleAssignSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SELECT SALES EXECUTIVE *</label>
-                <select
-                  required
-                  value={targetExecId}
-                  onChange={(e) => setTargetExecId(Number(e.target.value))}
-                  style={{
-                    padding: "0.65rem",
-                    backgroundColor: "#050811",
-                    border: "1px solid rgba(140, 174, 187, 0.25)",
-                    color: "#f8fafc",
-                    borderRadius: "4px",
-                    fontSize: "0.88rem",
-                    width: "100%",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <option value="">-- Choose Sales Executive --</option>
-                  {salesExecs.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.name} ({user.username})
-                    </option>
-                  ))}
-                </select>
+                <Select value={targetExecId ? String(targetExecId) : ""} onValueChange={(val) => setTargetExecId(Number(val))}>
+                  <SelectTrigger style={{ width: "100%", backgroundColor: "#050811", border: "1px solid rgba(99, 245, 232, 0.35)", color: "#f8fafc" }}>
+                    <SelectValue placeholder="-- Choose Sales Executive --" />
+                  </SelectTrigger>
+                  <SelectContent style={{ maxHeight: "180px", overflowY: "auto" }}>
+                    {salesExecs.map((user) => {
+                      const shortUser = user.username.length > 22 ? `${user.username.slice(0, 19)}...` : user.username;
+                      const label = user.name && user.name !== user.username ? `${user.name} (${shortUser})` : shortUser;
+                      return (
+                        <SelectItem key={user.id} value={String(user.id)} title={`${user.name} (${user.username})`}>
+                          {label}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem", flexWrap: "wrap" }}>

@@ -6,32 +6,28 @@ from apps.administration.permissions import BaseRolePermission
 class CanAccessLead(BaseRolePermission):
     """
     Roles that may view/manage CRM leads. 
-
-    Super Admin is granted by the base class bypass; Administrator and BDM
-    have full lead CRM access; Sales Executives are restricted to the leads
-    assigned to them (enforced at the queryset level in the view).
     """
-    allowed_roles = ["administrator", "bdm", "sales_executive"]
+    allowed_roles = ["administrator", "bdm", "business_dev_manager", "sales_executive", "sales", "sales_user"]
 
 
 class CanCreateLead(BaseRolePermission):
     """Roles that may create leads in the CRM."""
-    allowed_roles = ["super_admin", "administrator", "bdm", "sales_executive"]
+    allowed_roles = ["super_admin", "administrator", "bdm", "business_dev_manager", "sales_executive", "sales", "sales_user"]
 
 
 class CanAssignLead(BaseRolePermission):
-    """Roles that may assign (or reassign) leads to pipeline users."""
-    allowed_roles = ["super_admin", "administrator", "bdm"]
+    """Roles that may assign (or reassign) leads to pipeline users or onboard clients."""
+    allowed_roles = ["super_admin", "administrator", "bdm", "business_dev_manager", "sales_executive", "sales", "sales_user"]
 
 
 class CanDeleteLead(BaseRolePermission):
     """Roles that may delete leads from the CRM."""
-    allowed_roles = ["super_admin", "administrator", "bdm"]
+    allowed_roles = ["super_admin", "administrator", "bdm", "business_dev_manager"]
 
 
 class IsSalesOrBdm(BaseRolePermission):
     """Roles that participate in the lead pipeline (sales + BDM + admins)."""
-    allowed_roles = ["super_admin", "administrator", "bdm", "sales_executive"]
+    allowed_roles = ["super_admin", "administrator", "bdm", "business_dev_manager", "sales_executive", "sales", "sales_user"]
 
 
 class CanAccessObjectLead(permissions.BasePermission):
@@ -50,11 +46,11 @@ class CanAccessObjectLead(permissions.BasePermission):
         if user.is_superuser:
             return True
 
-        role = getattr(getattr(user, "profile", None), "role", None)
-        if role in ("super_admin", "administrator", "bdm"):
+        role = str(getattr(getattr(user, "profile", None), "role", "") or "").lower()
+        if role in ("super_admin", "administrator", "admin", "bdm", "business_dev_manager"):
             return True
 
-        if role == "sales_executive":
+        if role in ("sales_executive", "sales", "sales_user"):
             return obj.assigned_to_id == user.id
 
         return False

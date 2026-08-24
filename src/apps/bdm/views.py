@@ -14,7 +14,7 @@ from django.core.cache import cache
 
 class CanViewBdmDashboard(BaseRolePermission):
     """BDM dashboard is available to BDM, Administrator and Super Admin roles."""
-    allowed_roles = ["super_admin", "administrator", "bdm"]
+    allowed_roles = ["super_admin", "administrator", "admin", "bdm", "business_dev_manager"]
 
 
 
