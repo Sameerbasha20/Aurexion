@@ -1,111 +1,162 @@
-# Authentication & Audit Logging Module
+# Authentication Test Module
 
-This module handles authentication, role-based access control (RBAC), user profile synchronization, security constraints, and compliance-driven audit logs for the Aurexion platform.
+## Role of This Module
 
----
+This directory contains automated tests for the Aurexion authentication and authorization flow. It verifies that users can authenticate securely, receive JWT credentials through protected cookies, access their own profile, and reach only the modules allowed by their role.
 
-## 🛠️ Developed Technologies & Core Design
+The tests also protect security boundaries around:
 
-The authentication module was developed using the following technologies and design patterns:
+- Password strength validation.
+- JWT authentication and token expiry.
+- HttpOnly, Secure, and SameSite cookie attributes.
+- CSRF protection for cookie-authenticated state-changing requests.
+- Login failure auditing and brute-force lockout.
+- Logout, cookie clearing, and session invalidation.
+- Role-based access control (RBAC) and privilege-escalation prevention.
+- CORS behavior for credentialed requests.
+- Avoiding access and refresh token values in JSON responses and audit logs.
+- Authentication enforcement across CMS, CRM, BDM, support, portal, and recruitment endpoints.
 
-*   **Framework**: [Django 5.2/6.1](https://www.djangoproject.com/) — The primary backend framework.
-*   **REST API Layer**: [Django REST Framework (DRF) 3.18.0](https://www.django-rest-framework.org/) — Provides serializers, viewsets, and custom permissions.
-*   **Token Authentication**: [djangorestframework-simplejwt 5.5.1](https://django-rest-framework-simplejwt.readthedocs.io/) — Implements JSON Web Token (JWT) credentials (access/refresh tokens) for secure stateless authentication.
-*   **Throttling & Account Lockout**: [Django Cache Engine](https://docs.djangoproject.com/en/stable/topics/cache/) — Locks out users or IP addresses for 15 minutes after 5 consecutive failed login attempts to prevent brute-force attacks.
-*   **Signals**: [Django post_save signals](https://docs.djangoproject.com/en/stable/topics/signals/) — Hooks into User object creation/modification to automatically synchronize the related `UserProfile` and role assignments.
-*   **Compliance Logging**: Custom JSON serialization for database model states (storing `previous_state` and `updated_state`) to maintain high-integrity histories.
+This is a test module. The authentication implementation is located in `src/apps/authentication`.
 
----
+## Test Files
 
-## 📁 Module Components
+| File | Coverage |
+| --- | --- |
+| `test_auth.py` | Password validation, login success/failure, audit events, lockout, profile access, user management, and RBAC boundaries. |
+| `test_auth_enforcement.py` | Missing, invalid, and expired JWT handling plus role-based access checks across protected API endpoints. |
+| `test_cookie_security.py` | Cookie security attributes, cookie-based authentication, logout, refresh, CSRF, CORS, token isolation, and RBAC regression checks. |
+| `test_dashboard_integration.py` | End-to-end login-to-dashboard flows, role dashboard access, logout behavior, and cookie-based token refresh. |
 
-The module code is organized as follows:
+## Observed Authentication Endpoints
 
-| File | Purpose |
-| :--- | :--- |
-| [`models.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/src/apps/authentication/models.py) | Defines `UserProfile` (role choice) and `AuditLog` structure. |
-| [`views.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/src/apps/authentication/views.py) | Implements throttled login, profile retriever, and RBAC viewsets. |
-| [`serializers.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/src/apps/authentication/serializers.py) | Serializes User, UserProfile, Login, and AuditLog data. |
-| [`validators.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/src/apps/authentication/validators.py) | Enforces custom password requirements (digits, symbols, length). |
-| [`audit.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/src/apps/authentication/audit.py) | Custom hooks for logging IP address, User Agent, and model states. |
-| [`urls.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/src/apps/authentication/urls.py) | Registers JWT refresh, login, user, and audit API routes. |
+The authentication URL configuration is mounted under `/api/v1/`. Routes accept an optional trailing slash.
 
----
+| Method | Endpoint | Observed purpose | Authentication |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/auth/login/` | Authenticate by username or email and set `access_token` and `refresh_token` HttpOnly cookies. | Public |
+| `POST` | `/api/v1/auth/logout/` | Log out the current user, clear authentication cookies, and invalidate the session/tokens. | Required |
+| `POST` | `/api/v1/auth/token/refresh/` | Issue a new access token using the refresh token cookie. | Refresh cookie |
+| `GET` | `/api/v1/auth/me/` | Return the current user's identity and role. | Required |
+| `GET` | `/api/v1/users/` | List users. Used to verify administrator and super-admin permissions. | Required; role restricted |
+| `POST` | `/api/v1/users/` | Create a user. | Required; role restricted |
+| `PUT` | `/api/v1/users/<id>/` | Update a user. | Required; role restricted |
+| `DELETE` | `/api/v1/users/<id>/` | Delete a user. | Required; role restricted |
+| `GET` | `/api/v1/audit-logs/` | Read authentication and system audit logs. | Required; super-admin restricted |
 
-## 🧪 Testing Suite Overview
+The URL configuration also defines the following routes, although the attached tests do not currently exercise their complete behavior:
 
-A robust testing framework is implemented using `pytest` and Django's testing suite. It runs 35 automated tests verifying unit logic, API integration, role enforcement regressions, and system-wide smoke checks.
+- `POST /api/v1/auth/forgot-password/`
+- `POST /api/v1/auth/reset-password/`
+- `POST /api/v1/auth/change-password/`
+- `GET /api/v1/users/roles/`
 
-> [!NOTE]
-> **Test Environment Cleanup**: Due to Supabase/Supavisor connection pooling, the test database `test_postgres` can linger. The custom configuration in [`conftest.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/conftest.py) terminates active pooled sessions and drops the database at the start of every session.
+## Protected Endpoints Observed in Enforcement Tests
 
-### 1. Pytest Support
-The system is configured to run tests smoothly via `pytest` through configuration parameters defined in [`pytest.ini`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/pytest.ini) and setup fixtures in [`conftest.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/conftest.py).
+These downstream routes are used to confirm that authentication is enforced consistently outside the authentication app:
 
-*   **File**: [`pytest.ini`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/pytest.ini)
-*   **File**: [`conftest.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/conftest.py)
+- `GET /api/v1/admin/dashboard/`
+- `GET /api/v1/bdm/dashboard/`
+- `GET /api/v1/leads/`
+- `GET /api/v1/cms/admin/service/`
+- `GET /api/v1/cms/admin/services/`
+- `GET /api/v1/cms/admin/case-studies/`
+- `GET /api/v1/cms/admin/industry/`
+- `GET /api/v1/cms/admin/categories/`
+- `GET /api/v1/cms/admin/blog/`
+- `GET /api/v1/roles/`
+- `GET /api/v1/support/tickets/`
+- `GET /api/v1/support/tickets/stats/`
+- `GET /api/v1/support/my-tickets/`
+- `GET /api/v1/support/admin/tickets/`
+- `GET /api/v1/tickets/`
+- `GET /api/v1/projects/`
+- `GET /api/v1/milestones/`
+- `GET /api/v1/notifications/`
+- `GET /api/v1/careers/admin/jobs/`
+- `GET /api/v1/careers/admin/applications/`
 
-### 2. Unit Testing
-Verifies isolated components of the codebase, ensuring validators and business logic operate as expected under different boundaries without external network requests.
+Unauthenticated requests are expected to return `401`. Authenticated users without the required role are expected to return `403`.
 
-*   **File**: [`test_auth.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/tests/authentication/test_auth.py)
-*   **Test Case**: `PasswordValidationTestCase`
-*   **Scope**:
-    *   `test_compliant_password`: Confirms valid passwords pass checks.
-    *   `test_short_password`: Asserts validation error for password length < 10.
-    *   `test_missing_number`: Asserts validation error when missing a digit.
-    *   `test_missing_symbol`: Asserts validation error when missing a symbol.
+## Roles Covered
 
-### 3. Integration Testing
-Validates that multiple layers (Views, Serializers, Cache, Models, and DB transactions) collaborate correctly through simulated HTTP requests.
+The test data includes these roles:
 
-*   **File**: [`test_auth.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/tests/authentication/test_auth.py)
-*   **Test Cases**: `AuthenticationAPITestCase`, `RBACPermissionsAPITestCase`
-*   **Scope**:
-    *   **JWT Credentials**: Success login returns access/refresh tokens and user metadata.
-    *   **Audit Generation**: Valid logins trigger `LOGIN_SUCCESS`; invalid logins trigger `LOGIN_FAILURE`.
-    *   **Brute-Force Lockout**: 5 failed login attempts trigger a `429 Too Many Requests` lockout on User/IP for 15 minutes.
-    *   **RBAC Boundaries**: Verifies Client Users are forbidden from listing users (403); Admins cannot read audit logs (403); Super Admins can list and read everything.
-    *   **Privilege Escalation Protection**: Prevents lower-role administrators from creating, editing, or deleting Super Admin accounts.
-    *   **Model Audit Triggers**: User CRUD actions record structured JSON logs containing previous and updated database states in `AuditLog`.
+- `super_admin`
+- `administrator`
+- `bdm`
+- `sales_executive`
+- `hr_manager`
+- `content_manager`
+- `support_executive`
+- `client_user`
 
-### 4. Regression Testing
-Enforces auth policies across all backend services to guarantee new code additions do not introduce authorization vulnerabilities on existing endpoints.
+The tests currently verify representative permissions such as:
 
-*   **File**: [`test_auth_enforcement.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/tests/authentication/test_auth_enforcement.py)
-*   **Test Case**: `JWTAuthenticationEnforcementTestCase`
-*   **Scope**:
-    *   Tests that all protected routes (CMS, CRM, Careers, Portal, Recruitment) reject requests without token header (401), invalid tokens (401), or expired tokens (401).
-    *   Verifies that access tokens can be successfully refreshed using the refresh token endpoint.
-    *   Iteratively asserts permission allowances and restrictions for every user role (`super_admin`, `administrator`, `bdm`, `sales_executive`, `hr_manager`, `content_manager`, `support_executive`, `client_user`) against their specific dashboard endpoints.
+- `super_admin`: access to user management, audit logs, and protected module examples.
+- `administrator`: access to user management, but not audit logs or super-admin account operations.
+- `bdm`: access to CRM leads and the BDM dashboard.
+- `sales_executive`: access to leads, but not the BDM dashboard.
+- `hr_manager`: access to recruitment jobs.
+- `content_manager`: access to CMS administration examples.
+- `support_executive`: access to support ticket statistics.
+- `client_user`: access to personal tickets and projects, but not administrative dashboards or user management.
 
-### 5. Smoke Testing
-Performs rapid sanity checks of the authentication system in live/test postgres environments to check that Django boots, system checks pass, and essential auth routes respond correctly.
+## Security Expectations Verified
 
-*   **File**: [`smoke_test.py`](file:///c:/Users/ABC/Desktop/AURA/Aurexion_technologies/tests/smoke_test.py)
-*   **Test Case**: `SupportSmokeTestCase`
-*   **Scope**:
-    *   `test_03_authentication_works`: Authenticates test users via POST to `reverse('login')` to confirm database connectivity, simplejwt token signing, and JSON response compliance during live/staging deployments.
+- Successful login returns `200` and user metadata, but not JWT values in the JSON body.
+- Access and refresh JWTs are set as HttpOnly cookies.
+- Cookie `SameSite` is expected to be `Lax`; the `Secure` flag follows the project setting.
+- Five failed login attempts trigger a 15-minute user/IP lockout and the next attempt returns `429` with `Retry-After`.
+- Failed and successful login events are written to `AuditLog`.
+- User create, update, and delete actions produce audit records with model state changes.
+- Missing, invalid, or expired credentials return `401`.
+- Valid credentials with insufficient permissions return `403`.
+- Cookie-authenticated unsafe requests require a valid CSRF token.
+- Credentialed CORS requests allow configured origins and reject arbitrary origins.
+- Token values must not appear in audit log data.
 
----
+## Running the Tests
 
-## 🏃 Test Invocations
+From the repository root:
 
-To execute the test suite, run the appropriate command in the root directory:
+```powershell
+python manage.py test tests.authentication
+```
 
-*   **All Auth Tests (Django Runner)**:
-    ```bash
-    python manage.py test tests.authentication
-    ```
-*   **All System Tests (Pytest Runner)**:
-    ```bash
-    pytest tests
-    ```
-*   **Specific Auth Enforcement Tests**:
-    ```bash
-    python manage.py test tests.authentication.test_auth_enforcement
-    ```
-*   **Smoke Test Suite**:
-    ```bash
-    python manage.py test tests.smoke_test
-    ```
+Run an individual test file:
+
+```powershell
+python manage.py test tests.authentication.test_auth
+python manage.py test tests.authentication.test_auth_enforcement
+python manage.py test tests.authentication.test_cookie_security
+pytest tests/authentication/test_dashboard_integration.py
+```
+
+The project-wide test command is:
+
+```powershell
+pytest tests
+```
+
+## Remaining Work
+
+The following work is still recommended based on the current tests and the routes defined by the authentication app:
+
+1. Add focused tests for forgot-password, reset-password, and change-password flows, including invalid tokens, expired tokens, password validation, and unauthorized requests.
+2. Add tests for the user-role choices endpoint and confirm its access policy for each relevant role.
+3. Expand CRUD coverage to include validation failures, duplicate usernames or emails, partial updates, inactive users, and missing user IDs.
+4. Complete the role-by-endpoint matrix for every protected endpoint and every supported role, including negative cases.
+5. Add explicit assertions that previously issued access and refresh tokens cannot be reused after logout or blacklisting, rather than checking only cookie deletion and a cleared client.
+6. Add refresh-token failure cases for missing, invalid, expired, and rotated tokens.
+7. Run the suite against the deployment-specific HTTPS and CORS settings to verify production cookie behavior, allowed origins, and `Secure` attributes.
+8. Keep the endpoint lists synchronized with URL configuration as new protected modules or routes are added.
+
+## Related Implementation
+
+- `src/apps/authentication/urls.py` - Authentication route definitions.
+- `src/apps/authentication/views.py` - Authentication, logout, refresh, profile, user, and audit views.
+- `src/apps/authentication/models.py` - User profile and audit log models.
+- `src/apps/authentication/serializers.py` - Authentication and user data validation/serialization.
+- `src/apps/authentication/audit.py` - Audit event helpers.
+- `src/apps/authentication/validators.py` - Password validation rules.
