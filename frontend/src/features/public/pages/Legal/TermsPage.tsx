@@ -68,7 +68,7 @@ const sections: LegalSectionItem[] = [
   {
     id: "contact",
     title: "13. Contact",
-    text: "If you have questions about these Terms, please contact us at: legal@aurexion.io | Aurexion Technologies, 100 Innovation Way, Suite 400, San Francisco, CA 94105.",
+    text: "If you have questions about these Terms, please contact us at: legal@aurexion.io | Aurexion Technologies, 123 Innovation Street, San Francisco, CA 94102.",
   },
 ];
 

@@ -383,7 +383,7 @@ export const ContactForms: React.FC = () => {
                           Company: <strong style={{ color: "#f8fafc" }}>{submission.company}</strong>
                         </p>
                       )}
-                      <a href={`mailto:${submission.email}`} style={{ color: "#63f5e8", display: "flex", alignItems: "center", gap: "0.35rem", textDecoration: "none", fontSize: "0.82rem" }}>
+                      <a href={`mailto:${submission.email}`} style={{ color: "#63f5e8", display: "flex", alignItems: "center", gap: "0.35rem", textDecoration: "none", fontSize: "0.82rem", wordBreak: "break-all" }}>
                         <Mail size={13} /> {submission.email}
                       </a>
                       {submission.phone && (
