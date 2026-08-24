@@ -85,6 +85,11 @@ class AdminDashboardView(APIView):
     permission_classes = [IsAdministrator]
 
     def get(self, request, *args, **kwargs):
+        role = request.user.profile.role if hasattr(request.user, 'profile') else None
+        if role not in ['super_admin', 'administrator'] and not request.user.is_superuser:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only Administrators can access this dashboard.")
+
         from django.core.cache import cache
         cache_key = "admin_dashboard_metrics"
         cached_data = cache.get(cache_key)

@@ -103,7 +103,7 @@ MIDDLEWARE.extend([
 # CORS & CSRF Configuration
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'https://aurexion-one.vercel.app',
+    'https://aurexion-one.vercel.app/',
     'http://127.0.0.1:3000',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
@@ -125,13 +125,19 @@ CSRF_TRUSTED_ORIGINS = [
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE =  DEBUG
 # Lax in dev (same-site localhost:3000 ↔ localhost:8000 is same-site via eTLD+1), None in prod cross-site (vercel.app ↔ onrender.com)
-SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE') or ('Lax' if DEBUG else 'None')
+# SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE') or ('Lax' if DEBUG else 'None')
+SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE') or ('Lax' if not  DEBUG else 'None')
+
+
 
 CSRF_COOKIE_HTTPONLY = False  # Let frontend read the csrf token cookie to pass in request headers
 CSRF_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE') or ('Lax' if DEBUG else 'None')
+#CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE') or ('Lax' if DEBUG else 'None')
+
+CSRF_COOKIE_SAMESITE =  'None'
+
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 if not DEBUG:

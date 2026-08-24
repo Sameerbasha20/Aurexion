@@ -387,7 +387,7 @@ class LeadActivitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AuditLog
-        fields = ["id", "action", "module", "object_id", "repr", "actor", "ip_address", "user_agent", "timestamp"]
+        fields = ["id", "action", "module", "object_id", "repr", "previous_state", "updated_state", "actor", "ip_address", "user_agent", "timestamp"]
         read_only_fields = fields
 
 

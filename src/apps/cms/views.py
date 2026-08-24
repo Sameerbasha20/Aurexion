@@ -49,6 +49,14 @@ class AdminBlogPostViewSet(viewsets.ModelViewSet):
     permission_classes = [IsContentManager]
     lookup_field = 'slug'
 
+    def dispatch(self, request, *args, **kwargs):
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            role = getattr(getattr(request.user, 'profile', None), 'role', None)
+            if role not in ['super_admin', 'content_manager'] and not request.user.is_superuser:
+                from django.http import JsonResponse
+                return JsonResponse({"detail": "Not allowed"}, status=403)
+        return super().dispatch(request, *args, **kwargs)
+
 
 # --- Public CMS Views (Cached) ---
 
