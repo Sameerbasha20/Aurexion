@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Search, Filter, RefreshCw, LifeBuoy, FileText } from "lucide-react";
+import { Search, Filter, RefreshCw, LifeBuoy, FileText, Loader2 } from "lucide-react";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
@@ -48,42 +48,17 @@ const PRIORITY_FILTERS: { value: string; label: string }[] = [
 ];
 
 const getAvailableStatusOptions = (currentStatus: TicketStatus): { value: TicketStatus; label: string }[] => {
-  switch (currentStatus) {
-    case "open":
-      return [
-        { value: "open", label: "Open" },
-        { value: "assigned", label: "Assigned" },
-      ];
-    case "assigned":
-      return [
-        { value: "assigned", label: "Assigned" },
-        { value: "in_progress", label: "In Progress" },
-        { value: "open", label: "Open" },
-      ];
-    case "in_progress":
-      return [
-        { value: "in_progress", label: "In Progress" },
-        { value: "awaiting_client", label: "Awaiting Client" },
-        { value: "assigned", label: "Assigned" },
-      ];
-    case "awaiting_client":
-      return [
-        { value: "awaiting_client", label: "Awaiting Client" },
-        { value: "resolved", label: "Resolved" },
-        { value: "in_progress", label: "In Progress" },
-      ];
-    case "resolved":
-      return [
-        { value: "resolved", label: "Resolved" },
-        { value: "closed", label: "Closed" },
-        { value: "awaiting_client", label: "Awaiting Client" },
-      ];
-    case "closed":
-    default:
-      return [
-        { value: "closed", label: "Closed" },
-      ];
+  if (currentStatus === "closed") {
+    return [{ value: "closed", label: "Closed" }];
   }
+  return [
+    { value: "open", label: "Open" },
+    { value: "assigned", label: "Assigned" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "awaiting_client", label: "Awaiting Client" },
+    { value: "resolved", label: "Resolved" },
+    { value: "closed", label: "Closed" },
+  ];
 };
 
 export const TicketList: React.FC = () => {
@@ -98,9 +73,10 @@ export const TicketList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Resolution Dialog State
+  // Resolution Dialog & Loading State
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [activeTicket, setActiveTicket] = useState<{ id: number; ticket_id: string; subject: string; notes: string } | null>(null);
+  const [updatingTicketId, setUpdatingTicketId] = useState<number | null>(null);
+  const [activeTicket, setActiveTicket] = useState<{ id: number; ticket_id: string; subject: string; notes: string; targetStatus?: TicketStatus } | null>(null);
   const [modalNotes, setModalNotes] = useState("");
   const [modalError, setModalError] = useState<string | null>(null);
 
@@ -108,19 +84,25 @@ export const TicketList: React.FC = () => {
     if (!tickets.data) return [];
     const term = search.trim().toLowerCase();
     return tickets.data.filter((ticket) => {
-      if (statusFilter !== "all" && ticket.status !== (statusFilter as TicketStatus)) return false;
-      if (categoryFilter !== "all" && ticket.category !== (categoryFilter as TicketCategory)) return false;
-      if (priorityFilter !== "all" && ticket.priority !== (priorityFilter as TicketPriority)) return false;
-      if (term) {
-        const haystack = `${ticket.subject} ${ticket.ticket_id} ${ticket.client_username}`.toLowerCase();
-        if (!haystack.includes(term)) return false;
-      }
-      return true;
+      const matchSearch =
+        !term ||
+        ticket.ticket_id.toLowerCase().includes(term) ||
+        ticket.subject.toLowerCase().includes(term) ||
+        (ticket.client_username && ticket.client_username.toLowerCase().includes(term));
+      const matchStatus = statusFilter === "all" || ticket.status === statusFilter;
+      const matchCategory = categoryFilter === "all" || ticket.category === categoryFilter;
+      const matchPriority = priorityFilter === "all" || ticket.priority === priorityFilter;
+      return matchSearch && matchStatus && matchCategory && matchPriority;
     });
   }, [tickets.data, search, statusFilter, categoryFilter, priorityFilter]);
 
   const totalItems = filtered.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, categoryFilter, priorityFilter, pageSize]);
+
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
   const paginatedTickets = filtered.slice(startIndex, startIndex + pageSize);
@@ -130,12 +112,13 @@ export const TicketList: React.FC = () => {
       const ticket = tickets.data?.find((t) => t.id === id);
       if (!ticket) return;
 
-      if (nextStatus === "resolved") {
+      if (nextStatus === "resolved" || nextStatus === "closed") {
         setActiveTicket({
           id: ticket.id,
           ticket_id: ticket.ticket_id,
           subject: ticket.subject,
           notes: ticket.resolution_notes || "",
+          targetStatus: nextStatus,
         });
         setModalNotes(ticket.resolution_notes || "");
         setModalError(null);
@@ -143,24 +126,31 @@ export const TicketList: React.FC = () => {
         return;
       }
 
-      await updateTicket.update(id, { status: nextStatus });
+      setUpdatingTicketId(id);
+      await updateTicket.update(id, {
+        status: nextStatus,
+        resolution_notes: ticket.resolution_notes || undefined,
+      });
       await tickets.refetch();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to update ticket status:", err);
+    } finally {
+      setUpdatingTicketId(null);
     }
   };
 
   const handleSaveResolutionModal = async () => {
     if (!activeTicket) return;
     if (!modalNotes.trim()) {
-      setModalError("Resolution notes are required before resolving this ticket.");
+      setModalError("Resolution notes are required before resolving/closing this ticket.");
       return;
     }
 
     setModalError(null);
+    setUpdatingTicketId(activeTicket.id);
     try {
       await updateTicket.update(activeTicket.id, {
-        status: "resolved",
+        status: activeTicket.targetStatus || "resolved",
         resolution_notes: modalNotes.trim(),
       });
       setDialogOpen(false);
@@ -168,6 +158,9 @@ export const TicketList: React.FC = () => {
     } catch (err: any) {
       const msg = err?.response?.data?.resolution_notes?.[0] || err?.response?.data?.detail || "Failed to save resolution notes.";
       setModalError(msg);
+      setDialogOpen(true);
+    } finally {
+      setUpdatingTicketId(null);
     }
   };
 
@@ -334,29 +327,35 @@ export const TicketList: React.FC = () => {
                               {formatDateTime(ticket.updated_at)}
                             </td>
                             <td style={{ padding: "0.75rem", textAlign: "right" }}>
-                              <select
-                                value={ticket.status}
-                                onChange={(e) => handleQuickStatus(ticket.id, e.target.value as TicketStatus)}
-                                disabled={ticket.status === "closed" || updateTicket.isLoading}
-                                title={ticket.status === "closed" ? "Closed tickets are read-only." : undefined}
-                                style={{
-                                  backgroundColor: "#0c1222",
-                                  border: "1px solid #1e293b",
-                                  color: "#63f5e8",
-                                  fontSize: "0.75rem",
-                                  fontFamily: "IBM Plex Mono, monospace",
-                                  padding: "0.25rem 0.5rem",
-                                  borderRadius: "4px",
-                                  outline: "none",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                {options.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                              </select>
+                              {updatingTicketId === ticket.id ? (
+                                <span style={{ fontSize: "0.75rem", color: "#63f5e8", fontFamily: "IBM Plex Mono, monospace", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+                                  <Loader2 size={13} className="animate-spin" /> Updating...
+                                </span>
+                              ) : (
+                                <select
+                                  value={ticket.status}
+                                  onChange={(e) => handleQuickStatus(ticket.id, e.target.value as TicketStatus)}
+                                  disabled={ticket.status === "closed" || updateTicket.isLoading}
+                                  title={ticket.status === "closed" ? "Closed tickets are read-only." : undefined}
+                                  style={{
+                                    backgroundColor: "#0c1222",
+                                    border: "1px solid #1e293b",
+                                    color: "#63f5e8",
+                                    fontSize: "0.75rem",
+                                    fontFamily: "IBM Plex Mono, monospace",
+                                    padding: "0.25rem 0.5rem",
+                                    borderRadius: "4px",
+                                    outline: "none",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {options.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
                             </td>
                           </tr>
                         );
