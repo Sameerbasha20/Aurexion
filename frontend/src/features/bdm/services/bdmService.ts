@@ -183,9 +183,10 @@ export function clearBdmCache() {
 
 export const bdmService = {
   getCachedDashboard: (): DashboardData | null => cachedDashboard,
-  getCachedLeads: (params?: { page?: number; status?: string; search?: string; source?: string }): LeadsResponse | null => {
+  getCachedLeads: (params?: { page?: number; page_size?: number; status?: string; search?: string; source?: string }): LeadsResponse | null => {
     const key = JSON.stringify({
       page: params?.page || 1,
+      page_size: params?.page_size || 10,
       status: params?.status || "",
       search: params?.search || "",
       source: params?.source || "",
@@ -210,9 +211,10 @@ export const bdmService = {
     return (dashboardPromise || cachedDashboard)!;
   },
 
-  getLeads: async (params?: { page?: number; status?: string; search?: string; source?: string }, force = false): Promise<LeadsResponse> => {
+  getLeads: async (params?: { page?: number; page_size?: number; status?: string; search?: string; source?: string }, force = false): Promise<LeadsResponse> => {
     const key = JSON.stringify({
       page: params?.page || 1,
+      page_size: params?.page_size || 10,
       status: params?.status || "",
       search: params?.search || "",
       source: params?.source || "",
@@ -225,6 +227,7 @@ export const bdmService = {
     if (!leadsPromises.has(key) || force) {
       const queryParams = new URLSearchParams();
       if (params?.page) queryParams.append("page", params.page.toString());
+      if (params?.page_size) queryParams.append("page_size", params.page_size.toString());
       if (params?.status) queryParams.append("status", params.status);
       if (params?.search) queryParams.append("search", params.search);
       if (params?.source) queryParams.append("source", params.source);

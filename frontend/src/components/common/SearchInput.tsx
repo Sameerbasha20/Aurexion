@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Search } from "lucide-react";
 import { useDebounce } from "../../hooks/useDebounce";
 
@@ -24,17 +24,27 @@ export const SearchInput: React.FC<SearchInputProps> = ({
   const [internalValue, setInternalValue] = useState(externalValue || "");
   const debouncedValue = useDebounce(internalValue, debounceMs);
 
+  const onDebouncedChangeRef = useRef(onDebouncedChange);
+  useEffect(() => {
+    onDebouncedChangeRef.current = onDebouncedChange;
+  }, [onDebouncedChange]);
+
   useEffect(() => {
     if (externalValue !== undefined) {
       setInternalValue(externalValue);
     }
   }, [externalValue]);
 
+  const isInitialMount = useRef(true);
   useEffect(() => {
-    if (onDebouncedChange) {
-      onDebouncedChange(debouncedValue);
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
     }
-  }, [debouncedValue, onDebouncedChange]);
+    if (onDebouncedChangeRef.current) {
+      onDebouncedChangeRef.current(debouncedValue);
+    }
+  }, [debouncedValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInternalValue(e.target.value);

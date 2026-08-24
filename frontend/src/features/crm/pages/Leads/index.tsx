@@ -325,34 +325,66 @@ export const Leads: React.FC = () => {
             </table>
           </div>
 
-          {/* Pagination Footer */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800 bg-slate-950/40 text-sm text-slate-400">
+          {/* Standardized Pagination Controls */}
+          <div
+            style={{
+              padding: "1rem 1.5rem",
+              borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              fontSize: "0.85rem",
+              color: "#94a3b8",
+            }}
+          >
             <div>
-              Showing <span className="font-semibold text-slate-200">{leads.length}</span> of{" "}
-              <span className="font-semibold text-slate-200">{totalCount}</span> total records
+              Showing <strong style={{ color: "#f8fafc" }}>{totalCount > 0 ? ((params.page || 1) - 1) * (params.page_size || 10) + 1 : 0}</strong> to{" "}
+              <strong style={{ color: "#f8fafc" }}>{Math.min((params.page || 1) * (params.page_size || 10), totalCount)}</strong> of{" "}
+              <strong style={{ color: "#f8fafc" }}>{totalCount}</strong> entries
             </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange((params.page || 1) - 1)}
-                disabled={(params.page || 1) <= 1 || isFetching}
-                className="border-slate-800 text-slate-300 disabled:opacity-40"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <span className="text-xs px-2 text-slate-300">
-                Page {params.page || 1} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange((params.page || 1) + 1)}
-                disabled={(params.page || 1) >= totalPages || isFetching}
-                className="border-slate-800 text-slate-300 disabled:opacity-40"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span>Rows per page:</span>
+                <select
+                  value={params.page_size || 10}
+                  onChange={(e) => setParams((prev) => ({ ...prev, page_size: Number(e.target.value), page: 1 }))}
+                  style={{
+                    padding: "0.25rem 0.5rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140, 174, 187, 0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", gap: "0.4rem" }}>
+                <Button
+                  variant="outline"
+                  disabled={(params.page || 1) <= 1 || isFetching}
+                  onClick={() => handlePageChange((params.page || 1) - 1)}
+                  style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                >
+                  Previous
+                </Button>
+                <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                  Page {params.page || 1} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={(params.page || 1) >= totalPages || isFetching}
+                  onClick={() => handlePageChange((params.page || 1) + 1)}
+                  style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           </div>
         </div>

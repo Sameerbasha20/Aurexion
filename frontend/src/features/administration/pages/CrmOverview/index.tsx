@@ -30,6 +30,8 @@ export const CrmOverview: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -68,6 +70,12 @@ export const CrmOverview: React.FC = () => {
     );
     return matchesStatus && matchesSearch;
   });
+
+  const totalItems = filteredLeads.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedLeads = filteredLeads.slice(startIndex, startIndex + pageSize);
 
   const handleOpenLeadDrawer = (leadId: number) => {
     setSelectedLeadId(leadId);
@@ -167,88 +175,156 @@ export const CrmOverview: React.FC = () => {
             RETRIEVING LEADS RECORDS...
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.9rem" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>REF ID</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>LEAD & COMPANY</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>INDUSTRY & SOURCE</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>CREATED DATE/TIME</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>PRIORITY</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ASSIGNED TO</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>STAGE</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem", textAlign: "right" }}>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLeads.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} style={{ padding: "2.5rem", textAlign: "center", color: "var(--color-text-muted)" }}>
-                      No lead records found matching current query and filter parameters.
-                    </td>
+          <>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.9rem" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>REF ID</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>LEAD & COMPANY</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>INDUSTRY & SOURCE</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>CREATED DATE/TIME</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>PRIORITY</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ASSIGNED TO</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>STAGE</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem", textAlign: "right" }}>ACTIONS</th>
                   </tr>
-                ) : (
-                  filteredLeads.map((l) => (
-                    <tr key={l.id} style={{ borderBottom: "1px solid var(--color-border)" }} className="hover:bg-muted/10">
-                      <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>
-                        {l.reference_id || `LD-${l.id}`}
-                      </td>
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ fontWeight: 600, color: "var(--color-text-primary)" }}>{l.name}</div>
-                        <div style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>{l.company || l.email}</div>
-                      </td>
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ color: "var(--color-text-secondary)" }}>{l.industry || "General"}</div>
-                        <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>{l.source || "Inbound"}</div>
-                      </td>
-                      <td style={{ padding: "1rem", fontSize: "0.8rem", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)" }}>
-                        {formatTimestamp(l.created_at)}
-                      </td>
-                      <td style={{ padding: "1rem" }}>
-                        <span style={{
-                          fontSize: "0.75rem",
-                          fontFamily: "var(--font-mono)",
-                          color: getPriorityColor(l.priority || "MEDIUM"),
-                        }}>{l.priority_display || l.priority || "MEDIUM"}</span>
-                      </td>
-                      <td style={{ padding: "1rem", color: "var(--color-text-primary)" }}>
-                        {l.assigned_to_name ? (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
-                            <UserCheck size={12} style={{ color: "var(--color-cyan)" }} />
-                            {l.assigned_to_name}
-                          </span>
-                        ) : (
-                          <span style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", fontStyle: "italic" }}>Unassigned</span>
-                        )}
-                      </td>
-                      <td style={{ padding: "1rem" }}>
-                        <span style={{
-                          fontSize: "0.7rem",
-                          fontFamily: "var(--font-mono)",
-                          color: l.status?.toUpperCase() === "WON" ? "#10b981" : l.status?.toUpperCase() === "LOST" ? "#ef4444" : "var(--color-cyan)",
-                          backgroundColor: "rgba(0,0,0,0.15)",
-                          padding: "0.15rem 0.4rem",
-                          borderRadius: "4px",
-                          border: "1px solid rgba(255,255,255,0.05)"
-                        }}>{l.status_display || l.status}</span>
-                      </td>
-                      <td style={{ padding: "1rem", textAlign: "right" }}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenLeadDrawer(l.id)}
-                          style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem", borderColor: "var(--color-border)" }}
-                        >
-                          <Eye size={12} /> Inspect / Manage
-                        </Button>
+                </thead>
+                <tbody>
+                  {filteredLeads.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} style={{ padding: "2.5rem", textAlign: "center", color: "var(--color-text-muted)" }}>
+                        No lead records found matching current query and filter parameters.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ) : (
+                    paginatedLeads.map((l) => (
+                      <tr key={l.id} style={{ borderBottom: "1px solid var(--color-border)" }} className="hover:bg-muted/10">
+                        <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>
+                          {l.reference_id || `LD-${l.id}`}
+                        </td>
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ fontWeight: 600, color: "var(--color-text-primary)" }}>{l.name}</div>
+                          <div style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>{l.company || l.email}</div>
+                        </td>
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ color: "var(--color-text-secondary)" }}>{l.industry || "General"}</div>
+                          <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>{l.source || "Inbound"}</div>
+                        </td>
+                        <td style={{ padding: "1rem", fontSize: "0.8rem", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)" }}>
+                          {formatTimestamp(l.created_at)}
+                        </td>
+                        <td style={{ padding: "1rem" }}>
+                          <span style={{
+                            fontSize: "0.75rem",
+                            fontFamily: "var(--font-mono)",
+                            color: getPriorityColor(l.priority || "MEDIUM"),
+                          }}>{l.priority_display || l.priority || "MEDIUM"}</span>
+                        </td>
+                        <td style={{ padding: "1rem", color: "var(--color-text-primary)" }}>
+                          {l.assigned_to_name ? (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                              <UserCheck size={12} style={{ color: "var(--color-cyan)" }} />
+                              {l.assigned_to_name}
+                            </span>
+                          ) : (
+                            <span style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", fontStyle: "italic" }}>Unassigned</span>
+                          )}
+                        </td>
+                        <td style={{ padding: "1rem" }}>
+                          <span style={{
+                            fontSize: "0.7rem",
+                            fontFamily: "var(--font-mono)",
+                            color: l.status?.toUpperCase() === "WON" ? "#10b981" : l.status?.toUpperCase() === "LOST" ? "#ef4444" : "var(--color-cyan)",
+                            backgroundColor: "rgba(0,0,0,0.15)",
+                            padding: "0.15rem 0.4rem",
+                            borderRadius: "4px",
+                            border: "1px solid rgba(255,255,255,0.05)"
+                          }}>{l.status_display || l.status}</span>
+                        </td>
+                        <td style={{ padding: "1rem", textAlign: "right" }}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenLeadDrawer(l.id)}
+                            style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem", borderColor: "var(--color-border)" }}
+                          >
+                            <Eye size={12} /> Inspect / Manage
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "0.85rem",
+                color: "var(--color-text-muted)",
+              }}
+            >
+              <div>
+                Showing <strong style={{ color: "var(--color-text-primary)" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+                <strong style={{ color: "var(--color-text-primary)" }}>{endIndex}</strong> of{" "}
+                <strong style={{ color: "var(--color-text-primary)" }}>{totalItems}</strong> entries
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span>Rows per page:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      backgroundColor: "var(--color-bg-secondary)",
+                      border: "1px solid var(--color-border)",
+                      color: "var(--color-text-primary)",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage === 1 || loading}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Previous
+                  </Button>
+                  <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage >= totalPages || loading}
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </Card>
 

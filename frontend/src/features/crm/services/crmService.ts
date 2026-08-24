@@ -436,8 +436,8 @@ export const crmService = {
   /**
    * BDM Action: Onboard won lead as client and dispatch welcome email with credentials
    */
-  onboardClient: async (leadId: number, password?: string): Promise<{ message: string; lead: LeadItem; user_id: number; username: string }> => {
-    const data = await axiosClient.post<any, any>(`${API_ENDPOINTS.CRM.LEADS}${leadId}/onboard-client/`, { password });
+  onboardClient: async (leadId: number, password?: string, email?: string): Promise<{ message: string; lead: LeadItem; user_id: number; username: string }> => {
+    const data = await axiosClient.post<any, any>(`${API_ENDPOINTS.CRM.LEADS}${leadId}/onboard-client/`, { password, email });
     clearCrmCache();
     return data;
   },

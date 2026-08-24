@@ -45,6 +45,8 @@ export const TicketList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filtered = useMemo(() => {
     if (!tickets.data) return [];
@@ -60,6 +62,14 @@ export const TicketList: React.FC = () => {
       return true;
     });
   }, [tickets.data, search, statusFilter, categoryFilter, priorityFilter]);
+
+  const totalItems = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedTickets = useMemo(() => {
+    return filtered.slice(startIndex, startIndex + pageSize);
+  }, [filtered, startIndex, pageSize]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
@@ -172,57 +182,125 @@ export const TicketList: React.FC = () => {
               description="No tickets match the current search and filters."
             />
           ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table
+            <>
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    minWidth: "760px",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  <thead>
+                    <tr style={{ textAlign: "left", color: "#64748b", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.7rem", letterSpacing: "0.08em" }}>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>TICKET</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>SUBJECT</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CATEGORY</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>PRIORITY</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>STATUS</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>UPDATED</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedTickets.map((ticket) => (
+                      <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(140,174,187,0.12)" }}>
+                        <td style={{ padding: "0.75rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
+                          <Link href={`/portal/support/tickets/${ticket.id}`} style={{ color: "#63f5e8" }}>
+                            {ticket.ticket_id}
+                          </Link>
+                        </td>
+                        <td style={{ padding: "0.75rem", maxWidth: "320px" }}>
+                          <Link href={`/portal/support/tickets/${ticket.id}`} style={{ color: "#e2e8f0", textDecoration: "none" }}>
+                            <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                              {ticket.subject}
+                            </span>
+                          </Link>
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <TicketCategoryBadge category={ticket.category} />
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <TicketPriorityBadge priority={ticket.priority} />
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <TicketStatusBadge status={ticket.status} />
+                        </td>
+                        <td style={{ padding: "0.75rem", color: "#94a3b8", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                          {formatDateTime(ticket.updated_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Standardized Pagination Controls */}
+              <div
                 style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  minWidth: "760px",
-                  fontSize: "0.875rem",
+                  padding: "1rem 1.5rem",
+                  borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  fontSize: "0.85rem",
+                  color: "#94a3b8",
                 }}
               >
-                <thead>
-                  <tr style={{ textAlign: "left", color: "#64748b", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.7rem", letterSpacing: "0.08em" }}>
-                    <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>TICKET</th>
-                    <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>SUBJECT</th>
-                    <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CATEGORY</th>
-                    <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>PRIORITY</th>
-                    <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>STATUS</th>
-                    <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>UPDATED</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((ticket) => (
-                    <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(140,174,187,0.12)" }}>
-                      <td style={{ padding: "0.75rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
-                        <Link href={`/portal/support/tickets/${ticket.id}`} style={{ color: "#63f5e8" }}>
-                          {ticket.ticket_id}
-                        </Link>
-                      </td>
-                      <td style={{ padding: "0.75rem", maxWidth: "320px" }}>
-                        <Link href={`/portal/support/tickets/${ticket.id}`} style={{ color: "#e2e8f0", textDecoration: "none" }}>
-                          <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {ticket.subject}
-                          </span>
-                        </Link>
-                      </td>
-                      <td style={{ padding: "0.75rem" }}>
-                        <TicketCategoryBadge category={ticket.category} />
-                      </td>
-                      <td style={{ padding: "0.75rem" }}>
-                        <TicketPriorityBadge priority={ticket.priority} />
-                      </td>
-                      <td style={{ padding: "0.75rem" }}>
-                        <TicketStatusBadge status={ticket.status} />
-                      </td>
-                      <td style={{ padding: "0.75rem", color: "#94a3b8", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                        {formatDateTime(ticket.updated_at)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                <div>
+                  Showing <strong style={{ color: "#f8fafc" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+                  <strong style={{ color: "#f8fafc" }}>{endIndex}</strong> of{" "}
+                  <strong style={{ color: "#f8fafc" }}>{totalItems}</strong> entries
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span>Rows per page:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      style={{
+                        padding: "0.25rem 0.5rem",
+                        backgroundColor: "#050811",
+                        border: "1px solid rgba(140, 174, 187, 0.25)",
+                        color: "#f8fafc",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.4rem" }}>
+                    <Button
+                      variant="outline"
+                      disabled={currentPage === 1 || tickets.isLoading}
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                    >
+                      Previous
+                    </Button>
+                    <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      disabled={currentPage >= totalPages || tickets.isLoading}
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </>
       )}

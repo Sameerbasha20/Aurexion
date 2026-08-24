@@ -9,14 +9,17 @@ interface UseLeadsOptions {
   status?: string;
   search?: string;
   source?: string;
+  pageSize?: number;
 }
 
 export function useLeads(options: UseLeadsOptions = {}) {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(options.pageSize || 10);
 
   const [data, setData] = useState<LeadsResponse | null>(() => {
     return bdmService.getCachedLeads({
       page: 1,
+      page_size: pageSize,
       status: options.status,
       search: options.search,
       source: options.source,
@@ -26,6 +29,7 @@ export function useLeads(options: UseLeadsOptions = {}) {
   const [isLoading, setIsLoading] = useState<boolean>(() => {
     const cached = bdmService.getCachedLeads({
       page: 1,
+      page_size: pageSize,
       status: options.status,
       search: options.search,
       source: options.source,
@@ -38,6 +42,7 @@ export function useLeads(options: UseLeadsOptions = {}) {
   const fetchLeads = useCallback(async (pageNum: number = 1, force = false) => {
     const cached = bdmService.getCachedLeads({
       page: pageNum,
+      page_size: pageSize,
       status: options.status,
       search: options.search,
       source: options.source,
@@ -58,6 +63,7 @@ export function useLeads(options: UseLeadsOptions = {}) {
 
       const response = await bdmService.getLeads({
         page: pageNum,
+        page_size: pageSize,
         status: options.status,
         search: options.search,
         source: options.source,
@@ -70,11 +76,11 @@ export function useLeads(options: UseLeadsOptions = {}) {
     } finally {
       setIsLoading(false);
     }
-  }, [options.status, options.search, options.source]);
+  }, [pageSize, options.status, options.search, options.source]);
 
   useEffect(() => {
     fetchLeads(page, false);
-  }, [page, options.status, options.search, options.source]);
+  }, [page, pageSize, options.status, options.search, options.source]);
 
   const goToPage = useCallback((pageNum: number) => {
     fetchLeads(pageNum, false);
@@ -92,11 +98,18 @@ export function useLeads(options: UseLeadsOptions = {}) {
     return fetchLeads(page, true);
   }, [fetchLeads, page]);
 
+  const changePageSize = useCallback((newSize: number) => {
+    setPageSize(newSize);
+    setPage(1);
+  }, []);
+
   return {
     leads: data?.results || [],
     totalCount: data?.count || 0,
     currentPage: page,
-    totalPages: data ? Math.ceil(data.count / 20) : 0,
+    pageSize,
+    setPageSize: changePageSize,
+    totalPages: data ? Math.max(1, Math.ceil(data.count / pageSize)) : 1,
     isLoading,
     error,
     refetch,

@@ -189,17 +189,11 @@ export const clearCmsCache = (key?: keyof typeof cmsCache) => {
 
 export const cmsService = {
   // Services
-  getAdminServices: async (page?: number, pageSize?: number): Promise<ServiceItem[] & { count?: number }> => {
-    const params: any = {};
-    if (page) params.page = page;
-    if (pageSize) params.page_size = pageSize;
-
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICES, { params });
-    const results: ServiceItem[] = Array.isArray(data) ? data : (data.results || []);
-    const count = Array.isArray(data) ? data.length : (data.count ?? results.length);
-    const res: any = results;
-    res.count = count;
-    return res;
+  getAdminServices: async (page = 1, pageSize = 10): Promise<{ results: ServiceItem[]; count: number }> => {
+    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_SERVICES, { params: { page, page_size: pageSize } });
+    const results: ServiceItem[] = Array.isArray(data) ? data : (data?.results || []);
+    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    return { results, count };
   },
 
   createService: async (serviceData: ServiceCreatePayload): Promise<ServiceItem> => {
@@ -226,17 +220,11 @@ export const cmsService = {
   },
 
   // Case Studies
-  getAdminCaseStudies: async (page?: number, pageSize?: number): Promise<CaseStudyItem[] & { count?: number }> => {
-    const params: any = {};
-    if (page) params.page = page;
-    if (pageSize) params.page_size = pageSize;
-
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, { params });
-    const results: CaseStudyItem[] = Array.isArray(data) ? data : (data.results || []);
-    const count = Array.isArray(data) ? data.length : (data.count ?? results.length);
-    const res: any = results;
-    res.count = count;
-    return res;
+  getAdminCaseStudies: async (page = 1, pageSize = 10): Promise<{ results: CaseStudyItem[]; count: number }> => {
+    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, { params: { page, page_size: pageSize } });
+    const results: CaseStudyItem[] = Array.isArray(data) ? data : (data?.results || []);
+    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    return { results, count };
   },
 
   createCaseStudy: async (csData: CaseStudyCreatePayload): Promise<CaseStudyItem> => {
@@ -263,17 +251,11 @@ export const cmsService = {
   },
 
   // Industries
-  getAdminIndustries: async (page?: number, pageSize?: number): Promise<IndustryItem[] & { count?: number }> => {
-    const params: any = {};
-    if (page) params.page = page;
-    if (pageSize) params.page_size = pageSize;
-
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, { params });
-    const results: IndustryItem[] = Array.isArray(data) ? data : (data.results || []);
-    const count = Array.isArray(data) ? data.length : (data.count ?? results.length);
-    const res: any = results;
-    res.count = count;
-    return res;
+  getAdminIndustries: async (page = 1, pageSize = 10): Promise<{ results: IndustryItem[]; count: number }> => {
+    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, { params: { page, page_size: pageSize } });
+    const results: IndustryItem[] = Array.isArray(data) ? data : (data?.results || []);
+    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    return { results, count };
   },
 
   createIndustry: async (indData: IndustryCreatePayload): Promise<IndustryItem> => {
@@ -300,17 +282,11 @@ export const cmsService = {
   },
 
   // Categories
-  getAdminCategories: async (page?: number, pageSize?: number): Promise<CategoryItem[] & { count?: number }> => {
-    const params: any = {};
-    if (page) params.page = page;
-    if (pageSize) params.page_size = pageSize;
-
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, { params });
-    const results: CategoryItem[] = Array.isArray(data) ? data : (data.results || []);
-    const count = Array.isArray(data) ? data.length : (data.count ?? results.length);
-    const res: any = results;
-    res.count = count;
-    return res;
+  getAdminCategories: async (page = 1, pageSize = 10): Promise<{ results: CategoryItem[]; count: number }> => {
+    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, { params: { page, page_size: pageSize } });
+    const results: CategoryItem[] = Array.isArray(data) ? data : (data?.results || []);
+    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    return { results, count };
   },
 
   createCategory: async (categoryData: CategoryCreatePayload): Promise<CategoryItem> => {
@@ -325,17 +301,11 @@ export const cmsService = {
   },
 
   // Blog
-  getAdminBlog: async (page?: number, pageSize?: number): Promise<BlogPostItem[] & { count?: number }> => {
-    const params: any = {};
-    if (page) params.page = page;
-    if (pageSize) params.page_size = pageSize;
-
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG, { params });
-    const results: BlogPostItem[] = Array.isArray(data) ? data : (data.results || []);
-    const count = Array.isArray(data) ? data.length : (data.count ?? results.length);
-    const res: any = results;
-    res.count = count;
-    return res;
+  getAdminBlog: async (page = 1, pageSize = 10): Promise<{ results: BlogPostItem[]; count: number }> => {
+    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_BLOG, { params: { page, page_size: pageSize } });
+    const results: BlogPostItem[] = Array.isArray(data) ? data : (data?.results || []);
+    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    return { results, count };
   },
 
   createBlogPost: async (blogData: BlogPostCreatePayload): Promise<BlogPostItem> => {
@@ -384,13 +354,19 @@ export const cmsService = {
 
   // Aggregate CMS Dashboard Stats
   getDashboardStats: async (): Promise<CmsDashboardStats> => {
-    const [services, caseStudies, industries, blogPosts, categories] = await Promise.all([
-      cmsService.getAdminServices(),
-      cmsService.getAdminCaseStudies(),
-      cmsService.getAdminIndustries(),
-      cmsService.getAdminBlog(),
-      cmsService.getAdminCategories(),
+    const [servicesRes, caseStudiesRes, industriesRes, blogPostsRes, categoriesRes] = await Promise.all([
+      cmsService.getAdminServices(1, 100),
+      cmsService.getAdminCaseStudies(1, 100),
+      cmsService.getAdminIndustries(1, 100),
+      cmsService.getAdminBlog(1, 100),
+      cmsService.getAdminCategories(1, 100),
     ]);
+
+    const services = servicesRes.results;
+    const caseStudies = caseStudiesRes.results;
+    const industries = industriesRes.results;
+    const blogPosts = blogPostsRes.results;
+    const categories = categoriesRes.results;
 
     const totalServices = services.length;
     const publishedServices = services.filter((s) => s.status === "published").length;

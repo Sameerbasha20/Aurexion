@@ -9,6 +9,8 @@ export const AuditLogs: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [moduleFilter, setModuleFilter] = useState("ALL");
   const [operatorFilter, setOperatorFilter] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -49,6 +51,12 @@ export const AuditLogs: React.FC = () => {
     return matchesSearch && matchesModule && matchesOperator;
   });
 
+  const totalItems = filteredLogs.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedLogs = filteredLogs.slice(startIndex, startIndex + pageSize);
+
   // Extract unique operators and modules for dropdown filters
   const uniqueOperators = Array.from(new Set(logs.map(log => log.operator.toLowerCase())));
   const uniqueModules = Array.from(new Set(logs.map(log => log.scope.toUpperCase())));
@@ -78,7 +86,10 @@ export const AuditLogs: React.FC = () => {
               type="text"
               placeholder="Search by action, operator, or module..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
               style={{
                 border: "none",
                 background: "transparent",
@@ -97,7 +108,10 @@ export const AuditLogs: React.FC = () => {
               <select
                 id="audit-module-filter"
                 value={moduleFilter}
-                onChange={(e) => setModuleFilter(e.target.value)}
+                onChange={(e) => {
+                  setModuleFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
                 style={{
                   backgroundColor: "var(--color-bg-secondary)",
                   border: "1px solid var(--color-border)",
@@ -109,8 +123,8 @@ export const AuditLogs: React.FC = () => {
                 }}
               >
                 <option value="ALL">All Modules</option>
-                {uniqueModules.map(m => (
-                  <option key={m} value={m}>{m}</option>
+                {uniqueModules.map(mod => (
+                  <option key={mod} value={mod}>{mod}</option>
                 ))}
               </select>
             </div>
@@ -120,7 +134,10 @@ export const AuditLogs: React.FC = () => {
               <select
                 id="audit-operator-filter"
                 value={operatorFilter}
-                onChange={(e) => setOperatorFilter(e.target.value)}
+                onChange={(e) => {
+                  setOperatorFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
                 style={{
                   backgroundColor: "var(--color-bg-secondary)",
                   border: "1px solid var(--color-border)",
@@ -151,53 +168,135 @@ export const AuditLogs: React.FC = () => {
             RETRIEVING ENCRYPTED AUDIT LEDGER...
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.9rem" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>TIMESTAMP</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>OPERATOR</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ACTION TYPE</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>MODULE SCOPE</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem", textAlign: "right" }}>INTEGRITY SIGNATURE</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLogs.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} style={{ padding: "2rem", textAlign: "center", color: "var(--color-text-muted)" }}>
-                      No audit logs matched search filters.
-                    </td>
+          <>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.9rem" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>TIMESTAMP</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>OPERATOR</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ACTION TYPE</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>MODULE SCOPE</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem", textAlign: "right" }}>INTEGRITY SIGNATURE</th>
                   </tr>
-                ) : (
-                  filteredLogs.map((log, index) => (
-                    <tr key={index} style={{ borderBottom: "1px solid var(--color-border)" }} className="hover:bg-muted/10">
-                      <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>{log.timestamp}</td>
-                      <td style={{ padding: "1rem", fontWeight: 600, color: "var(--color-text-primary)" }}>{log.operator}</td>
-                      <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>{log.action}</td>
-                      <td style={{ padding: "1rem", color: "var(--color-text-secondary)" }}>{log.scope}</td>
-                      <td style={{ padding: "1rem", textAlign: "right" }}>
-                        <span style={{
-                          fontSize: "0.7rem",
-                          fontFamily: "var(--font-mono)",
-                          color: "#10b981",
-                          backgroundColor: "rgba(16, 185, 129, 0.05)",
-                          border: "1px solid rgba(16, 185, 129, 0.15)",
-                          padding: "0.15rem 0.4rem",
-                          borderRadius: "4px",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.25rem"
-                        }}>
-                          <ShieldCheck size={12} /> {log.integrity}
-                        </span>
+                </thead>
+                <tbody>
+                  {filteredLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ padding: "2rem", textAlign: "center", color: "var(--color-text-muted)" }}>
+                        No audit logs matched search filters.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ) : (
+                    paginatedLogs.map((log, index) => (
+                      <tr key={index} style={{ borderBottom: "1px solid var(--color-border)" }} className="hover:bg-muted/10">
+                        <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>{log.timestamp}</td>
+                        <td style={{ padding: "1rem", fontWeight: 600, color: "var(--color-text-primary)" }}>{log.operator}</td>
+                        <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>{log.action}</td>
+                        <td style={{ padding: "1rem", color: "var(--color-text-secondary)" }}>{log.scope}</td>
+                        <td style={{ padding: "1rem", textAlign: "right" }}>
+                          <span style={{
+                            fontSize: "0.7rem",
+                            fontFamily: "var(--font-mono)",
+                            color: "#10b981",
+                            backgroundColor: "rgba(16, 185, 129, 0.05)",
+                            border: "1px solid rgba(16, 185, 129, 0.15)",
+                            padding: "0.15rem 0.4rem",
+                            borderRadius: "4px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.25rem"
+                          }}>
+                            <ShieldCheck size={12} /> {log.integrity}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "0.85rem",
+                color: "var(--color-text-muted)",
+              }}
+            >
+              <div>
+                Showing <strong style={{ color: "var(--color-text-primary)" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+                <strong style={{ color: "var(--color-text-primary)" }}>{endIndex}</strong> of{" "}
+                <strong style={{ color: "var(--color-text-primary)" }}>{totalItems}</strong> entries
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span>Rows per page:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      backgroundColor: "var(--color-bg-secondary)",
+                      border: "1px solid var(--color-border)",
+                      color: "var(--color-text-primary)",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <button
+                    disabled={currentPage === 1 || loading}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    style={{
+                      padding: "0.25rem 0.6rem",
+                      fontSize: "0.75rem",
+                      backgroundColor: "transparent",
+                      border: "1px solid var(--color-border)",
+                      color: currentPage === 1 ? "gray" : "var(--color-text-primary)",
+                      borderRadius: "4px",
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer"
+                    }}
+                  >
+                    Previous
+                  </button>
+                  <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    disabled={currentPage >= totalPages || loading}
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    style={{
+                      padding: "0.25rem 0.6rem",
+                      fontSize: "0.75rem",
+                      backgroundColor: "transparent",
+                      border: "1px solid var(--color-border)",
+                      color: currentPage >= totalPages ? "gray" : "var(--color-text-primary)",
+                      borderRadius: "4px",
+                      cursor: currentPage >= totalPages ? "not-allowed" : "pointer"
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </Card>
     </div>

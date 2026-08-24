@@ -71,8 +71,8 @@ export const Industries: React.FC = () => {
   const totalItems = totalCount || filteredIndustries.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + filteredIndustries.length, totalItems);
-  const paginatedIndustries = filteredIndustries;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedIndustries = filteredIndustries.slice(startIndex, startIndex + pageSize);
 
   const handleOpenEdit = (ind: IndustryItem) => {
     setEditingInd(ind);

@@ -32,7 +32,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 export const Opportunities: React.FC = () => {
   const [search, setSearch] = useState("");
 
-  const { leads, totalCount, isLoading, error, refetch, currentPage, totalPages, nextPage, prevPage, hasNext, hasPrev } = useLeads({
+  const { leads, totalCount, isLoading, error, refetch, currentPage, pageSize, setPageSize, totalPages, nextPage, prevPage, hasNext, hasPrev } = useLeads({
     status: "qualified,proposal_submitted,negotiation",
     search: search || undefined,
   });
@@ -211,19 +211,69 @@ export const Opportunities: React.FC = () => {
                 </TableBody>
               </Table>
 
-              {totalPages > 1 && (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "1rem", marginTop: "1.5rem" }}>
-                  <Button onClick={prevPage} disabled={!hasPrev} variant="outline">
-                    Previous
-                  </Button>
-                  <span style={{ color: "#94a3b8" }}>
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button onClick={nextPage} disabled={!hasNext} variant="outline">
-                    Next
-                  </Button>
+              {/* Standardized Pagination Controls */}
+              <div
+                style={{
+                  padding: "1rem 1.5rem",
+                  borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  fontSize: "0.85rem",
+                  color: "#94a3b8",
+                  marginTop: "1.5rem"
+                }}
+              >
+                <div>
+                  Showing <strong style={{ color: "#f8fafc" }}>{totalCount > 0 ? (currentPage - 1) * pageSize + 1 : 0}</strong> to{" "}
+                  <strong style={{ color: "#f8fafc" }}>{Math.min(currentPage * pageSize, totalCount)}</strong> of{" "}
+                  <strong style={{ color: "#f8fafc" }}>{totalCount}</strong> entries
                 </div>
-              )}
+
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span>Rows per page:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                      style={{
+                        padding: "0.25rem 0.5rem",
+                        backgroundColor: "#050811",
+                        border: "1px solid rgba(140, 174, 187, 0.25)",
+                        color: "#f8fafc",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.4rem" }}>
+                    <Button
+                      variant="outline"
+                      disabled={!hasPrev || isLoading}
+                      onClick={prevPage}
+                      style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                    >
+                      Previous
+                    </Button>
+                    <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      disabled={!hasNext || isLoading}
+                      onClick={nextPage}
+                      style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </>
           )}
         </CardContent>

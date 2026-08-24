@@ -13,6 +13,8 @@ export const Opportunities: React.FC = () => {
   const { data: opportunities = [], isLoading, error, refetch } = useOpportunitiesQuery();
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filteredOpps = opportunities.filter((opp) => {
     const matchesSearch =
@@ -22,6 +24,12 @@ export const Opportunities: React.FC = () => {
     const matchesStage = !stageFilter || opp.stage === stageFilter;
     return matchesSearch && matchesStage;
   });
+
+  const totalItems = filteredOpps.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedOpps = filteredOpps.slice(startIndex, startIndex + pageSize);
 
   const totalPipelineValue = opportunities
     .filter((o) => o.stage !== "LOST")
@@ -173,7 +181,8 @@ export const Opportunities: React.FC = () => {
             action={{ label: "Go to Leads Funnel", onClick: () => navigate("/crm/leads") }}
           />
         ) : (
-          <div style={{ overflowX: "auto" }}>
+          <>
+            <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
               <thead>
                 <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.8)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)" }}>
@@ -201,7 +210,7 @@ export const Opportunities: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredOpps.map((opp) => {
+                {paginatedOpps.map((opp) => {
                   const badge = getStageBadge(opp.stage);
                   return (
                     <tr
@@ -277,7 +286,74 @@ export const Opportunities: React.FC = () => {
               </tbody>
             </table>
           </div>
-        )}
+
+          {/* Standardized Pagination Controls */}
+          <div
+            style={{
+              padding: "1rem 1.5rem",
+              borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              fontSize: "0.85rem",
+              color: "#94a3b8",
+            }}
+          >
+            <div>
+              Showing <strong style={{ color: "#f8fafc" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+              <strong style={{ color: "#f8fafc" }}>{endIndex}</strong> of{" "}
+              <strong style={{ color: "#f8fafc" }}>{totalItems}</strong> entries
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span>Rows per page:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    padding: "0.25rem 0.5rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140, 174, 187, 0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", gap: "0.4rem" }}>
+                <Button
+                  variant="outline"
+                  disabled={currentPage === 1 || isLoading}
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                >
+                  Previous
+                </Button>
+                <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={currentPage >= totalPages || isLoading}
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
       </Card>
     </div>
   );

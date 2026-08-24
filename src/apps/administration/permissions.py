@@ -94,6 +94,8 @@ class BaseRolePermission(permissions.BasePermission):
             'DELETE': 'delete'
         }
         action = action_map.get(request.method, 'read')
+        if request.method == 'POST' and getattr(view, 'detail', False):
+            action = 'update'
 
         role_code = request.user.profile.role if hasattr(request.user, 'profile') else 'client_user'
 
