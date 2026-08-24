@@ -25,22 +25,20 @@ function unpackApiResponse(res: any): any {
 }
 
 export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
-  // Request Interceptor
+  // Request Interceptor — attach Bearer token from localStorage for cross-domain Vercel -> Render support
   axiosInstance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      // Attach JWT Bearer Token if present (except on public endpoints)
-      const token = localStorage.getItem("aurexion_token") || localStorage.getItem("access_token");
-      const isPublicEndpoint = config.url && (
-        config.url.includes("/auth/login") ||
-        config.url.includes("/auth/forgot-password") ||
-        config.url.includes("/auth/reset-password") ||
-        config.url.includes("/auth/token/refresh")
-      );
+      const token =
+        localStorage.getItem("aurexion_token") ||
+        localStorage.getItem("access_token");
 
-      if (token && !isPublicEndpoint && !config.headers["Authorization"]) {
-        config.headers["Authorization"] = `Bearer ${token}`;
+      if (token && !config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
 
+      config.withCredentials = true;
+
+      // Only attach CSRF token for unsafe methods
       if (config.method && !["get", "head", "options"].includes(config.method.toLowerCase())) {
         const csrfToken = document.cookie
           .split("; ")
@@ -56,7 +54,7 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
     (error) => Promise.reject(error)
   );
 
-  // Response Interceptor
+  // Response Interceptor — secure token refresh with payload support
   axiosInstance.interceptors.response.use(
     (response: AxiosResponse) => unpackApiResponse(response.data),
     async (error) => {
@@ -72,48 +70,61 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
         !originalRequest.url?.includes("/auth/token/refresh")
       ) {
         originalRequest._retry = true;
-        const refreshToken = localStorage.getItem("aurexion_refresh_token");
+        try {
+          const refreshToken =
+            localStorage.getItem("aurexion_refresh_token") ||
+            localStorage.getItem("refresh_token");
 
-        if (refreshToken) {
-          try {
-            const refreshData = await axiosInstance.post<any, any>("/auth/token/refresh/", {
-              refresh: refreshToken,
-            });
+          // Send refresh token in JSON payload (supported cross-domain)
+          const res: any = await axiosInstance.post("/auth/token/refresh/", {
+            refresh: refreshToken,
+          });
 
-            const newAccessToken = refreshData?.access;
-            if (newAccessToken) {
-              localStorage.setItem("aurexion_token", newAccessToken);
-              if (refreshData.refresh) {
-                localStorage.setItem("aurexion_refresh_token", refreshData.refresh);
-              }
-              originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-              return axiosInstance(originalRequest);
+          const newAccessToken = res?.access || res?.data?.access;
+          const newRefreshToken = res?.refresh || res?.data?.refresh;
+
+          if (newAccessToken) {
+            localStorage.setItem("aurexion_token", newAccessToken);
+            localStorage.setItem("access_token", newAccessToken);
+            if (newRefreshToken) {
+              localStorage.setItem("aurexion_refresh_token", newRefreshToken);
+              localStorage.setItem("refresh_token", newRefreshToken);
             }
-          } catch (refreshError) {
-            localStorage.removeItem("aurexion_user");
-            localStorage.removeItem("aurexion_token");
-            localStorage.removeItem("aurexion_refresh_token");
-            if (window.location.pathname.startsWith("/portal") || window.location.pathname.startsWith("/client")) {
-              window.location.href = "/login";
-            }
-            return Promise.reject(handleApiError(refreshError));
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return axiosInstance(originalRequest);
           }
-        } else {
+        } catch (refreshError) {
           localStorage.removeItem("aurexion_user");
           localStorage.removeItem("aurexion_token");
-          if (window.location.pathname.startsWith("/portal") || window.location.pathname.startsWith("/client")) {
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("aurexion_refresh_token");
+          localStorage.removeItem("refresh_token");
+
+          if (
+            window.location.pathname.startsWith("/portal") ||
+            window.location.pathname.startsWith("/client") ||
+            window.location.pathname.startsWith("/admin") ||
+            window.location.pathname.startsWith("/bdm") ||
+            window.location.pathname.startsWith("/cms")
+          ) {
             window.location.href = "/login";
           }
+          return Promise.reject(handleApiError(refreshError));
         }
       }
 
       const formattedError = handleApiError(error);
       if (formattedError.statusCode === 401) {
-        // Clear stored token if request failed with 401 on non-login endpoints
         const requestUrl = error?.config?.url || "";
-        if (!requestUrl.includes("/auth/login/")) {
+        if (
+          !requestUrl.includes("/auth/login") &&
+          !requestUrl.includes("/auth/token/refresh")
+        ) {
+          localStorage.removeItem("aurexion_user");
           localStorage.removeItem("aurexion_token");
           localStorage.removeItem("access_token");
+          localStorage.removeItem("aurexion_refresh_token");
+          localStorage.removeItem("refresh_token");
         }
       }
       return Promise.reject(formattedError);

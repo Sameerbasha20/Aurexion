@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 class JobVacancy(models.Model):
@@ -60,3 +63,8 @@ class ApplicationNote(models.Model):
 
     def __str__(self):
         return f"Note on {self.application.tracking_code} by {self.author}"
+
+
+@receiver([post_save, post_delete], sender=JobVacancy)
+def invalidate_job_vacancy_cache(sender, **kwargs):
+    cache.clear()

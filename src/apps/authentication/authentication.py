@@ -97,3 +97,20 @@ class CookieJWTAuthentication(JWTAuthentication):
             raise AuthenticationFailed("User is inactive", code="user_inactive")
 
         return user
+
+
+try:
+    from drf_spectacular.extensions import OpenApiAuthenticationExtension
+
+    class CookieJWTAuthenticationScheme(OpenApiAuthenticationExtension):
+        target_class = 'apps.authentication.authentication.CookieJWTAuthentication'
+        name = 'jwtAuth'
+
+        def get_security_definition(self, auto_schema):
+            return {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+except ImportError:
+    pass

@@ -97,6 +97,10 @@ class BaseRolePermission(permissions.BasePermission):
 
         role_code = request.user.profile.role if hasattr(request.user, 'profile') else 'client_user'
 
+        # Enforce class-level allowed_roles constraint if specified by role subclass
+        if self.allowed_roles and role_code not in self.allowed_roles:
+            return False
+
         # --- Cache lookup: avoids 2 DB queries on every non-super-admin request ---
         cached_result = self._get_cached_permission(role_code, module, action)
         if cached_result is not None:

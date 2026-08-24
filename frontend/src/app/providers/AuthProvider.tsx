@@ -64,14 +64,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       setUser(activeUser);
       localStorage.setItem("aurexion_user", JSON.stringify(activeUser));
-      const token = response.access || (response as any).tokens?.access;
-      if (token) {
-        localStorage.setItem("aurexion_token", token);
+
+      // Store tokens for cross-domain Authorization header support (Vercel -> Render)
+      const accessToken = response.access || response.tokens?.access;
+      const refreshToken = response.refresh || response.tokens?.refresh;
+      if (accessToken) {
+        localStorage.setItem("aurexion_token", accessToken);
+        localStorage.setItem("access_token", accessToken);
       }
-      const refreshToken = response.refresh || (response as any).tokens?.refresh;
       if (refreshToken) {
         localStorage.setItem("aurexion_refresh_token", refreshToken);
+        localStorage.setItem("refresh_token", refreshToken);
       }
+
       // Invalidate in-memory caches on user switch
       crmService.clearCache();
       bdmService.clearCache();
@@ -86,7 +91,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     localStorage.removeItem("aurexion_user");
     localStorage.removeItem("aurexion_token");
+    localStorage.removeItem("access_token");
     localStorage.removeItem("aurexion_refresh_token");
+    localStorage.removeItem("refresh_token");
     crmService.clearCache();
     bdmService.clearCache();
     queryClient.clear(); // Clear all server query cache on logout

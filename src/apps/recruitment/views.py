@@ -51,6 +51,7 @@ class PublicJobVacancyListView(generics.ListAPIView):
     """
     serializer_class = JobVacancySerializer
     permission_classes = [AllowAny]
+    pagination_class = None
     
     def get_queryset(self):
         queryset = JobVacancy.objects.filter(status=JobVacancy.Status.ACTIVE).order_by('-created_at')

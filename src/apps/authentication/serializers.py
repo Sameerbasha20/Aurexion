@@ -41,11 +41,14 @@ class UserSerializer(serializers.ModelSerializer):
             ret['role'] = 'client_user'
         
         # Include active assigned leads count for workload indicators
-        try:
-            from apps.crm.models import Lead
-            ret['active_leads_count'] = instance.assigned_leads.exclude(status=Lead.Status.LOST).count()
-        except Exception:
-            ret['active_leads_count'] = 0
+        if hasattr(instance, 'annotated_active_leads'):
+            ret['active_leads_count'] = instance.annotated_active_leads
+        else:
+            try:
+                from apps.crm.models import Lead
+                ret['active_leads_count'] = instance.assigned_leads.exclude(status=Lead.Status.LOST).count()
+            except Exception:
+                ret['active_leads_count'] = 0
 
         return ret
 

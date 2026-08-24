@@ -11,6 +11,11 @@ from apps.administration.models import Role, ModulePermission
 class CMSAPITestCase(APITestCase):
     def setUp(self):
         cache.clear()
+        CaseStudy.objects.all().delete()
+        Service.objects.all().delete()
+        Industry.objects.all().delete()
+        Category.objects.all().delete()
+        BlogPost.objects.all().delete()
         
         # Setup roles and users
         self.super_admin_role = Role.objects.create(code='super_admin', name='Super Admin')

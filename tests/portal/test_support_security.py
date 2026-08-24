@@ -97,8 +97,8 @@ class SupportTicketSecurityTestCase(APITestCase):
             {'username': 'client_a', 'password': 'ClientA@10'},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
+        self.assertIn('access_token', response.cookies)
+        self.assertIn('refresh_token', response.cookies)
         self.assertEqual(response.data['user']['role'], 'client_user')
 
     def test_login_invalid_credentials_rejected(self):
