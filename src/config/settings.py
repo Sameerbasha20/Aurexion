@@ -103,7 +103,7 @@ MIDDLEWARE.extend([
 # CORS & CSRF Configuration
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'https://aurexion-one.vercel.app/',
+    'https://aurexion-one.vercel.app',
     'http://127.0.0.1:3000',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
