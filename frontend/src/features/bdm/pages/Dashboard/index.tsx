@@ -538,7 +538,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Contact Details & Message Grid */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "1rem" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "1rem" }}>
                       {/* Left: Contact Info */}
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.85rem" }}>
                         <p style={{ fontWeight: 600, color: "#f8fafc", margin: 0, fontSize: "1rem" }}>
@@ -549,7 +549,7 @@ export const Dashboard: React.FC = () => {
                             Company: <strong style={{ color: "#f8fafc" }}>{submission.company}</strong>
                           </p>
                         )}
-                        <a href={`mailto:${submission.email}`} style={{ color: "#63f5e8", display: "flex", alignItems: "center", gap: "0.35rem", textDecoration: "none", fontSize: "0.82rem" }}>
+                        <a href={`mailto:${submission.email}`} style={{ color: "#63f5e8", display: "flex", alignItems: "center", gap: "0.35rem", textDecoration: "none", fontSize: "0.82rem", wordBreak: "break-all" }}>
                           <Mail size={13} /> {submission.email}
                         </a>
                         {submission.phone && (
@@ -577,11 +577,11 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Action Bar: BDM Assign / Decline Buttons */}
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.6rem", borderTop: "1px solid rgba(140, 174, 187, 0.1)", paddingTop: "0.75rem" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "0.6rem", borderTop: "1px solid rgba(140, 174, 187, 0.1)", paddingTop: "0.75rem", width: "100%" }}>
                       <Button
                         variant="outline"
                         onClick={() => setSelectedLeadDetail(submission)}
-                        style={{ fontSize: "0.78rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)" }}
+                        style={{ fontSize: "0.78rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)", whiteSpace: "nowrap" }}
                       >
                         <Eye size={14} style={{ marginRight: "0.35rem" }} /> View Lead Detail
                       </Button>

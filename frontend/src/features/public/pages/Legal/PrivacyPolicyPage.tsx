@@ -117,7 +117,7 @@ const sections: LegalSectionItem[] = [
     content: [
       {
         subtitle: "",
-        text: "If you have any questions, concerns, or requests regarding this Privacy Policy or the processing of your personal data, please contact our Data Protection Officer at: privacy@aurexion.io | Aurexion Technologies, 100 Innovation Way, Suite 400, San Francisco, CA 94105.",
+        text: "If you have any questions, concerns, or requests regarding this Privacy Policy or the processing of your personal data, please contact our Data Protection Officer at: privacy@aurexion.io | Aurexion Technologies, 123 Innovation Street, San Francisco, CA 94102.",
       },
     ],
   },

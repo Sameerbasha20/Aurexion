@@ -62,8 +62,8 @@ export const Footer: React.FC = () => {
               <h4 className="font-semibold text-foreground text-sm uppercase tracking-wider">Our Location</h4>
             </div>
             <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
-              100 Innovation Way, Suite 400<br />
-              San Francisco, CA 94105
+              123 Innovation Street<br />
+              San Francisco, CA 94102
             </p>
             <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border/40 group shadow-sm bg-card">
               <iframe
@@ -78,7 +78,7 @@ export const Footer: React.FC = () => {
                 className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90"
               />
               <a
-                href="https://maps.google.com/?q=100+Innovation+Way,+San+Francisco,+CA+94105"
+                href="https://maps.google.com/?q=123+Innovation+Street,+San+Francisco,+CA+94102"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="absolute bottom-2 right-2 bg-background/90 hover:bg-background border border-border/60 text-primary text-[10px] px-2 py-1 rounded flex items-center gap-1 font-mono transition-colors shadow-sm"
