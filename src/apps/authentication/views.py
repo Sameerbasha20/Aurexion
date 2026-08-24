@@ -233,20 +233,63 @@ class UserProfileView(APIView):
 class LogoutView(APIView):
     """
     Endpoint: POST /api/v1/auth/logout/
-    Clears cookies and invalidates the session.
+    Clears cookies, invalidates session, and blacklists tokens in cache.
+    Requires authentication or token payload; returns 401 when called without credentials.
     """
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
+        tokens_to_blacklist = []
+
+        # 1. Authorization header token
+        auth_header = request.headers.get('Authorization', '') or request.META.get('HTTP_AUTHORIZATION', '')
+        if auth_header.startswith('Bearer '):
+            tokens_to_blacklist.append(auth_header.split(' ', 1)[1].strip())
+
+        # 2. Cookie access token
+        cookie_access = request.COOKIES.get('access_token')
+        if cookie_access:
+            tokens_to_blacklist.append(cookie_access)
+
+        # 3. Cookie refresh token
+        cookie_refresh = request.COOKIES.get('refresh_token')
+        if cookie_refresh:
+            tokens_to_blacklist.append(cookie_refresh)
+
+        # 4. Request body tokens
+        body_access = None
+        body_refresh = None
+        if isinstance(request.data, dict):
+            body_access = request.data.get('access')
+            body_refresh = request.data.get('refresh')
+            if body_access:
+                tokens_to_blacklist.append(body_access)
+            if body_refresh:
+                tokens_to_blacklist.append(body_refresh)
+
+        # AUTH-031: If unauthenticated and no token/cookie/payload provided, reject with HTTP 401
+        is_authenticated = request.user and request.user.is_authenticated
+        if not is_authenticated and not any([auth_header, cookie_access, cookie_refresh, body_access, body_refresh]):
+            return Response(
+                {"detail": "Authentication credentials were not provided."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
         response = Response({"success": True}, status=status.HTTP_200_OK)
         response.delete_cookie('access_token')
         response.delete_cookie('refresh_token')
-        
+
+        # Blacklist tokens in cache using sha256 hash
+        import hashlib
+        for token in tokens_to_blacklist:
+            if token:
+                token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()
+                cache.set(f"bl_token_{token_hash}", True, timeout=86400)
+
         # Invalidate active Django session
-        if request.user and request.user.is_authenticated:
+        if is_authenticated:
             django_logout(request)
-            
+
         return response
 
 
@@ -450,10 +493,19 @@ class ChangePasswordView(APIView):
     def post(self, request, *args, **kwargs):
         current_password = request.data.get("current_password", "").strip()
         new_password = request.data.get("new_password", "").strip()
+        confirm_password = request.data.get("confirm_password") or request.data.get("new_password_confirm") or request.data.get("confirm_new_password")
+        if confirm_password is not None:
+            confirm_password = confirm_password.strip()
 
         if not current_password or not new_password:
             return Response(
                 {"detail": "Both current password and new password are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if confirm_password is not None and confirm_password != new_password:
+            return Response(
+                {"detail": "New password and password confirmation do not match."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
