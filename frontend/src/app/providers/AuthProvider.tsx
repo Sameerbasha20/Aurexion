@@ -120,7 +120,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       case "SALES_EXECUTIVE":
         return [
           "read:leads",
-          "write:leads",
           "read:followups",
           "write:followups",
           "read:notes",
