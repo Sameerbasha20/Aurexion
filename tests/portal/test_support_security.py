@@ -236,11 +236,13 @@ class SupportTicketSecurityTestCase(APITestCase):
         self.assertIn(self.assigned_to_b.id, ids)
         self.assertNotIn(self.assigned_to_a.id, ids)
 
-    def test_support_cannot_update_unassigned_ticket(self):
+    def test_support_can_update_unassigned_ticket_status(self):
         self.client.force_authenticate(user=self.support_a)
         url = reverse('support-ticket-detail', args=[self.ticket_a.id])
         response = self.client.patch(url, {'status': 'in_progress'})
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.ticket_a.refresh_from_db()
+        self.assertEqual(self.ticket_a.status, 'in_progress')
 
     # ------------------------------------------------------------------
     # 5. Privilege escalation

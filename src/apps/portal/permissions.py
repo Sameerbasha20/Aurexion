@@ -23,15 +23,17 @@ class IsSupportTicketAssignee(IsSupportExecutive):
     Object-level permission for Support Executives.
 
     View-level: only Support Executives (and Super Admins) may use the support API.
-    Object-level: a Support Executive may only access tickets assigned to them.
+    Object-level: a Support Executive may access tickets assigned to them or
+    unassigned tickets (to claim/update status). Tickets assigned to another
+    executive are denied.
     """
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser:
             return True
-        if request.method in permissions.SAFE_METHODS:
-            return obj.assigned_to_id == request.user.id or obj.assigned_to_id is None
-        return obj.assigned_to_id == request.user.id
+        if obj.assigned_to_id == request.user.id or obj.assigned_to_id is None:
+            return True
+        return False
 
 
 
