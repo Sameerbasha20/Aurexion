@@ -140,7 +140,7 @@ export const Login: React.FC = () => {
   return (
     <Card borderAccent style={{ width: "100%", padding: "32px", display: "flex", flexDirection: "column", gap: "24px", boxSizing: "border-box" }}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", textAlign: "center" }}>
-        <img src="/logo.svg" alt="Aurexion" style={{ width: "48px", height: "48px" }} />
+        <img src="/images/logo.svg" alt="Aurexion" style={{ width: "48px", height: "48px" }} />
         <h2 style={{ fontSize: "1.5rem", margin: 0, fontWeight: 600 }}>Access Scope Console</h2>
         <p style={{ color: "var(--muted-foreground)", fontSize: "0.875rem", margin: 0, lineHeight: 1.5 }}>
           Authorize credentials to establish a secure session.

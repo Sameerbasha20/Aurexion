@@ -44,7 +44,7 @@ export const CaseStudyDetailsPage = () => {
     industry: staticCaseStudy?.industry || "Technology",
     country: staticCaseStudy?.country || "Global",
     category: staticCaseStudy?.category || "Core Engineering",
-    coverImage: apiCaseStudy.media || staticCaseStudy?.coverImage || "/webp_images/unsplash_1563986768609-32.webp",
+    coverImage: apiCaseStudy.media || staticCaseStudy?.coverImage || "/images/unsplash_1563986768609-32.webp",
     challenge: apiCaseStudy.business_challenge || staticCaseStudy?.challenge || "",
     architecture: {
       description: apiCaseStudy.proposed_architecture || staticCaseStudy?.architecture?.description || "",

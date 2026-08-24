@@ -3,15 +3,15 @@ import { Link } from "wouter";
 import { ArrowUpRight } from "lucide-react";
 
 const SECTOR_HERO_IMAGES = {
-  "Banking & FinTech": "/webp_images/unsplash_1501167786227-4c.webp",
-  "Healthcare & Life Sciences": "/webp_images/unsplash_1516549655169-df.webp",
-  "Manufacturing & Robotics": "/webp_images/unsplash_1581091226825-a6.webp",
-  "Logistics & Supply Chain": "/webp_images/unsplash_1586528116311-ad.webp",
-  "Government": "/webp_images/unsplash_1517048676732-d6.webp",
-  "Telecom": "/webp_images/unsplash_1516321318423-f0.webp",
+  "Banking & FinTech": "/images/unsplash_1501167786227-4c.webp",
+  "Healthcare & Life Sciences": "/images/unsplash_1516549655169-df.webp",
+  "Manufacturing & Robotics": "/images/unsplash_1581091226825-a6.webp",
+  "Logistics & Supply Chain": "/images/unsplash_1586528116311-ad.webp",
+  "Government": "/images/unsplash_1517048676732-d6.webp",
+  "Telecom": "/images/unsplash_1516321318423-f0.webp",
 };
 
-const DEFAULT_INDUSTRIES_IMAGE = "/webp_images/unsplash_1486406146926-c6.webp";
+const DEFAULT_INDUSTRIES_IMAGE = "/images/unsplash_1486406146926-c6.webp";
 
 export const IndustriesHero = () => {
   const currentBgImage = SECTOR_HERO_IMAGES["Banking & FinTech"] || DEFAULT_INDUSTRIES_IMAGE;

@@ -32,7 +32,7 @@ export const CaseStudiesPage = () => {
         industry: staticCaseStudy?.industry || "Technology",
         country: staticCaseStudy?.country || "Global",
         category: staticCaseStudy?.category || "Core Engineering",
-        coverImage: dbCase.media || staticCaseStudy?.coverImage || "/webp_images/unsplash_1563986768609-32.webp",
+        coverImage: dbCase.media || staticCaseStudy?.coverImage || "/images/unsplash_1563986768609-32.webp",
         challenge: dbCase.business_challenge || staticCaseStudy?.challenge || "",
         architecture: {
           description: dbCase.proposed_architecture || staticCaseStudy?.architecture?.description || "",

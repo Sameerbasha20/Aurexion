@@ -100,7 +100,7 @@ export const WhyUsPage: React.FC = () => {
         <div
           className="subpage-hero-art"
           style={{
-            backgroundImage: `url(/webp_images/unsplash_1552664730-d307c.webp)`,
+            backgroundImage: `url(/images/unsplash_1552664730-d307c.webp)`,
           }}
         />
         <div className="subpage-hero-overlay" />

@@ -16,11 +16,11 @@ print(f"Total image paths referenced in source code: {len(all_img_refs)}")
 has_webp_images_folder_ref = False
 
 for path, source_file in sorted(list(all_img_refs)):
-    if "webp_images" in path:
+    if "webp_images" in path or "manus-storage" in path:
         has_webp_images_folder_ref = True
     exists_in_public = (Path("frontend/public") / path.lstrip("/")).exists()
     print(f" - Image: {path:<40} (in {source_file:<22}) -> Exists in frontend/public: {exists_in_public}")
 
 print("\n=== CONCLUSION ===")
-print(f"Any references to 'webp_images/' folder: {has_webp_images_folder_ref}")
-print("All runtime images load exclusively from 'frontend/public/'.")
+print(f"Any references to old 'webp_images/' or 'manus-storage/' folder: {has_webp_images_folder_ref}")
+print("All runtime images load exclusively from 'frontend/public/images/'.")

@@ -9,7 +9,7 @@ export function createOrganizationSchema(siteUrl: string = "") {
     "@type": "Organization",
     "name": "Aurexion Technologies",
     "url": siteUrl || "https://aurexion.com",
-    "logo": `${siteUrl}/manus-storage/aurexion-mark_e8f9e729.webp`,
+    "logo": `${siteUrl}/images/aurexion-mark_e8f9e729.webp`,
     "description": "Enterprise applications, SaaS, APIs and resilient microservices. Complexity is a signal. We turn it into structure.",
     "contactPoint": {
       "@type": "ContactPoint",
@@ -67,7 +67,7 @@ export interface ArticleSchemaData {
 export function createArticleSchema(data: ArticleSchemaData, siteUrl: string = "") {
   const imageUrl = data.image?.startsWith("http")
     ? data.image
-    : `${siteUrl}${data.image?.startsWith("/") ? data.image : `/${data.image || "manus-storage/aurexion-mark_e8f9e729.webp"}`}`;
+    : `${siteUrl}${data.image?.startsWith("/") ? data.image : `/${data.image || "images/aurexion-mark_e8f9e729.webp"}`}`;
 
   return {
     "@context": "https://schema.org",
@@ -87,7 +87,7 @@ export function createArticleSchema(data: ArticleSchemaData, siteUrl: string = "
       "name": "Aurexion Technologies",
       "logo": {
         "@type": "ImageObject",
-        "url": `${siteUrl}/manus-storage/aurexion-mark_e8f9e729.webp`
+        "url": `${siteUrl}/images/aurexion-mark_e8f9e729.webp`
       }
     }
   };
@@ -138,7 +138,7 @@ export function createJobPostingSchema(data: JobPostingSchemaData, siteUrl: stri
       "@type": "Organization",
       "name": data.hiringOrganization || "Aurexion Technologies",
       "sameAs": siteUrl || "https://aurexion.com",
-      "logo": `${siteUrl}/manus-storage/aurexion-mark_e8f9e729.webp`
+      "logo": `${siteUrl}/images/aurexion-mark_e8f9e729.webp`
     },
     "jobLocation": {
       "@type": "Place",

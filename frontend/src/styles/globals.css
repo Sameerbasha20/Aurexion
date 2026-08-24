@@ -1262,7 +1262,7 @@ h3 em {
 
 .final-art {
   z-index: -1;
-  background: radial-gradient(circle at center, rgba(99, 245, 232, .18), transparent 28%), url(/manus-storage/aurexion-texture_30e1da90.webp);
+  background: radial-gradient(circle at center, rgba(99, 245, 232, .18), transparent 28%), url(/images/aurexion-texture_30e1da90.webp);
   background-size: cover;
   opacity: .65;
   animation: pulse 7s ease-in-out infinite alternate;

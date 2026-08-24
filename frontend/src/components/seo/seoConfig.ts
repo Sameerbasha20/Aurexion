@@ -12,7 +12,7 @@ export const DEFAULT_SEO_CONFIG: SEOConfig = {
   defaultTitle: "Aurexion | AI, Cloud & Digital Transformation",
   titleTemplate: "%s | Aurexion",
   defaultDescription: "Enterprise applications, SaaS, APIs and resilient microservices. Complexity is a signal. We turn it into structure.",
-  defaultOgImage: "/manus-storage/aurexion-mark_e8f9e729.webp",
+  defaultOgImage: "/images/aurexion-mark_e8f9e729.webp",
   twitterCard: "summary_large_image",
 };
 

@@ -59,7 +59,7 @@ export const FeaturedArticle = ({ article }) => {
 
             <div className="flex-1 bg-[#0a0f18] relative overflow-hidden hidden lg:block">
               <img
-                src={article.coverImage || "/webp_images/unsplash_1563986768609-32.webp"}
+                src={article.coverImage || "/images/unsplash_1563986768609-32.webp"}
                 alt={article.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
