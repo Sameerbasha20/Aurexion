@@ -16,8 +16,12 @@ import {
 } from "lucide-react";
 
 export const Industries: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const {
     industries,
+    totalCount,
     isLoading,
     actionLoading,
     error,
@@ -26,12 +30,10 @@ export const Industries: React.FC = () => {
     updateIndustry,
     toggleStatus,
     deleteIndustry,
-  } = useCmsIndustries();
+  } = useCmsIndustries(currentPage, pageSize);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -66,11 +68,11 @@ export const Industries: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const totalItems = filteredIndustries.length;
+  const totalItems = totalCount || filteredIndustries.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalItems);
-  const paginatedIndustries = filteredIndustries.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + filteredIndustries.length, totalItems);
+  const paginatedIndustries = filteredIndustries;
 
   const handleOpenEdit = (ind: IndustryItem) => {
     setEditingInd(ind);

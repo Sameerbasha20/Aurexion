@@ -208,8 +208,9 @@ export function useCmsCaseStudies() {
 /**
  * Hook for Managing Industries Directory
  */
-export function useCmsIndustries() {
+export function useCmsIndustries(page = 1, pageSize = 10) {
   const [industries, setIndustries] = useState<IndustryItem[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -218,14 +219,15 @@ export function useCmsIndustries() {
     setIsLoading(true);
     setError(null);
     try {
-      const list = await cmsService.getAdminIndustries();
-      setIndustries(list);
+      const res = await cmsService.getAdminIndustries(page, pageSize);
+      setIndustries(res);
+      setTotalCount(res.count || res.length);
     } catch (err: any) {
       setError(err?.message || "Failed to load industries.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchIndustries();
@@ -236,6 +238,7 @@ export function useCmsIndustries() {
     try {
       const created = await cmsService.createIndustry(payload);
       setIndustries((prev) => [created, ...prev]);
+      setTotalCount((prev) => prev + 1);
       return created;
     } finally {
       setActionLoading(false);
@@ -269,6 +272,7 @@ export function useCmsIndustries() {
     try {
       await cmsService.deleteIndustry(id);
       setIndustries((prev) => prev.filter((ind) => ind.id !== id));
+      setTotalCount((prev) => Math.max(0, prev - 1));
     } finally {
       setActionLoading(false);
     }
@@ -276,6 +280,7 @@ export function useCmsIndustries() {
 
   return {
     industries,
+    totalCount,
     isLoading,
     actionLoading,
     error,

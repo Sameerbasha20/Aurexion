@@ -189,14 +189,17 @@ export const clearCmsCache = (key?: keyof typeof cmsCache) => {
 
 export const cmsService = {
   // Services
-  getAdminServices: async (forceRefresh = false): Promise<ServiceItem[]> => {
-    if (!forceRefresh && cmsCache.services && (Date.now() - cmsCache.services.timestamp < CACHE_TTL)) {
-      return cmsCache.services.data;
-    }
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICES, { params: { page_size: 100 } });
-    const result = Array.isArray(data) ? data : (data.results || []);
-    cmsCache.services = { data: result, timestamp: Date.now() };
-    return result;
+  getAdminServices: async (page?: number, pageSize?: number): Promise<ServiceItem[] & { count?: number }> => {
+    const params: any = {};
+    if (page) params.page = page;
+    if (pageSize) params.page_size = pageSize;
+
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICES, { params });
+    const results: ServiceItem[] = Array.isArray(data) ? data : (data.results || []);
+    const count = Array.isArray(data) ? data.length : (data.count ?? results.length);
+    const res: any = results;
+    res.count = count;
+    return res;
   },
 
   createService: async (serviceData: ServiceCreatePayload): Promise<ServiceItem> => {
@@ -223,14 +226,17 @@ export const cmsService = {
   },
 
   // Case Studies
-  getAdminCaseStudies: async (forceRefresh = false): Promise<CaseStudyItem[]> => {
-    if (!forceRefresh && cmsCache.caseStudies && (Date.now() - cmsCache.caseStudies.timestamp < CACHE_TTL)) {
-      return cmsCache.caseStudies.data;
-    }
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, { params: { page_size: 100 } });
-    const result = Array.isArray(data) ? data : (data.results || []);
-    cmsCache.caseStudies = { data: result, timestamp: Date.now() };
-    return result;
+  getAdminCaseStudies: async (page?: number, pageSize?: number): Promise<CaseStudyItem[] & { count?: number }> => {
+    const params: any = {};
+    if (page) params.page = page;
+    if (pageSize) params.page_size = pageSize;
+
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, { params });
+    const results: CaseStudyItem[] = Array.isArray(data) ? data : (data.results || []);
+    const count = Array.isArray(data) ? data.length : (data.count ?? results.length);
+    const res: any = results;
+    res.count = count;
+    return res;
   },
 
   createCaseStudy: async (csData: CaseStudyCreatePayload): Promise<CaseStudyItem> => {
@@ -257,14 +263,17 @@ export const cmsService = {
   },
 
   // Industries
-  getAdminIndustries: async (forceRefresh = false): Promise<IndustryItem[]> => {
-    if (!forceRefresh && cmsCache.industries && (Date.now() - cmsCache.industries.timestamp < CACHE_TTL)) {
-      return cmsCache.industries.data;
-    }
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, { params: { page_size: 100 } });
-    const result = Array.isArray(data) ? data : (data.results || []);
-    cmsCache.industries = { data: result, timestamp: Date.now() };
-    return result;
+  getAdminIndustries: async (page?: number, pageSize?: number): Promise<IndustryItem[] & { count?: number }> => {
+    const params: any = {};
+    if (page) params.page = page;
+    if (pageSize) params.page_size = pageSize;
+
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, { params });
+    const results: IndustryItem[] = Array.isArray(data) ? data : (data.results || []);
+    const count = Array.isArray(data) ? data.length : (data.count ?? results.length);
+    const res: any = results;
+    res.count = count;
+    return res;
   },
 
   createIndustry: async (indData: IndustryCreatePayload): Promise<IndustryItem> => {
@@ -291,14 +300,17 @@ export const cmsService = {
   },
 
   // Categories
-  getAdminCategories: async (forceRefresh = false): Promise<CategoryItem[]> => {
-    if (!forceRefresh && cmsCache.categories && (Date.now() - cmsCache.categories.timestamp < CACHE_TTL)) {
-      return cmsCache.categories.data;
-    }
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, { params: { page_size: 100 } });
-    const result = Array.isArray(data) ? data : (data.results || []);
-    cmsCache.categories = { data: result, timestamp: Date.now() };
-    return result;
+  getAdminCategories: async (page?: number, pageSize?: number): Promise<CategoryItem[] & { count?: number }> => {
+    const params: any = {};
+    if (page) params.page = page;
+    if (pageSize) params.page_size = pageSize;
+
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, { params });
+    const results: CategoryItem[] = Array.isArray(data) ? data : (data.results || []);
+    const count = Array.isArray(data) ? data.length : (data.count ?? results.length);
+    const res: any = results;
+    res.count = count;
+    return res;
   },
 
   createCategory: async (categoryData: CategoryCreatePayload): Promise<CategoryItem> => {
@@ -313,14 +325,17 @@ export const cmsService = {
   },
 
   // Blog
-  getAdminBlog: async (forceRefresh = false): Promise<BlogPostItem[]> => {
-    if (!forceRefresh && cmsCache.blogPosts && (Date.now() - cmsCache.blogPosts.timestamp < CACHE_TTL)) {
-      return cmsCache.blogPosts.data;
-    }
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG, { params: { page_size: 100 } });
-    const result = Array.isArray(data) ? data : (data.results || []);
-    cmsCache.blogPosts = { data: result, timestamp: Date.now() };
-    return result;
+  getAdminBlog: async (page?: number, pageSize?: number): Promise<BlogPostItem[] & { count?: number }> => {
+    const params: any = {};
+    if (page) params.page = page;
+    if (pageSize) params.page_size = pageSize;
+
+    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG, { params });
+    const results: BlogPostItem[] = Array.isArray(data) ? data : (data.results || []);
+    const count = Array.isArray(data) ? data.length : (data.count ?? results.length);
+    const res: any = results;
+    res.count = count;
+    return res;
   },
 
   createBlogPost: async (blogData: BlogPostCreatePayload): Promise<BlogPostItem> => {
