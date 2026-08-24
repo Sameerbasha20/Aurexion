@@ -139,7 +139,25 @@ export const SecurityGovernancePage: React.FC = () => {
         </div>
       </section>
 
+      HEAD
+      {/* Responsible Disclosure */}
+      <section style={{ maxWidth: "1000px", margin: "0 auto", padding: "0 max(4vw, 1.5rem) 6rem" }}>
+        <div style={{ border: "1px solid rgba(99,245,232,0.2)", background: "#060c18", padding: "3rem" }}>
+          <p style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".18em", color: "#63f5e8", marginBottom: "1rem" }}>RESPONSIBLE DISCLOSURE</p>
+          <h2 style={{ fontSize: "1.5rem", fontWeight: 600, color: "#eef4f3", marginBottom: "1rem" }}>Report a Security Vulnerability</h2>
+          <p style={{ color: "#8da5ae", lineHeight: 1.75, fontSize: ".92rem", marginBottom: "2rem", maxWidth: "600px" }}>
+            If you believe you have discovered a security vulnerability in our platform, we encourage responsible disclosure. Please report it directly to our security team. We are committed to acknowledging receipt within 24 hours and providing a resolution timeline.
+          </p>
+          <a
+            href="/contact"
+            className="signal-button inline-flex items-center gap-2"
+          >
+            REPORT A VULNERABILITY <ArrowUpRight size={14} />
+          </a>
+        </div>
+      </section>
 
+      e20573aa08ff11f0411697b4ae4917c6971c8680
     </div>
   );
 };
