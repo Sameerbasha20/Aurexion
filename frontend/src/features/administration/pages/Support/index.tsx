@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Card, { CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
-import { MessageSquareCode, Clock, CheckCircle, ShieldAlert, UserCheck, RefreshCw } from "lucide-react";
+import { MessageSquareCode, Clock, CheckCircle, ShieldAlert, UserCheck, RefreshCw, FileText } from "lucide-react";
 import { ErrorState, LoadingState, EmptyState } from "../../../portal/components/StateViews";
 import { TicketCategoryBadge, TicketPriorityBadge, TicketStatusBadge } from "../../../portal/components/TicketMeta";
 import { formatDateTime } from "../../../portal/utils/format";
@@ -9,6 +9,52 @@ import type { TicketStatus, TicketPriority } from "../../../portal/types/portal.
 import useAdminTickets from "../../../support/hooks/useAdminTickets";
 import useUpdateAdminTicket from "../../../support/hooks/useUpdateAdminTicket";
 import useAssignableUsers from "../../../support/hooks/useAssignableUsers";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../../../../components/ui/dialog";
+
+const getAvailableStatusOptions = (currentStatus: TicketStatus): { value: TicketStatus; label: string }[] => {
+  switch (currentStatus) {
+    case "open":
+      return [
+        { value: "open", label: "Open" },
+        { value: "assigned", label: "Assigned" },
+      ];
+    case "assigned":
+      return [
+        { value: "assigned", label: "Assigned" },
+        { value: "in_progress", label: "In Progress" },
+        { value: "open", label: "Open" },
+      ];
+    case "in_progress":
+      return [
+        { value: "in_progress", label: "In Progress" },
+        { value: "awaiting_client", label: "Awaiting Client" },
+        { value: "assigned", label: "Assigned" },
+      ];
+    case "awaiting_client":
+      return [
+        { value: "awaiting_client", label: "Awaiting Client" },
+        { value: "resolved", label: "Resolved" },
+        { value: "in_progress", label: "In Progress" },
+      ];
+    case "resolved":
+      return [
+        { value: "resolved", label: "Resolved" },
+        { value: "closed", label: "Closed" },
+        { value: "awaiting_client", label: "Awaiting Client" },
+      ];
+    case "closed":
+    default:
+      return [
+        { value: "closed", label: "Closed" },
+      ];
+  }
+};
 
 export const Support: React.FC = () => {
   const adminTickets = useAdminTickets();
@@ -17,16 +63,76 @@ export const Support: React.FC = () => {
 
   const [savingId, setSavingId] = useState<number | null>(null);
 
+  // Resolution Notes Dialog State
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [activeTicket, setActiveTicket] = useState<{ id: number; ticket_id: string; subject: string; notes: string; status: TicketStatus } | null>(null);
+  const [modalNotes, setModalNotes] = useState("");
+  const [modalError, setModalError] = useState<string | null>(null);
+
   const handleStatusChange = async (id: number, nextStatus: TicketStatus) => {
+    const ticket = adminTickets.data?.find((t) => t.id === id);
+    if (!ticket) return;
+
+    if (nextStatus === "resolved") {
+      setActiveTicket({
+        id: ticket.id,
+        ticket_id: ticket.ticket_id,
+        subject: ticket.subject,
+        notes: ticket.resolution_notes || "",
+        status: "resolved",
+      });
+      setModalNotes(ticket.resolution_notes || "");
+      setModalError(null);
+      setDialogOpen(true);
+      return;
+    }
+
     setSavingId(id);
     try {
       await updateAdminTicket.update(id, { status: nextStatus });
       adminTickets.refetch();
-    } catch {
+    } catch (err: any) {
       // Error in updateAdminTicket.error
     } finally {
       setSavingId(null);
     }
+  };
+
+  const handleSaveResolutionModal = async () => {
+    if (!activeTicket) return;
+    if (!modalNotes.trim()) {
+      setModalError("Resolution notes are required before resolving this ticket.");
+      return;
+    }
+
+    setSavingId(activeTicket.id);
+    setModalError(null);
+    try {
+      await updateAdminTicket.update(activeTicket.id, {
+        status: activeTicket.status,
+        resolution_notes: modalNotes.trim(),
+      });
+      setDialogOpen(false);
+      adminTickets.refetch();
+    } catch (err: any) {
+      const msg = err?.response?.data?.resolution_notes?.[0] || err?.response?.data?.detail || "Failed to update ticket resolution notes.";
+      setModalError(msg);
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const openNotesModal = (t: any) => {
+    setActiveTicket({
+      id: t.id,
+      ticket_id: t.ticket_id,
+      subject: t.subject,
+      notes: t.resolution_notes || "",
+      status: t.status,
+    });
+    setModalNotes(t.resolution_notes || "");
+    setModalError(null);
+    setDialogOpen(true);
   };
 
   const handleAssigneeChange = async (id: number, userIdStr: string) => {
@@ -146,13 +252,33 @@ export const Support: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {tickets.map((t) => (
+                    {tickets.map((t) => {
+                      const locked = t.status === "closed";
+                      const lockedTitle = locked ? "Closed tickets are read-only" : undefined;
+                      const statusOptions = getAvailableStatusOptions(t.status);
+                      return (
                       <tr key={t.id} style={{ borderBottom: "1px solid rgba(140,174,187,0.12)" }}>
                         <td style={{ padding: "1rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
                           {t.ticket_id}
                         </td>
                         <td style={{ padding: "1rem", fontWeight: 600, color: "#f8fafc" }}>
                           {t.subject}
+                          {t.resolution_notes && (
+                            <button
+                              onClick={() => openNotesModal(t)}
+                              title="View Resolution Notes"
+                              style={{
+                                marginLeft: "0.5rem",
+                                background: "none",
+                                border: "none",
+                                color: "#63f5e8",
+                                cursor: "pointer",
+                                verticalAlign: "middle",
+                              }}
+                            >
+                              <FileText size={14} />
+                            </button>
+                          )}
                         </td>
                         <td style={{ padding: "1rem", color: "#cbd5e1" }}>{t.client_username}</td>
                         <td style={{ padding: "1rem" }}>
@@ -162,7 +288,8 @@ export const Support: React.FC = () => {
                           <select
                             value={t.priority}
                             onChange={(e) => handlePriorityChange(t.id, e.target.value as TicketPriority)}
-                            disabled={savingId === t.id}
+                            disabled={savingId === t.id || locked}
+                            title={lockedTitle}
                             style={{
                               backgroundColor: "#0c1222",
                               border: "1px solid #1e293b",
@@ -185,7 +312,8 @@ export const Support: React.FC = () => {
                           <select
                             value={t.assigned_username ? (assignableUsers.data?.find(u => u.username === t.assigned_username)?.id || "assigned") : "unassigned"}
                             onChange={(e) => handleAssigneeChange(t.id, e.target.value)}
-                            disabled={savingId === t.id}
+                            disabled={savingId === t.id || locked}
+                            title={lockedTitle}
                             style={{
                               backgroundColor: "#0c1222",
                               border: "1px solid #1e293b",
@@ -213,7 +341,8 @@ export const Support: React.FC = () => {
                           <select
                             value={t.status}
                             onChange={(e) => handleStatusChange(t.id, e.target.value as TicketStatus)}
-                            disabled={savingId === t.id}
+                            disabled={savingId === t.id || locked}
+                            title={lockedTitle}
                             style={{
                               backgroundColor: "#0c1222",
                               border: "1px solid #1e293b",
@@ -226,16 +355,16 @@ export const Support: React.FC = () => {
                               cursor: "pointer",
                             }}
                           >
-                            <option value="open">Open</option>
-                            <option value="assigned">Assigned</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="awaiting_client">Awaiting Client</option>
-                            <option value="resolved">Resolved</option>
-                            <option value="closed">Closed</option>
+                            {statusOptions.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
                           </select>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -243,6 +372,60 @@ export const Support: React.FC = () => {
           </Card>
         </>
       )}
+
+      {/* Resolution Notes Modal */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent style={{ maxWidth: "550px", backgroundColor: "#0b1329", border: "1px solid #1e293b", color: "#f8fafc" }}>
+          <DialogHeader>
+            <DialogTitle style={{ color: "#63f5e8", fontSize: "1.2rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <FileText size={18} /> Resolution & Client Response Notes
+            </DialogTitle>
+          </DialogHeader>
+          <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {activeTicket && (
+              <div style={{ fontSize: "0.85rem", color: "#94a3b8" }}>
+                Ticket <span style={{ color: "#63f5e8", fontFamily: "IBM Plex Mono, monospace" }}>{activeTicket.ticket_id}</span>: {activeTicket.subject}
+              </div>
+            )}
+            {modalError && (
+              <div style={{ color: "#ef4444", backgroundColor: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", padding: "0.6rem 0.8rem", borderRadius: "6px", fontSize: "0.85rem" }}>
+                {modalError}
+              </div>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+                RESOLUTION NOTES (REQUIRED)
+              </label>
+              <textarea
+                value={modalNotes}
+                onChange={(e) => setModalNotes(e.target.value)}
+                rows={5}
+                placeholder="Enter resolution notes, root cause analysis, or client guidance..."
+                style={{
+                  width: "100%",
+                  backgroundColor: "#0c1222",
+                  border: "1px solid #1e293b",
+                  borderRadius: "6px",
+                  padding: "0.75rem",
+                  color: "#e2e8f0",
+                  fontSize: "0.875rem",
+                  lineHeight: 1.5,
+                  outline: "none",
+                  resize: "vertical",
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter style={{ marginTop: "1.5rem", display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+            <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button glow size="sm" onClick={handleSaveResolutionModal} disabled={savingId !== null}>
+              {savingId !== null ? "Saving..." : "Save & Resolve Ticket"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
