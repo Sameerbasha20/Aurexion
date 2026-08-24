@@ -100,10 +100,25 @@ export const Login: React.FC = () => {
     }
   };
 
+  const PRESET_USERNAMES = [
+    "administrator",
+    "business_dev_manager",
+    "bdm",
+    "client_user",
+    "sales_executive",
+    "sales_user",
+    "hr_manager",
+    "content_manager",
+    "support_executive",
+  ];
+
   const handleRoleSelect = (selectedRole: string, defaultUser: string, defaultPass: string) => {
     setRole(selectedRole);
-    setUsername(defaultUser);
-    setPassword(defaultPass);
+    // Only auto-fill if user input is currently empty or already holding a default preset
+    if (!username.trim() || PRESET_USERNAMES.includes(username.trim())) {
+      setUsername(defaultUser);
+      setPassword(defaultPass);
+    }
     setError("");
     setFieldErrors({});
   };
@@ -158,13 +173,13 @@ export const Login: React.FC = () => {
           </span>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
             {[
-              ["ADMIN", "administrator", "Admin@2026"],
-              ["BDM", "business_dev_manager", "Bdm@2026"],
-              ["CLIENT", "client_user", "Client@2026"],
-              ["SALES", "sales_executive", "Sales@2026"],
-              ["HR", "hr_manager", "Hr@2026"],
-              ["CONTENT", "content_manager", "Content@2026"],
-              ["SUPPORT", "support_executive", "Support@2026"]
+              ["ADMIN", "administrator", "Admin@2026!"],
+              ["BDM", "business_dev_manager", "Bdm@2026!"],
+              ["CLIENT", "client_user", "Client@2026!"],
+              ["SALES", "sales_executive", "Sales@2026!"],
+              ["HR", "hr_manager", "Hr@2026!"],
+              ["CONTENT", "content_manager", "Content@2026!"],
+              ["SUPPORT", "support_executive", "Support@2026!"]
             ].map(([r, defaultUser, defaultPass]) => {
               const isSelected = role === r;
               const isSupport = r === "SUPPORT";

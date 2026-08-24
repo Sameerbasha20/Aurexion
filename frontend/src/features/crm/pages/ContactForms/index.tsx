@@ -32,6 +32,7 @@ export const ContactForms: React.FC = () => {
   const [wonValue, setWonValue] = useState("25000");
   const [wonNotes, setWonNotes] = useState("Client agreed to project scope and signed proposal.");
   const [wonLoading, setWonLoading] = useState(false);
+  const [wonSuccess, setWonSuccess] = useState(false);
 
   // Custom Decline / Mark LOST Modal State
   const [selectedLostLead, setSelectedLostLead] = useState<any | null>(null);
@@ -74,9 +75,13 @@ export const ContactForms: React.FC = () => {
     try {
       const val = parseFloat(wonValue) || 0;
       await crmService.markLeadWon(selectedWonLead.id, { value: val, notes: wonNotes });
+      setWonSuccess(true);
       setActionSuccess(`Lead ${selectedWonLead.name} marked WON! Project cost ($${val.toLocaleString()}) & closing notes recorded. Client credentials dispatched.`);
-      setSelectedWonLead(null);
       refetch();
+      setTimeout(() => {
+        setWonSuccess(false);
+        setSelectedWonLead(null);
+      }, 2000);
     } catch (err: any) {
       setActionError(err?.message || "Failed to mark lead as won.");
     } finally {
@@ -705,8 +710,18 @@ export const ContactForms: React.FC = () => {
                 <Button type="button" variant="outline" onClick={() => setSelectedWonLead(null)}>
                   Cancel
                 </Button>
-                <Button type="submit" glow disabled={wonLoading} style={{ backgroundColor: "#16a34a", borderColor: "#22c55e", color: "#ffffff" }}>
-                  {wonLoading ? "Processing..." : "✓ Confirm Deal WON & Onboard"}
+                <Button
+                  type="submit"
+                  glow={!wonSuccess}
+                  disabled={wonLoading || wonSuccess}
+                  style={{
+                    backgroundColor: wonSuccess ? "#15803d" : "#16a34a",
+                    borderColor: wonSuccess ? "#22c55e" : "#16a34a",
+                    color: "#ffffff",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  {wonSuccess ? "✓ Sent Successfully & Onboarded!" : wonLoading ? "Sending Email & Onboarding..." : "✓ Confirm Deal WON & Onboard"}
                 </Button>
               </div>
             </form>

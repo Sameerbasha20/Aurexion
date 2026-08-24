@@ -97,11 +97,29 @@ class BaseRolePermission(permissions.BasePermission):
         if request.method == 'POST' and getattr(view, 'detail', False):
             action = 'update'
 
-        role_code = request.user.profile.role if hasattr(request.user, 'profile') else 'client_user'
+        raw_role = (request.user.profile.role if hasattr(request.user, 'profile') else 'client_user') or 'client_user'
+        role_map = {
+            'business_dev_manager': 'bdm',
+            'sales': 'sales_executive',
+            'sales_user': 'sales_executive',
+            'sales_rep': 'sales_executive',
+            'admin': 'administrator',
+            'hr': 'hr_manager',
+            'content': 'content_manager',
+            'support': 'support_executive',
+            'client': 'client_user',
+        }
+        role_code = role_map.get(raw_role.lower(), raw_role.lower())
 
         # Enforce class-level allowed_roles constraint if specified by role subclass
-        if self.allowed_roles and role_code not in self.allowed_roles:
-            return False
+        if self.allowed_roles:
+            normalized_allowed = set()
+            for r in self.allowed_roles:
+                normalized_allowed.add(r.lower())
+                normalized_allowed.add(role_map.get(r.lower(), r.lower()))
+            if role_code not in normalized_allowed and raw_role.lower() not in normalized_allowed:
+                return False
+            return True
 
         # --- Cache lookup: avoids 2 DB queries on every non-super-admin request ---
         cached_result = self._get_cached_permission(role_code, module, action)

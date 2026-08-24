@@ -4,6 +4,7 @@ import bdmService, { FormSubmission } from "../../services/bdmService";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../../../../components/ui/select";
 import {
   ChartContainer,
   ChartTooltip,
@@ -734,28 +735,22 @@ export const Dashboard: React.FC = () => {
                 <label style={{ display: "block", fontSize: "0.8rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", marginBottom: "0.4rem" }}>
                   SELECT SALES EXECUTIVE *
                 </label>
-                <select
-                  value={targetExecId}
-                  onChange={(e) => setTargetExecId(Number(e.target.value) || "")}
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "0.6rem",
-                    backgroundColor: "#0a111c",
-                    border: "1px solid rgba(99, 245, 232, 0.3)",
-                    color: "#f8fafc",
-                    borderRadius: "4px",
-                    fontSize: "0.85rem",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <option value="">-- Choose Sales Executive --</option>
-                  {salesExecs.map((exec) => (
-                    <option key={exec.id} value={exec.id}>
-                      {exec.name} ({exec.username}) — {exec.active_leads_count ?? 0} active leads
-                    </option>
-                  ))}
-                </select>
+                <Select value={targetExecId ? String(targetExecId) : ""} onValueChange={(val) => setTargetExecId(Number(val))}>
+                  <SelectTrigger style={{ width: "100%", backgroundColor: "#0a111c", border: "1px solid rgba(99, 245, 232, 0.35)", color: "#f8fafc" }}>
+                    <SelectValue placeholder="-- Choose Sales Executive --" />
+                  </SelectTrigger>
+                  <SelectContent style={{ maxHeight: "180px", overflowY: "auto" }}>
+                    {salesExecs.map((exec) => {
+                      const shortUser = exec.username.length > 22 ? `${exec.username.slice(0, 19)}...` : exec.username;
+                      const labelName = exec.name && exec.name !== exec.username ? `${exec.name} (${shortUser})` : shortUser;
+                      return (
+                        <SelectItem key={exec.id} value={String(exec.id)} title={`${exec.name} (${exec.username})`}>
+                          {labelName} — {exec.active_leads_count ?? 0} active
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem", flexWrap: "wrap" }}>

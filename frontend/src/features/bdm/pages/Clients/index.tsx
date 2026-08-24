@@ -40,9 +40,10 @@ import {
 export const Clients: React.FC = () => {
   const { data, isLoading, error, refetch } = useBdmDashboard();
   const [selectedClient, setSelectedClient] = useState<any | null>(null);
-  const [passwordInput, setPasswordInput] = useState("client@2026");
+  const [passwordInput, setPasswordInput] = useState("Client@2026!");
   const [emailInput, setEmailInput] = useState("");
   const [isDispatching, setIsDispatching] = useState(false);
+  const [dispatchSuccess, setDispatchSuccess] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Filters state
@@ -72,9 +73,10 @@ export const Clients: React.FC = () => {
     }
 
     setIsDispatching(true);
-    const pwd = passwordInput.trim() || "client@2026";
+    const pwd = passwordInput.trim() || "Client@2026!";
     try {
       await crmService.onboardClient(clientId, pwd, targetEmail);
+      setDispatchSuccess(true);
       showFeedback("success", `Client ${clientName} onboarded! Credentials email (Username: ${targetEmail}, Password: ${pwd}) dispatched successfully.`);
       if (selectedClient && selectedClient.id === clientId) {
         setSelectedClient({
@@ -84,6 +86,7 @@ export const Clients: React.FC = () => {
         });
       }
       refetch();
+      setTimeout(() => setDispatchSuccess(false), 4000);
     } catch (err: any) {
       const detailMsg = err?.response?.data?.detail || err?.message || "Failed to onboard client and dispatch credentials.";
       showFeedback("error", detailMsg);
@@ -443,7 +446,7 @@ export const Clients: React.FC = () => {
                         className="hover:bg-slate-800/30 transition-colors"
                         onClick={() => {
                           setSelectedClient(client);
-                          setPasswordInput("client@2026");
+                          setPasswordInput("Client@2026!");
                         }}
                       >
                         <td style={{ padding: "0.75rem 1rem", fontWeight: 600, color: "#f8fafc" }}>
@@ -500,7 +503,7 @@ export const Clients: React.FC = () => {
                               variant="outline"
                               onClick={() => {
                                 setSelectedClient(client);
-                                setPasswordInput("client@2026");
+                                setPasswordInput("Client@2026!");
                               }}
                               style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)", whiteSpace: "nowrap" }}
                             >
@@ -530,7 +533,7 @@ export const Clients: React.FC = () => {
                                 <DropdownMenuItem
                                   onClick={() => {
                                     setSelectedClient(client);
-                                    setPasswordInput("client@2026");
+                                    setPasswordInput("Client@2026!");
                                   }}
                                   style={{ cursor: "pointer", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
                                 >
@@ -541,7 +544,7 @@ export const Clients: React.FC = () => {
                                   <DropdownMenuItem
                                     onClick={() => {
                                       setSelectedClient(client);
-                                      setPasswordInput("client@2026");
+                                      setPasswordInput("Client@2026!");
                                     }}
                                     style={{ cursor: "pointer", fontSize: "0.8rem", color: "#22c55e", display: "flex", alignItems: "center", gap: "0.5rem" }}
                                   >
@@ -804,13 +807,34 @@ export const Clients: React.FC = () => {
                       />
                     </div>
                     <Button
-                      glow
-                      disabled={isDispatching || !emailInput.trim()}
+                      glow={!dispatchSuccess}
+                      disabled={isDispatching || dispatchSuccess || !emailInput.trim()}
                       onClick={() => handleDispatchCredentials(selectedClient.id, selectedClient.name, emailInput)}
-                      style={{ backgroundColor: "#22c55e", color: "#ffffff", padding: "0.6rem 1.25rem", fontSize: "0.85rem" }}
+                      style={{
+                        backgroundColor: dispatchSuccess ? "#16a34a" : "#22c55e",
+                        borderColor: dispatchSuccess ? "#22c55e" : "#16a34a",
+                        color: "#ffffff",
+                        padding: "0.6rem 1.25rem",
+                        fontSize: "0.85rem",
+                        transition: "all 0.3s ease",
+                      }}
                     >
-                      <Send size={14} style={{ marginRight: "0.4rem" }} />
-                      {isDispatching ? "Dispatching Email..." : "Send Credentials & Onboard Client"}
+                      {dispatchSuccess ? (
+                        <>
+                          <CheckCircle2 size={14} style={{ marginRight: "0.4rem" }} />
+                          ✓ Sent Successfully & Onboarded!
+                        </>
+                      ) : isDispatching ? (
+                        <>
+                          <Send size={14} style={{ marginRight: "0.4rem" }} />
+                          Dispatching Email...
+                        </>
+                      ) : (
+                        <>
+                          <Send size={14} style={{ marginRight: "0.4rem" }} />
+                          Send Credentials & Onboard Client
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
