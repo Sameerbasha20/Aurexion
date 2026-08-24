@@ -158,120 +158,177 @@ export interface CmsDashboardStats {
   services_list: ServiceItem[];
 }
 
+// In-Memory Cache for CMS Catalog & Dashboard Data (Cache TTL: 5 minutes)
+const cmsCache: {
+  services: { data: ServiceItem[]; timestamp: number } | null;
+  caseStudies: { data: CaseStudyItem[]; timestamp: number } | null;
+  industries: { data: IndustryItem[]; timestamp: number } | null;
+  blogPosts: { data: BlogPostItem[]; timestamp: number } | null;
+  categories: { data: CategoryItem[]; timestamp: number } | null;
+} = {
+  services: null,
+  caseStudies: null,
+  industries: null,
+  blogPosts: null,
+  categories: null,
+};
+
+const CACHE_TTL = 5 * 60 * 1000;
+
+export const clearCmsCache = (key?: keyof typeof cmsCache) => {
+  if (key) {
+    cmsCache[key] = null;
+  } else {
+    cmsCache.services = null;
+    cmsCache.caseStudies = null;
+    cmsCache.industries = null;
+    cmsCache.blogPosts = null;
+    cmsCache.categories = null;
+  }
+};
+
 export const cmsService = {
   // Services
-  getAdminServices: async (): Promise<ServiceItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICES, { params: { page_size: 100 } });
-    return Array.isArray(data) ? data : (data.results || []);
+  getAdminServices: async (page = 1, pageSize = 10): Promise<{ results: ServiceItem[]; count: number }> => {
+    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_SERVICES, { params: { page, page_size: pageSize } });
+    const results: ServiceItem[] = Array.isArray(data) ? data : (data?.results || []);
+    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    return { results, count };
   },
 
   createService: async (serviceData: ServiceCreatePayload): Promise<ServiceItem> => {
     const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICES, serviceData);
+    clearCmsCache("services");
     return data;
   },
 
   updateService: async (id: number, serviceData: Partial<ServiceItem>): Promise<ServiceItem> => {
     const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICE_DETAIL(id), serviceData);
+    clearCmsCache("services");
     return data;
   },
 
   toggleServiceStatus: async (id: number, status: "published" | "draft" | "archived"): Promise<ServiceItem> => {
     const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICE_DETAIL(id), { status });
+    clearCmsCache("services");
     return data;
   },
 
   deleteService: async (id: number): Promise<void> => {
     await axiosClient.delete(API_ENDPOINTS.CMS.ADMIN_SERVICE_DETAIL(id));
+    clearCmsCache("services");
   },
 
   // Case Studies
-  getAdminCaseStudies: async (): Promise<CaseStudyItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, { params: { page_size: 100 } });
-    return Array.isArray(data) ? data : (data.results || []);
+  getAdminCaseStudies: async (page = 1, pageSize = 10): Promise<{ results: CaseStudyItem[]; count: number }> => {
+    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, { params: { page, page_size: pageSize } });
+    const results: CaseStudyItem[] = Array.isArray(data) ? data : (data?.results || []);
+    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    return { results, count };
   },
 
   createCaseStudy: async (csData: CaseStudyCreatePayload): Promise<CaseStudyItem> => {
     const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, csData);
+    clearCmsCache("caseStudies");
     return data;
   },
 
   updateCaseStudy: async (id: number, csData: Partial<CaseStudyItem>): Promise<CaseStudyItem> => {
     const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDY_DETAIL(id), csData);
+    clearCmsCache("caseStudies");
     return data;
   },
 
   toggleCaseStudyStatus: async (id: number, status: "published" | "draft" | "archived"): Promise<CaseStudyItem> => {
     const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDY_DETAIL(id), { status });
+    clearCmsCache("caseStudies");
     return data;
   },
 
   deleteCaseStudy: async (id: number): Promise<void> => {
     await axiosClient.delete(API_ENDPOINTS.CMS.ADMIN_CASE_STUDY_DETAIL(id));
+    clearCmsCache("caseStudies");
   },
 
   // Industries
-  getAdminIndustries: async (): Promise<IndustryItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, { params: { page_size: 100 } });
-    return Array.isArray(data) ? data : (data.results || []);
+  getAdminIndustries: async (page = 1, pageSize = 10): Promise<{ results: IndustryItem[]; count: number }> => {
+    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, { params: { page, page_size: pageSize } });
+    const results: IndustryItem[] = Array.isArray(data) ? data : (data?.results || []);
+    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    return { results, count };
   },
 
   createIndustry: async (indData: IndustryCreatePayload): Promise<IndustryItem> => {
     const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, indData);
+    clearCmsCache("industries");
     return data;
   },
 
   updateIndustry: async (id: number, indData: Partial<IndustryItem>): Promise<IndustryItem> => {
     const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRY_DETAIL(id), indData);
+    clearCmsCache("industries");
     return data;
   },
 
   toggleIndustryStatus: async (id: number, status: "published" | "draft" | "archived"): Promise<IndustryItem> => {
     const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRY_DETAIL(id), { status });
+    clearCmsCache("industries");
     return data;
   },
 
   deleteIndustry: async (id: number): Promise<void> => {
     await axiosClient.delete(API_ENDPOINTS.CMS.ADMIN_INDUSTRY_DETAIL(id));
+    clearCmsCache("industries");
   },
 
   // Categories
-  getAdminCategories: async (): Promise<CategoryItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, { params: { page_size: 100 } });
-    return Array.isArray(data) ? data : (data.results || []);
+  getAdminCategories: async (page = 1, pageSize = 10): Promise<{ results: CategoryItem[]; count: number }> => {
+    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, { params: { page, page_size: pageSize } });
+    const results: CategoryItem[] = Array.isArray(data) ? data : (data?.results || []);
+    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    return { results, count };
   },
 
   createCategory: async (categoryData: CategoryCreatePayload): Promise<CategoryItem> => {
     const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, categoryData);
+    clearCmsCache("categories");
     return data;
   },
 
   deleteCategory: async (id: number): Promise<void> => {
     await axiosClient.delete(API_ENDPOINTS.CMS.ADMIN_CATEGORY_DETAIL(id));
+    clearCmsCache("categories");
   },
 
   // Blog
-  getAdminBlog: async (): Promise<BlogPostItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG, { params: { page_size: 100 } });
-    return Array.isArray(data) ? data : (data.results || []);
+  getAdminBlog: async (page = 1, pageSize = 10): Promise<{ results: BlogPostItem[]; count: number }> => {
+    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_BLOG, { params: { page, page_size: pageSize } });
+    const results: BlogPostItem[] = Array.isArray(data) ? data : (data?.results || []);
+    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    return { results, count };
   },
 
   createBlogPost: async (blogData: BlogPostCreatePayload): Promise<BlogPostItem> => {
     const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG, blogData);
+    clearCmsCache("blogPosts");
     return data;
   },
 
   updateBlogPost: async (id: number, blogData: Partial<BlogPostItem>): Promise<BlogPostItem> => {
     const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG_DETAIL(id), blogData);
+    clearCmsCache("blogPosts");
     return data;
   },
 
   toggleBlogStatus: async (id: number, status: "published" | "draft" | "archived"): Promise<BlogPostItem> => {
     const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG_DETAIL(id), { status });
+    clearCmsCache("blogPosts");
     return data;
   },
 
   deleteBlogPost: async (id: number): Promise<void> => {
     await axiosClient.delete(API_ENDPOINTS.CMS.ADMIN_BLOG_DETAIL(id));
+    clearCmsCache("blogPosts");
   },
 
   // Public endpoints
@@ -297,13 +354,19 @@ export const cmsService = {
 
   // Aggregate CMS Dashboard Stats
   getDashboardStats: async (): Promise<CmsDashboardStats> => {
-    const [services, caseStudies, industries, blogPosts, categories] = await Promise.all([
-      cmsService.getAdminServices(),
-      cmsService.getAdminCaseStudies(),
-      cmsService.getAdminIndustries(),
-      cmsService.getAdminBlog(),
-      cmsService.getAdminCategories(),
+    const [servicesRes, caseStudiesRes, industriesRes, blogPostsRes, categoriesRes] = await Promise.all([
+      cmsService.getAdminServices(1, 100),
+      cmsService.getAdminCaseStudies(1, 100),
+      cmsService.getAdminIndustries(1, 100),
+      cmsService.getAdminBlog(1, 100),
+      cmsService.getAdminCategories(1, 100),
     ]);
+
+    const services = servicesRes.results;
+    const caseStudies = caseStudiesRes.results;
+    const industries = industriesRes.results;
+    const blogPosts = blogPostsRes.results;
+    const categories = categoriesRes.results;
 
     const totalServices = services.length;
     const publishedServices = services.filter((s) => s.status === "published").length;

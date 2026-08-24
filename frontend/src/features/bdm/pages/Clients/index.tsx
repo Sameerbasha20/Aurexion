@@ -41,6 +41,7 @@ export const Clients: React.FC = () => {
   const { data, isLoading, error, refetch } = useBdmDashboard();
   const [selectedClient, setSelectedClient] = useState<any | null>(null);
   const [passwordInput, setPasswordInput] = useState("client@2026");
+  const [emailInput, setEmailInput] = useState("");
   const [isDispatching, setIsDispatching] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -48,27 +49,44 @@ export const Clients: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [salesExecFilter, setSalesExecFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  // Sync emailInput when selectedClient changes
+  React.useEffect(() => {
+    if (selectedClient) {
+      setEmailInput(selectedClient.email || "");
+    }
+  }, [selectedClient]);
 
   const showFeedback = (type: "success" | "error", text: string) => {
     setFeedback({ type, text });
     setTimeout(() => setFeedback(null), 5000);
   };
 
-  const handleDispatchCredentials = async (clientId: number, clientName: string, clientEmail: string) => {
+  const handleDispatchCredentials = async (clientId: number, clientName: string, overrideEmail?: string) => {
+    const targetEmail = (overrideEmail || emailInput || "").trim();
+    if (!targetEmail) {
+      showFeedback("error", "Client email address is required to dispatch credentials and create portal account.");
+      return;
+    }
+
     setIsDispatching(true);
     const pwd = passwordInput.trim() || "client@2026";
     try {
-      await crmService.onboardClient(clientId, pwd);
-      showFeedback("success", `Client ${clientName} onboarded! Credentials email (Username: ${clientEmail}, Password: ${pwd}) dispatched successfully.`);
+      await crmService.onboardClient(clientId, pwd, targetEmail);
+      showFeedback("success", `Client ${clientName} onboarded! Credentials email (Username: ${targetEmail}, Password: ${pwd}) dispatched successfully.`);
       if (selectedClient && selectedClient.id === clientId) {
         setSelectedClient({
           ...selectedClient,
+          email: targetEmail,
           client_onboarded: true,
         });
       }
       refetch();
     } catch (err: any) {
-      showFeedback("error", err?.message || "Failed to onboard client and dispatch credentials.");
+      const detailMsg = err?.response?.data?.detail || err?.message || "Failed to onboard client and dispatch credentials.";
+      showFeedback("error", detailMsg);
     } finally {
       setIsDispatching(false);
     }
@@ -115,6 +133,14 @@ export const Clients: React.FC = () => {
       return true;
     });
   }, [clients, statusFilter, salesExecFilter, searchQuery]);
+
+  const totalItems = filteredClients.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedClients = useMemo(() => {
+    return filteredClients.slice(startIndex, startIndex + pageSize);
+  }, [filteredClients, startIndex, pageSize]);
 
   const pendingOnboardings = clients.filter((c) => !c.client_onboarded);
   const activeClients = clients.filter((c) => c.client_onboarded);
@@ -395,163 +421,231 @@ export const Clients: React.FC = () => {
         </CardHeader>
         <CardContent>
           {filteredClients.length > 0 ? (
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", textAlign: "left" }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.2)", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", whiteSpace: "nowrap" }}>
-                    <th style={{ padding: "0.75rem 1rem", minWidth: "160px" }}>CLIENT NAME</th>
-                    <th style={{ padding: "0.75rem 1rem", minWidth: "140px" }}>COMPANY</th>
-                    <th style={{ padding: "0.75rem 1rem", minWidth: "180px" }}>EMAIL</th>
-                    <th style={{ padding: "0.75rem 1rem", minWidth: "130px" }}>PROJECT COST ($)</th>
-                    <th style={{ padding: "0.75rem 1rem", minWidth: "150px" }}>SALES EXECUTIVE</th>
-                    <th style={{ padding: "0.75rem 1rem", minWidth: "190px" }}>PORTAL STATUS</th>
-                    <th style={{ padding: "0.75rem 1rem", minWidth: "150px", textAlign: "right" }}>ACTIONS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredClients.map((client) => (
-                    <tr
-                      key={client.id}
-                      style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", cursor: "pointer" }}
-                      className="hover:bg-slate-800/30 transition-colors"
-                      onClick={() => {
-                        setSelectedClient(client);
-                        setPasswordInput("client@2026");
-                      }}
-                    >
-                      <td style={{ padding: "0.75rem 1rem", fontWeight: 600, color: "#f8fafc" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <div style={{
-                            width: "32px",
-                            height: "32px",
-                            borderRadius: "50%",
-                            backgroundColor: client.client_onboarded ? "rgba(34, 197, 94, 0.15)" : "rgba(251, 191, 36, 0.15)",
-                            display: "grid",
-                            placeItems: "center",
-                            color: client.client_onboarded ? "#22c55e" : "#fbbf24",
-                            fontSize: "0.75rem",
-                            fontWeight: 700,
-                            flexShrink: 0,
-                          }}>
-                            {client.name?.charAt(0)?.toUpperCase() || "C"}
+            <>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.2)", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                      <th style={{ padding: "0.75rem 1rem", minWidth: "160px" }}>CLIENT NAME</th>
+                      <th style={{ padding: "0.75rem 1rem", minWidth: "140px" }}>COMPANY</th>
+                      <th style={{ padding: "0.75rem 1rem", minWidth: "180px" }}>EMAIL</th>
+                      <th style={{ padding: "0.75rem 1rem", minWidth: "130px" }}>PROJECT COST ($)</th>
+                      <th style={{ padding: "0.75rem 1rem", minWidth: "150px" }}>SALES EXECUTIVE</th>
+                      <th style={{ padding: "0.75rem 1rem", minWidth: "190px" }}>PORTAL STATUS</th>
+                      <th style={{ padding: "0.75rem 1rem", minWidth: "150px", textAlign: "right" }}>ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedClients.map((client) => (
+                      <tr
+                        key={client.id}
+                        style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", cursor: "pointer" }}
+                        className="hover:bg-slate-800/30 transition-colors"
+                        onClick={() => {
+                          setSelectedClient(client);
+                          setPasswordInput("client@2026");
+                        }}
+                      >
+                        <td style={{ padding: "0.75rem 1rem", fontWeight: 600, color: "#f8fafc" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            <div style={{
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "50%",
+                              backgroundColor: client.client_onboarded ? "rgba(34, 197, 94, 0.15)" : "rgba(251, 191, 36, 0.15)",
+                              display: "grid",
+                              placeItems: "center",
+                              color: client.client_onboarded ? "#22c55e" : "#fbbf24",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              flexShrink: 0,
+                            }}>
+                              {client.name?.charAt(0)?.toUpperCase() || "C"}
+                            </div>
+                            {client.name}
                           </div>
-                          {client.name}
-                        </div>
-                      </td>
-                      <td style={{ padding: "0.75rem 1rem", color: "#cbd5e1" }}>
-                        {client.company || "Individual Client"}
-                      </td>
-                      <td style={{ padding: "0.75rem 1rem" }}>
-                        <a
-                          href={`mailto:${client.email}`}
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ color: "#63f5e8", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.82rem" }}
-                        >
-                          <Mail size={13} /> {client.email}
-                        </a>
-                      </td>
-                      <td style={{ padding: "0.75rem 1rem", fontWeight: 700, color: "#22c55e", fontSize: "0.95rem" }}>
-                        ${client.value ? client.value.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "0.00"}
-                      </td>
-                      <td style={{ padding: "0.75rem 1rem", color: "#38bdf8", fontWeight: 500 }}>
-                        {client.assigned_to_name || "Unassigned"}
-                      </td>
-                      <td style={{ padding: "0.75rem 1rem" }}>
-                        {client.client_onboarded ? (
-                          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                            Active Client (Creds Sent)
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-                            Pending Credential Dispatch
-                          </Badge>
-                        )}
-                      </td>
-                      <td style={{ padding: "0.75rem 1rem", textAlign: "right", whiteSpace: "nowrap", minWidth: "150px" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem", flexWrap: "nowrap" }} onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedClient(client);
-                              setPasswordInput("client@2026");
-                            }}
-                            style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)", whiteSpace: "nowrap" }}
+                        </td>
+                        <td style={{ padding: "0.75rem 1rem", color: "#cbd5e1" }}>
+                          {client.company || "Individual Client"}
+                        </td>
+                        <td style={{ padding: "0.75rem 1rem" }}>
+                          <a
+                            href={`mailto:${client.email}`}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ color: "#63f5e8", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.82rem" }}
                           >
-                            <Eye size={13} style={{ marginRight: "0.3rem" }} /> View Detail
-                          </Button>
+                            <Mail size={13} /> {client.email}
+                          </a>
+                        </td>
+                        <td style={{ padding: "0.75rem 1rem", fontWeight: 700, color: "#22c55e", fontSize: "0.95rem" }}>
+                          ${client.value ? client.value.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "0.00"}
+                        </td>
+                        <td style={{ padding: "0.75rem 1rem", color: "#38bdf8", fontWeight: 500 }}>
+                          {client.assigned_to_name || "Unassigned"}
+                        </td>
+                        <td style={{ padding: "0.75rem 1rem" }}>
+                          {client.client_onboarded ? (
+                            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                              Active Client (Creds Sent)
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                              Pending Credential Dispatch
+                            </Badge>
+                          )}
+                        </td>
+                        <td style={{ padding: "0.75rem 1rem", textAlign: "right", whiteSpace: "nowrap", minWidth: "150px" }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem", flexWrap: "nowrap" }} onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedClient(client);
+                                setPasswordInput("client@2026");
+                              }}
+                              style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", color: "#63f5e8", borderColor: "rgba(99, 245, 232, 0.3)", whiteSpace: "nowrap" }}
+                            >
+                              <Eye size={13} style={{ marginRight: "0.3rem" }} /> View Detail
+                            </Button>
 
-                          {/* Row Dropdown Action Menu */}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button
-                                type="button"
-                                style={{
-                                  background: "none",
-                                  border: "1px solid rgba(140, 174, 187, 0.2)",
-                                  borderRadius: "4px",
-                                  padding: "0.35rem 0.45rem",
-                                  color: "#94a3b8",
-                                  cursor: "pointer",
-                                  display: "flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <MoreVertical size={14} />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" style={{ backgroundColor: "#0c1222", border: "1px solid #1e293b", color: "#f8fafc" }}>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedClient(client);
-                                  setPasswordInput("client@2026");
-                                }}
-                                style={{ cursor: "pointer", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
-                              >
-                                <Eye size={14} /> View Account Detail
-                              </DropdownMenuItem>
-
-                              {!client.client_onboarded && (
+                            {/* Row Dropdown Action Menu */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  type="button"
+                                  style={{
+                                    background: "none",
+                                    border: "1px solid rgba(140, 174, 187, 0.2)",
+                                    borderRadius: "4px",
+                                    padding: "0.35rem 0.45rem",
+                                    color: "#94a3b8",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <MoreVertical size={14} />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" style={{ backgroundColor: "#0c1222", border: "1px solid #1e293b", color: "#f8fafc" }}>
                                 <DropdownMenuItem
                                   onClick={() => {
                                     setSelectedClient(client);
                                     setPasswordInput("client@2026");
                                   }}
-                                  style={{ cursor: "pointer", fontSize: "0.8rem", color: "#22c55e", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                                  style={{ cursor: "pointer", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
                                 >
-                                  <Key size={14} /> Send Portal Credentials
+                                  <Eye size={14} /> View Account Detail
                                 </DropdownMenuItem>
-                              )}
 
-                              <DropdownMenuSeparator style={{ backgroundColor: "#1e293b" }} />
+                                {!client.client_onboarded && (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedClient(client);
+                                      setPasswordInput("client@2026");
+                                    }}
+                                    style={{ cursor: "pointer", fontSize: "0.8rem", color: "#22c55e", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                                  >
+                                    <Key size={14} /> Send Portal Credentials
+                                  </DropdownMenuItem>
+                                )}
 
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  navigator.clipboard.writeText(client.email);
-                                  showFeedback("success", `Copied email ${client.email} to clipboard!`);
-                                }}
-                                style={{ cursor: "pointer", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
-                              >
-                                <Copy size={14} /> Copy Email Address
-                              </DropdownMenuItem>
+                                <DropdownMenuSeparator style={{ backgroundColor: "#1e293b" }} />
 
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  navigator.clipboard.writeText(client.reference_id || `#CL-${client.id}`);
-                                  showFeedback("success", `Copied Reference ID ${client.reference_id} to clipboard!`);
-                                }}
-                                style={{ cursor: "pointer", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
-                              >
-                                <Copy size={14} /> Copy Reference ID
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(client.email);
+                                    showFeedback("success", `Copied email ${client.email} to clipboard!`);
+                                  }}
+                                  style={{ cursor: "pointer", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                                >
+                                  <Copy size={14} /> Copy Email Address
+                                </DropdownMenuItem>
+
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(client.reference_id || `#CL-${client.id}`);
+                                    showFeedback("success", `Copied Reference ID ${client.reference_id} to clipboard!`);
+                                  }}
+                                  style={{ cursor: "pointer", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                                >
+                                  <Copy size={14} /> Copy Reference ID
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Controls */}
+              <div
+                style={{
+                  padding: "1rem 1.5rem",
+                  borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  fontSize: "0.85rem",
+                  color: "#94a3b8",
+                }}
+              >
+                <div>
+                  Showing <strong style={{ color: "#f8fafc" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+                  <strong style={{ color: "#f8fafc" }}>{endIndex}</strong> of{" "}
+                  <strong style={{ color: "#f8fafc" }}>{totalItems}</strong> entries
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span>Rows per page:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      style={{
+                        padding: "0.25rem 0.5rem",
+                        backgroundColor: "#050811",
+                        border: "1px solid rgba(140, 174, 187, 0.25)",
+                        color: "#f8fafc",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.4rem" }}>
+                    <Button
+                      variant="outline"
+                      disabled={currentPage === 1 || isLoading}
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                    >
+                      Previous
+                    </Button>
+                    <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      disabled={currentPage >= totalPages || isLoading}
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </>
           ) : (
             <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
               <CheckCircle2 size={48} style={{ color: "#334155", margin: "0 auto 1rem" }} />
@@ -661,39 +755,64 @@ export const Clients: React.FC = () => {
                   <Key size={16} /> BDM Client Onboarding & Welcome Credential Dispatch
                 </div>
                 <p style={{ fontSize: "0.8rem", color: "#cbd5e1", margin: "0 0 1rem 0", lineHeight: 1.5 }}>
-                  Clicking below will create the client's portal user account and dispatch an automated welcome email containing their login username (<strong style={{ color: "#63f5e8" }}>{selectedClient.email}</strong>) and password.
+                  Clicking below will create the client's portal user account and dispatch an automated welcome email containing their login credentials.
                 </p>
 
-                <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", flexWrap: "wrap" }}>
-                  <div style={{ flex: 1, minWidth: "200px" }}>
-                    <label style={{ display: "block", fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", marginBottom: "0.35rem" }}>
-                      CLIENT PORTAL DEFAULT PASSWORD
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1rem" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", marginBottom: "0.35rem", fontWeight: 600 }}>
+                      CLIENT LOGIN EMAIL ADDRESS (REQUIRED)
                     </label>
                     <input
-                      type="text"
-                      value={passwordInput}
-                      onChange={(e) => setPasswordInput(e.target.value)}
+                      type="email"
+                      placeholder="e.g. client@company.com"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
                       style={{
                         width: "100%",
                         padding: "0.55rem 0.75rem",
                         backgroundColor: "#050811",
-                        border: "1px solid rgba(99, 245, 232, 0.3)",
+                        border: "1px solid rgba(99, 245, 232, 0.4)",
                         borderRadius: "4px",
                         color: "#f8fafc",
                         fontSize: "0.85rem",
                         fontFamily: "IBM Plex Mono, monospace",
+                        boxSizing: "border-box",
                       }}
                     />
                   </div>
-                  <Button
-                    glow
-                    disabled={isDispatching}
-                    onClick={() => handleDispatchCredentials(selectedClient.id, selectedClient.name, selectedClient.email)}
-                    style={{ backgroundColor: "#22c55e", color: "#ffffff", padding: "0.6rem 1.25rem", fontSize: "0.85rem" }}
-                  >
-                    <Send size={14} style={{ marginRight: "0.4rem" }} />
-                    {isDispatching ? "Dispatching Email..." : "Send Credentials & Onboard Client"}
-                  </Button>
+
+                  <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", flexWrap: "wrap" }}>
+                    <div style={{ flex: 1, minWidth: "200px" }}>
+                      <label style={{ display: "block", fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8", marginBottom: "0.35rem" }}>
+                        CLIENT PORTAL DEFAULT PASSWORD
+                      </label>
+                      <input
+                        type="text"
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "0.55rem 0.75rem",
+                          backgroundColor: "#050811",
+                          border: "1px solid rgba(99, 245, 232, 0.3)",
+                          borderRadius: "4px",
+                          color: "#f8fafc",
+                          fontSize: "0.85rem",
+                          fontFamily: "IBM Plex Mono, monospace",
+                        }}
+                      />
+                    </div>
+                    <Button
+                      glow
+                      disabled={isDispatching || !emailInput.trim()}
+                      onClick={() => handleDispatchCredentials(selectedClient.id, selectedClient.name, emailInput)}
+                      style={{ backgroundColor: "#22c55e", color: "#ffffff", padding: "0.6rem 1.25rem", fontSize: "0.85rem" }}
+                    >
+                      <Send size={14} style={{ marginRight: "0.4rem" }} />
+                      {isDispatching ? "Dispatching Email..." : "Send Credentials & Onboard Client"}
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}

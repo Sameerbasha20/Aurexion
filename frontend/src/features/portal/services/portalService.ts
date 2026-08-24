@@ -16,10 +16,59 @@ import type {
   ClientNotificationItem,
 } from "../types/portal.types";
 
+// In-Memory Cache Store & Promise Deduplication for Client Portal
+const portalCache = new Map<string, { data: any; timestamp: number }>();
+const portalPromises = new Map<string, Promise<any>>();
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
+export function clearPortalCache(keyPrefix?: string) {
+  if (!keyPrefix) {
+    portalCache.clear();
+    portalPromises.clear();
+    return;
+  }
+  for (const key of portalCache.keys()) {
+    if (key.startsWith(keyPrefix)) {
+      portalCache.delete(key);
+      portalPromises.delete(key);
+    }
+  }
+}
+
+function getFromCache<T>(key: string): T | null {
+  const cached = portalCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.data as T;
+  }
+  return null;
+}
+
+function setCache(key: string, data: any) {
+  portalCache.set(key, { data, timestamp: Date.now() });
+}
+
 export const portalService = {
-  getProfile: async (): Promise<PortalProfile> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.AUTH.ME);
-    return data as PortalProfile;
+  getProfile: async (forceRefresh = false): Promise<PortalProfile> => {
+    const cacheKey = "profile";
+    if (!forceRefresh) {
+      const cached = getFromCache<PortalProfile>(cacheKey);
+      if (cached) return cached;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.AUTH.ME);
+        const result = data as PortalProfile;
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        portalPromises.delete(cacheKey);
+      }
+    })();
+
+    portalPromises.set(cacheKey, promise);
+    return promise;
   },
 
   getMyTickets: async (): Promise<SupportTicketItem[]> => {
@@ -38,33 +87,125 @@ export const portalService = {
     return supportService.updateMyTicket(ticketId, ticketData);
   },
 
-  getProjects: async (): Promise<ClientProjectItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.PROJECTS);
-    return Array.isArray(data) ? data : (data.results || []);
+  getProjects: async (forceRefresh = false): Promise<ClientProjectItem[]> => {
+    const cacheKey = "projects";
+    if (!forceRefresh) {
+      const cached = getFromCache<ClientProjectItem[]>(cacheKey);
+      if (cached) return cached;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.PROJECTS);
+        const result = Array.isArray(data) ? data : (data.results || []);
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        portalPromises.delete(cacheKey);
+      }
+    })();
+
+    portalPromises.set(cacheKey, promise);
+    return promise;
   },
 
-  getMilestones: async (): Promise<ProjectMilestone[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.MILESTONES);
-    return Array.isArray(data) ? data : (data.results || []);
+  getMilestones: async (forceRefresh = false): Promise<ProjectMilestone[]> => {
+    const cacheKey = "milestones";
+    if (!forceRefresh) {
+      const cached = getFromCache<ProjectMilestone[]>(cacheKey);
+      if (cached) return cached;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.MILESTONES);
+        const result = Array.isArray(data) ? data : (data.results || []);
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        portalPromises.delete(cacheKey);
+      }
+    })();
+
+    portalPromises.set(cacheKey, promise);
+    return promise;
   },
 
-  getDeliverables: async (): Promise<SprintDeliverable[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.DELIVERABLES);
-    return Array.isArray(data) ? data : (data.results || []);
+  getDeliverables: async (forceRefresh = false): Promise<SprintDeliverable[]> => {
+    const cacheKey = "deliverables";
+    if (!forceRefresh) {
+      const cached = getFromCache<SprintDeliverable[]>(cacheKey);
+      if (cached) return cached;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.DELIVERABLES);
+        const result = Array.isArray(data) ? data : (data.results || []);
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        portalPromises.delete(cacheKey);
+      }
+    })();
+
+    portalPromises.set(cacheKey, promise);
+    return promise;
   },
 
-  getRequests: async (): Promise<ClientRequestItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.REQUESTS);
-    return Array.isArray(data) ? data : (data.results || []);
+  getRequests: async (forceRefresh = false): Promise<ClientRequestItem[]> => {
+    const cacheKey = "requests";
+    if (!forceRefresh) {
+      const cached = getFromCache<ClientRequestItem[]>(cacheKey);
+      if (cached) return cached;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.REQUESTS);
+        const result = Array.isArray(data) ? data : (data.results || []);
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        portalPromises.delete(cacheKey);
+      }
+    })();
+
+    portalPromises.set(cacheKey, promise);
+    return promise;
   },
 
   createRequest: async (requestData: { title: string; category?: string; description?: string; priority?: string; project?: number | null }): Promise<ClientRequestItem> => {
-    return axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.REQUESTS, requestData);
+    const res = await axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.REQUESTS, requestData);
+    clearPortalCache("requests");
+    return res;
   },
 
-  getConsultations: async (): Promise<ConsultationRequestItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.CONSULTATIONS);
-    return Array.isArray(data) ? data : (data.results || []);
+  getConsultations: async (forceRefresh = false): Promise<ConsultationRequestItem[]> => {
+    const cacheKey = "consultations";
+    if (!forceRefresh) {
+      const cached = getFromCache<ConsultationRequestItem[]>(cacheKey);
+      if (cached) return cached;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.CONSULTATIONS);
+        const result = Array.isArray(data) ? data : (data.results || []);
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        portalPromises.delete(cacheKey);
+      }
+    })();
+
+    portalPromises.set(cacheKey, promise);
+    return promise;
   },
 
   createConsultation: async (consultationData: {
@@ -74,12 +215,32 @@ export const portalService = {
     preferred_date?: string | null;
     project?: number | null;
   }): Promise<ConsultationRequestItem> => {
-    return axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.CONSULTATIONS, consultationData);
+    const res = await axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.CONSULTATIONS, consultationData);
+    clearPortalCache("consultations");
+    return res;
   },
 
-  getDocuments: async (): Promise<ClientDocumentItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.DOCUMENTS);
-    return Array.isArray(data) ? data : (data.results || []);
+  getDocuments: async (forceRefresh = false): Promise<ClientDocumentItem[]> => {
+    const cacheKey = "documents";
+    if (!forceRefresh) {
+      const cached = getFromCache<ClientDocumentItem[]>(cacheKey);
+      if (cached) return cached;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.DOCUMENTS);
+        const result = Array.isArray(data) ? data : (data.results || []);
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        portalPromises.delete(cacheKey);
+      }
+    })();
+
+    portalPromises.set(cacheKey, promise);
+    return promise;
   },
 
   downloadDocument: async (documentId: number): Promise<{ id: number; title: string; file_url: string; file_size: string }> => {
@@ -87,17 +248,39 @@ export const portalService = {
     return axiosClient.get<any, any>(endpoint);
   },
 
-  getNotifications: async (): Promise<ClientNotificationItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.NOTIFICATIONS);
-    return Array.isArray(data) ? data : (data.results || []);
+  getNotifications: async (forceRefresh = false): Promise<ClientNotificationItem[]> => {
+    const cacheKey = "notifications";
+    if (!forceRefresh) {
+      const cached = getFromCache<ClientNotificationItem[]>(cacheKey);
+      if (cached) return cached;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.NOTIFICATIONS);
+        const result = Array.isArray(data) ? data : (data.results || []);
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        portalPromises.delete(cacheKey);
+      }
+    })();
+
+    portalPromises.set(cacheKey, promise);
+    return promise;
   },
 
   markNotificationRead: async (id: number): Promise<any> => {
-    return axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.NOTIFICATION_READ(id));
+    const res = await axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.NOTIFICATION_READ(id));
+    clearPortalCache("notifications");
+    return res;
   },
 
   markAllNotificationsRead: async (): Promise<any> => {
-    return axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.NOTIFICATION_READ_ALL);
+    const res = await axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.NOTIFICATION_READ_ALL);
+    clearPortalCache("notifications");
+    return res;
   },
 
   getAllTickets: async (): Promise<SupportTicketItem[]> => {

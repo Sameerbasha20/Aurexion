@@ -28,17 +28,17 @@ export const CmsOverview: React.FC = () => {
         const blg = await cmsService.getAdminBlog();
 
         setCounts({
-          services: s.length,
-          industries: ind.length,
-          caseStudies: cs.length,
-          blogs: blg.length
+          services: s.count,
+          industries: ind.count,
+          caseStudies: cs.count,
+          blogs: blg.count
         });
 
         // Combine into unified table of contents
         const list: CMSContentItem[] = [];
-        s.forEach(item => list.push({ id: item.id, title: item.title, slug: item.slug, type: "SERVICE", status: item.status as any || "PUBLISHED", lastUpdated: new Date(item.updated_at).toLocaleDateString() }));
-        cs.forEach(item => list.push({ id: item.id, title: item.title, slug: item.slug, type: "CASE_STUDY", status: item.status as any || "PUBLISHED", lastUpdated: new Date(item.updated_at).toLocaleDateString() }));
-        blg.forEach(item => list.push({ id: item.id, title: item.title, slug: item.slug, type: "BLOG", status: item.status as any || "PUBLISHED", lastUpdated: new Date(item.updated_at).toLocaleDateString() }));
+        s.results.forEach(item => list.push({ id: item.id, title: item.title, slug: item.slug, type: "SERVICE", status: item.status as any || "PUBLISHED", lastUpdated: new Date(item.updated_at).toLocaleDateString() }));
+        cs.results.forEach(item => list.push({ id: item.id, title: item.title, slug: item.slug, type: "CASE_STUDY", status: item.status as any || "PUBLISHED", lastUpdated: new Date(item.updated_at).toLocaleDateString() }));
+        blg.results.forEach(item => list.push({ id: item.id, title: item.title, slug: item.slug, type: "BLOG", status: item.status as any || "PUBLISHED", lastUpdated: new Date(item.updated_at).toLocaleDateString() }));
         
         setContents(list);
       } catch (err) {

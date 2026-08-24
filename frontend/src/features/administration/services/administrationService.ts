@@ -76,42 +76,120 @@ export interface RoleChoiceItem {
   name: string;
 }
 
+// In-Memory Cache Store for Administration Dashboard
+const adminCache = new Map<string, { data: any; timestamp: number }>();
+const adminPromises = new Map<string, Promise<any>>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes TTL
+
+export function clearAdminCache(keyPrefix?: string) {
+  if (!keyPrefix) {
+    adminCache.clear();
+    adminPromises.clear();
+    return;
+  }
+  for (const key of adminCache.keys()) {
+    if (key.startsWith(keyPrefix)) {
+      adminCache.delete(key);
+      adminPromises.delete(key);
+    }
+  }
+}
+
+function getFromCache<T>(key: string): T | null {
+  const cached = adminCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.data as T;
+  }
+  return null;
+}
+
+function setCache(key: string, data: any) {
+  adminCache.set(key, { data, timestamp: Date.now() });
+}
+
 export const administrationService = {
-  getDashboardOverview: async (): Promise<AdminDashboardOverviewData> => {
-    const res = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.DASHBOARD);
-    if (res && typeof res === "object") {
-      if ("users" in res && "leads" in res && "support" in res) {
-        return res;
-      }
-      if (res.data && typeof res.data === "object" && "users" in res.data) {
-        return res.data;
+  getDashboardOverview: async (forceRefresh = false): Promise<AdminDashboardOverviewData> => {
+    const cacheKey = "dashboard_overview";
+    if (!forceRefresh) {
+      const cached = getFromCache<AdminDashboardOverviewData>(cacheKey);
+      if (cached) return cached;
+      if (adminPromises.has(cacheKey)) {
+        return adminPromises.get(cacheKey)!;
       }
     }
-    return res;
+
+    const promise = (async () => {
+      try {
+        const res = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.DASHBOARD);
+        let result = res;
+        if (res && typeof res === "object") {
+          if ("users" in res && "leads" in res && "support" in res) {
+            result = res;
+          } else if (res.data && typeof res.data === "object" && "users" in res.data) {
+            result = res.data;
+          }
+        }
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        adminPromises.delete(cacheKey);
+      }
+    })();
+
+    adminPromises.set(cacheKey, promise);
+    return promise;
   },
 
-  getUsers: async (params?: { role?: string; search?: string; page?: number }): Promise<UserItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS, { params });
-    const users = Array.isArray(data) ? data : (data.results || []);
-    return users.map((u: any) => ({
-      id: String(u.id),
-      name: u.username,
-      email: u.email,
-      role: (u.role || u.profile?.role || "CLIENT").toUpperCase(),
-      status: u.is_active !== false ? "ACTIVE" : "SUSPENDED",
-      is_active: u.is_active !== false,
-      date_joined: u.date_joined,
-      first_name: u.first_name || "",
-      last_name: u.last_name || "",
-    }));
+  getUsers: async (params?: { role?: string; search?: string; page?: number }, forceRefresh = false): Promise<UserItem[]> => {
+    const cacheKey = `users_${params?.role || "all"}_${params?.search || ""}_${params?.page || 1}`;
+    if (!forceRefresh) {
+      const cached = getFromCache<UserItem[]>(cacheKey);
+      if (cached) return cached;
+      if (adminPromises.has(cacheKey)) {
+        return adminPromises.get(cacheKey)!;
+      }
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS, { params });
+        const users = Array.isArray(data) ? data : (data.results || []);
+        const result = users.map((u: any) => ({
+          id: String(u.id),
+          name: u.username,
+          email: u.email,
+          role: (u.role || u.profile?.role || "CLIENT").toUpperCase(),
+          status: u.is_active !== false ? "ACTIVE" : "SUSPENDED",
+          is_active: u.is_active !== false,
+          date_joined: u.date_joined,
+          first_name: u.first_name || "",
+          last_name: u.last_name || "",
+        }));
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        adminPromises.delete(cacheKey);
+      }
+    })();
+
+    adminPromises.set(cacheKey, promise);
+    return promise;
   },
 
-  getRoleChoices: async (): Promise<RoleChoiceItem[]> => {
+  getRoleChoices: async (forceRefresh = false): Promise<RoleChoiceItem[]> => {
+    const cacheKey = "role_choices";
+    if (!forceRefresh) {
+      const cached = getFromCache<RoleChoiceItem[]>(cacheKey);
+      if (cached) return cached;
+    }
+
     try {
       const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.ROLE_CHOICES);
-      return Array.isArray(data) ? data : (data.results || []);
+      const result = Array.isArray(data) ? data : (data.results || []);
+      setCache(cacheKey, result);
+      return result;
     } catch (err) {
-      return [
+      const fallback = [
         { code: "super_admin", name: "Super Admin" },
         { code: "administrator", name: "Administrator" },
         { code: "bdm", name: "Business Development Manager" },
@@ -121,16 +199,20 @@ export const administrationService = {
         { code: "support_executive", name: "Support Executive" },
         { code: "client_user", name: "Client User" },
       ];
+      setCache(cacheKey, fallback);
+      return fallback;
     }
   },
 
   createUser: async (userData: { username: string; email: string; role: string; password?: string }) => {
-    return await axiosClient.post(API_ENDPOINTS.ADMIN.USERS, {
+    const res = await axiosClient.post(API_ENDPOINTS.ADMIN.USERS, {
       username: userData.username,
       email: userData.email,
       role: userData.role.toLowerCase(),
       ...(userData.password ? { password: userData.password } : {}),
     });
+    clearAdminCache();
+    return res;
   },
 
   updateUser: async (userId: string, userData: { username?: string; email?: string; role?: string; is_active?: boolean }) => {
@@ -139,50 +221,94 @@ export const administrationService = {
     if (userData.email) payload.email = userData.email;
     if (userData.role) payload.role = userData.role.toLowerCase();
     if (userData.is_active !== undefined) payload.is_active = userData.is_active;
-    return await axiosClient.patch(`${API_ENDPOINTS.ADMIN.USERS}${userId}/`, payload);
+    const res = await axiosClient.patch(`${API_ENDPOINTS.ADMIN.USERS}${userId}/`, payload);
+    clearAdminCache();
+    return res;
   },
 
   deleteUser: async (userId: string) => {
-    return await axiosClient.delete(`${API_ENDPOINTS.ADMIN.USERS}${userId}/`);
+    const res = await axiosClient.delete(`${API_ENDPOINTS.ADMIN.USERS}${userId}/`);
+    clearAdminCache();
+    return res;
   },
 
-  getAuditLogs: async (): Promise<AuditLogItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.AUDIT_LOGS);
-    const logs = Array.isArray(data) ? data : (data.results || []);
-    return logs.map((log: any) => ({
-      timestamp: new Date(log.timestamp).toLocaleString(),
-      operator: log.user_username || "system",
-      action: log.action,
-      scope: log.module.toUpperCase(),
-      integrity: "SECURE",
-    }));
+  getAuditLogs: async (forceRefresh = false): Promise<AuditLogItem[]> => {
+    const cacheKey = "audit_logs";
+    if (!forceRefresh) {
+      const cached = getFromCache<AuditLogItem[]>(cacheKey);
+      if (cached) return cached;
+      if (adminPromises.has(cacheKey)) {
+        return adminPromises.get(cacheKey)!;
+      }
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.AUDIT_LOGS);
+        const logs = Array.isArray(data) ? data : (data.results || []);
+        const result = logs.map((log: any) => ({
+          timestamp: new Date(log.timestamp).toLocaleString(),
+          operator: log.user_username || "system",
+          action: log.action,
+          scope: log.module.toUpperCase(),
+          integrity: "SECURE",
+        }));
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        adminPromises.delete(cacheKey);
+      }
+    })();
+
+    adminPromises.set(cacheKey, promise);
+    return promise;
   },
 
-  getRoles: async () => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.ROLES);
-    const roles = Array.isArray(data) ? data : (data.results || []);
-    return roles.map((r: any) => ({
-      id: String(r.id),
-      code: r.code || r.name,
-      name: r.name,
-      description: r.description,
-      permissions: (r.permissions || r.module_permissions || []).map((rule: any) => {
-        if (typeof rule === "string") return rule;
-        if (rule && typeof rule === "object") {
-          if (rule.module) {
-            const actions = [
-              rule.can_read && "read",
-              rule.can_create && "create",
-              rule.can_update && "update",
-              rule.can_delete && "delete",
-            ].filter(Boolean).join(",");
-            return actions ? `${rule.module}: ${actions}` : rule.module;
-          }
-          return JSON.stringify(rule);
-        }
-        return String(rule || "");
-      }),
-    }));
+  getRoles: async (forceRefresh = false) => {
+    const cacheKey = "roles";
+    if (!forceRefresh) {
+      const cached = getFromCache<any>(cacheKey);
+      if (cached) return cached;
+      if (adminPromises.has(cacheKey)) {
+        return adminPromises.get(cacheKey)!;
+      }
+    }
+
+    const promise = (async () => {
+      try {
+        const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.ROLES);
+        const roles = Array.isArray(data) ? data : (data.results || []);
+        const result = roles.map((r: any) => ({
+          id: String(r.id),
+          code: r.code || r.name,
+          name: r.name,
+          description: r.description,
+          permissions: (r.permissions || r.module_permissions || []).map((rule: any) => {
+            if (typeof rule === "string") return rule;
+            if (rule && typeof rule === "object") {
+              if (rule.module) {
+                const actions = [
+                  rule.can_read && "read",
+                  rule.can_create && "create",
+                  rule.can_update && "update",
+                  rule.can_delete && "delete",
+                ].filter(Boolean).join(",");
+                return actions ? `${rule.module}: ${actions}` : rule.module;
+              }
+              return JSON.stringify(rule);
+            }
+            return String(rule || "");
+          }),
+        }));
+        setCache(cacheKey, result);
+        return result;
+      } finally {
+        adminPromises.delete(cacheKey);
+      }
+    })();
+
+    adminPromises.set(cacheKey, promise);
+    return promise;
   },
 
   getSettings: async () => {

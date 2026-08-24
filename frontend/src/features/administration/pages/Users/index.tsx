@@ -38,6 +38,8 @@ export const Users: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Dialog State
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -182,6 +184,12 @@ export const Users: React.FC = () => {
     return matchesStatus;
   });
 
+  const totalItems = filteredUsers.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + pageSize);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       {/* Page Header */}
@@ -301,7 +309,7 @@ export const Users: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((user) => (
+                paginatedUsers.map((user) => (
                   <tr key={user.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
                     <td style={{ padding: "1rem" }}>
                       <div style={{ fontWeight: 600, color: "var(--color-text-primary)" }}>{user.name}</div>
@@ -371,6 +379,72 @@ export const Users: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div
+          style={{
+            padding: "1rem 1.5rem",
+            borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            fontSize: "0.85rem",
+            color: "var(--color-text-muted)",
+          }}
+        >
+          <div>
+            Showing <strong style={{ color: "var(--color-text-primary)" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+            <strong style={{ color: "var(--color-text-primary)" }}>{endIndex}</strong> of{" "}
+            <strong style={{ color: "var(--color-text-primary)" }}>{totalItems}</strong> entries
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span>Rows per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                style={{
+                  padding: "0.25rem 0.5rem",
+                  backgroundColor: "var(--color-bg-secondary)",
+                  border: "1px solid var(--color-border)",
+                  color: "var(--color-text-primary)",
+                  borderRadius: "4px",
+                }}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+
+            <div style={{ display: "flex", gap: "0.4rem" }}>
+              <Button
+                variant="outline"
+                disabled={currentPage === 1 || loading}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+              >
+                Previous
+              </Button>
+              <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                disabled={currentPage >= totalPages || loading}
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </div>
       </Card>
 

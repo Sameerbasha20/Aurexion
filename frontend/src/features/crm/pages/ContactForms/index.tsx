@@ -141,6 +141,15 @@ export const ContactForms: React.FC = () => {
     return isContactSource && matchesSearch;
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalItems = contactLeads.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedContactLeads = contactLeads.slice(startIndex, startIndex + pageSize);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
       {/* Page Header */}
@@ -212,80 +221,81 @@ export const ContactForms: React.FC = () => {
             action={{ label: "Go to Leads Funnel", onClick: () => navigate("/crm/leads") }}
           />
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {contactLeads.map((lead: any) => (
-              <div
-                key={lead.id}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: "1rem",
-                  padding: "1.25rem",
-                  backgroundColor: "rgba(10, 17, 28, 0.6)",
-                  border: "1px solid rgba(140, 174, 187, 0.15)",
-                  borderRadius: "6px",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div style={{ flex: 1, minWidth: "250px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.4rem" }}>
-                    <span style={{ fontSize: "0.78rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontWeight: 600 }}>
-                      {lead.reference_id || `#LD-${lead.id}`}
-                    </span>
-                    <span
-                      style={{
-                        padding: "0.15rem 0.45rem",
-                        borderRadius: "2px",
-                        fontSize: "0.68rem",
-                        fontFamily: "IBM Plex Mono, monospace",
-                        backgroundColor: "rgba(99, 245, 232, 0.12)",
-                        color: "#63f5e8",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {lead.source ? lead.source.replace("_", " ") : "Contact Form"}
-                    </span>
-                    <span
-                      style={{
-                        padding: "0.15rem 0.45rem",
-                        borderRadius: "2px",
-                        fontSize: "0.68rem",
-                        fontFamily: "IBM Plex Mono, monospace",
-                        backgroundColor: "rgba(56, 189, 248, 0.12)",
-                        color: "#38bdf8",
-                      }}
-                    >
-                      {lead.status_display || lead.status}
-                    </span>
-                  </div>
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {paginatedContactLeads.map((lead: any) => (
+                <div
+                  key={lead.id}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: "1rem",
+                    padding: "1.25rem",
+                    backgroundColor: "rgba(10, 17, 28, 0.6)",
+                    border: "1px solid rgba(140, 174, 187, 0.15)",
+                    borderRadius: "6px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: "250px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.4rem" }}>
+                      <span style={{ fontSize: "0.78rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontWeight: 600 }}>
+                        {lead.reference_id || `#LD-${lead.id}`}
+                      </span>
+                      <span
+                        style={{
+                          padding: "0.15rem 0.45rem",
+                          borderRadius: "2px",
+                          fontSize: "0.68rem",
+                          fontFamily: "IBM Plex Mono, monospace",
+                          backgroundColor: "rgba(99, 245, 232, 0.12)",
+                          color: "#63f5e8",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {lead.source ? lead.source.replace("_", " ") : "Contact Form"}
+                      </span>
+                      <span
+                        style={{
+                          padding: "0.15rem 0.45rem",
+                          borderRadius: "2px",
+                          fontSize: "0.68rem",
+                          fontFamily: "IBM Plex Mono, monospace",
+                          backgroundColor: "rgba(56, 189, 248, 0.12)",
+                          color: "#38bdf8",
+                        }}
+                      >
+                        {lead.status_display || lead.status}
+                      </span>
+                    </div>
 
-                  <h3 style={{ margin: "0 0 0.25rem 0", fontSize: "1.05rem", color: "#f8fafc" }}>
-                    {lead.company ? `${lead.company} (${lead.name})` : lead.name}
-                  </h3>
+                    <h3 style={{ margin: "0 0 0.2rem 0", fontSize: "1.1rem", color: "#f8fafc", fontWeight: 600 }}>
+                      {lead.name}
+                    </h3>
+                    <div style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: "0.6rem" }}>
+                      Company: <strong style={{ color: "#cbd5e1" }}>{lead.company || "Individual / Not Provided"}</strong>
+                    </div>
 
-                  <div style={{ display: "flex", gap: "1rem", fontSize: "0.82rem", color: "#94a3b8", flexWrap: "wrap" }}>
-                    <a href={`mailto:${lead.email}`} style={{ color: "#cbd5e1", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                      <Mail size={13} color="#63f5e8" /> {lead.email}
-                    </a>
-                    {lead.phone && (
-                      <a href={`tel:${lead.phone}`} style={{ color: "#cbd5e1", textDecoration: "none", display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                        <Phone size={13} color="#64748b" /> {lead.phone}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", fontSize: "0.8rem", color: "#cbd5e1" }}>
+                      <a href={`mailto:${lead.email}`} style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "#63f5e8", textDecoration: "none" }}>
+                        <Mail size={13} /> {lead.email}
                       </a>
+                      {lead.phone && (
+                        <a href={`tel:${lead.phone}`} style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "#94a3b8", textDecoration: "none" }}>
+                          <Phone size={13} /> {lead.phone}
+                        </a>
+                      )}
+                    </div>
+
+                    {lead.description && (
+                      <div style={{ marginTop: "0.6rem" }}>
+                        <p style={{ margin: "0.2rem 0 0 0", fontSize: "0.85rem", color: "#cbd5e1", backgroundColor: "rgba(5, 8, 17, 0.6)", padding: "0.6rem 0.75rem", borderRadius: "4px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                          {lead.description}
+                        </p>
+                      </div>
                     )}
                   </div>
-
-                  {lead.description && (
-                    <div style={{ marginTop: "0.6rem" }}>
-                      <span style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>
-                        <MessageSquare size={12} style={{ display: "inline", marginRight: "0.3rem" }} /> INQUIRY / MESSAGE BRIEF
-                      </span>
-                      <p style={{ margin: "0.2rem 0 0 0", fontSize: "0.85rem", color: "#cbd5e1", backgroundColor: "rgba(5, 8, 17, 0.6)", padding: "0.6rem 0.75rem", borderRadius: "4px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
-                        {lead.description}
-                      </p>
-                    </div>
-                  )}
-                </div>
 
                 <div style={{
                   display: "flex",
@@ -362,7 +372,75 @@ export const ContactForms: React.FC = () => {
               </div>
             ))}
           </div>
-        )}
+
+          {/* Standardized Pagination Controls */}
+          <div
+            style={{
+              padding: "1rem 1.5rem",
+              borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              fontSize: "0.85rem",
+              color: "#94a3b8",
+              marginTop: "1rem",
+            }}
+          >
+            <div>
+              Showing <strong style={{ color: "#f8fafc" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+              <strong style={{ color: "#f8fafc" }}>{endIndex}</strong> of{" "}
+              <strong style={{ color: "#f8fafc" }}>{totalItems}</strong> entries
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span>Rows per page:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    padding: "0.25rem 0.5rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140, 174, 187, 0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", gap: "0.4rem" }}>
+                <Button
+                  variant="outline"
+                  disabled={currentPage === 1 || isLoading}
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                >
+                  Previous
+                </Button>
+                <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={currentPage >= totalPages || isLoading}
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
       </Card>
 
       {/* Schedule Meeting Modal */}

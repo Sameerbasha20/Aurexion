@@ -78,6 +78,15 @@ export const Applications: React.FC = () => {
     return matchesSearch && matchesStage && matchesJob;
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalItems = filteredApplications.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedApplications = filteredApplications.slice(startIndex, startIndex + pageSize);
+
   const handleViewResume = async (trackingCode: string) => {
     try {
       const response = await recruitmentService.getApplicationResumeUrl(trackingCode);
@@ -336,130 +345,198 @@ export const Applications: React.FC = () => {
             )}
           </div>
         ) : (
-          <div
-            className="custom-scrollbar"
-            style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              maxHeight: "520px",
-            }}
-          >
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
-              <thead>
-                <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.95)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)", position: "sticky", top: 0, zIndex: 2 }}>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    TRACKING REF / DATE
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    CANDIDATE
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    APPLIED ROLE &amp; DEPT
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    STAGE
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    RESUME
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", textAlign: "center", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    ACTION
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredApplications.map((app) => {
-                  const badge = getStageBadgeStyle(app.stage);
-                  return (
-                    <tr
-                      key={app.id}
-                      style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      <td style={{ padding: "1rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
-                        <div>{app.tracking_code}</div>
-                        <div style={{ color: "#64748b", fontSize: "0.68rem" }}>
-                          {new Date(app.created_at).toLocaleDateString()}
-                        </div>
-                      </td>
+          <>
+            <div
+              className="custom-scrollbar"
+              style={{
+                overflowX: "auto",
+                overflowY: "auto",
+                maxHeight: "520px",
+              }}
+            >
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.95)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)", position: "sticky", top: 0, zIndex: 2 }}>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      TRACKING REF / DATE
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      CANDIDATE
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      APPLIED ROLE &amp; DEPT
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      STAGE
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      RESUME
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", textAlign: "center", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      ACTION
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedApplications.map((app) => {
+                    const badge = getStageBadgeStyle(app.stage);
+                    return (
+                      <tr
+                        key={app.id}
+                        style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
+                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                        onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                        onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        <td style={{ padding: "1rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
+                          <div>{app.tracking_code}</div>
+                          <div style={{ color: "#64748b", fontSize: "0.68rem" }}>
+                            {new Date(app.created_at).toLocaleDateString()}
+                          </div>
+                        </td>
 
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>
-                          {app.first_name} {app.last_name}
-                        </div>
-                        <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.2rem" }}>
-                          {app.email} &bull; {app.phone || "No phone"}
-                        </div>
-                      </td>
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>
+                            {app.first_name} {app.last_name}
+                          </div>
+                          <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "0.2rem" }}>
+                            {app.email} &bull; {app.phone || "No phone"}
+                          </div>
+                        </td>
 
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ color: "#cbd5e1", fontWeight: 500 }}>{app.job_title || `Job #${app.job_vacancy}`}</div>
-                        {app.job_department && (
-                          <div style={{ fontSize: "0.72rem", color: "#64748b" }}>{app.job_department}</div>
-                        )}
-                      </td>
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ color: "#cbd5e1", fontWeight: 500 }}>{app.job_title || `Job #${app.job_vacancy}`}</div>
+                          {app.job_department && (
+                            <div style={{ fontSize: "0.72rem", color: "#64748b" }}>{app.job_department}</div>
+                          )}
+                        </td>
 
-                      <td style={{ padding: "1rem" }}>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            padding: "0.15rem 0.55rem",
-                            borderRadius: "2px",
-                            fontSize: "0.7rem",
-                            fontFamily: "IBM Plex Mono, monospace",
-                            backgroundColor: badge.bg,
-                            color: badge.color,
-                            border: `1px solid ${badge.border}`,
-                          }}
-                        >
-                          {app.stage || "APPLIED"}
-                        </span>
-                      </td>
-
-                      <td style={{ padding: "1rem" }}>
-                        {app.resume_storage_path ? (
-                          <button
-                            type="button"
-                            onClick={() => handleViewResume(app.tracking_code)}
+                        <td style={{ padding: "1rem" }}>
+                          <span
                             style={{
-                              background: "none",
-                              border: 0,
-                              color: "#63f5e8",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "0.3rem",
-                              fontSize: "0.78rem",
-                              cursor: "pointer",
-                              padding: 0,
+                              display: "inline-block",
+                              padding: "0.15rem 0.55rem",
+                              borderRadius: "2px",
+                              fontSize: "0.7rem",
+                              fontFamily: "IBM Plex Mono, monospace",
+                              backgroundColor: badge.bg,
+                              color: badge.color,
+                              border: `1px solid ${badge.border}`,
                             }}
                           >
-                            <Download size={13} /> Resume
-                          </button>
-                        ) : (
-                          <span style={{ color: "#64748b", fontSize: "0.75rem" }}>None</span>
-                        )}
-                      </td>
+                            {app.stage || "APPLIED"}
+                          </span>
+                        </td>
 
-                      <td style={{ padding: "1rem", textAlign: "center" }}>
-                        <div style={{ display: "flex", justifyContent: "center" }}>
-                          <Button
-                            variant="outline"
-                            onClick={() => setReviewApp(app)}
-                            style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem" }}
-                          >
-                            Inspect Desk
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        <td style={{ padding: "1rem" }}>
+                          {app.resume_storage_path ? (
+                            <button
+                              type="button"
+                              onClick={() => handleViewResume(app.tracking_code)}
+                              style={{
+                                background: "none",
+                                border: 0,
+                                color: "#63f5e8",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "0.3rem",
+                                fontSize: "0.78rem",
+                                cursor: "pointer",
+                                padding: 0,
+                              }}
+                            >
+                              <Download size={13} /> Resume
+                            </button>
+                          ) : (
+                            <span style={{ color: "#64748b", fontSize: "0.75rem" }}>None</span>
+                          )}
+                        </td>
+
+                        <td style={{ padding: "1rem", textAlign: "center" }}>
+                          <div style={{ display: "flex", justifyContent: "center" }}>
+                            <Button
+                              variant="outline"
+                              onClick={() => setReviewApp(app)}
+                              style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem" }}
+                            >
+                              Inspect Desk
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Standardized Pagination Controls */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "0.85rem",
+                color: "#94a3b8",
+              }}
+            >
+              <div>
+                Showing <strong style={{ color: "#f8fafc" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+                <strong style={{ color: "#f8fafc" }}>{endIndex}</strong> of{" "}
+                <strong style={{ color: "#f8fafc" }}>{totalItems}</strong> entries
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span>Rows per page:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      backgroundColor: "#050811",
+                      border: "1px solid rgba(140, 174, 187, 0.25)",
+                      color: "#f8fafc",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage === 1 || isLoading}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Previous
+                  </Button>
+                  <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage >= totalPages || isLoading}
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </Card>
 

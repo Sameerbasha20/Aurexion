@@ -24,11 +24,20 @@ const TYPE_COLORS: Record<string, string> = {
 export const Documents: React.FC = () => {
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const { data: documents, isLoading, isError, error, refetch } = usePortalQuery<ClientDocumentItem[]>(
     ["portal", "documents"],
     () => portalService.getDocuments()
   );
+
+  const allDocs = documents || [];
+  const totalItems = allDocs.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedDocuments = allDocs.slice(startIndex, startIndex + pageSize);
 
   const handleDownload = async (doc: ClientDocumentItem) => {
     setDownloadingId(doc.id);
@@ -90,46 +99,114 @@ export const Documents: React.FC = () => {
       ) : !documents || documents.length === 0 ? (
         <EmptyState title="No project documents available" description="Official account documents, project requirements, SOWs, and architectural diagrams will be published here." />
       ) : (
-        <div style={{ display: "grid", gap: "1.25rem", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
-          {documents.map((doc) => (
-            <Card key={doc.id} glowOnHover style={{ padding: "1.25rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <FileText size={18} color="#63f5e8" />
-                  <h3 style={{ margin: 0, fontSize: "1rem", color: "#f8fafc", fontWeight: 600 }}>
-                    {doc.title}
-                  </h3>
+        <>
+          <div style={{ display: "grid", gap: "1.25rem", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+            {paginatedDocuments.map((doc) => (
+              <Card key={doc.id} glowOnHover style={{ padding: "1.25rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <FileText size={18} color="#63f5e8" />
+                    <h3 style={{ margin: 0, fontSize: "1rem", color: "#f8fafc", fontWeight: 600 }}>
+                      {doc.title}
+                    </h3>
+                  </div>
+                  <Badge className={TYPE_COLORS[doc.document_type] || "bg-gray-500/20 text-gray-400"}>
+                    {doc.document_type_display || doc.document_type}
+                  </Badge>
                 </div>
-                <Badge className={TYPE_COLORS[doc.document_type] || "bg-gray-500/20 text-gray-400"}>
-                  {doc.document_type_display || doc.document_type}
-                </Badge>
+
+                {doc.project_title && (
+                  <p style={{ fontSize: "0.8rem", color: "#94a3b8", margin: "0 0 0.5rem 0" }}>
+                    Project: <strong style={{ color: "#cbd5e1" }}>{doc.project_title}</strong>
+                  </p>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem", borderTop: "1px solid rgba(140,174,187,0.1)", paddingTop: "0.75rem" }}>
+                  <span style={{ fontSize: "0.75rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
+                    {doc.file_size} · {new Date(doc.uploaded_at).toLocaleDateString()}
+                  </span>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={downloadingId === doc.id}
+                    onClick={() => handleDownload(doc)}
+                    style={{ fontSize: "0.75rem" }}
+                  >
+                    <Download size={13} style={{ marginRight: "0.3rem" }} />
+                    {downloadingId === doc.id ? "Authorizing..." : "Secure Download"}
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Standardized Pagination Controls */}
+          <div
+            style={{
+              padding: "1rem 1.5rem",
+              borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              fontSize: "0.85rem",
+              color: "#94a3b8",
+            }}
+          >
+            <div>
+              Showing <strong style={{ color: "#f8fafc" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+              <strong style={{ color: "#f8fafc" }}>{endIndex}</strong> of{" "}
+              <strong style={{ color: "#f8fafc" }}>{totalItems}</strong> entries
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span>Rows per page:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    padding: "0.25rem 0.5rem",
+                    backgroundColor: "#050811",
+                    border: "1px solid rgba(140, 174, 187, 0.25)",
+                    color: "#f8fafc",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
               </div>
 
-              {doc.project_title && (
-                <p style={{ fontSize: "0.8rem", color: "#94a3b8", margin: "0 0 0.5rem 0" }}>
-                  Project: <strong style={{ color: "#cbd5e1" }}>{doc.project_title}</strong>
-                </p>
-              )}
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem", borderTop: "1px solid rgba(140,174,187,0.1)", paddingTop: "0.75rem" }}>
-                <span style={{ fontSize: "0.75rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
-                  {doc.file_size} · {new Date(doc.uploaded_at).toLocaleDateString()}
-                </span>
-
+              <div style={{ display: "flex", gap: "0.4rem" }}>
                 <Button
                   variant="outline"
-                  size="sm"
-                  disabled={downloadingId === doc.id}
-                  onClick={() => handleDownload(doc)}
-                  style={{ fontSize: "0.75rem" }}
+                  disabled={currentPage === 1 || isLoading}
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
                 >
-                  <Download size={13} style={{ marginRight: "0.3rem" }} />
-                  {downloadingId === doc.id ? "Authorizing..." : "Secure Download"}
+                  Previous
+                </Button>
+                <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={currentPage >= totalPages || isLoading}
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                >
+                  Next
                 </Button>
               </div>
-            </Card>
-          ))}
-        </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -391,13 +391,24 @@ class LeadViewSet(viewsets.ModelViewSet):
         """
         lead = self.get_object()
         password = request.data.get("password")
-        lead, user = onboard_lead_as_client(lead=lead, actor=request.user, password=password, request=request)
-        return Response({
-            "message": f"Client user account created and credentials dispatched to {lead.email}.",
-            "lead": LeadSerializer(lead, context=self.get_serializer_context()).data,
-            "user_id": user.id,
-            "username": user.username,
-        })
+        email = request.data.get("email")
+        try:
+            lead, user = onboard_lead_as_client(lead=lead, actor=request.user, password=password, email=email, request=request)
+            return Response({
+                "message": f"Client user account created and credentials dispatched to {lead.email}.",
+                "lead": LeadSerializer(lead, context=self.get_serializer_context()).data,
+                "user_id": user.id,
+                "username": user.username,
+            })
+        except ValidationError as e:
+            return Response({"detail": str(e.detail if hasattr(e, 'detail') else e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=["post"], url_path="onboard_client")
+    def onboard_client_underscore(self, request, pk=None):
+        """Alias endpoint to handle requests formatted with an underscore (onboard_client)."""
+        return self.onboard_client(request, pk=pk)
 
     @extend_schema(tags=["CRM Leads"], request=LeadScheduleMeetingSerializer)
     @action(detail=True, methods=["post"], url_path="schedule-meeting")

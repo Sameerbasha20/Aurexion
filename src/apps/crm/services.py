@@ -286,7 +286,7 @@ def mark_lead_won(*, lead, actor, value=None, notes=None, request=None):
     return lead
 
 
-def onboard_lead_as_client(*, lead, actor, password=None, request=None):
+def onboard_lead_as_client(*, lead, actor, password=None, email=None, request=None):
     """
     BDM action: Review won lead details, create/activate client user account,
     and dispatch official welcome email with login credentials.
@@ -295,6 +295,10 @@ def onboard_lead_as_client(*, lead, actor, password=None, request=None):
 
     if lead.status != Lead.Status.WON:
         raise LeadStateTransitionError(f"Lead {lead.reference_id} must be marked as WON before onboarding as client.")
+
+    if email and str(email).strip():
+        lead.email = str(email).strip().lower()
+        lead.save(update_fields=["email", "updated_at"])
 
     # D-02 Fix: Generate a secure 12-char random password if no password/setting provided
     if password:
@@ -307,23 +311,40 @@ def onboard_lead_as_client(*, lead, actor, password=None, request=None):
 
     login_url = getattr(settings, 'CLIENT_PORTAL_LOGIN_URL', 'http://localhost:3000/login')
 
-    if not lead.email:
-        raise ValueError("Lead does not have a valid email address for client portal onboarding.")
+    clean_email = (lead.email or "").strip().lower()
+    if not clean_email:
+        raise ValidationError("Lead does not have a valid email address for client portal onboarding. Please enter a valid client email.")
 
-    # Check if user already exists with this email
-    user, created = User.objects.get_or_create(
-        email=lead.email,
-        defaults={
-            'username': lead.email,
-            'first_name': lead.name.split(' ')[0] if lead.name else 'Client',
-            'last_name': ' '.join(lead.name.split(' ')[1:]) if lead.name and len(lead.name.split(' ')) > 1 else '',
-            'is_active': True,
-        }
-    )
+    # Safely find existing user by email (case-insensitive) or username
+    user = User.objects.filter(email__iexact=clean_email).first()
+    if not user:
+        user = User.objects.filter(username__iexact=clean_email).first()
 
-    user.set_password(default_password)
-    user.is_active = True
-    user.save()
+    first_name = lead.name.split(' ')[0] if lead.name else 'Client'
+    last_name = ' '.join(lead.name.split(' ')[1:]) if lead.name and len(lead.name.split(' ')) > 1 else ''
+
+    if user:
+        user.set_password(default_password)
+        if not user.email:
+            user.email = clean_email
+        user.is_active = True
+        user.save()
+    else:
+        # Create new client user with safe username length limit
+        username_candidate = clean_email[:150]
+        # Guarantee unique username
+        if User.objects.filter(username=username_candidate).exists():
+            username_candidate = f"client_{lead.id}_{clean_email}"[:150]
+
+        user = User.objects.create(
+            username=username_candidate,
+            email=clean_email,
+            first_name=first_name[:150],
+            last_name=last_name[:150],
+            is_active=True,
+        )
+        user.set_password(default_password)
+        user.save()
 
     # Ensure profile has client_user role
     profile, _ = UserProfile.objects.get_or_create(user=user)

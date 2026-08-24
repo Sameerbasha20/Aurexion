@@ -14,6 +14,8 @@ export const BdmSalesOverview: React.FC = () => {
   });
   const [opportunities, setOpportunities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     const loadBdmData = async () => {
@@ -51,6 +53,12 @@ export const BdmSalesOverview: React.FC = () => {
     };
     loadBdmData();
   }, []);
+
+  const totalItems = opportunities.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedOpps = opportunities.slice(startIndex, startIndex + pageSize);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
@@ -104,44 +112,126 @@ export const BdmSalesOverview: React.FC = () => {
             RETRIEVING OPPORTUNITIES MATRIX...
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.9rem" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ID</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>OPPORTUNITY TITLE</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ACCOUNT CLIENT</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ESTIMATED VALUE</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>PROBABILITY</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>STAGE</th>
-                  <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>LAST UPDATED</th>
-                </tr>
-              </thead>
-              <tbody>
-                {opportunities.map((opp) => (
-                  <tr key={opp.id} style={{ borderBottom: "1px solid var(--color-border)" }} className="hover:bg-muted/10">
-                    <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>{opp.id.toUpperCase()}</td>
-                    <td style={{ padding: "1rem", fontWeight: 600, color: "var(--color-text-primary)" }}>{opp.title}</td>
-                    <td style={{ padding: "1rem", color: "var(--color-text-secondary)" }}>{opp.lead}</td>
-                    <td style={{ padding: "1rem", color: "var(--color-text-primary)", fontWeight: 500 }}>{opp.value || "$150,000"}</td>
-                    <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>{opp.probability || "50%"}</td>
-                    <td style={{ padding: "1rem" }}>
-                      <span style={{
-                        fontSize: "0.7rem",
-                        fontFamily: "var(--font-mono)",
-                        color: opp.status === "Won" ? "#10b981" : opp.status === "Negotiation" ? "#f97316" : "var(--color-cyan)",
-                        backgroundColor: "rgba(0, 0, 0, 0.15)",
-                        padding: "0.15rem 0.4rem",
-                        borderRadius: "3px",
-                        border: "1px solid rgba(255,255,255,0.05)"
-                      }}>{opp.status}</span>
-                    </td>
-                    <td style={{ padding: "1rem", color: "var(--color-text-muted)", fontSize: "0.85rem" }}>{opp.updated}</td>
+          <>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.9rem" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--color-border)", color: "var(--color-text-muted)" }}>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ID</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>OPPORTUNITY TITLE</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ACCOUNT CLIENT</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>ESTIMATED VALUE</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>PROBABILITY</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>STAGE</th>
+                    <th style={{ padding: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>LAST UPDATED</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {paginatedOpps.map((opp) => (
+                    <tr key={opp.id} style={{ borderBottom: "1px solid var(--color-border)" }} className="hover:bg-muted/10">
+                      <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>{String(opp.id).toUpperCase()}</td>
+                      <td style={{ padding: "1rem", fontWeight: 600, color: "var(--color-text-primary)" }}>{opp.title}</td>
+                      <td style={{ padding: "1rem", color: "var(--color-text-secondary)" }}>{opp.lead}</td>
+                      <td style={{ padding: "1rem", color: "var(--color-text-primary)", fontWeight: 500 }}>{opp.value || "$150,000"}</td>
+                      <td style={{ padding: "1rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>{opp.probability || "50%"}</td>
+                      <td style={{ padding: "1rem" }}>
+                        <span style={{
+                          fontSize: "0.7rem",
+                          fontFamily: "var(--font-mono)",
+                          color: opp.status === "Won" ? "#10b981" : opp.status === "Negotiation" ? "#f97316" : "var(--color-cyan)",
+                          backgroundColor: "rgba(0, 0, 0, 0.15)",
+                          padding: "0.15rem 0.4rem",
+                          borderRadius: "3px",
+                          border: "1px solid rgba(255,255,255,0.05)"
+                        }}>{opp.status}</span>
+                      </td>
+                      <td style={{ padding: "1rem", color: "var(--color-text-muted)", fontSize: "0.85rem" }}>{opp.updated}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "0.85rem",
+                color: "var(--color-text-muted)",
+              }}
+            >
+              <div>
+                Showing <strong style={{ color: "var(--color-text-primary)" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+                <strong style={{ color: "var(--color-text-primary)" }}>{endIndex}</strong> of{" "}
+                <strong style={{ color: "var(--color-text-primary)" }}>{totalItems}</strong> entries
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span>Rows per page:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      backgroundColor: "var(--color-bg-secondary)",
+                      border: "1px solid var(--color-border)",
+                      color: "var(--color-text-primary)",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <button
+                    disabled={currentPage === 1 || loading}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    style={{
+                      padding: "0.25rem 0.6rem",
+                      fontSize: "0.75rem",
+                      backgroundColor: "transparent",
+                      border: "1px solid var(--color-border)",
+                      color: currentPage === 1 ? "gray" : "var(--color-text-primary)",
+                      borderRadius: "4px",
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer"
+                    }}
+                  >
+                    Previous
+                  </button>
+                  <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "var(--font-mono)", color: "var(--color-cyan)" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    disabled={currentPage >= totalPages || loading}
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    style={{
+                      padding: "0.25rem 0.6rem",
+                      fontSize: "0.75rem",
+                      backgroundColor: "transparent",
+                      border: "1px solid var(--color-border)",
+                      color: currentPage >= totalPages ? "gray" : "var(--color-text-primary)",
+                      borderRadius: "4px",
+                      cursor: currentPage >= totalPages ? "not-allowed" : "pointer"
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </Card>
     </div>

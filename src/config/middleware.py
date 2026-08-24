@@ -11,7 +11,7 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
         response['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
         
         # Content-Security-Policy
-        response['Content-Security-Policy'] = "default-src 'self'; img-src 'self' data: http: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://maps.googleapis.com; connect-src 'self' http: https: https://maps.googleapis.com; frame-src 'self' https://www.google.com https://maps.google.com https://www.google.com/maps/; object-src 'none';"
+        response['Content-Security-Policy'] = "default-src 'self'; img-src 'self' data: http: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://maps.googleapis.com; connect-src 'self' http: https: https://maps.googleapis.com; frame-src 'self' https://www.google.com https://*.google.com https://maps.google.com https://www.google.com/maps/ https://*.youtube.com; object-src 'none';"
         
         # Permissions-Policy
         response['Permissions-Policy'] = "geolocation=(), microphone=(), camera=()"
@@ -20,7 +20,7 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
         response['X-Content-Type-Options'] = 'nosniff'
         
         # X-Frame-Options
-        response['X-Frame-Options'] = 'DENY'
+        response['X-Frame-Options'] = 'SAMEORIGIN'
         
         # Referrer-Policy
         response['Referrer-Policy'] = 'strict-origin-when-cross-origin'

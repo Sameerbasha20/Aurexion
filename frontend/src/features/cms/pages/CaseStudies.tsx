@@ -18,8 +18,12 @@ import {
 } from "lucide-react";
 
 export const CaseStudies: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const {
     caseStudies,
+    totalCount,
     isLoading,
     actionLoading,
     error,
@@ -28,7 +32,7 @@ export const CaseStudies: React.FC = () => {
     updateCaseStudy,
     toggleStatus,
     deleteCaseStudy,
-  } = useCmsCaseStudies();
+  } = useCmsCaseStudies(currentPage, pageSize);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -77,6 +81,12 @@ export const CaseStudies: React.FC = () => {
 
     return matchesSearch && matchesStatus;
   });
+
+  const totalItems = totalCount || filteredCaseStudies.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedCaseStudies = filteredCaseStudies.slice(startIndex, startIndex + pageSize);
 
   const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean) => {
     const file = e.target.files?.[0];
@@ -369,123 +379,194 @@ export const CaseStudies: React.FC = () => {
             </Button>
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
-              <thead>
-                <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.8)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)" }}>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    CASE TITLE / CLIENT
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    CONTEXT &amp; CHALLENGE
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    DELIVERED OUTCOMES
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    STATUS
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", textAlign: "right", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    ACTIONS
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCaseStudies.map((cs) => {
-                  const isPub = cs.status?.toLowerCase() === "published";
-                  return (
-                    <tr
-                      key={cs.id}
-                      style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                          {cs.media && (
-                            <img
-                              src={cs.media}
-                              alt=""
-                              style={{ width: "40px", height: "40px", borderRadius: "4px", objectFit: "cover", backgroundColor: "rgba(255,255,255,0.05)" }}
-                            />
-                          )}
-                          <div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                              {cs.confidential && <Lock size={12} color="#f87171" />}
-                              <span style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{cs.title}</span>
-                            </div>
-                            <div style={{ fontSize: "0.75rem", color: "#63f5e8", marginTop: "0.2rem" }}>
-                              Client: {cs.client}  /{cs.slug}
+          <>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.8)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)" }}>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      CASE STUDY TITLE / SLUG
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      CLIENT NAME
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      OUTCOMES & IMPACT
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      STATUS
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", textAlign: "right", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      ACTIONS
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCaseStudies.map((cs) => {
+                    const isPub = cs.status?.toLowerCase() === "published";
+
+                    return (
+                      <tr
+                        key={cs.id}
+                        style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
+                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                        onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                        onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                            {cs.media && (
+                              <img
+                                src={cs.media}
+                                alt=""
+                                style={{ width: "40px", height: "40px", borderRadius: "4px", objectFit: "cover", backgroundColor: "rgba(255,255,255,0.05)" }}
+                              />
+                            )}
+                            <div>
+                              <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{cs.title}</div>
+                              <div style={{ fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontSize: "0.72rem", marginTop: "0.2rem" }}>
+                                /{cs.slug}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      <td style={{ padding: "1rem", maxWidth: "260px" }}>
-                        <div style={{ fontSize: "0.8rem", color: "#cbd5e1", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {cs.business_challenge || cs.context}
-                        </div>
-                      </td>
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ color: cs.confidential ? "#facc15" : "#cbd5e1", fontWeight: 500 }}>
+                            {cs.client || "Unspecified Client"}
+                          </div>
+                          {cs.confidential && (
+                            <div style={{ fontSize: "0.68rem", fontFamily: "IBM Plex Mono, monospace", color: "#facc15" }}>
+                              CONFIDENTIAL
+                            </div>
+                          )}
+                        </td>
 
-                      <td style={{ padding: "1rem", maxWidth: "240px" }}>
-                        <div style={{ fontSize: "0.8rem", color: "#4ade80", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {cs.outcomes_performance || "Verified architecture delivered"}
-                        </div>
-                      </td>
+                        <td style={{ padding: "1rem", maxWidth: "240px" }}>
+                          <div style={{ fontSize: "0.8rem", color: "#4ade80", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {cs.outcomes_performance || "Verified architecture delivered"}
+                          </div>
+                        </td>
 
-                      <td style={{ padding: "1rem" }}>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            padding: "0.15rem 0.55rem",
-                            borderRadius: "2px",
-                            fontSize: "0.7rem",
-                            fontFamily: "IBM Plex Mono, monospace",
-                            backgroundColor: isPub ? "rgba(74, 222, 128, 0.15)" : "rgba(250, 204, 21, 0.15)",
-                            color: isPub ? "#4ade80" : "#facc15",
-                            border: `1px solid ${isPub ? "rgba(74, 222, 128, 0.3)" : "rgba(250, 204, 21, 0.3)"}`,
-                          }}
-                        >
-                          {cs.status}
-                        </span>
-                      </td>
-
-                      <td style={{ padding: "1rem", textAlign: "right" }}>
-                        <div style={{ display: "flex", gap: "0.4rem", justifyContent: "flex-end" }}>
-                          <Button
-                            variant="outline"
-                            onClick={() => handleTogglePublish(cs)}
-                            disabled={actionLoading}
-                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
+                        <td style={{ padding: "1rem" }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "0.15rem 0.55rem",
+                              borderRadius: "2px",
+                              fontSize: "0.7rem",
+                              fontFamily: "IBM Plex Mono, monospace",
+                              backgroundColor: isPub ? "rgba(74, 222, 128, 0.15)" : "rgba(250, 204, 21, 0.15)",
+                              color: isPub ? "#4ade80" : "#facc15",
+                              border: `1px solid ${isPub ? "rgba(74, 222, 128, 0.3)" : "rgba(250, 204, 21, 0.3)"}`,
+                            }}
                           >
-                            {isPub ? "Unpublish" : "Publish"}
-                          </Button>
+                            {cs.status}
+                          </span>
+                        </td>
 
-                          <Button
-                            variant="outline"
-                            onClick={() => handleOpenEdit(cs)}
-                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
-                          >
-                            <Edit size={12} />
-                          </Button>
+                        <td style={{ padding: "1rem", textAlign: "right" }}>
+                          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "flex-end" }}>
+                            <Button
+                              variant="outline"
+                              onClick={() => handleTogglePublish(cs)}
+                              disabled={actionLoading}
+                              style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
+                            >
+                              {isPub ? "Unpublish" : "Publish"}
+                            </Button>
 
-                          <Button
-                            variant="outline"
-                            onClick={() => handleDelete(cs)}
-                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.3)" }}
-                          >
-                            <Trash2 size={12} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                            <Button
+                              variant="outline"
+                              onClick={() => handleOpenEdit(cs)}
+                              style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
+                            >
+                              <Edit size={12} />
+                            </Button>
+
+                            <Button
+                              variant="outline"
+                              onClick={() => handleDelete(cs)}
+                              style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.3)" }}
+                            >
+                              <Trash2 size={12} />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "0.85rem",
+                color: "#94a3b8",
+              }}
+            >
+              <div>
+                Showing <strong style={{ color: "#f8fafc" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+                <strong style={{ color: "#f8fafc" }}>{endIndex}</strong> of{" "}
+                <strong style={{ color: "#f8fafc" }}>{totalItems}</strong> entries
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span>Rows per page:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      backgroundColor: "#050811",
+                      border: "1px solid rgba(140, 174, 187, 0.25)",
+                      color: "#f8fafc",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage === 1 || isLoading}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Previous
+                  </Button>
+                  <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage >= totalPages || isLoading}
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </Card>
 

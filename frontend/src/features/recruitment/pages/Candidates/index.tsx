@@ -67,6 +67,15 @@ export const Candidates: React.FC = () => {
     return matchesSearch && matchesStage;
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalItems = filteredCandidates.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedCandidates = filteredCandidates.slice(startIndex, startIndex + pageSize);
+
   const handleOpenStageModal = (candidate: CandidateItem) => {
     setSelectedCandidate(candidate);
     setNewStage(candidate.stage || "SCREENING");
@@ -269,127 +278,195 @@ export const Candidates: React.FC = () => {
             </Link>
           </div>
         ) : (
-          <div
-            className="custom-scrollbar"
-            style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              maxHeight: "520px",
-            }}
-          >
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
-              <thead>
-                <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.95)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)", position: "sticky", top: 0, zIndex: 2 }}>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    CANDIDATE NAME / CODE
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    CONTACT REACH
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    APPLIED POSITION
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    CURRENT STAGE
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    RESUME
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", textAlign: "center", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    ACTIONS
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCandidates.map((candidate) => {
-                  const badge = getStageBadgeStyle(candidate.stage);
-                  return (
-                    <tr
-                      key={candidate.id}
-                      style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{candidate.name}</div>
-                        <div style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
-                          Ref: {candidate.tracking_code || `#APP-${candidate.id}`} � Applied: {new Date(candidate.applied_date).toLocaleDateString()}
-                        </div>
-                      </td>
+          <>
+            <div
+              className="custom-scrollbar"
+              style={{
+                overflowX: "auto",
+                overflowY: "auto",
+                maxHeight: "520px",
+              }}
+            >
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.95)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)", position: "sticky", top: 0, zIndex: 2 }}>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      CANDIDATE NAME / CODE
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      CONTACT REACH
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      APPLIED POSITION
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      CURRENT STAGE
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      RESUME
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", textAlign: "center", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      ACTIONS
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedCandidates.map((candidate) => {
+                    const badge = getStageBadgeStyle(candidate.stage);
+                    return (
+                      <tr
+                        key={candidate.id}
+                        style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
+                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                        onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                        onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{candidate.name}</div>
+                          <div style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "IBM Plex Mono, monospace" }}>
+                            Ref: {candidate.tracking_code || `#APP-${candidate.id}`} &bull; Applied: {new Date(candidate.applied_date).toLocaleDateString()}
+                          </div>
+                        </td>
 
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-                          <a
-                            href={`mailto:${candidate.email}`}
-                            style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "#63f5e8", textDecoration: "none", fontSize: "0.78rem" }}
-                          >
-                            <Mail size={12} /> {candidate.email}
-                          </a>
-                          {candidate.phone && (
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
                             <a
-                              href={`tel:${candidate.phone}`}
-                              style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "#94a3b8", textDecoration: "none", fontSize: "0.75rem" }}
+                              href={`mailto:${candidate.email}`}
+                              style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "#63f5e8", textDecoration: "none", fontSize: "0.78rem" }}
                             >
-                              <Phone size={12} /> {candidate.phone}
+                              <Mail size={12} /> {candidate.email}
                             </a>
+                            {candidate.phone && (
+                              <a
+                                href={`tel:${candidate.phone}`}
+                                style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "#94a3b8", textDecoration: "none", fontSize: "0.75rem" }}
+                              >
+                                <Phone size={12} /> {candidate.phone}
+                              </a>
+                            )}
+                          </div>
+                        </td>
+
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ color: "#cbd5e1", fontWeight: 500 }}>{candidate.job_title}</div>
+                          <div style={{ fontSize: "0.72rem", color: "#64748b" }}>{candidate.job_department}</div>
+                        </td>
+
+                        <td style={{ padding: "1rem" }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "0.15rem 0.55rem",
+                              borderRadius: "2px",
+                              fontSize: "0.7rem",
+                              fontFamily: "IBM Plex Mono, monospace",
+                              backgroundColor: badge.bg,
+                              color: badge.color,
+                              border: `1px solid ${badge.border}`,
+                            }}
+                          >
+                            {candidate.stage}
+                          </span>
+                        </td>
+
+                        <td style={{ padding: "1rem" }}>
+                          {candidate.resume_url ? (
+                            <button
+                              onClick={() => handleViewResume(candidate.tracking_code)}
+                              style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.78rem", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                            >
+                              <Download size={13} /> Resume
+                            </button>
+                          ) : (
+                            <span style={{ color: "#64748b", fontSize: "0.75rem" }}>Attached</span>
                           )}
-                        </div>
-                      </td>
+                        </td>
 
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ color: "#cbd5e1", fontWeight: 500 }}>{candidate.job_title}</div>
-                        <div style={{ fontSize: "0.72rem", color: "#64748b" }}>{candidate.job_department}</div>
-                      </td>
+                        <td style={{ padding: "1rem", textAlign: "center" }}>
+                          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center" }}>
+                            <Button
+                              glow
+                              onClick={() => handleOpenReview(candidate)}
+                              style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem" }}
+                            >
+                              Review &rarr;
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-                      <td style={{ padding: "1rem" }}>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            padding: "0.15rem 0.55rem",
-                            borderRadius: "2px",
-                            fontSize: "0.7rem",
-                            fontFamily: "IBM Plex Mono, monospace",
-                            backgroundColor: badge.bg,
-                            color: badge.color,
-                            border: `1px solid ${badge.border}`,
-                          }}
-                        >
-                          {candidate.stage}
-                        </span>
-                      </td>
+            {/* Standardized Pagination Controls */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "0.85rem",
+                color: "#94a3b8",
+              }}
+            >
+              <div>
+                Showing <strong style={{ color: "#f8fafc" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+                <strong style={{ color: "#f8fafc" }}>{endIndex}</strong> of{" "}
+                <strong style={{ color: "#f8fafc" }}>{totalItems}</strong> entries
+              </div>
 
-                      <td style={{ padding: "1rem" }}>
-                        {candidate.resume_url ? (
-                          <button
-                            onClick={() => handleViewResume(candidate.tracking_code)}
-                            style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", color: "#63f5e8", fontSize: "0.78rem", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                          >
-                            <Download size={13} /> Resume
-                          </button>
-                        ) : (
-                          <span style={{ color: "#64748b", fontSize: "0.75rem" }}>Attached</span>
-                        )}
-                      </td>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span>Rows per page:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      backgroundColor: "#050811",
+                      border: "1px solid rgba(140, 174, 187, 0.25)",
+                      color: "#f8fafc",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
 
-                      <td style={{ padding: "1rem", textAlign: "center" }}>
-                        <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center" }}>
-                          <Button
-                            glow
-                            onClick={() => handleOpenReview(candidate)}
-                            style={{ padding: "0.35rem 0.65rem", fontSize: "0.75rem" }}
-                          >
-                            Review &rarr;
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage === 1 || isLoading}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Previous
+                  </Button>
+                  <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage >= totalPages || isLoading}
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </Card>
 

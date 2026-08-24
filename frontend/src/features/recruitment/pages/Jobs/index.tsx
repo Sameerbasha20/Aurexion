@@ -49,6 +49,9 @@ export const Jobs: React.FC = () => {
   const [editForm, setEditForm] = useState<Partial<JobVacancy>>({});
   const [editError, setEditError] = useState<string | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const departments = Array.from(new Set(jobs.map((j) => j.department).filter(Boolean)));
 
   const filteredJobs = jobs.filter((job) => {
@@ -64,6 +67,12 @@ export const Jobs: React.FC = () => {
 
     return matchesSearch && matchesStatus && matchesDepartment;
   });
+
+  const totalItems = filteredJobs.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedJobs = filteredJobs.slice(startIndex, startIndex + pageSize);
 
   const handleOpenEdit = (job: JobVacancy) => {
     setEditingJob(job);
@@ -322,121 +331,189 @@ export const Jobs: React.FC = () => {
             </Button>
           </div>
         ) : (
-          <div
-            className="custom-scrollbar"
-            style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              maxHeight: "520px",
-            }}
-          >
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
-              <thead>
-                <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.95)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)", position: "sticky", top: 0, zIndex: 2 }}>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    JOB CODE / DATE
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    POSITION &amp; DEPARTMENT
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    LOCATION &amp; EXPERIENCE
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    KEY SKILLS
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    STATUS
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", textAlign: "right", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    ACTIONS
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredJobs.map((job) => {
-                  const isActive = job.status === "ACTIVE";
-                  return (
-                    <tr
-                      key={job.id}
-                      style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      <td style={{ padding: "1rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
-                        <div>{job.job_id}</div>
-                        <div style={{ color: "#64748b", fontSize: "0.68rem" }}>
-                          {new Date(job.created_at).toLocaleDateString()}
-                        </div>
-                      </td>
+          <>
+            <div
+              className="custom-scrollbar"
+              style={{
+                overflowX: "auto",
+                overflowY: "auto",
+                maxHeight: "520px",
+              }}
+            >
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.95)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)", position: "sticky", top: 0, zIndex: 2 }}>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      JOB CODE / DATE
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      POSITION &amp; DEPARTMENT
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      LOCATION &amp; EXPERIENCE
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      KEY SKILLS
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      STATUS
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", textAlign: "right", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      ACTIONS
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedJobs.map((job) => {
+                    const isActive = job.status === "ACTIVE";
+                    return (
+                      <tr
+                        key={job.id}
+                        style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
+                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                        onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                        onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        <td style={{ padding: "1rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
+                          <div>{job.job_id}</div>
+                          <div style={{ color: "#64748b", fontSize: "0.68rem" }}>
+                            {new Date(job.created_at).toLocaleDateString()}
+                          </div>
+                        </td>
 
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{job.title}</div>
-                        <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{job.department}</div>
-                      </td>
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{job.title}</div>
+                          <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{job.department}</div>
+                        </td>
 
-                      <td style={{ padding: "1rem", fontSize: "0.82rem" }}>
-                        <div style={{ color: "#cbd5e1" }}>{job.location}</div>
-                        <div style={{ fontSize: "0.72rem", color: "#64748b" }}>{job.experience}</div>
-                      </td>
+                        <td style={{ padding: "1rem", fontSize: "0.82rem" }}>
+                          <div style={{ color: "#cbd5e1" }}>{job.location}</div>
+                          <div style={{ fontSize: "0.72rem", color: "#64748b" }}>{job.experience}</div>
+                        </td>
 
-                      <td style={{ padding: "1rem", maxWidth: "220px" }}>
-                        <div style={{ fontSize: "0.78rem", color: "#cbd5e1", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {job.skills}
-                        </div>
-                      </td>
+                        <td style={{ padding: "1rem", maxWidth: "220px" }}>
+                          <div style={{ fontSize: "0.78rem", color: "#cbd5e1", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {job.skills}
+                          </div>
+                        </td>
 
-                      <td style={{ padding: "1rem" }}>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            padding: "0.15rem 0.55rem",
-                            borderRadius: "2px",
-                            fontSize: "0.7rem",
-                            fontFamily: "IBM Plex Mono, monospace",
-                            backgroundColor: isActive ? "rgba(74, 222, 128, 0.15)" : "rgba(248, 113, 113, 0.15)",
-                            color: isActive ? "#4ade80" : "#f87171",
-                            border: `1px solid ${isActive ? "rgba(74, 222, 128, 0.3)" : "rgba(248, 113, 113, 0.3)"}`,
-                          }}
-                        >
-                          {job.status}
-                        </span>
-                      </td>
-
-                      <td style={{ padding: "1rem", textAlign: "right" }}>
-                        <div style={{ display: "flex", gap: "0.4rem", justifyContent: "flex-end" }}>
-                          <Button
-                            variant="outline"
-                            onClick={() => handleTogglePublish(job)}
-                            disabled={actionLoading}
-                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
+                        <td style={{ padding: "1rem" }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "0.15rem 0.55rem",
+                              borderRadius: "2px",
+                              fontSize: "0.7rem",
+                              fontFamily: "IBM Plex Mono, monospace",
+                              backgroundColor: isActive ? "rgba(74, 222, 128, 0.15)" : "rgba(248, 113, 113, 0.15)",
+                              color: isActive ? "#4ade80" : "#f87171",
+                              border: `1px solid ${isActive ? "rgba(74, 222, 128, 0.3)" : "rgba(248, 113, 113, 0.3)"}`,
+                            }}
                           >
-                            {isActive ? "Close" : "Publish"}
-                          </Button>
+                            {job.status}
+                          </span>
+                        </td>
 
-                          <Button
-                            variant="outline"
-                            onClick={() => handleOpenEdit(job)}
-                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
-                          >
-                            <Edit size={12} />
-                          </Button>
-
-                          <Link href={`/recruitment/applications?job=${encodeURIComponent(job.title)}`}>
-                            <Button glow style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}>
-                              Applications &rarr;
+                        <td style={{ padding: "1rem", textAlign: "right" }}>
+                          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "flex-end" }}>
+                            <Button
+                              variant="outline"
+                              onClick={() => handleTogglePublish(job)}
+                              disabled={actionLoading}
+                              style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
+                            >
+                              {isActive ? "Close" : "Publish"}
                             </Button>
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+
+                            <Button
+                              variant="outline"
+                              onClick={() => handleOpenEdit(job)}
+                              style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
+                            >
+                              <Edit size={12} />
+                            </Button>
+
+                            <Link href={`/recruitment/applications?job=${encodeURIComponent(job.title)}`}>
+                              <Button glow style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}>
+                                Applications &rarr;
+                              </Button>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Standardized Pagination Controls */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "0.85rem",
+                color: "#94a3b8",
+              }}
+            >
+              <div>
+                Showing <strong style={{ color: "#f8fafc" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+                <strong style={{ color: "#f8fafc" }}>{endIndex}</strong> of{" "}
+                <strong style={{ color: "#f8fafc" }}>{totalItems}</strong> entries
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span>Rows per page:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      backgroundColor: "#050811",
+                      border: "1px solid rgba(140, 174, 187, 0.25)",
+                      color: "#f8fafc",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage === 1 || isLoading}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Previous
+                  </Button>
+                  <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage >= totalPages || isLoading}
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </Card>
 

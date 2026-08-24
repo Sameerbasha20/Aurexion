@@ -18,8 +18,12 @@ import {
 } from "lucide-react";
 
 export const Services: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const {
     services,
+    totalCount,
     isLoading,
     actionLoading,
     error,
@@ -28,7 +32,7 @@ export const Services: React.FC = () => {
     updateService,
     toggleStatus,
     deleteService,
-  } = useCmsServices();
+  } = useCmsServices(currentPage, pageSize);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -68,6 +72,12 @@ export const Services: React.FC = () => {
 
     return matchesSearch && matchesStatus;
   });
+
+  const totalItems = totalCount || filteredServices.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedServices = filteredServices.slice(startIndex, startIndex + pageSize);
 
   const handleOpenEdit = (svc: ServiceItem) => {
     setEditingService(svc);
@@ -331,133 +341,201 @@ export const Services: React.FC = () => {
             </Button>
           </div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
-              <thead>
-                <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.8)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)" }}>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    SERVICE NODE / SLUG
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    EXECUTIVE SUMMARY
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    TECH STACK
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    STATUS
-                  </th>
-                  <th style={{ padding: "0.85rem 1rem", textAlign: "right", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
-                    ACTIONS
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredServices.map((svc) => {
-                  const isPub = svc.status?.toLowerCase() === "published";
-                  const techList = Array.isArray(svc.tech_stack)
-                    ? svc.tech_stack
-                    : String(svc.tech_stack || "").split(",").map((t) => t.trim()).filter(Boolean);
+          <>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.85rem" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "rgba(10, 17, 28, 0.8)", borderBottom: "1px solid rgba(140, 174, 187, 0.2)" }}>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      SERVICE TITLE / SLUG
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      DESCRIPTION
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      TECH STACK
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      STATUS
+                    </th>
+                    <th style={{ padding: "0.85rem 1rem", textAlign: "right", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.72rem" }}>
+                      ACTIONS
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredServices.map((svc) => {
+                    const isPub = svc.status === "published";
+                    const techList = Array.isArray(svc.tech_stack)
+                      ? svc.tech_stack
+                      : String(svc.tech_stack || "").split(",").map((t) => t.trim()).filter(Boolean);
 
-                  return (
-                    <tr
-                      key={svc.id}
-                      style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
-                      onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          {svc.is_featured && <Star size={13} color="#facc15" fill="#facc15" />}
-                          <span style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{svc.title}</span>
-                        </div>
-                        <div style={{ fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontSize: "0.72rem", marginTop: "0.2rem" }}>
-                          /{svc.slug}
-                        </div>
-                      </td>
+                    return (
+                      <tr
+                        key={svc.id}
+                        style={{ borderBottom: "1px solid rgba(140, 174, 187, 0.1)", transition: "background-color 150ms" }}
+                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                        onFocus={(e) => (e.currentTarget.style.backgroundColor = "rgba(99, 245, 232, 0.02)")}
+                        onBlur={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                            {svc.is_featured && <Star size={13} color="#facc15" fill="#facc15" />}
+                            <span style={{ fontWeight: 600, color: "#f8fafc", fontSize: "0.92rem" }}>{svc.title}</span>
+                          </div>
+                          <div style={{ fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", fontSize: "0.72rem", marginTop: "0.2rem" }}>
+                            /{svc.slug}
+                          </div>
+                        </td>
 
-                      <td style={{ padding: "1rem", maxWidth: "260px" }}>
-                        <div style={{ fontSize: "0.8rem", color: "#cbd5e1", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {svc.description}
-                        </div>
-                      </td>
+                        <td style={{ padding: "1rem", maxWidth: "260px" }}>
+                          <div style={{ fontSize: "0.8rem", color: "#cbd5e1", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {svc.description}
+                          </div>
+                        </td>
 
-                      <td style={{ padding: "1rem" }}>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
-                          {techList.slice(0, 3).map((t, idx) => (
-                            <span
-                              key={idx}
-                              style={{
-                                fontSize: "0.68rem",
-                                fontFamily: "IBM Plex Mono, monospace",
-                                padding: "0.1rem 0.4rem",
-                                backgroundColor: "rgba(140, 174, 187, 0.1)",
-                                color: "#cbd5e1",
-                                borderRadius: "2px",
-                              }}
+                        <td style={{ padding: "1rem" }}>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
+                            {techList.slice(0, 3).map((t, idx) => (
+                              <span
+                                key={idx}
+                                style={{
+                                  fontSize: "0.68rem",
+                                  fontFamily: "IBM Plex Mono, monospace",
+                                  padding: "0.1rem 0.4rem",
+                                  backgroundColor: "rgba(140, 174, 187, 0.1)",
+                                  color: "#cbd5e1",
+                                  borderRadius: "2px",
+                                }}
+                              >
+                                {t}
+                              </span>
+                            ))}
+                            {techList.length > 3 && (
+                              <span style={{ fontSize: "0.68rem", color: "#64748b" }}>+{techList.length - 3}</span>
+                            )}
+                          </div>
+                        </td>
+
+                        <td style={{ padding: "1rem" }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "0.15rem 0.55rem",
+                              borderRadius: "2px",
+                              fontSize: "0.7rem",
+                              fontFamily: "IBM Plex Mono, monospace",
+                              backgroundColor: isPub ? "rgba(74, 222, 128, 0.15)" : "rgba(250, 204, 21, 0.15)",
+                              color: isPub ? "#4ade80" : "#facc15",
+                              border: `1px solid ${isPub ? "rgba(74, 222, 128, 0.3)" : "rgba(250, 204, 21, 0.3)"}`,
+                            }}
+                          >
+                            {svc.status}
+                          </span>
+                        </td>
+
+                        <td style={{ padding: "1rem", textAlign: "right" }}>
+                          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "flex-end" }}>
+                            <Button
+                              variant="outline"
+                              onClick={() => handleTogglePublish(svc)}
+                              disabled={actionLoading}
+                              style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
                             >
-                              {t}
-                            </span>
-                          ))}
-                          {techList.length > 3 && (
-                            <span style={{ fontSize: "0.68rem", color: "#64748b" }}>+{techList.length - 3}</span>
-                          )}
-                        </div>
-                      </td>
+                              {isPub ? "Unpublish" : "Publish"}
+                            </Button>
 
-                      <td style={{ padding: "1rem" }}>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            padding: "0.15rem 0.55rem",
-                            borderRadius: "2px",
-                            fontSize: "0.7rem",
-                            fontFamily: "IBM Plex Mono, monospace",
-                            backgroundColor: isPub ? "rgba(74, 222, 128, 0.15)" : "rgba(250, 204, 21, 0.15)",
-                            color: isPub ? "#4ade80" : "#facc15",
-                            border: `1px solid ${isPub ? "rgba(74, 222, 128, 0.3)" : "rgba(250, 204, 21, 0.3)"}`,
-                          }}
-                        >
-                          {svc.status}
-                        </span>
-                      </td>
+                            <Button
+                              variant="outline"
+                              onClick={() => handleOpenEdit(svc)}
+                              style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
+                            >
+                              <Edit size={12} />
+                            </Button>
 
-                      <td style={{ padding: "1rem", textAlign: "right" }}>
-                        <div style={{ display: "flex", gap: "0.4rem", justifyContent: "flex-end" }}>
-                          <Button
-                            variant="outline"
-                            onClick={() => handleTogglePublish(svc)}
-                            disabled={actionLoading}
-                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
-                          >
-                            {isPub ? "Unpublish" : "Publish"}
-                          </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => handleDelete(svc)}
+                              style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.3)" }}
+                            >
+                              <Trash2 size={12} />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-                          <Button
-                            variant="outline"
-                            onClick={() => handleOpenEdit(svc)}
-                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
-                          >
-                            <Edit size={12} />
-                          </Button>
+            {/* Pagination Controls */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "0.85rem",
+                color: "#94a3b8",
+              }}
+            >
+              <div>
+                Showing <strong style={{ color: "#f8fafc" }}>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+                <strong style={{ color: "#f8fafc" }}>{endIndex}</strong> of{" "}
+                <strong style={{ color: "#f8fafc" }}>{totalItems}</strong> entries
+              </div>
 
-                          <Button
-                            variant="outline"
-                            onClick={() => handleDelete(svc)}
-                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.3)" }}
-                          >
-                            <Trash2 size={12} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span>Rows per page:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      backgroundColor: "#050811",
+                      border: "1px solid rgba(140, 174, 187, 0.25)",
+                      color: "#f8fafc",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage === 1 || isLoading}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Previous
+                  </Button>
+                  <span style={{ display: "flex", alignItems: "center", padding: "0 0.5rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    disabled={currentPage >= totalPages || isLoading}
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </Card>
 

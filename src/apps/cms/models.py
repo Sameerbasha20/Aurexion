@@ -78,7 +78,9 @@ class Industry(models.Model):
     class Meta:
         ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['status', '-created_at']),
+            models.Index(fields=['-created_at'], name='cms_ind_created_idx'),
+            models.Index(fields=['status', '-created_at'], name='cms_ind_stat_created_idx'),
+            models.Index(fields=['name'], name='cms_ind_name_idx'),
         ]
 
     def __str__(self):

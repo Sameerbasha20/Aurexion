@@ -44,8 +44,9 @@ export function useCmsDashboard() {
 /**
  * Hook for Managing Services Catalog
  */
-export function useCmsServices() {
+export function useCmsServices(page = 1, pageSize = 10) {
   const [services, setServices] = useState<ServiceItem[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -54,14 +55,15 @@ export function useCmsServices() {
     setIsLoading(true);
     setError(null);
     try {
-      const list = await cmsService.getAdminServices();
-      setServices(list);
+      const res = await cmsService.getAdminServices(page, pageSize);
+      setServices(res.results);
+      setTotalCount(res.count);
     } catch (err: any) {
       setError(err?.message || "Failed to load services catalog.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchServices();
@@ -72,6 +74,7 @@ export function useCmsServices() {
     try {
       const created = await cmsService.createService(payload);
       setServices((prev) => [created, ...prev]);
+      setTotalCount((prev) => prev + 1);
       return created;
     } finally {
       setActionLoading(false);
@@ -105,6 +108,7 @@ export function useCmsServices() {
     try {
       await cmsService.deleteService(id);
       setServices((prev) => prev.filter((s) => s.id !== id));
+      setTotalCount((prev) => Math.max(0, prev - 1));
     } finally {
       setActionLoading(false);
     }
@@ -112,6 +116,7 @@ export function useCmsServices() {
 
   return {
     services,
+    totalCount,
     isLoading,
     actionLoading,
     error,
@@ -126,8 +131,9 @@ export function useCmsServices() {
 /**
  * Hook for Managing Case Studies Portfolio
  */
-export function useCmsCaseStudies() {
+export function useCmsCaseStudies(page = 1, pageSize = 10) {
   const [caseStudies, setCaseStudies] = useState<CaseStudyItem[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -136,14 +142,15 @@ export function useCmsCaseStudies() {
     setIsLoading(true);
     setError(null);
     try {
-      const list = await cmsService.getAdminCaseStudies();
-      setCaseStudies(list);
+      const res = await cmsService.getAdminCaseStudies(page, pageSize);
+      setCaseStudies(res.results);
+      setTotalCount(res.count);
     } catch (err: any) {
       setError(err?.message || "Failed to load case studies.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchCaseStudies();
@@ -154,6 +161,7 @@ export function useCmsCaseStudies() {
     try {
       const created = await cmsService.createCaseStudy(payload);
       setCaseStudies((prev) => [created, ...prev]);
+      setTotalCount((prev) => prev + 1);
       return created;
     } finally {
       setActionLoading(false);
@@ -187,6 +195,7 @@ export function useCmsCaseStudies() {
     try {
       await cmsService.deleteCaseStudy(id);
       setCaseStudies((prev) => prev.filter((cs) => cs.id !== id));
+      setTotalCount((prev) => Math.max(0, prev - 1));
     } finally {
       setActionLoading(false);
     }
@@ -194,6 +203,7 @@ export function useCmsCaseStudies() {
 
   return {
     caseStudies,
+    totalCount,
     isLoading,
     actionLoading,
     error,
@@ -208,8 +218,9 @@ export function useCmsCaseStudies() {
 /**
  * Hook for Managing Industries Directory
  */
-export function useCmsIndustries() {
+export function useCmsIndustries(page = 1, pageSize = 10) {
   const [industries, setIndustries] = useState<IndustryItem[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -218,14 +229,15 @@ export function useCmsIndustries() {
     setIsLoading(true);
     setError(null);
     try {
-      const list = await cmsService.getAdminIndustries();
-      setIndustries(list);
+      const res = await cmsService.getAdminIndustries(page, pageSize);
+      setIndustries(res.results);
+      setTotalCount(res.count);
     } catch (err: any) {
       setError(err?.message || "Failed to load industries.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchIndustries();
@@ -236,6 +248,7 @@ export function useCmsIndustries() {
     try {
       const created = await cmsService.createIndustry(payload);
       setIndustries((prev) => [created, ...prev]);
+      setTotalCount((prev) => prev + 1);
       return created;
     } finally {
       setActionLoading(false);
@@ -269,6 +282,7 @@ export function useCmsIndustries() {
     try {
       await cmsService.deleteIndustry(id);
       setIndustries((prev) => prev.filter((ind) => ind.id !== id));
+      setTotalCount((prev) => Math.max(0, prev - 1));
     } finally {
       setActionLoading(false);
     }
@@ -276,6 +290,7 @@ export function useCmsIndustries() {
 
   return {
     industries,
+    totalCount,
     isLoading,
     actionLoading,
     error,
@@ -290,8 +305,9 @@ export function useCmsIndustries() {
 /**
  * Hook for Managing Categories
  */
-export function useCmsCategories() {
+export function useCmsCategories(page = 1, pageSize = 10) {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -300,14 +316,15 @@ export function useCmsCategories() {
     setIsLoading(true);
     setError(null);
     try {
-      const list = await cmsService.getAdminCategories();
-      setCategories(list);
+      const res = await cmsService.getAdminCategories(page, pageSize);
+      setCategories(res.results);
+      setTotalCount(res.count);
     } catch (err: any) {
       setError(err?.message || "Failed to load categories.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchCategories();
@@ -318,6 +335,7 @@ export function useCmsCategories() {
     try {
       const created = await cmsService.createCategory(payload);
       setCategories((prev) => [...prev, created]);
+      setTotalCount((prev) => prev + 1);
       return created;
     } finally {
       setActionLoading(false);
@@ -329,6 +347,7 @@ export function useCmsCategories() {
     try {
       await cmsService.deleteCategory(id);
       setCategories((prev) => prev.filter((c) => c.id !== id));
+      setTotalCount((prev) => Math.max(0, prev - 1));
     } finally {
       setActionLoading(false);
     }
@@ -336,6 +355,7 @@ export function useCmsCategories() {
 
   return {
     categories,
+    totalCount,
     isLoading,
     actionLoading,
     error,
@@ -348,8 +368,9 @@ export function useCmsCategories() {
 /**
  * Hook for Managing Blog Articles
  */
-export function useCmsBlog() {
+export function useCmsBlog(page = 1, pageSize = 10) {
   const [posts, setPosts] = useState<BlogPostItem[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -358,14 +379,15 @@ export function useCmsBlog() {
     setIsLoading(true);
     setError(null);
     try {
-      const list = await cmsService.getAdminBlog();
-      setPosts(list);
+      const res = await cmsService.getAdminBlog(page, pageSize);
+      setPosts(res.results);
+      setTotalCount(res.count);
     } catch (err: any) {
       setError(err?.message || "Failed to load blog posts.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchBlog();
@@ -376,6 +398,7 @@ export function useCmsBlog() {
     try {
       const created = await cmsService.createBlogPost(payload);
       setPosts((prev) => [created, ...prev]);
+      setTotalCount((prev) => prev + 1);
       return created;
     } finally {
       setActionLoading(false);
@@ -409,6 +432,7 @@ export function useCmsBlog() {
     try {
       await cmsService.deleteBlogPost(id);
       setPosts((prev) => prev.filter((p) => p.id !== id));
+      setTotalCount((prev) => Math.max(0, prev - 1));
     } finally {
       setActionLoading(false);
     }
@@ -416,6 +440,7 @@ export function useCmsBlog() {
 
   return {
     posts,
+    totalCount,
     isLoading,
     actionLoading,
     error,

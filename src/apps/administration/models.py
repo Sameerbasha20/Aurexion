@@ -7,6 +7,10 @@ class Role(models.Model):
 
     class Meta:
         ordering = ['id']
+        indexes = [
+            models.Index(fields=['code'], name='admin_role_code_idx'),
+            models.Index(fields=['name'], name='admin_role_name_idx'),
+        ]
 
     def __str__(self):
         return self.name
