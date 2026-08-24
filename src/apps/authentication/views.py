@@ -236,6 +236,7 @@ class LogoutView(APIView):
     Requires authentication or token payload; returns 401 when called without credentials.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
         tokens_to_blacklist = []
