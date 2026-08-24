@@ -235,12 +235,7 @@ class LogoutView(APIView):
     Clears cookies, invalidates session, and blacklists tokens in cache.
     Requires authentication or token payload; returns 401 when called without credentials.
     """
-<<<<<<< HEAD
-    permission_classes = [AllowAny]
-    authentication_classes = []
-=======
     permission_classes = [IsAuthenticated]
->>>>>>> 2119e77da12823ba7fcd924a2ee6fe7b91e5955e
 
     def post(self, request, *args, **kwargs):
         tokens_to_blacklist = []
