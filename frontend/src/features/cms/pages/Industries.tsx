@@ -30,6 +30,9 @@ export const Industries: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingInd, setEditingInd] = useState<IndustryItem | null>(null);
@@ -62,6 +65,12 @@ export const Industries: React.FC = () => {
 
     return matchesSearch && matchesStatus;
   });
+
+  const totalItems = filteredIndustries.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedIndustries = filteredIndustries.slice(startIndex, endIndex);
 
   const handleOpenEdit = (ind: IndustryItem) => {
     setEditingInd(ind);
@@ -306,7 +315,7 @@ export const Industries: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredIndustries.map((ind) => {
+                {paginatedIndustries.map((ind) => {
                   const isPub = ind.status?.toLowerCase() === "published";
                   return (
                     <tr
@@ -386,6 +395,87 @@ export const Industries: React.FC = () => {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Footer */}
+        {filteredIndustries.length > 0 && !isLoading && !error && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0.85rem 1.25rem",
+              borderTop: "1px solid rgba(140, 174, 187, 0.15)",
+              backgroundColor: "rgba(10, 17, 28, 0.6)",
+              flexWrap: "wrap",
+              gap: "1rem",
+            }}
+          >
+            <div style={{ fontSize: "0.8rem", color: "#94a3b8", fontFamily: "IBM Plex Mono, monospace" }}>
+              Showing <span style={{ color: "#63f5e8", fontWeight: 600 }}>{startIndex + 1}</span> to{" "}
+              <span style={{ color: "#63f5e8", fontWeight: 600 }}>{endIndex}</span> of{" "}
+              <span style={{ color: "#f8fafc", fontWeight: 600 }}>{totalItems}</span> entries
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8rem", color: "#94a3b8" }}>
+                <span>Rows per page:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    padding: "0.25rem 0.5rem",
+                    backgroundColor: "rgba(5, 8, 17, 0.9)",
+                    border: "1px solid rgba(140, 174, 187, 0.2)",
+                    borderRadius: "4px",
+                    color: "#f8fafc",
+                    fontSize: "0.78rem",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  style={{ padding: "0.3rem 0.65rem", fontSize: "0.75rem" }}
+                >
+                  Previous
+                </Button>
+
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "#63f5e8",
+                    fontFamily: "IBM Plex Mono, monospace",
+                    padding: "0 0.4rem",
+                  }}
+                >
+                  Page {currentPage} of {totalPages}
+                </span>
+
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage >= totalPages}
+                  style={{ padding: "0.3rem 0.65rem", fontSize: "0.75rem" }}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </Card>
