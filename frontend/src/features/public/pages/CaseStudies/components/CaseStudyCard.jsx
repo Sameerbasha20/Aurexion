@@ -10,7 +10,7 @@ export const CaseStudyCard = ({ caseStudy }) => {
     >
       <div className="h-48 bg-[#050B14] relative border-b border-border/20 overflow-hidden">
         <img
-          src={caseStudy.coverImage || "/webp_images/unsplash_1563986768609-32.webp"}
+          src={caseStudy.coverImage || "/images/unsplash_1563986768609-32.webp"}
           alt={caseStudy.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />

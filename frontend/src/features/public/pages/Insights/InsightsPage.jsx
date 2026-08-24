@@ -44,18 +44,18 @@ export const InsightsPage = () => {
         let coverImage = post.media || staticPost?.coverImage;
         if (!coverImage) {
           const categoryImages = {
-            "cybersecurity": "/webp_images/unsplash_1563986768609-32.webp",
-            "software-engineering": "/webp_images/unsplash_1555066931-4365d.webp",
-            "ai-ml": "/webp_images/unsplash_1527474305487-b8.webp",
-            "cloud": "/webp_images/unsplash_1558494949-ef010.webp",
-            "data": "/webp_images/unsplash_1551288049-bebda.webp",
-            "devops": "/webp_images/unsplash_1618401471353-b9.webp",
-            "enterprise": "/webp_images/unsplash_1486406146926-c6.webp",
-            "digital-transformation": "/webp_images/unsplash_1460925895917-af.webp",
-            "ui-ux": "/webp_images/unsplash_1581291518633-83.webp"
+            "cybersecurity": "/images/unsplash_1563986768609-32.webp",
+            "software-engineering": "/images/unsplash_1555066931-4365d.webp",
+            "ai-ml": "/images/unsplash_1527474305487-b8.webp",
+            "cloud": "/images/unsplash_1558494949-ef010.webp",
+            "data": "/images/unsplash_1551288049-bebda.webp",
+            "devops": "/images/unsplash_1618401471353-b9.webp",
+            "enterprise": "/images/unsplash_1486406146926-c6.webp",
+            "digital-transformation": "/images/unsplash_1460925895917-af.webp",
+            "ui-ux": "/images/unsplash_1581291518633-83.webp"
           };
           const cat = post.category_name || post.category || "";
-          coverImage = categoryImages[cat.toLowerCase()] || "/webp_images/unsplash_1486406146926-c6.webp";
+          coverImage = categoryImages[cat.toLowerCase()] || "/images/unsplash_1486406146926-c6.webp";
         }
 
         // Resolve author

@@ -315,7 +315,7 @@ export default function Home() {
         </section>
 
         {/* ── AI IMMERSIVE ──────────────────────────────────────────────── */}
-        <section id="ai" className="immersive-section ai-section section-dark" style={{ backgroundImage: "url(/manus-storage/aurexion-neural_ae3aae0d.webp)" }}>
+        <section id="ai" className="immersive-section ai-section section-dark" style={{ backgroundImage: "url(/images/aurexion-neural_ae3aae0d.webp)" }}>
           <div className="section-index">AI & INTELLIGENCE</div>
           <div className="immersive-overlay" />
           <div className="immersive-content">
@@ -417,7 +417,7 @@ export default function Home() {
               <article className="case-study">
                 <div className="case-visual" style={{ padding: 0, overflow: "hidden" }}>
                   <img
-                    src={featured.coverImage || "/webp_images/unsplash_1563986768609-32.webp"}
+                    src={featured.coverImage || "/images/unsplash_1563986768609-32.webp"}
                     alt={featured.title}
                     style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
@@ -513,7 +513,7 @@ export default function Home() {
                 <Link href={`/insights/${post.slug}`} className="insight-card block" key={post.slug || post.id}>
                   <div className="insight-img-wrap">
                     <img
-                      src={post.coverImage || post.media || post.imageUrl || "/webp_images/unsplash_1485827404703-89.webp"}
+                      src={post.coverImage || post.media || post.imageUrl || "/images/unsplash_1485827404703-89.webp"}
                       alt={post.title}
                       className="insight-photo"
                       loading="lazy"

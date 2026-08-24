@@ -55,7 +55,7 @@ export const ResetPassword: React.FC = () => {
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", textAlign: "center" }}>
-        <img src="/logo.svg" alt="Aurexion" style={{ width: "44px", height: "44px" }} />
+        <img src="/images/logo.svg" alt="Aurexion" style={{ width: "44px", height: "44px" }} />
         <h2 style={{ fontSize: "1.5rem", margin: 0, fontWeight: 600, color: "#f8fafc" }}>Set New Password</h2>
         <p style={{ color: "#94a3b8", fontSize: "0.875rem", margin: 0, lineHeight: 1.5, maxWidth: "320px" }}>
           Configure a strong password with letters, numbers, and symbols.

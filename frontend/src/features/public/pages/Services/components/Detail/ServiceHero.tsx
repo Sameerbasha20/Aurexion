@@ -9,65 +9,65 @@ interface ServiceHeroProps {
 
 const SERVICE_IMAGES: Record<string, string> = {
   // Category defaults
-  "Core Engineering": "/webp_images/unsplash_1555066931-4365d.webp",
-  "AI & Data Science": "/webp_images/unsplash_1677442136019-21.webp",
-  "Cloud & Infrastructure": "/webp_images/unsplash_1544197150-b99a5.webp",
-  "Enterprise Products": "/webp_images/unsplash_1504868584819-f8.webp",
-  "Digital Platforms": "/webp_images/unsplash_1518770660439-46.webp",
-  "Quality & Advisory": "/webp_images/unsplash_1563986768609-32.webp",
+  "Core Engineering": "/images/unsplash_1555066931-4365d.webp",
+  "AI & Data Science": "/images/unsplash_1677442136019-21.webp",
+  "Cloud & Infrastructure": "/images/unsplash_1544197150-b99a5.webp",
+  "Enterprise Products": "/images/unsplash_1504868584819-f8.webp",
+  "Digital Platforms": "/images/unsplash_1518770660439-46.webp",
+  "Quality & Advisory": "/images/unsplash_1563986768609-32.webp",
 
   // Core Engineering
-  "custom-software-development": "/webp_images/unsplash_1555066931-4365d.webp",
-  "enterprise-application-engineering": "/webp_images/unsplash_1504868584819-f8.webp",
-  "python-microservices": "/webp_images/unsplash_1555066931-4365d.webp",
-  "legacy-system-modernization": "/webp_images/unsplash_1518770660439-46.webp",
-  "microservices-architecture": "/webp_images/unsplash_1558494949-ef010.webp",
+  "custom-software-development": "/images/unsplash_1555066931-4365d.webp",
+  "enterprise-application-engineering": "/images/unsplash_1504868584819-f8.webp",
+  "python-microservices": "/images/unsplash_1555066931-4365d.webp",
+  "legacy-system-modernization": "/images/unsplash_1518770660439-46.webp",
+  "microservices-architecture": "/images/unsplash_1558494949-ef010.webp",
 
   // AI & Data Science
-  "artificial-intelligence-solutions": "/webp_images/unsplash_1677442136019-21.webp",
-  "machine-learning-engineering": "/webp_images/unsplash_1555949963-aa79d.webp",
-  "generative-ai-platform-integration": "/webp_images/unsplash_1677442136019-21.webp",
-  "data-engineering": "/webp_images/unsplash_1558494949-ef010.webp",
-  "data-analytics": "/webp_images/unsplash_1551288049-bebda.webp",
-  "business-intelligence": "/webp_images/unsplash_1460925895917-af.webp",
-  "business-intelligence-bi": "/webp_images/unsplash_1460925895917-af.webp",
+  "artificial-intelligence-solutions": "/images/unsplash_1677442136019-21.webp",
+  "machine-learning-engineering": "/images/unsplash_1555949963-aa79d.webp",
+  "generative-ai-platform-integration": "/images/unsplash_1677442136019-21.webp",
+  "data-engineering": "/images/unsplash_1558494949-ef010.webp",
+  "data-analytics": "/images/unsplash_1551288049-bebda.webp",
+  "business-intelligence": "/images/unsplash_1460925895917-af.webp",
+  "business-intelligence-bi": "/images/unsplash_1460925895917-af.webp",
 
   // Cloud & Infrastructure
-  "cloud-architecture-modernization": "/webp_images/unsplash_1544197150-b99a5.webp",
-  "cloud-migration": "/webp_images/unsplash_1544197150-b99a5.webp",
-  "devops-cicd-automation": "/webp_images/unsplash_1618401471353-b9.webp",
-  "cybersecurity-threat-governance": "/webp_images/unsplash_1563986768609-32.webp",
-  "managed-infrastructure": "/webp_images/unsplash_1558494949-ef010.webp",
+  "cloud-architecture-modernization": "/images/unsplash_1544197150-b99a5.webp",
+  "cloud-migration": "/images/unsplash_1544197150-b99a5.webp",
+  "devops-cicd-automation": "/images/unsplash_1618401471353-b9.webp",
+  "cybersecurity-threat-governance": "/images/unsplash_1563986768609-32.webp",
+  "managed-infrastructure": "/images/unsplash_1558494949-ef010.webp",
 
   // Enterprise Products
-  "custom-erp-development": "/webp_images/unsplash_1486406146926-c6.webp",
-  "enterprise-crm-solutions": "/webp_images/unsplash_1552664730-d307c.webp",
-  "hrms-platforms": "/webp_images/unsplash_1522071820081-00.webp",
-  "fintech-solutions": "/webp_images/unsplash_1611974789855-9c.webp",
-  "healthtech-platforms": "/webp_images/unsplash_1576091160399-11.webp",
-  "edtech-lms-solutions": "/webp_images/unsplash_1501504905252-47.webp",
-  "logistics-supply-chain-tech": "/webp_images/unsplash_1586528116311-ad.webp",
+  "custom-erp-development": "/images/unsplash_1486406146926-c6.webp",
+  "enterprise-crm-solutions": "/images/unsplash_1552664730-d307c.webp",
+  "hrms-platforms": "/images/unsplash_1522071820081-00.webp",
+  "fintech-solutions": "/images/unsplash_1611974789855-9c.webp",
+  "healthtech-platforms": "/images/unsplash_1576091160399-11.webp",
+  "edtech-lms-solutions": "/images/unsplash_1501504905252-47.webp",
+  "logistics-supply-chain-tech": "/images/unsplash_1586528116311-ad.webp",
 
   // Digital Platforms
-  "ecommerce-platforms": "/webp_images/unsplash_1557821552-17105.webp",
-  "cross-platform-mobile-applications": "/webp_images/unsplash_1512941937669-90.webp",
-  "rest-api-development-integrations": "/webp_images/unsplash_1558494949-ef010.webp",
-  "robotic-process-automation": "/webp_images/unsplash_1485827404703-89.webp",
-  "saas-product-engineering": "/webp_images/unsplash_1507238691740-18.webp",
+  "ecommerce-platforms": "/images/unsplash_1557821552-17105.webp",
+  "cross-platform-mobile-applications": "/images/unsplash_1512941937669-90.webp",
+  "rest-api-development-integrations": "/images/unsplash_1558494949-ef010.webp",
+  "robotic-process-automation": "/images/unsplash_1485827404703-89.webp",
+  "saas-product-engineering": "/images/unsplash_1507238691740-18.webp",
 
   // Quality & Advisory
-  "software-testing-qa-automation": "/webp_images/unsplash_1516321318423-f0.webp",
-  "ui-ux-engineering": "/webp_images/unsplash_1581291518633-83.webp",
-  "strategic-technology-consulting": "/webp_images/unsplash_1454165804606-c3.webp",
-  "dedicated-development-team-allocation": "/webp_images/unsplash_1522071820081-00.webp",
-  "managed-application-maintenance": "/webp_images/unsplash_1504384308090-c8.webp",
+  "software-testing-qa-automation": "/images/unsplash_1516321318423-f0.webp",
+  "ui-ux-engineering": "/images/unsplash_1581291518633-83.webp",
+  "strategic-technology-consulting": "/images/unsplash_1454165804606-c3.webp",
+  "dedicated-development-team-allocation": "/images/unsplash_1522071820081-00.webp",
+  "managed-application-maintenance": "/images/unsplash_1504384308090-c8.webp",
 };
 
 export const ServiceHero: React.FC<ServiceHeroProps> = ({ service }) => {
   const imageUrl =
     SERVICE_IMAGES[service.slug] ||
     SERVICE_IMAGES[service.category] ||
-    "/webp_images/unsplash_1526374965328-7f.webp";
+    "/images/unsplash_1526374965328-7f.webp";
 
   return (
     <section className="subpage-immersive-hero">
