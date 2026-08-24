@@ -95,16 +95,14 @@ export const TicketList: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
 
-<<<<<<< HEAD
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-=======
+
   // Resolution Dialog State
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTicket, setActiveTicket] = useState<{ id: number; ticket_id: string; subject: string; notes: string } | null>(null);
   const [modalNotes, setModalNotes] = useState("");
   const [modalError, setModalError] = useState<string | null>(null);
->>>>>>> 8eca6c72ec9dcbb54ad9f1ffbe79f33762fb91c2
 
   const filtered = useMemo(() => {
     if (!tickets.data) return [];
@@ -286,7 +284,6 @@ export const TicketList: React.FC = () => {
                 description="No assigned tickets match the search query or active filter settings."
               />
             ) : (
-<<<<<<< HEAD
               <>
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "850px", fontSize: "0.875rem" }}>
@@ -304,62 +301,66 @@ export const TicketList: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {paginatedTickets.map((ticket) => (
-                        <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(140,174,187,0.12)" }}>
-                          <td style={{ padding: "0.75rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
-                            <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#63f5e8" }}>
-                              {ticket.ticket_id}
-                            </Link>
-                          </td>
-                          <td style={{ padding: "0.75rem" }}>
-                            <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#e2e8f0", textDecoration: "none" }}>
-                              <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 600 }}>
-                                {ticket.subject}
-                              </span>
-                            </Link>
-                          </td>
-                          <td style={{ padding: "0.75rem", color: "#cbd5e1" }}>{ticket.client_username}</td>
-                          <td style={{ padding: "0.75rem", color: "#cbd5e1", fontSize: "0.8rem" }}>
-                            {ticket.assigned_username || "Unassigned"}
-                          </td>
-                          <td style={{ padding: "0.75rem" }}>
-                            <TicketCategoryBadge category={ticket.category} />
-                          </td>
-                          <td style={{ padding: "0.75rem" }}>
-                            <TicketPriorityBadge priority={ticket.priority} />
-                          </td>
-                          <td style={{ padding: "0.75rem" }}>
-                            <TicketStatusBadge status={ticket.status} />
-                          </td>
-                          <td style={{ padding: "0.75rem", color: "#94a3b8", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                            {formatDateTime(ticket.updated_at)}
-                          </td>
-                          <td style={{ padding: "0.75rem", textAlign: "right" }}>
-                            <select
-                              value={ticket.status}
-                              onChange={(e) => handleQuickStatus(ticket.id, e.target.value as TicketStatus)}
-                              style={{
-                                backgroundColor: "#0c1222",
-                                border: "1px solid #1e293b",
-                                color: "#63f5e8",
-                                fontSize: "0.75rem",
-                                fontFamily: "IBM Plex Mono, monospace",
-                                padding: "0.25rem 0.5rem",
-                                borderRadius: "4px",
-                                outline: "none",
-                                cursor: "pointer",
-                              }}
-                            >
-                              <option value="open">Open</option>
-                              <option value="assigned">Assigned</option>
-                              <option value="in_progress">In Progress</option>
-                              <option value="awaiting_client">Awaiting Client</option>
-                              <option value="resolved">Resolved</option>
-                              <option value="closed">Closed</option>
-                            </select>
-                          </td>
-                        </tr>
-                      ))}
+                      {paginatedTickets.map((ticket) => {
+                        const options = getAvailableStatusOptions(ticket.status);
+                        return (
+                          <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(140,174,187,0.12)" }}>
+                            <td style={{ padding: "0.75rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
+                              <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#63f5e8" }}>
+                                {ticket.ticket_id}
+                              </Link>
+                            </td>
+                            <td style={{ padding: "0.75rem" }}>
+                              <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#e2e8f0", textDecoration: "none" }}>
+                                <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 600 }}>
+                                  {ticket.subject}
+                                </span>
+                              </Link>
+                            </td>
+                            <td style={{ padding: "0.75rem", color: "#cbd5e1" }}>{ticket.client_username}</td>
+                            <td style={{ padding: "0.75rem", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                              {ticket.assigned_username || "Unassigned"}
+                            </td>
+                            <td style={{ padding: "0.75rem" }}>
+                              <TicketCategoryBadge category={ticket.category} />
+                            </td>
+                            <td style={{ padding: "0.75rem" }}>
+                              <TicketPriorityBadge priority={ticket.priority} />
+                            </td>
+                            <td style={{ padding: "0.75rem" }}>
+                              <TicketStatusBadge status={ticket.status} />
+                            </td>
+                            <td style={{ padding: "0.75rem", color: "#94a3b8", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                              {formatDateTime(ticket.updated_at)}
+                            </td>
+                            <td style={{ padding: "0.75rem", textAlign: "right" }}>
+                              <select
+                                value={ticket.status}
+                                onChange={(e) => handleQuickStatus(ticket.id, e.target.value as TicketStatus)}
+                                disabled={ticket.status === "closed" || updateTicket.isLoading}
+                                title={ticket.status === "closed" ? "Closed tickets are read-only." : undefined}
+                                style={{
+                                  backgroundColor: "#0c1222",
+                                  border: "1px solid #1e293b",
+                                  color: "#63f5e8",
+                                  fontSize: "0.75rem",
+                                  fontFamily: "IBM Plex Mono, monospace",
+                                  padding: "0.25rem 0.5rem",
+                                  borderRadius: "4px",
+                                  outline: "none",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                {options.map((opt) => (
+                                  <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -430,87 +431,6 @@ export const TicketList: React.FC = () => {
                   </div>
                 </div>
               </>
-=======
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "850px", fontSize: "0.875rem" }}>
-                  <thead>
-                    <tr style={{ textAlign: "left", color: "#64748b", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.7rem", letterSpacing: "0.08em" }}>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>TICKET ID</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)", width: "25%" }}>SUBJECT</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CLIENT</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>ASSIGNED</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CATEGORY</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>PRIORITY</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>STATUS</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>UPDATED</th>
-                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)", textAlign: "right" }}>QUICK STATUS</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((ticket) => {
-                      const options = getAvailableStatusOptions(ticket.status);
-                      return (
-                      <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(140,174,187,0.12)" }}>
-                        <td style={{ padding: "0.75rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
-                          <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#63f5e8" }}>
-                            {ticket.ticket_id}
-                          </Link>
-                        </td>
-                        <td style={{ padding: "0.75rem" }}>
-                          <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#e2e8f0", textDecoration: "none" }}>
-                            <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 600 }}>
-                              {ticket.subject}
-                            </span>
-                          </Link>
-                        </td>
-                        <td style={{ padding: "0.75rem", color: "#cbd5e1" }}>{ticket.client_username}</td>
-                        <td style={{ padding: "0.75rem", color: "#cbd5e1", fontSize: "0.8rem" }}>
-                          {ticket.assigned_username || "Unassigned"}
-                        </td>
-                        <td style={{ padding: "0.75rem" }}>
-                          <TicketCategoryBadge category={ticket.category} />
-                        </td>
-                        <td style={{ padding: "0.75rem" }}>
-                          <TicketPriorityBadge priority={ticket.priority} />
-                        </td>
-                        <td style={{ padding: "0.75rem" }}>
-                          <TicketStatusBadge status={ticket.status} />
-                        </td>
-                        <td style={{ padding: "0.75rem", color: "#94a3b8", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                          {formatDateTime(ticket.updated_at)}
-                        </td>
-                        <td style={{ padding: "0.75rem", textAlign: "right" }}>
-                          <select
-                            value={ticket.status}
-                            onChange={(e) => handleQuickStatus(ticket.id, e.target.value as TicketStatus)}
-                            disabled={ticket.status === "closed" || updateTicket.isLoading}
-                            title={ticket.status === "closed" ? "Closed tickets are read-only." : undefined}
-                            style={{
-                              backgroundColor: "#0c1222",
-                              border: "1px solid #1e293b",
-                              color: "#63f5e8",
-                              fontSize: "0.75rem",
-                              fontFamily: "IBM Plex Mono, monospace",
-                              padding: "0.25rem 0.5rem",
-                              borderRadius: "4px",
-                              outline: "none",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {options.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                      </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
->>>>>>> 8eca6c72ec9dcbb54ad9f1ffbe79f33762fb91c2
             )}
           </Card>
         </>
