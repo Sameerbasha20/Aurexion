@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Card, { CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
-import { MessageSquareCode, Clock, CheckCircle, ShieldAlert, UserCheck, RefreshCw, FileText } from "lucide-react";
+import { MessageSquareCode, Clock, CheckCircle, ShieldAlert, UserCheck, RefreshCw, FileText, Loader2 } from "lucide-react";
 import { ErrorState, LoadingState, EmptyState } from "../../../portal/components/StateViews";
 import { TicketCategoryBadge, TicketPriorityBadge, TicketStatusBadge } from "../../../portal/components/TicketMeta";
 import { formatDateTime } from "../../../portal/utils/format";
@@ -73,13 +73,13 @@ export const Support: React.FC = () => {
     const ticket = adminTickets.data?.find((t) => t.id === id);
     if (!ticket) return;
 
-    if (nextStatus === "resolved") {
+    if (nextStatus === "resolved" || nextStatus === "closed") {
       setActiveTicket({
         id: ticket.id,
         ticket_id: ticket.ticket_id,
         subject: ticket.subject,
         notes: ticket.resolution_notes || "",
-        status: "resolved",
+        status: nextStatus,
       });
       setModalNotes(ticket.resolution_notes || "");
       setModalError(null);
@@ -89,7 +89,10 @@ export const Support: React.FC = () => {
 
     setSavingId(id);
     try {
-      await updateAdminTicket.update(id, { status: nextStatus });
+      await updateAdminTicket.update(id, {
+        status: nextStatus,
+        resolution_notes: ticket.resolution_notes || undefined,
+      });
       adminTickets.refetch();
     } catch (err: any) {
       // Error in updateAdminTicket.error
@@ -101,7 +104,7 @@ export const Support: React.FC = () => {
   const handleSaveResolutionModal = async () => {
     if (!activeTicket) return;
     if (!modalNotes.trim()) {
-      setModalError("Resolution notes are required before resolving this ticket.");
+      setModalError("Resolution notes are required before resolving/closing this ticket.");
       return;
     }
 
@@ -338,29 +341,35 @@ export const Support: React.FC = () => {
                           <TicketStatusBadge status={t.status} />
                         </td>
                         <td style={{ padding: "1rem", textAlign: "right" }}>
-                          <select
-                            value={t.status}
-                            onChange={(e) => handleStatusChange(t.id, e.target.value as TicketStatus)}
-                            disabled={savingId === t.id || locked}
-                            title={lockedTitle}
-                            style={{
-                              backgroundColor: "#0c1222",
-                              border: "1px solid #1e293b",
-                              color: "#63f5e8",
-                              fontSize: "0.75rem",
-                              fontFamily: "IBM Plex Mono, monospace",
-                              padding: "0.25rem 0.4rem",
-                              borderRadius: "4px",
-                              outline: "none",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {statusOptions.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
+                          {savingId === t.id ? (
+                            <span style={{ fontSize: "0.75rem", color: "#63f5e8", fontFamily: "IBM Plex Mono, monospace", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+                              <Loader2 size={13} className="animate-spin" /> Updating...
+                            </span>
+                          ) : (
+                            <select
+                              value={t.status}
+                              onChange={(e) => handleStatusChange(t.id, e.target.value as TicketStatus)}
+                              disabled={savingId === t.id || locked}
+                              title={lockedTitle}
+                              style={{
+                                backgroundColor: "#0c1222",
+                                border: "1px solid #1e293b",
+                                color: "#63f5e8",
+                                fontSize: "0.75rem",
+                                fontFamily: "IBM Plex Mono, monospace",
+                                padding: "0.25rem 0.4rem",
+                                borderRadius: "4px",
+                                outline: "none",
+                                cursor: "pointer",
+                              }}
+                            >
+                              {statusOptions.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          )}
                         </td>
                       </tr>
                       );
@@ -421,7 +430,11 @@ export const Support: React.FC = () => {
               Cancel
             </Button>
             <Button glow size="sm" onClick={handleSaveResolutionModal} disabled={savingId !== null}>
-              {savingId !== null ? "Saving..." : "Save & Resolve Ticket"}
+              {savingId !== null ? (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+                  <Loader2 size={14} className="animate-spin" /> Saving...
+                </span>
+              ) : activeTicket?.status === "closed" ? "Save & Close Ticket" : "Save & Resolve Ticket"}
             </Button>
           </DialogFooter>
         </DialogContent>

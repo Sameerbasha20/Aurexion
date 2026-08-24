@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 from apps.authentication.audit import log_audit_event
 from apps.administration.permissions import IsAdministrator, IsClientUser
+from apps.portal.permissions import CanAccessAdminSupport
 from apps.portal.models import (
     SupportTicket,
     ClientProject,
@@ -322,9 +323,8 @@ class AdministratorTicketViewSet(
     """
     Administrator API: /api/v1/support/admin/tickets/
 
-    Authenticated Administrators (and Super Admins) can list, retrieve and
-    update any support ticket. Access is controlled via the existing RBAC
-    IsAdministrator permission (super_admin + administrator).
+    Authenticated Administrators, BDMs, and Support Executives can list, retrieve and
+    update support tickets in the admin ledger.
     """
     queryset = (
         SupportTicket.objects
@@ -332,7 +332,7 @@ class AdministratorTicketViewSet(
         .all()
         .order_by('-created_at')
     )
-    permission_classes = [IsAdministrator]
+    permission_classes = [CanAccessAdminSupport]
     authentication_classes = [
         ProfileJWTAuthentication,
         SessionAuthentication,

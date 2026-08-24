@@ -92,3 +92,10 @@ class IsTicketAccessible(permissions.BasePermission):
                 return obj.assigned_to_id == request.user.id or obj.assigned_to_id is None
             return obj.assigned_to_id == request.user.id
         return True
+
+
+from apps.administration.permissions import BaseRolePermission
+
+class CanAccessAdminSupport(BaseRolePermission):
+    allowed_roles = ['super_admin', 'administrator', 'admin', 'bdm', 'business_dev_manager', 'support_executive', 'support']
+

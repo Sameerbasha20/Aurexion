@@ -190,33 +190,27 @@ class SupportExecutiveTicketUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Cannot modify a closed ticket.")
 
         allowed_transitions = {
-            'open': {'open', 'assigned'},
-            'assigned': {'assigned', 'in_progress', 'open'},
-            'in_progress': {'in_progress', 'awaiting_client', 'assigned'},
-            'awaiting_client': {'awaiting_client', 'resolved', 'in_progress'},
-            'resolved': {'resolved', 'closed', 'awaiting_client', 'in_progress'},
+            'open': {'open', 'assigned', 'in_progress', 'awaiting_client', 'resolved', 'closed'},
+            'assigned': {'assigned', 'in_progress', 'awaiting_client', 'resolved', 'open', 'closed'},
+            'in_progress': {'in_progress', 'awaiting_client', 'resolved', 'assigned', 'open', 'closed'},
+            'awaiting_client': {'awaiting_client', 'resolved', 'in_progress', 'assigned', 'open', 'closed'},
+            'resolved': {'resolved', 'closed', 'awaiting_client', 'in_progress', 'assigned', 'open'},
             'closed': {'closed'},
         }
 
         allowed = allowed_transitions.get(current_status, {current_status})
         if new_status not in allowed:
-            if new_status == 'closed':
-                raise serializers.ValidationError(
-                    f"Cannot transition ticket directly from {current_status.upper()} to CLOSED. Ticket must be RESOLVED first."
-                )
             raise serializers.ValidationError(
                 f"Invalid status transition from {current_status} to {new_status}."
             )
 
-        if new_status == 'resolved':
+        if new_status in ('resolved', 'closed'):
             resolution_notes = attrs.get('resolution_notes', instance.resolution_notes)
             if not resolution_notes or not resolution_notes.strip():
-                raise serializers.ValidationError("Resolution notes are required before resolving this ticket.")
-
-        if new_status == 'closed':
-            resolution_notes = attrs.get('resolution_notes', instance.resolution_notes)
-            if not resolution_notes or not resolution_notes.strip():
-                raise serializers.ValidationError("Resolution notes are required before closing this ticket.")
+                if new_status == 'closed':
+                    attrs['resolution_notes'] = "Closed by Support Executive."
+                else:
+                    raise serializers.ValidationError("Resolution notes are required before resolving this ticket.")
 
         return attrs
 
@@ -280,33 +274,27 @@ class AdministratorTicketUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Cannot modify a closed ticket.")
 
         allowed_transitions = {
-            'open': {'open', 'assigned'},
-            'assigned': {'assigned', 'in_progress', 'open'},
-            'in_progress': {'in_progress', 'awaiting_client', 'assigned'},
-            'awaiting_client': {'awaiting_client', 'resolved', 'in_progress'},
-            'resolved': {'resolved', 'closed', 'awaiting_client', 'in_progress'},
+            'open': {'open', 'assigned', 'in_progress', 'awaiting_client', 'resolved', 'closed'},
+            'assigned': {'assigned', 'in_progress', 'awaiting_client', 'resolved', 'open', 'closed'},
+            'in_progress': {'in_progress', 'awaiting_client', 'resolved', 'assigned', 'open', 'closed'},
+            'awaiting_client': {'awaiting_client', 'resolved', 'in_progress', 'assigned', 'open', 'closed'},
+            'resolved': {'resolved', 'closed', 'awaiting_client', 'in_progress', 'assigned', 'open'},
             'closed': {'closed'},
         }
 
         allowed = allowed_transitions.get(current_status, {current_status})
         if new_status not in allowed:
-            if new_status == 'closed':
-                raise serializers.ValidationError(
-                    f"Cannot transition ticket directly from {current_status.upper()} to CLOSED. Ticket must be RESOLVED first."
-                )
             raise serializers.ValidationError(
                 f"Invalid status transition from {current_status} to {new_status}."
             )
 
-        if new_status == 'resolved':
+        if new_status in ('resolved', 'closed'):
             resolution_notes = attrs.get('resolution_notes', instance.resolution_notes)
             if not resolution_notes or not resolution_notes.strip():
-                raise serializers.ValidationError("Resolution notes are required before resolving this ticket.")
-
-        if new_status == 'closed':
-            resolution_notes = attrs.get('resolution_notes', instance.resolution_notes)
-            if not resolution_notes or not resolution_notes.strip():
-                raise serializers.ValidationError("Resolution notes are required before closing this ticket.")
+                if new_status == 'closed':
+                    attrs['resolution_notes'] = "Closed by Administrator."
+                else:
+                    raise serializers.ValidationError("Resolution notes are required before resolving this ticket.")
 
         return attrs
 
