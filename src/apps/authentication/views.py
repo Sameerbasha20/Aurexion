@@ -554,7 +554,7 @@ class ChangePasswordView(APIView):
 class CanViewOrManageUsers(permissions.BasePermission):
     """
     GET requests (listing/reading users for lead assignment dropdowns):
-    Allowed for Super Admin, Administrator, BDM, and Sales Executive.
+    Allowed for Super Admin, Administrator, BDM, Sales Executive, HR, Support.
     
     POST, PUT, PATCH, DELETE (User creation, update, role assignment):
     Restricted to Super Admin and Administrator.
@@ -564,8 +564,13 @@ class CanViewOrManageUsers(permissions.BasePermission):
             return False
         if request.user.is_superuser:
             return True
-        role = request.user.profile.role if hasattr(request.user, 'profile') else None
-        return role in ['super_admin', 'administrator']
+
+        role = (request.user.profile.role or '').lower() if hasattr(request.user, 'profile') and request.user.profile else None
+
+        if request.method in permissions.SAFE_METHODS:
+            return role in ['super_admin', 'administrator', 'admin', 'bdm', 'business_dev', 'sales_executive', 'sales', 'sales_rep', 'hr_manager', 'hr', 'support_executive', 'support']
+
+        return role in ['super_admin', 'administrator', 'admin']
 
 
 class UserViewSet(viewsets.ModelViewSet):
