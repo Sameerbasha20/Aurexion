@@ -9,8 +9,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
-    role = serializers.CharField(required=False)
-    password = serializers.CharField(write_only=True, required=False)
+    email = serializers.EmailField(required=True)
+    role = serializers.ChoiceField(choices=UserProfile.ROLE_CHOICES, required=False, default='client_user')
+    password = serializers.CharField(write_only=True, required=False, min_length=8)
 
     class Meta:
         model = User
