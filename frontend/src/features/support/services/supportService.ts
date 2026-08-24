@@ -149,6 +149,7 @@ export const supportService = {
     return data;
   },
 
+<<<<<<< HEAD
   // User list for assigning tickets
   getUsers: async (forceRefresh = false): Promise<AssignableUser[]> => {
     const cacheKey = "assignable_users";
@@ -160,6 +161,12 @@ export const supportService = {
     const result = Array.isArray(data) ? data : (data.results || []);
     setCache(cacheKey, result);
     return result;
+=======
+  // User list for assigning tickets (support executives only, per SupportTicket.assigned_to limit_choices_to)
+  getUsers: async (): Promise<AssignableUser[]> => {
+    const data = await axiosClient.get<any, any>(`${API_ENDPOINTS.ADMIN.USERS}?role=support_executive`);
+    return Array.isArray(data) ? data : (data.results || []);
+>>>>>>> 8eca6c72ec9dcbb54ad9f1ffbe79f33762fb91c2
   },
 };
 

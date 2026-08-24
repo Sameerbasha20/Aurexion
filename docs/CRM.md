@@ -79,6 +79,7 @@ Leads transition through a strict 7-stage state machine (`apps.crm.models.LeadSt
    - Access to full leads repository, unassigned leads queue, reassignment permissions, analytics export, and client onboarding dispatch.
 2. **Sales Executives**:
    - **Strict Data Isolation**: Backend `LeadViewSet.get_queryset()` filters results so Sales Executives strictly view and edit **only leads assigned to their user ID** (`assigned_to = request.user`).
+   - **Lead Creation & Workspace Scoping**: Can establish/create new leads directly in the CRM (`POST /api/v1/leads/`), which are automatically assigned to the creating Sales Executive.
    - Can transition assigned leads across lifecycle stages, add follow-up reminders, add notes, and record closing deal details when winning a lead.
 
 ---
@@ -95,7 +96,7 @@ Leads transition through a strict 7-stage state machine (`apps.crm.models.LeadSt
 
 ### 4.1 Authenticated CRM Operations (`/api/v1/leads/`)
 - `GET /api/v1/leads/`: Paginated leads directory (Supports filters: `status`, `source`, `search`, `priority`, `assigned_to`).
-- `POST /api/v1/leads/`: Manual lead creation by BDM / Admin.
+- `POST /api/v1/leads/`: Lead creation by BDM / Admin / Sales Executive.
 - `GET /api/v1/leads/{id}/`: Retrieve single lead with notes, follow-up history, and RFP details.
 - `PUT/PATCH /api/v1/leads/{id}/`: Update lead details.
 - `POST /api/v1/leads/{id}/assign/`: Assign/reassign lead to a Sales Executive (Triggers notification email & cache invalidation).
@@ -103,7 +104,7 @@ Leads transition through a strict 7-stage state machine (`apps.crm.models.LeadSt
 - `POST /api/v1/leads/{id}/qualify/`: Mark lead as QUALIFIED.
 - `POST /api/v1/leads/{id}/won/`: Mark lead as WON (Captures agreed project value `$`).
 - `POST /api/v1/leads/{id}/lost/`: Mark lead as LOST (Captures mandatory `lost_reason`).
-- `POST /api/v1/leads/{id}/onboard-client/`: Trigger client account provisioning and dispatch credentials email (BDM/Admin only).
+- `POST /api/v1/leads/{id}/onboard-client/` (alias `/onboard_client/`): Trigger client account provisioning and dispatch credentials email (BDM/Admin only).
 - `POST /api/v1/leads/{id}/schedule-meeting/`: Schedule a follow-up meeting with Google Meet/Zoom link.
 - `GET/POST /api/v1/leads/{id}/notes/`: Retrieve/add internal notes.
 - `GET/POST /api/v1/leads/{id}/follow-ups/`: Retrieve/create follow-up activities.

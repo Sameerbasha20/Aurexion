@@ -59,5 +59,5 @@ The `/api/v1/bdm/dashboard/` endpoint aggregates real-time business telemetry in
 - `GET /api/v1/bdm/dashboard/`: Returns complete aggregated BDM metrics dashboard payload.
 - `GET /api/v1/users/?role=sales_executive`: Returns active Sales Executives with role & workload counts.
 - `POST /api/v1/leads/{id}/assign/`: Assigns lead to a Sales Executive.
-- `POST /api/v1/leads/{id}/onboard-client/`: Provisions client portal user and dispatches credentials.
+- `POST /api/v1/leads/{id}/onboard-client/` (alias `/onboard_client/`): Provisions client portal user and dispatches credentials.
 - `POST /api/v1/leads/{id}/lost/`: Declines RFP or marks lead as lost with recorded reason.

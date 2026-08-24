@@ -37,6 +37,45 @@ const CATEGORY_OPTIONS: { value: TicketCategory; label: string }[] = [
   { value: "infrastructure", label: "Infrastructure" },
 ];
 
+const getAvailableStatusOptions = (currentStatus: TicketStatus): { value: TicketStatus; label: string }[] => {
+  switch (currentStatus) {
+    case "open":
+      return [
+        { value: "open", label: "Open" },
+        { value: "assigned", label: "Assigned" },
+      ];
+    case "assigned":
+      return [
+        { value: "assigned", label: "Assigned" },
+        { value: "in_progress", label: "In Progress" },
+        { value: "open", label: "Open" },
+      ];
+    case "in_progress":
+      return [
+        { value: "in_progress", label: "In Progress" },
+        { value: "awaiting_client", label: "Awaiting Client" },
+        { value: "assigned", label: "Assigned" },
+      ];
+    case "awaiting_client":
+      return [
+        { value: "awaiting_client", label: "Awaiting Client" },
+        { value: "resolved", label: "Resolved" },
+        { value: "in_progress", label: "In Progress" },
+      ];
+    case "resolved":
+      return [
+        { value: "resolved", label: "Resolved" },
+        { value: "closed", label: "Closed" },
+        { value: "awaiting_client", label: "Awaiting Client" },
+      ];
+    case "closed":
+    default:
+      return [
+        { value: "closed", label: "Closed" },
+      ];
+  }
+};
+
 interface InfoRowProps {
   label: string;
   value: React.ReactNode;
@@ -73,6 +112,7 @@ const TicketMetadataCard: React.FC<TicketMetadataCardProps> = ({ data }) => (
 );
 
 interface ExecutiveWorkspaceCardProps {
+  currentTicketStatus: TicketStatus;
   status: TicketStatus;
   priority: TicketPriority;
   category: TicketCategory;
@@ -85,6 +125,7 @@ interface ExecutiveWorkspaceCardProps {
 }
 
 const ExecutiveWorkspaceCard: React.FC<ExecutiveWorkspaceCardProps> = ({
+  currentTicketStatus,
   status,
   priority,
   category,
@@ -94,97 +135,102 @@ const ExecutiveWorkspaceCard: React.FC<ExecutiveWorkspaceCardProps> = ({
   onPriorityChange,
   onCategoryChange,
   onAssigneeChange,
-}) => (
-  <Card glowOnHover>
-    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8", marginBottom: "1rem" }}>
-      <UserCheck size={18} />
-      <h3 style={{ margin: 0, color: "#63f5e8" }}>Executive Control Workspace</h3>
-    </div>
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      {/* Status Dropdown */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-        <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-          WORKFLOW STATUS
-        </Label>
-        <Select value={status} onValueChange={(v) => onStatusChange(v as TicketStatus)}>
-          <SelectTrigger style={{ width: "100%" }}>
-            <SelectValue placeholder="Select Status" />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUS_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+}) => {
+  const statusOptions = getAvailableStatusOptions(currentTicketStatus);
 
-      {/* Priority Dropdown */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-        <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-          PRIORITY LEVEL
-        </Label>
-        <Select value={priority} onValueChange={(v) => onPriorityChange(v as TicketPriority)}>
-          <SelectTrigger style={{ width: "100%" }}>
-            <SelectValue placeholder="Select Priority" />
-          </SelectTrigger>
-          <SelectContent>
-            {PRIORITY_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+  return (
+    <Card glowOnHover>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#63f5e8", marginBottom: "1rem" }}>
+        <UserCheck size={18} />
+        <h3 style={{ margin: 0, color: "#63f5e8" }}>Executive Control Workspace</h3>
       </div>
-
-      {/* Category Dropdown */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-        <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-          ISSUE CATEGORY
-        </Label>
-        <Select value={category} onValueChange={(v) => onCategoryChange(v as TicketCategory)}>
-          <SelectTrigger style={{ width: "100%" }}>
-            <SelectValue placeholder="Select Category" />
-          </SelectTrigger>
-          <SelectContent>
-            {CATEGORY_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Assignee Selection */}
-      {assignableUsers && assignableUsers.length > 0 && (
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        {/* Status Dropdown */}
         <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
           <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-            ASSIGNED EXECUTIVE
+            WORKFLOW STATUS
           </Label>
-          <Select
-            value={assignedToId ? String(assignedToId) : "unassigned"}
-            onValueChange={(v) => onAssigneeChange(v === "unassigned" ? null : Number(v))}
-          >
+          <Select value={status} onValueChange={(v) => onStatusChange(v as TicketStatus)} disabled={currentTicketStatus === "closed"}>
             <SelectTrigger style={{ width: "100%" }}>
-              <SelectValue placeholder="Unassigned" />
+              <SelectValue placeholder="Select Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="unassigned">Unassigned</SelectItem>
-              {assignableUsers.map((u) => (
-                <SelectItem key={u.id} value={String(u.id)}>
-                  {u.first_name || u.last_name ? `${u.first_name} ${u.last_name} (${u.username})` : u.username}
+              {statusOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-      )}
-    </div>
-  </Card>
-);
+
+        {/* Priority Dropdown */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+          <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+            PRIORITY LEVEL
+          </Label>
+          <Select value={priority} onValueChange={(v) => onPriorityChange(v as TicketPriority)} disabled={currentTicketStatus === "closed"}>
+            <SelectTrigger style={{ width: "100%" }}>
+              <SelectValue placeholder="Select Priority" />
+            </SelectTrigger>
+            <SelectContent>
+              {PRIORITY_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Category Dropdown */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+          <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+            ISSUE CATEGORY
+          </Label>
+          <Select value={category} onValueChange={(v) => onCategoryChange(v as TicketCategory)} disabled={currentTicketStatus === "closed"}>
+            <SelectTrigger style={{ width: "100%" }}>
+              <SelectValue placeholder="Select Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORY_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Assignee Selection */}
+        {assignableUsers && assignableUsers.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+            <Label style={{ fontSize: "0.72rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+              ASSIGNED EXECUTIVE
+            </Label>
+            <Select
+              value={assignedToId ? String(assignedToId) : "unassigned"}
+              onValueChange={(v) => onAssigneeChange(v === "unassigned" ? null : Number(v))}
+              disabled={currentTicketStatus === "closed"}
+            >
+              <SelectTrigger style={{ width: "100%" }}>
+                <SelectValue placeholder="Unassigned" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {assignableUsers.map((u) => (
+                  <SelectItem key={u.id} value={String(u.id)}>
+                    {u.first_name || u.last_name ? `${u.first_name} ${u.last_name} (${u.username})` : u.username}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+};
 
 interface ResolutionNotesCardProps {
   notes: string;
@@ -205,7 +251,7 @@ const ResolutionNotesCard: React.FC<ResolutionNotesCardProps> = ({
       <h3 style={{ margin: 0, color: "#63f5e8" }}>Resolution & Client Response Notes</h3>
     </div>
     <p style={{ color: "#94a3b8", fontSize: "0.85rem", margin: "0 0 1rem 0" }}>
-      Provide detailed resolution notes, technical findings, or response guidance. These notes are visible to the client upon status updates.
+      Provide detailed resolution notes, technical findings, or response guidance. These notes remain stored and accessible even after closing the ticket.
     </p>
     <textarea
       value={notes}
@@ -266,8 +312,8 @@ export const TicketDetails: React.FC = () => {
     if (!ticket.data) return;
 
     setValidationError(null);
-    if (status === "closed" && !resolutionNotes.trim()) {
-      setValidationError("Resolution notes are required before closing this ticket.");
+    if ((status === "resolved" || status === "closed") && !resolutionNotes.trim()) {
+      setValidationError("Resolution notes are required before resolving this ticket.");
       return;
     }
 
@@ -346,6 +392,7 @@ export const TicketDetails: React.FC = () => {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
             <TicketMetadataCard data={ticket.data} />
             <ExecutiveWorkspaceCard
+              currentTicketStatus={ticket.data.status}
               status={status}
               priority={priority}
               category={category}

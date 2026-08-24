@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "wouter";
-import { Search, Filter, RefreshCw, LifeBuoy } from "lucide-react";
+import { Search, Filter, RefreshCw, LifeBuoy, FileText } from "lucide-react";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
@@ -12,6 +12,13 @@ import { formatDateTime } from "../../../portal/utils/format";
 import type { ExecutiveTicketUpdateInput, TicketCategory, TicketPriority, TicketStatus } from "../../../portal/types/portal.types";
 import useExecutiveTickets from "../../hooks/useExecutiveTickets";
 import useUpdateExecutiveTicket from "../../hooks/useUpdateExecutiveTicket";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../../../../components/ui/dialog";
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "all", label: "All Statuses" },
@@ -40,6 +47,45 @@ const PRIORITY_FILTERS: { value: string; label: string }[] = [
   { value: "critical", label: "Critical" },
 ];
 
+const getAvailableStatusOptions = (currentStatus: TicketStatus): { value: TicketStatus; label: string }[] => {
+  switch (currentStatus) {
+    case "open":
+      return [
+        { value: "open", label: "Open" },
+        { value: "assigned", label: "Assigned" },
+      ];
+    case "assigned":
+      return [
+        { value: "assigned", label: "Assigned" },
+        { value: "in_progress", label: "In Progress" },
+        { value: "open", label: "Open" },
+      ];
+    case "in_progress":
+      return [
+        { value: "in_progress", label: "In Progress" },
+        { value: "awaiting_client", label: "Awaiting Client" },
+        { value: "assigned", label: "Assigned" },
+      ];
+    case "awaiting_client":
+      return [
+        { value: "awaiting_client", label: "Awaiting Client" },
+        { value: "resolved", label: "Resolved" },
+        { value: "in_progress", label: "In Progress" },
+      ];
+    case "resolved":
+      return [
+        { value: "resolved", label: "Resolved" },
+        { value: "closed", label: "Closed" },
+        { value: "awaiting_client", label: "Awaiting Client" },
+      ];
+    case "closed":
+    default:
+      return [
+        { value: "closed", label: "Closed" },
+      ];
+  }
+};
+
 export const TicketList: React.FC = () => {
   const tickets = useExecutiveTickets();
   const updateTicket = useUpdateExecutiveTicket();
@@ -49,8 +95,16 @@ export const TicketList: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
 
+<<<<<<< HEAD
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+=======
+  // Resolution Dialog State
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [activeTicket, setActiveTicket] = useState<{ id: number; ticket_id: string; subject: string; notes: string } | null>(null);
+  const [modalNotes, setModalNotes] = useState("");
+  const [modalError, setModalError] = useState<string | null>(null);
+>>>>>>> 8eca6c72ec9dcbb54ad9f1ffbe79f33762fb91c2
 
   const filtered = useMemo(() => {
     if (!tickets.data) return [];
@@ -76,14 +130,46 @@ export const TicketList: React.FC = () => {
   const handleQuickStatus = async (id: number, nextStatus: TicketStatus) => {
     try {
       const ticket = tickets.data?.find((t) => t.id === id);
-      if (nextStatus === "closed" && (!ticket?.resolution_notes || !ticket.resolution_notes.trim())) {
-        alert("Cannot close ticket: Resolution notes are required before closing this ticket. Please open ticket details to enter resolution notes.");
+      if (!ticket) return;
+
+      if (nextStatus === "resolved") {
+        setActiveTicket({
+          id: ticket.id,
+          ticket_id: ticket.ticket_id,
+          subject: ticket.subject,
+          notes: ticket.resolution_notes || "",
+        });
+        setModalNotes(ticket.resolution_notes || "");
+        setModalError(null);
+        setDialogOpen(true);
         return;
       }
+
       await updateTicket.update(id, { status: nextStatus });
       await tickets.refetch();
     } catch (err) {
       console.error("Failed to update ticket status:", err);
+    }
+  };
+
+  const handleSaveResolutionModal = async () => {
+    if (!activeTicket) return;
+    if (!modalNotes.trim()) {
+      setModalError("Resolution notes are required before resolving this ticket.");
+      return;
+    }
+
+    setModalError(null);
+    try {
+      await updateTicket.update(activeTicket.id, {
+        status: "resolved",
+        resolution_notes: modalNotes.trim(),
+      });
+      setDialogOpen(false);
+      await tickets.refetch();
+    } catch (err: any) {
+      const msg = err?.response?.data?.resolution_notes?.[0] || err?.response?.data?.detail || "Failed to save resolution notes.";
+      setModalError(msg);
     }
   };
 
@@ -200,6 +286,7 @@ export const TicketList: React.FC = () => {
                 description="No assigned tickets match the search query or active filter settings."
               />
             ) : (
+<<<<<<< HEAD
               <>
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "850px", fontSize: "0.875rem" }}>
@@ -343,10 +430,145 @@ export const TicketList: React.FC = () => {
                   </div>
                 </div>
               </>
+=======
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "850px", fontSize: "0.875rem" }}>
+                  <thead>
+                    <tr style={{ textAlign: "left", color: "#64748b", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.7rem", letterSpacing: "0.08em" }}>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>TICKET ID</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)", width: "25%" }}>SUBJECT</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CLIENT</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>ASSIGNED</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>CATEGORY</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>PRIORITY</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>STATUS</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)" }}>UPDATED</th>
+                      <th style={{ padding: "0.75rem", borderBottom: "1px solid rgba(140,174,187,0.2)", textAlign: "right" }}>QUICK STATUS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((ticket) => {
+                      const options = getAvailableStatusOptions(ticket.status);
+                      return (
+                      <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(140,174,187,0.12)" }}>
+                        <td style={{ padding: "0.75rem", fontFamily: "IBM Plex Mono, monospace", fontSize: "0.75rem", color: "#63f5e8" }}>
+                          <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#63f5e8" }}>
+                            {ticket.ticket_id}
+                          </Link>
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <Link href={`/support/tickets/${ticket.id}`} style={{ color: "#e2e8f0", textDecoration: "none" }}>
+                            <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 600 }}>
+                              {ticket.subject}
+                            </span>
+                          </Link>
+                        </td>
+                        <td style={{ padding: "0.75rem", color: "#cbd5e1" }}>{ticket.client_username}</td>
+                        <td style={{ padding: "0.75rem", color: "#cbd5e1", fontSize: "0.8rem" }}>
+                          {ticket.assigned_username || "Unassigned"}
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <TicketCategoryBadge category={ticket.category} />
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <TicketPriorityBadge priority={ticket.priority} />
+                        </td>
+                        <td style={{ padding: "0.75rem" }}>
+                          <TicketStatusBadge status={ticket.status} />
+                        </td>
+                        <td style={{ padding: "0.75rem", color: "#94a3b8", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                          {formatDateTime(ticket.updated_at)}
+                        </td>
+                        <td style={{ padding: "0.75rem", textAlign: "right" }}>
+                          <select
+                            value={ticket.status}
+                            onChange={(e) => handleQuickStatus(ticket.id, e.target.value as TicketStatus)}
+                            disabled={ticket.status === "closed" || updateTicket.isLoading}
+                            title={ticket.status === "closed" ? "Closed tickets are read-only." : undefined}
+                            style={{
+                              backgroundColor: "#0c1222",
+                              border: "1px solid #1e293b",
+                              color: "#63f5e8",
+                              fontSize: "0.75rem",
+                              fontFamily: "IBM Plex Mono, monospace",
+                              padding: "0.25rem 0.5rem",
+                              borderRadius: "4px",
+                              outline: "none",
+                              cursor: "pointer",
+                            }}
+                          >
+                            {options.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+>>>>>>> 8eca6c72ec9dcbb54ad9f1ffbe79f33762fb91c2
             )}
           </Card>
         </>
       )}
+
+      {/* Quick Resolution Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent style={{ maxWidth: "550px", backgroundColor: "#0b1329", border: "1px solid #1e293b", color: "#f8fafc" }}>
+          <DialogHeader>
+            <DialogTitle style={{ color: "#63f5e8", fontSize: "1.2rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <FileText size={18} /> Resolution & Client Response Notes
+            </DialogTitle>
+          </DialogHeader>
+          <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {activeTicket && (
+              <div style={{ fontSize: "0.85rem", color: "#94a3b8" }}>
+                Resolving Ticket <span style={{ color: "#63f5e8", fontFamily: "IBM Plex Mono, monospace" }}>{activeTicket.ticket_id}</span>: {activeTicket.subject}
+              </div>
+            )}
+            {modalError && (
+              <div style={{ color: "#ef4444", backgroundColor: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", padding: "0.6rem 0.8rem", borderRadius: "6px", fontSize: "0.85rem" }}>
+                {modalError}
+              </div>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+              <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
+                RESOLUTION NOTES (REQUIRED)
+              </label>
+              <textarea
+                value={modalNotes}
+                onChange={(e) => setModalNotes(e.target.value)}
+                rows={5}
+                placeholder="Enter resolution notes, technical findings, or guidance for the client..."
+                style={{
+                  width: "100%",
+                  backgroundColor: "#0c1222",
+                  border: "1px solid #1e293b",
+                  borderRadius: "6px",
+                  padding: "0.75rem",
+                  color: "#e2e8f0",
+                  fontSize: "0.875rem",
+                  lineHeight: 1.5,
+                  outline: "none",
+                  resize: "vertical",
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter style={{ marginTop: "1.5rem", display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+            <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button glow size="sm" onClick={handleSaveResolutionModal} disabled={updateTicket.isLoading}>
+              {updateTicket.isLoading ? "Saving..." : "Save & Resolve Ticket"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
