@@ -64,8 +64,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       setUser(activeUser);
       localStorage.setItem("aurexion_user", JSON.stringify(activeUser));
-      // Secure session: JWTs are stored in HttpOnly cookies by the backend, not in localStorage.
-      // Do not store access/refresh tokens in JavaScript storage.
+
+      // Store tokens for cross-domain Authorization header support (Vercel -> Render)
+      const accessToken = response.access || response.tokens?.access;
+      const refreshToken = response.refresh || response.tokens?.refresh;
+      if (accessToken) {
+        localStorage.setItem("aurexion_token", accessToken);
+        localStorage.setItem("access_token", accessToken);
+      }
+      if (refreshToken) {
+        localStorage.setItem("aurexion_refresh_token", refreshToken);
+        localStorage.setItem("refresh_token", refreshToken);
+      }
+
       // Invalidate in-memory caches on user switch
       crmService.clearCache();
       bdmService.clearCache();
@@ -80,7 +91,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     localStorage.removeItem("aurexion_user");
     localStorage.removeItem("aurexion_token");
+    localStorage.removeItem("access_token");
     localStorage.removeItem("aurexion_refresh_token");
+    localStorage.removeItem("refresh_token");
     crmService.clearCache();
     bdmService.clearCache();
     queryClient.clear(); // Clear all server query cache on logout

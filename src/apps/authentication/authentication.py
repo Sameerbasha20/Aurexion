@@ -7,6 +7,9 @@ from rest_framework import exceptions
 logger = logging.getLogger(__name__)
 
 
+import hashlib
+from django.core.cache import cache
+
 class CookieJWTAuthentication(JWTAuthentication):
     """
     Custom JWT authentication class that reads the access token from cookies.
@@ -29,6 +32,11 @@ class CookieJWTAuthentication(JWTAuthentication):
             if raw_token is None:
                 return None
 
+            token_str = raw_token.decode('utf-8') if isinstance(raw_token, bytes) else str(raw_token)
+            token_hash = hashlib.sha256(token_str.encode('utf-8')).hexdigest()
+            if cache.get(f"bl_token_{token_hash}"):
+                raise exceptions.AuthenticationFailed('Token has been invalidated (logged out).')
+
             # Header authentication is stateless and not subject to CSRF
             try:
                 validated_token = self.get_validated_token(raw_token)
@@ -38,6 +46,11 @@ class CookieJWTAuthentication(JWTAuthentication):
             return self.get_user(validated_token), validated_token
 
         # 3. If token came from cookie, validate it and enforce CSRF protection
+        token_str = raw_token.decode('utf-8') if isinstance(raw_token, bytes) else str(raw_token)
+        token_hash = hashlib.sha256(token_str.encode('utf-8')).hexdigest()
+        if cache.get(f"bl_token_{token_hash}"):
+            raise exceptions.AuthenticationFailed('Token has been invalidated (logged out).')
+
         try:
             validated_token = self.get_validated_token(raw_token)
         except Exception:
