@@ -17,7 +17,7 @@ export const IndustryCaseStudies = ({ industry }) => {
       allCaseStudies.push({
         slug: dbCase.slug,
         title: dbCase.title || "",
-        coverImage: dbCase.media || "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80",
+        coverImage: dbCase.media || "/webp_images/unsplash_1563986768609-32.webp",
         challenge: dbCase.business_challenge || "",
         outcomes: dbCase.outcomes_performance ? [dbCase.outcomes_performance] : []
       });
@@ -29,7 +29,7 @@ export const IndustryCaseStudies = ({ industry }) => {
       allCaseStudies.push({
         slug: staticCs.slug,
         title: staticCs.title || "",
-        coverImage: staticCs.coverImage || "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80",
+        coverImage: staticCs.coverImage || "/webp_images/unsplash_1563986768609-32.webp",
         challenge: staticCs.challenge || "",
         outcomes: staticCs.results?.map(r => r.impact) || []
       });

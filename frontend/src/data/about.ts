@@ -123,21 +123,21 @@ export const aboutData = {
       {
         name: "David Vance",
         designation: "Chief Executive Officer",
-        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=85",
+        image: "/webp_images/unsplash_1507003211169-0a.webp",
         bio: "Over 20 years leading global technology consulting firms, spearheading multi-billion-dollar enterprise digital transformations across North America and Europe.",
         linkedin: "https://linkedin.com"
       },
       {
         name: "Dr. Elena Rostova",
         designation: "Chief Technology Officer",
-        image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=85",
+        image: "/webp_images/unsplash_1573496359142-b8.webp",
         bio: "Former Principal Architect at Tier-1 cloud platforms. Specializes in distributed systems, zero-trust security infrastructure, and large-scale enterprise AI engineering.",
         linkedin: "https://linkedin.com"
       },
       {
         name: "Marcus Chen",
         designation: "Chief Operating Officer",
-        image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=85",
+        image: "/webp_images/unsplash_1500648767791-00.webp",
         bio: "Leads Aurexion's global delivery centers and engineering operations, managing 24/7 follow-the-sun client delivery with strict SLA governance.",
         linkedin: "https://linkedin.com"
       }

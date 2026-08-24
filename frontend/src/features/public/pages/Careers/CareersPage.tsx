@@ -85,7 +85,7 @@ export const CareersPage: React.FC = () => {
         <div
           className="subpage-hero-art"
           style={{
-            backgroundImage: `url(https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=85)`,
+            backgroundImage: `url(/webp_images/unsplash_1522071820081-00.webp)`,
           }}
         />
         <div className="subpage-hero-overlay" />

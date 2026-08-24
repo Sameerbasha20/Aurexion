@@ -13,8 +13,8 @@ export const DigitalTransformation = () => {
         <div className="max-w-5xl mx-auto">
           {/* Desktop Layout */}
           <div className="hidden md:grid md:grid-cols-6 gap-2 text-center items-center">
-            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <span className="text-xs font-mono font-bold text-destructive">LEGACY SYSTEMS</span>
+            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+              <span className="text-xs font-mono font-bold text-amber-400">LEGACY SYSTEMS</span>
             </div>
             
             <div className="col-span-1 h-[2px] bg-border relative">
@@ -41,12 +41,12 @@ export const DigitalTransformation = () => {
 
           {/* Mobile Vertical Flow */}
           <div className="flex md:hidden flex-col items-center gap-3 w-full max-w-sm mx-auto text-center">
-            <div className="w-full p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
-              <span className="text-xs font-mono font-bold text-destructive">LEGACY SYSTEMS</span>
+            <div className="w-full p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+              <span className="text-xs font-mono font-bold text-amber-400">LEGACY SYSTEMS</span>
             </div>
 
             <div className="flex items-center justify-center text-[#64748b] my-0.5">
-              <ArrowDown size={18} className="text-[#f87171]" />
+              <ArrowDown size={18} className="text-amber-400" />
             </div>
 
             <div className="w-full p-5 bg-[#0a111c] border border-[rgba(99,245,232,0.2)] rounded-lg shadow-lg relative">

@@ -67,20 +67,10 @@ export const ServiceSearch: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-2 mt-6">
-            <button type="button"
-              onClick={() => setActiveFilter("All")}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeFilter === "All" 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-card border border-border/40 hover:border-primary/50 text-muted-foreground'
-              }`}
-            >
-              All Categories
-            </button>
             {serviceCategories.map((cat: any) => (
               <button type="button"
                 key={cat.id}
-                onClick={() => setActiveFilter(cat.name)}
+                onClick={() => setActiveFilter(activeFilter === cat.name ? "All" : cat.name)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   activeFilter === cat.name 
                     ? 'bg-primary text-primary-foreground' 
