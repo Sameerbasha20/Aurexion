@@ -49,7 +49,7 @@ export const FeaturedCaseStudy = ({ caseStudy }) => {
           
           <div className="lg:w-1/2 bg-[#050B14] relative overflow-hidden border-l border-border/20 min-h-[300px]">
             <img
-              src={caseStudy.coverImage || "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80"}
+              src={caseStudy.coverImage || "/webp_images/unsplash_1563986768609-32.webp"}
               alt={caseStudy.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />

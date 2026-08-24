@@ -11,7 +11,7 @@ export const ArticleCard = ({ article }) => {
       {/* Cover Image */}
       <div className="h-48 bg-[#0a0f18] relative overflow-hidden flex-shrink-0 border-b border-border/40">
         <img
-          src={article.coverImage || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"}
+          src={article.coverImage || "/webp_images/unsplash_1460925895917-af.webp"}
           alt={article.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
@@ -40,16 +40,13 @@ export const ArticleCard = ({ article }) => {
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-border/40 mt-auto">
-          <div className="flex items-center gap-3">
-            {author && (
-              <div className="text-xs font-medium text-foreground">
-                {author.name}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
-            <Clock className="w-3 h-3" />
-            <span>{article.readingTime}</span>
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+            Read Blog
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </span>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+            <Clock className="w-3 h-3 text-[#63f5e8]" />
+            <span>{article.readingTime || "5 min read"}</span>
           </div>
         </div>
       </div>

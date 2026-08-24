@@ -3,15 +3,15 @@ import { Link } from "wouter";
 import { ArrowUpRight } from "lucide-react";
 
 const SECTOR_HERO_IMAGES = {
-  "Banking & FinTech": "https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?auto=format&fit=crop&w=1600&q=85",
-  "Healthcare & Life Sciences": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1600&q=85",
-  "Manufacturing & Robotics": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1600&q=85",
-  "Logistics & Supply Chain": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=85",
-  "Government": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1600&q=85",
-  "Telecom": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=85",
+  "Banking & FinTech": "/webp_images/unsplash_1501167786227-4c.webp",
+  "Healthcare & Life Sciences": "/webp_images/unsplash_1516549655169-df.webp",
+  "Manufacturing & Robotics": "/webp_images/unsplash_1581091226825-a6.webp",
+  "Logistics & Supply Chain": "/webp_images/unsplash_1586528116311-ad.webp",
+  "Government": "/webp_images/unsplash_1517048676732-d6.webp",
+  "Telecom": "/webp_images/unsplash_1516321318423-f0.webp",
 };
 
-const DEFAULT_INDUSTRIES_IMAGE = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=85";
+const DEFAULT_INDUSTRIES_IMAGE = "/webp_images/unsplash_1486406146926-c6.webp";
 
 export const IndustriesHero = () => {
   const currentBgImage = SECTOR_HERO_IMAGES["Banking & FinTech"] || DEFAULT_INDUSTRIES_IMAGE;

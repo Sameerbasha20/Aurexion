@@ -18,7 +18,7 @@ export const AboutHero: React.FC<AboutHeroProps> = ({ data }) => {
       <div
         className="subpage-hero-art"
         style={{
-          backgroundImage: `url(https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=85)`,
+          backgroundImage: `url(/webp_images/unsplash_1497366216548-37.webp)`,
         }}
       />
       <div className="subpage-hero-overlay" />

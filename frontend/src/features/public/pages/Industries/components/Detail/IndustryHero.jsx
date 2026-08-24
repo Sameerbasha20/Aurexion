@@ -3,39 +3,39 @@ import { Link } from "wouter";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 
 const INDUSTRY_IMAGES = {
-  banking: "https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?auto=format&fit=crop&w=1600&q=85",
-  "financial-services": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=85",
-  insurance: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=85",
-  healthcare: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1600&q=85",
-  lifesciences: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1600&q=85",
-  life: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1600&q=85",
-  education: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1600&q=85",
-  manufacturing: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1600&q=85",
-  retail: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=85",
-  "e-commerce": "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1600&q=85",
-  ecommerce: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1600&q=85",
-  "logistics-supply-chain": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=85",
-  logistics: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=85",
-  "real-estate": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=85",
-  realestate: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=85",
-  construction: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=85",
-  hospitality: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1600&q=85",
-  travel: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1600&q=85",
-  automotive: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=85",
-  telecommunications: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=85",
-  telecom: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=85",
-  "professional-services": "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=85",
-  professional: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=85",
-  government: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1600&q=85",
-  publicsector: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1600&q=85",
-  startups: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1600&q=85",
-  aerospace: "https://images.unsplash.com/photo-1517976487524-749e49c71987?auto=format&fit=crop&w=1600&q=85",
+  banking: "/webp_images/unsplash_1501167786227-4c.webp",
+  "financial-services": "/webp_images/unsplash_1486406146926-c6.webp",
+  insurance: "/webp_images/unsplash_1454165804606-c3.webp",
+  healthcare: "/webp_images/unsplash_1516549655169-df.webp",
+  lifesciences: "/webp_images/unsplash_1532187863486-ab.webp",
+  life: "/webp_images/unsplash_1532187863486-ab.webp",
+  education: "/webp_images/unsplash_1524178232363-1f.webp",
+  manufacturing: "/webp_images/unsplash_1581091226825-a6.webp",
+  retail: "/webp_images/unsplash_1441986300917-64.webp",
+  "e-commerce": "/webp_images/unsplash_1557821552-17105.webp",
+  ecommerce: "/webp_images/unsplash_1557821552-17105.webp",
+  "logistics-supply-chain": "/webp_images/unsplash_1586528116311-ad.webp",
+  logistics: "/webp_images/unsplash_1586528116311-ad.webp",
+  "real-estate": "/webp_images/unsplash_1486406146926-c6.webp",
+  realestate: "/webp_images/unsplash_1486406146926-c6.webp",
+  construction: "/webp_images/unsplash_1504307651254-35.webp",
+  hospitality: "/webp_images/unsplash_1542314831-068cd.webp",
+  travel: "/webp_images/unsplash_1436491865332-7a.webp",
+  automotive: "/webp_images/unsplash_1503376780353-7e.webp",
+  telecommunications: "/webp_images/unsplash_1516321318423-f0.webp",
+  telecom: "/webp_images/unsplash_1516321318423-f0.webp",
+  "professional-services": "/webp_images/unsplash_1497366216548-37.webp",
+  professional: "/webp_images/unsplash_1497366216548-37.webp",
+  government: "/webp_images/unsplash_1517048676732-d6.webp",
+  publicsector: "/webp_images/unsplash_1517048676732-d6.webp",
+  startups: "/webp_images/unsplash_1519389950473-47.webp",
+  aerospace: "/webp_images/unsplash_1518770660439-46.webp",
 };
 
 export const IndustryHero = ({ industry }) => {
   const imageUrl =
     INDUSTRY_IMAGES[industry.slug] ||
-    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=85";
+    "/webp_images/unsplash_1486406146926-c6.webp";
 
   return (
     <section className="subpage-immersive-hero">

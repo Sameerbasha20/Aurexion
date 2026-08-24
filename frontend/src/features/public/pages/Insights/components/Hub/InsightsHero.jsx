@@ -1,7 +1,7 @@
 import React from "react";
 import { ArrowUpRight } from "lucide-react";
 
-const INSIGHTS_HERO_IMAGE = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=85";
+const INSIGHTS_HERO_IMAGE = "/webp_images/unsplash_1454165804606-c3.webp";
 
 export const InsightsHero = () => {
   return (

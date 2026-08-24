@@ -418,7 +418,7 @@ export default function Home() {
               <article className="case-study">
                 <div className="case-visual" style={{ padding: 0, overflow: "hidden" }}>
                   <img
-                    src={featured.coverImage || "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80"}
+                    src={featured.coverImage || "/webp_images/unsplash_1563986768609-32.webp"}
                     alt={featured.title}
                     style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
@@ -514,7 +514,7 @@ export default function Home() {
                 <Link href={`/insights/${post.slug}`} className="insight-card block" key={post.slug || post.id}>
                   <div className="insight-img-wrap">
                     <img
-                      src={post.coverImage || post.media || post.imageUrl || "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80"}
+                      src={post.coverImage || post.media || post.imageUrl || "/webp_images/unsplash_1485827404703-89.webp"}
                       alt={post.title}
                       className="insight-photo"
                       loading="lazy"

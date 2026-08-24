@@ -2,6 +2,9 @@ import React from "react";
 import { CodeBlock } from "./CodeBlock";
 import { Callout } from "./Callout";
 
+const slugify = (text) => 
+  text.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+
 export const ArticleContent = ({ content }) => {
   // A simple simulated markdown parser for the demo data
   // In a real app, you'd use react-markdown or a robust MDX parser
@@ -15,14 +18,32 @@ export const ArticleContent = ({ content }) => {
 
       // H2
       if (block.startsWith("## ")) {
-        const id = block.replace("## ", "").toLowerCase().replace(/[^\w]+/g, '-');
-        return <h2 key={index} id={id} className="text-2xl sm:text-3xl font-bold mt-10 mb-4 text-foreground leading-snug">{block.replace("## ", "")}</h2>;
+        const rawText = block.replace("## ", "").trim();
+        const id = slugify(rawText);
+        return (
+          <h2 
+            key={index} 
+            id={id} 
+            className="text-2xl sm:text-3xl font-bold mt-10 mb-4 text-foreground leading-snug scroll-mt-28"
+          >
+            {rawText}
+          </h2>
+        );
       }
       
       // H3
       if (block.startsWith("### ")) {
-        const id = block.replace("### ", "").toLowerCase().replace(/[^\w]+/g, '-');
-        return <h3 key={index} id={id} className="text-xl sm:text-2xl font-bold mt-8 mb-3 text-foreground leading-snug">{block.replace("### ", "")}</h3>;
+        const rawText = block.replace("### ", "").trim();
+        const id = slugify(rawText);
+        return (
+          <h3 
+            key={index} 
+            id={id} 
+            className="text-xl sm:text-2xl font-bold mt-8 mb-3 text-foreground leading-snug scroll-mt-28"
+          >
+            {rawText}
+          </h3>
+        );
       }
 
       // Code Block

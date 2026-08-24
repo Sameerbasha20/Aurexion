@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "wouter";
 import { ArrowUpRight } from "lucide-react";
 
-const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1600&q=85";
+const DEFAULT_HERO_IMAGE = "/webp_images/unsplash_1555066931-4365d.webp";
 
 export const ServicesHero: React.FC = () => {
   return (

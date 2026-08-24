@@ -3,74 +3,74 @@ import { AlertCircle, FileText, Settings } from "lucide-react";
 
 const CHALLENGE_IMAGES = {
   banking: {
-    operational: "https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1501167786227-4c.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1563986768609-32.webp"
   },
   "financial-services": {
-    operational: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1590283603385-17.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1551288049-bebda.webp"
   },
   insurance: {
-    operational: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1454165804606-c3.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1460925895917-af.webp"
   },
   healthcare: {
-    operational: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1516549655169-df.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1576091160399-11.webp"
   },
   lifesciences: {
-    operational: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1532187863486-ab.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1530026405186-ed.webp"
   },
   life: {
-    operational: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1532187863486-ab.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1530026405186-ed.webp"
   },
   education: {
-    operational: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1519389950473-47.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1516321318423-f0.webp"
   },
   manufacturing: {
-    operational: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1581091226825-a6.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1581092580497-e0.webp"
   },
   retail: {
-    operational: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1441986300917-64.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1557821552-17105.webp"
   },
   "e-commerce": {
-    operational: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1557821552-17105.webp",
+    regulatory: "/webp_images/unsplash_1450133064473-71.webp",
+    technical: "/webp_images/unsplash_1557821552-17105.webp"
   },
   ecommerce: {
-    operational: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1563013544-824ae1d704d3?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1557821552-17105.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1563013544-824ae.webp"
   },
   "logistics-supply-chain": {
-    operational: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1586528116311-ad.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1504384308090-c8.webp"
   },
   logistics: {
-    operational: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1586528116311-ad.webp",
+    regulatory: "/webp_images/unsplash_1589829545856-d1.webp",
+    technical: "/webp_images/unsplash_1504384308090-c8.webp"
   },
   default: {
-    operational: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
-    regulatory: "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=600&q=80",
-    technical: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80"
+    operational: "/webp_images/unsplash_1460925895917-af.webp",
+    regulatory: "/webp_images/unsplash_1450133064473-71.webp",
+    technical: "/webp_images/unsplash_1558494949-ef010.webp"
   }
 };
 
