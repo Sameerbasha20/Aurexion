@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIRequestFactory, APITestCase
 from apps.portal.models import SupportTicket
 from apps.portal.serializers import (
     ClientTicketCreateSerializer,
@@ -111,7 +111,8 @@ class SupportTicketSerializerTests(TestCase):
             assigned_to=self.support_user,
             subject='Original',
             category='bug',
-            priority='high'
+            priority='high',
+            status='assigned'
         )
         data = {'status': 'in_progress', 'resolution_notes': 'Working on it'}
         serializer = SupportExecutiveTicketUpdateSerializer(ticket, data=data, partial=True)
@@ -471,3 +472,174 @@ class SupportTicketModelTests(TestCase):
         self.support_user.delete()
         ticket.refresh_from_db()
         self.assertIsNone(ticket.assigned_to)
+
+
+class SupportTicketWorkflowTests(APITestCase):
+    def setUp(self):
+        self.client_user = User.objects.create_user(
+            username='wf_client',
+            email='wf_client@test.com',
+            password='TestPass123!'
+        )
+        self.client_user.profile.role = 'client_user'
+        self.client_user.profile.save()
+
+        self.support_user = User.objects.create_user(
+            username='wf_support',
+            email='wf_support@test.com',
+            password='TestPass123!'
+        )
+        self.support_user.profile.role = 'support_executive'
+        self.support_user.profile.save()
+
+        self.admin_user = User.objects.create_user(
+            username='wf_admin',
+            email='wf_admin@test.com',
+            password='TestPass123!'
+        )
+        self.admin_user.profile.role = 'administrator'
+        self.admin_user.profile.save()
+
+        self.ticket = SupportTicket.objects.create(
+            client_user=self.client_user,
+            assigned_to=self.support_user,
+            subject='Workflow Test Ticket',
+            category='bug',
+            priority='high',
+            status='open'
+        )
+
+    def test_1_open_to_assigned(self):
+        self.client.force_authenticate(user=self.support_user)
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', {'status': 'assigned'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'assigned')
+
+    def test_2_assigned_to_in_progress(self):
+        self.ticket.status = 'assigned'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', {'status': 'in_progress'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'in_progress')
+
+    def test_3_in_progress_to_awaiting_client(self):
+        self.ticket.status = 'in_progress'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', {'status': 'awaiting_client'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'awaiting_client')
+
+    def test_4_awaiting_client_to_resolved_with_notes(self):
+        self.ticket.status = 'awaiting_client'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        payload = {'status': 'resolved', 'resolution_notes': 'Issue fixed by patch.'}
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', payload, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'resolved')
+        self.assertEqual(self.ticket.resolution_notes, 'Issue fixed by patch.')
+
+    def test_5_awaiting_client_to_resolved_without_notes(self):
+        self.ticket.status = 'awaiting_client'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        payload = {'status': 'resolved', 'resolution_notes': '   '}
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', payload, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'awaiting_client')
+
+    def test_6_open_to_closed_fails(self):
+        self.ticket.status = 'open'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', {'status': 'closed'}, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_7_assigned_to_closed_fails(self):
+        self.ticket.status = 'assigned'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', {'status': 'closed'}, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_8_in_progress_to_closed_fails(self):
+        self.ticket.status = 'in_progress'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', {'status': 'closed'}, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_9_awaiting_client_to_closed_fails(self):
+        self.ticket.status = 'awaiting_client'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', {'status': 'closed'}, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_10_resolved_to_closed(self):
+        self.ticket.status = 'resolved'
+        self.ticket.resolution_notes = 'Pre-existing resolution note'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', {'status': 'closed'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'closed')
+
+    def test_11_resolved_to_closed_while_notes_exist(self):
+        self.ticket.status = 'resolved'
+        self.ticket.resolution_notes = 'Resolution notes preserved'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', {'status': 'closed'}, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'closed')
+        self.assertEqual(self.ticket.resolution_notes, 'Resolution notes preserved')
+
+    def test_12_closed_ticket_retains_resolution_notes(self):
+        self.ticket.status = 'resolved'
+        self.ticket.resolution_notes = 'Permanent resolution details'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', {'status': 'closed'}, format='json')
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'closed')
+        self.assertEqual(self.ticket.resolution_notes, 'Permanent resolution details')
+
+    def test_13_admin_resolving_ticket_with_notes(self):
+        self.ticket.status = 'awaiting_client'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.admin_user)
+        payload = {'status': 'resolved', 'resolution_notes': 'Resolved by admin'}
+        response = self.client.patch(f'/api/v1/support/admin/tickets/{self.ticket.id}/', payload, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'resolved')
+        self.assertEqual(self.ticket.resolution_notes, 'Resolved by admin')
+
+    def test_14_support_executive_resolving_ticket_with_notes(self):
+        self.ticket.status = 'awaiting_client'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.support_user)
+        payload = {'status': 'resolved', 'resolution_notes': 'Resolved by support executive'}
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', payload, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'resolved')
+        self.assertEqual(self.ticket.resolution_notes, 'Resolved by support executive')
+
+    def test_15_unauthorized_user_attempting_same_operation(self):
+        self.ticket.status = 'awaiting_client'
+        self.ticket.save()
+        self.client.force_authenticate(user=self.client_user)
+        payload = {'status': 'resolved', 'resolution_notes': 'Client attempt'}
+        response = self.client.patch(f'/api/v1/support/tickets/{self.ticket.id}/', payload, format='json')
+        self.assertIn(response.status_code, (401, 403))

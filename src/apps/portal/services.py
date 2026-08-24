@@ -134,13 +134,14 @@ class SupportTicketService:
         return ticket
 
     @staticmethod
-    def close_ticket(ticket, user, resolution_notes, request=None):
-        if not resolution_notes or not resolution_notes.strip():
+    def close_ticket(ticket, user, resolution_notes=None, request=None):
+        notes_to_use = resolution_notes.strip() if (resolution_notes and resolution_notes.strip()) else ticket.resolution_notes
+        if not notes_to_use or not notes_to_use.strip():
             raise ValueError("Resolution notes are required to close a ticket.")
 
         old_status = ticket.status
         ticket.status = 'closed'
-        ticket.resolution_notes = resolution_notes
+        ticket.resolution_notes = notes_to_use
         ticket.save()
 
         if request:
@@ -150,8 +151,8 @@ class SupportTicketService:
                 module='portal',
                 object_id=ticket.id,
                 repr_str=f"Closed ticket {ticket.ticket_id}",
-                previous_state={'status': old_status, 'resolution_notes': ''},
-                updated_state={'status': 'closed', 'resolution_notes': resolution_notes},
+                previous_state={'status': old_status, 'resolution_notes': ticket.resolution_notes},
+                updated_state={'status': 'closed', 'resolution_notes': notes_to_use},
                 request=request
             )
 

@@ -86,9 +86,9 @@ export const supportService = {
     return data;
   },
 
-  // User list for assigning tickets
+  // User list for assigning tickets (support executives only, per SupportTicket.assigned_to limit_choices_to)
   getUsers: async (): Promise<AssignableUser[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS);
+    const data = await axiosClient.get<any, any>(`${API_ENDPOINTS.ADMIN.USERS}?role=support_executive`);
     return Array.isArray(data) ? data : (data.results || []);
   },
 };
