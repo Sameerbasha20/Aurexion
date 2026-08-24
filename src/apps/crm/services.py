@@ -338,7 +338,10 @@ def onboard_lead_as_client(*, lead, actor, password=None, request=None):
         pass
 
     # Dispatch welcome credentials email
-    send_welcome_credentials_email(user, default_password, login_url)
+    try:
+        send_welcome_credentials_email(user, default_password, login_url)
+    except Exception as e:
+        logger.exception(f"Failed to send welcome credentials email for user {user.email}: {e}")
 
     lead.client_onboarded = True
     lead.save(update_fields=["client_onboarded", "updated_at"])

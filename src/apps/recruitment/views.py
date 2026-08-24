@@ -204,6 +204,14 @@ class AdminCandidateApplicationViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsHRManagerOrSuperAdmin]
     lookup_field = 'tracking_code'
 
+    def dispatch(self, request, *args, **kwargs):
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            role = getattr(getattr(request.user, 'profile', None), 'role', None)
+            if role not in ['super_admin', 'hr_manager'] and not request.user.is_superuser:
+                from django.http import JsonResponse
+                return JsonResponse({"detail": "Not allowed"}, status=403)
+        return super().dispatch(request, *args, **kwargs)
+
     @extend_schema(tags=['Careers (HR Admin)'], summary="Update application stage", request=ApplicationStageUpdateSerializer)
     @action(detail=True, methods=['patch'])
     def stage(self, request, tracking_code=None):

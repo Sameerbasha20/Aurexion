@@ -235,7 +235,7 @@ class LogoutView(APIView):
     Clears cookies, invalidates session, and blacklists tokens in cache.
     Requires authentication or token payload; returns 401 when called without credentials.
     """
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         tokens_to_blacklist = []
@@ -286,7 +286,17 @@ class LogoutView(APIView):
                 token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()
                 cache.set(f"bl_token_{token_hash}", True, timeout=86400)
 
-        # Invalidate active Django session
+        # Also blacklist the refresh token in simplejwt if available
+        refresh_token_candidate = cookie_refresh or body_refresh
+        if refresh_token_candidate:
+            try:
+                from rest_framework_simplejwt.tokens import RefreshToken
+                token = RefreshToken(refresh_token_candidate)
+                token.blacklist()
+            except Exception:
+                pass
+
+        # Invalidate server-side session
         try:
             if hasattr(request, 'session'):
                 request.session.flush()
@@ -309,7 +319,7 @@ class CookieTokenRefreshView(TokenRefreshView):
     authentication_classes = []
 
     def post(self, request, *args, **kwargs):
-        is_from_body = bool(isinstance(request.data, dict) and (request.data.get('refresh') or request.data.get('refresh_token')))
+        is_from_body = bool(hasattr(request.data, 'get') and (request.data.get('refresh') or request.data.get('refresh_token')))
         refresh_token = None
         if is_from_body:
             refresh_token = request.data.get('refresh') or request.data.get('refresh_token')
@@ -371,7 +381,10 @@ class ForgotPasswordView(APIView):
     authentication_classes = []
 
     def post(self, request, *args, **kwargs):
-        email_or_username = request.data.get('email', '').strip()
+        email_or_username = request.data.get('email', '')
+        if not isinstance(email_or_username, str):
+            email_or_username = str(email_or_username)
+        email_or_username = email_or_username.strip()
         if not email_or_username:
             return Response(
                 {"detail": "Please provide your registered email address."},
@@ -500,19 +513,21 @@ class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        current_password = request.data.get("current_password", "").strip()
-        new_password = request.data.get("new_password", "").strip()
-        confirm_password = request.data.get("confirm_password") or request.data.get("new_password_confirm") or request.data.get("confirm_new_password")
-        if confirm_password is not None:
-            confirm_password = confirm_password.strip()
+        current_password = request.data.get("current_password", "")
+        new_password = request.data.get("new_password", "")
+        confirm_password = request.data.get("confirm_password") or request.data.get("new_password_confirm") or request.data.get("confirm_new_password") or ""
+        
+        if isinstance(current_password, str): current_password = current_password.strip()
+        if isinstance(new_password, str): new_password = new_password.strip()
+        if isinstance(confirm_password, str): confirm_password = confirm_password.strip()
 
-        if not current_password or not new_password:
+        if not current_password or not new_password or not confirm_password:
             return Response(
-                {"detail": "Both current password and new password are required."},
+                {"detail": "Current password, new password, and confirm password are required."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        if confirm_password is not None and confirm_password != new_password:
+            
+        if new_password != confirm_password:
             return Response(
                 {"detail": "New password and password confirmation do not match."},
                 status=status.HTTP_400_BAD_REQUEST

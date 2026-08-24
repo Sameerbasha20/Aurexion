@@ -67,7 +67,7 @@ export const clampPhoneNumber = (phone: string, countryCode: string): string => 
   return raw.slice(0, country.digitsMax);
 };
 
-const nameRegex = /^[a-zA-Z\s'-]+$/;
+const nameRegex = /^[a-zA-Z0-9\s'-]+$/;
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const contactSchema = z.object({
