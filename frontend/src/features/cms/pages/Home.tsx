@@ -319,7 +319,6 @@ export default function Home() {
           <div className="section-index">AI & INTELLIGENCE</div>
           <div className="immersive-overlay" />
           <div className="immersive-content">
-            <p className="eyebrow">AI & INTELLIGENCE</p>
             <h2>INTELLIGENCE<br /><em>WITHOUT LIMITS.</em></h2>
             <p>From generative models to intelligent operations, we turn data into decisions that move with the business.</p>
             <Link href="/services/artificial-intelligence-solutions" className="text-button inline-flex items-center gap-2">
