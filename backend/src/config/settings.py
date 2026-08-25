@@ -125,18 +125,12 @@ CSRF_TRUSTED_ORIGINS = [
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE =  DEBUG
-# Lax in dev (same-site localhost:3000 ↔ localhost:8000 is same-site via eTLD+1), None in prod cross-site (vercel.app ↔ onrender.com)
-# SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE') or ('Lax' if DEBUG else 'None')
-SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE') or ('Lax' if not  DEBUG else 'None')
-
-
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE') or ('Lax' if DEBUG else 'None')
 
 CSRF_COOKIE_HTTPONLY = False  # Let frontend read the csrf token cookie to pass in request headers
 CSRF_COOKIE_SECURE = not DEBUG
-#CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE') or ('Lax' if DEBUG else 'None')
-
-CSRF_COOKIE_SAMESITE =  'None'
+CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE') or ('Lax' if DEBUG else 'None')
 
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -280,7 +274,6 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'apps.authentication.authentication.CookieJWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
