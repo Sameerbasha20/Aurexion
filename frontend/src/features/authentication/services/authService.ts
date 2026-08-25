@@ -24,6 +24,12 @@ export const authService = {
       username,
       password,
     });
+
+    // Store CSRF token from response in localStorage for cross-domain Vercel -> Render support
+    if (data && data.csrftoken) {
+      localStorage.setItem('csrftoken', data.csrftoken);
+    }
+
     return data;
   },
 
@@ -34,8 +40,8 @@ export const authService = {
       // Safe cleanup even if backend endpoint is unavailable or network is offline
     } finally {
       localStorage.removeItem("aurexion_user");
-      localStorage.removeItem("aurexion_token");
       localStorage.removeItem("access_token");
+      localStorage.removeItem("csrftoken");
     }
     return { success: true };
   },

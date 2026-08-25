@@ -142,7 +142,7 @@ class LoginView(APIView):
                 # Prevent session fixation by cycling session key / rotating session ID
                 django_login(request, user)
                 # Ensure CSRF token is initialized for state-changing requests
-                get_token(request)
+                csrf_token = get_token(request)
 
                 role = user.profile.role if hasattr(user, 'profile') else 'client_user'
                 response_data = {
@@ -151,7 +151,8 @@ class LoginView(APIView):
                         'username': user.username,
                         'email': user.email,
                         'role': role
-                    }
+                    },
+                    'csrftoken': csrf_token
                 }
                 response = Response(response_data, status=status.HTTP_200_OK)
 
