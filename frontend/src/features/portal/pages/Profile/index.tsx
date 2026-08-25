@@ -169,6 +169,7 @@ const ChangePasswordForm: React.FC = () => {
       const response = await axiosClient.post("auth/change-password/", {
         current_password: currentPassword,
         new_password: newPassword,
+        confirm_password: confirmPassword,
       });
       setSuccess(response.data?.detail || "Password changed successfully! Please use your new password on your next login.");
       setCurrentPassword("");

@@ -45,40 +45,89 @@ export interface ServiceDetail {
 }
 
 export interface Industry {
-  id: number;
+  id: number | string;
   slug: string;
   name: string;
   description: string;
-  solutions?: string[];
+  shortDescription?: string;
+  icon?: string;
+  solutions?: any;
   imageUrl?: string;
-  isActive: boolean;
+  isActive?: boolean;
+  challenges?: any;
+  target_solutions?: any;
+  services?: any[];
+  case_studies?: any[];
+  relatedServices?: any[];
+  technologies?: any[];
+  relatedCaseStudies?: any[];
+  outcomes?: any[];
 }
 
 export interface CaseStudy {
-  id: number;
+  id: number | string;
   slug: string;
   title: string;
   client?: string;
+  clientType?: string;
+  country?: string;
+  category?: string;
+  coverImage?: string;
   industry: string;
   challenge: string;
-  solution: string;
-  results: string;
-  technologies?: string[];
+  solution?: string;
+  results?: string | any;
+  technologies?: string[] | any;
   imageUrl?: string;
-  isActive: boolean;
+  isActive?: boolean;
+  confidential?: boolean;
+  media?: any[];
+  business_challenge?: string;
+  proposed_architecture?: string;
+  tech_stack?: string[];
+  development_approach?: any[];
+  modules_integration_security?: any;
+  architecture?: any;
+  developmentApproach?: any[];
+  modules?: any[];
+  outcomes_performance?: any[];
+  outcomes_business?: any[];
+  compliance_security?: any[];
+  integrations?: any[];
+  relatedCaseStudySlugs?: string[];
+  services?: any[];
+  security_governance?: any[];
 }
 
 export interface BlogPost {
-  id: number;
+  id: number | string;
   slug: string;
   title: string;
-  summary: string;
+  summary?: string;
+  excerpt?: string;
   content: string;
   author?: string;
-  publishedDate: string;
-  category: string;
+  authorId?: string;
+  publishedDate?: string;
+  publishedAt?: string;
+  published_at?: string;
+  created_at?: string;
+  updatedAt?: string;
+  readingTime?: string;
+  featured?: boolean;
+  category: string | any;
+  category_name?: string;
+  tags?: string[] | any;
   imageUrl?: string;
-  isActive: boolean;
+  coverImage?: string;
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string | string[];
+  media?: any[];
+  isActive?: boolean;
+  relatedServices?: string[] | any;
+  relatedIndustries?: string[] | any;
+  relatedCaseStudies?: string[] | any;
 }
 
 export interface Job {
