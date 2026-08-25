@@ -13,6 +13,7 @@ import { InsightsCTA } from "./components/Hub/InsightsCTA";
 import { SEO } from "../../../../components/seo/SEO";
 import { createArticleSchema } from "../../../../components/seo/structuredData";
 import { getSiteUrl } from "../../../../components/seo/seoConfig";
+import { resolveMediaUrl } from "../../../../utils/mediaUrl";
 
 export const ArticleDetailPage = () => {
   const params = useParams();
@@ -51,7 +52,7 @@ export const ArticleDetailPage = () => {
     meta_title: apiArticle.meta_title,
     meta_description: apiArticle.meta_description,
     meta_keywords: apiArticle.meta_keywords,
-    coverImage: apiArticle.media || staticArticle?.coverImage || (() => {
+    coverImage: resolveMediaUrl(apiArticle.media) || staticArticle?.coverImage || (() => {
       const categoryImages = {
         "cybersecurity": "/images/unsplash_1563986768609-32.webp",
         "software-engineering": "/images/unsplash_1555066931-4365d.webp",

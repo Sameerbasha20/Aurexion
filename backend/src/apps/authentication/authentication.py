@@ -20,32 +20,27 @@ class CookieJWTAuthentication(JWTAuthentication):
     """
 
     def authenticate(self, request):
-        # 1. Attempt cookie extraction
-        raw_token = request.COOKIES.get('access_token')
-
-        # 2. If cookie is missing, fall back to Authorization header
-        if not raw_token:
-            header = self.get_header(request)
-            if header is None:
-                return None
+        # 1. Attempt Authorization header extraction first (preferred for stateless SPA apps)
+        header = self.get_header(request)
+        if header is not None:
             raw_token = self.get_raw_token(header)
-            if raw_token is None:
-                return None
+            if raw_token is not None:
+                token_str = raw_token.decode('utf-8') if isinstance(raw_token, bytes) else str(raw_token)
+                token_hash = hashlib.sha256(token_str.encode('utf-8')).hexdigest()
+                if cache.get(f"bl_token_{token_hash}"):
+                    raise exceptions.AuthenticationFailed('Token has been invalidated (logged out).')
 
-            token_str = raw_token.decode('utf-8') if isinstance(raw_token, bytes) else str(raw_token)
-            token_hash = hashlib.sha256(token_str.encode('utf-8')).hexdigest()
-            if cache.get(f"bl_token_{token_hash}"):
-                raise exceptions.AuthenticationFailed('Token has been invalidated (logged out).')
+                try:
+                    validated_token = self.get_validated_token(raw_token)
+                    return self.get_user(validated_token), validated_token
+                except Exception:
+                    pass  # Fall back to cookie authentication if header validation fails
 
-            # Header authentication is stateless and not subject to CSRF
-            try:
-                validated_token = self.get_validated_token(raw_token)
-            except Exception:
-                return None
+        # 2. Attempt cookie extraction if no valid header token was supplied
+        raw_token = request.COOKIES.get('access_token')
+        if not raw_token:
+            return None
 
-            return self.get_user(validated_token), validated_token
-
-        # 3. If token came from cookie, validate it and enforce CSRF protection
         token_str = raw_token.decode('utf-8') if isinstance(raw_token, bytes) else str(raw_token)
         token_hash = hashlib.sha256(token_str.encode('utf-8')).hexdigest()
         if cache.get(f"bl_token_{token_hash}"):
@@ -58,7 +53,7 @@ class CookieJWTAuthentication(JWTAuthentication):
 
         user = self.get_user(validated_token)
 
-        # Enforce CSRF check for browser/cookie sessions (safe methods GET/HEAD/OPTIONS are naturally bypassed by Django's CSRF)
+        # Enforce CSRF check for browser/cookie sessions
         self.enforce_csrf(request)
 
         return user, validated_token

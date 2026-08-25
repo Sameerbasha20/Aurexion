@@ -23,6 +23,7 @@ import { RelatedCaseStudies } from "./components/Detail/RelatedCaseStudies";
 import { CaseStudyCTA } from "./components/Detail/CaseStudyCTA";
 import { SEO } from "../../../../components/seo/SEO";
 import { useCaseStudyDetails } from "../../hooks/usePublicContent";
+import { resolveMediaUrl } from "../../../../utils/mediaUrl";
 
 export const CaseStudyDetailsPage = () => {
   const params = useParams();
@@ -44,7 +45,7 @@ export const CaseStudyDetailsPage = () => {
     industry: staticCaseStudy?.industry || "Technology",
     country: staticCaseStudy?.country || "Global",
     category: staticCaseStudy?.category || "Core Engineering",
-    coverImage: apiCaseStudy.media || staticCaseStudy?.coverImage || "/images/unsplash_1563986768609-32.webp",
+    coverImage: resolveMediaUrl(apiCaseStudy.media) || staticCaseStudy?.coverImage || "/images/unsplash_1563986768609-32.webp",
     challenge: apiCaseStudy.business_challenge || staticCaseStudy?.challenge || "",
     architecture: {
       description: apiCaseStudy.proposed_architecture || staticCaseStudy?.architecture?.description || "",

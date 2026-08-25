@@ -3,6 +3,7 @@ import { useCmsCaseStudies } from "../hooks/useCms";
 import { CaseStudyItem, CaseStudyCreatePayload, cmsService } from "../services/cmsService";
 import Card from "../../../components/ui/card";
 import Button from "../../../components/ui/button";
+import { resolveMediaUrl } from "../../../utils/mediaUrl";
 import {
   FileText,
   Search,
@@ -418,7 +419,7 @@ export const CaseStudies: React.FC = () => {
                           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                             {cs.media && (
                               <img
-                                src={cs.media}
+                                src={resolveMediaUrl(cs.media)}
                                 alt=""
                                 style={{ width: "40px", height: "40px", borderRadius: "4px", objectFit: "cover", backgroundColor: "rgba(255,255,255,0.05)" }}
                               />
@@ -689,7 +690,7 @@ export const CaseStudies: React.FC = () => {
                 {createForm.media && (
                   <div style={{ marginTop: "0.5rem", padding: "0.5rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.15)", borderRadius: "4px", display: "inline-block", alignSelf: "flex-start" }}>
                     <img
-                      src={createForm.media}
+                      src={resolveMediaUrl(createForm.media)}
                       alt="Uploaded Preview"
                       style={{ maxHeight: "120px", maxWidth: "100%", borderRadius: "2px", display: "block" }}
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
@@ -858,7 +859,7 @@ export const CaseStudies: React.FC = () => {
                 {editForm.media && (
                   <div style={{ marginTop: "0.5rem", padding: "0.5rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.15)", borderRadius: "4px", display: "inline-block", alignSelf: "flex-start" }}>
                     <img
-                      src={editForm.media}
+                      src={resolveMediaUrl(editForm.media)}
                       alt="Uploaded Preview"
                       style={{ maxHeight: "120px", maxWidth: "100%", borderRadius: "2px", display: "block" }}
                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
