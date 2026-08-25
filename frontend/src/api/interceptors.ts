@@ -40,20 +40,10 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
 
       // Only attach CSRF token for unsafe methods
       if (config.method && !["get", "head", "options"].includes(config.method.toLowerCase())) {
-        let csrfToken: string | undefined;
-
-        // 1. Try reading from localStorage (set by authService.login after backend returns csrftoken in JSON)
-        const storedToken = localStorage.getItem('csrftoken');
-        if (storedToken) {
-          csrfToken = storedToken;
-        } else {
-          // 2. Fall back to reading from document.cookie (works for same-origin requests)
-          csrfToken = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("csrftoken="))
-            ?.split("=")[1];
-        }
-
+        const csrfToken = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("csrftoken="))
+          ?.split("=")[1];
         if (csrfToken) {
           config.headers["X-CSRFToken"] = csrfToken;
         }
