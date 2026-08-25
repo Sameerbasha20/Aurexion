@@ -52,7 +52,7 @@ export const ArticleDetailPage = () => {
     meta_title: apiArticle.meta_title,
     meta_description: apiArticle.meta_description,
     meta_keywords: apiArticle.meta_keywords,
-    coverImage: resolveMediaUrl(apiArticle.media) || staticArticle?.coverImage || (() => {
+    coverImage: resolveMediaUrl(apiArticle.cover_image || apiArticle.coverImage || apiArticle.coverimage || apiArticle.media) || staticArticle?.coverImage || (() => {
       const categoryImages = {
         "cybersecurity": "/images/unsplash_1563986768609-32.webp",
         "software-engineering": "/images/unsplash_1555066931-4365d.webp",

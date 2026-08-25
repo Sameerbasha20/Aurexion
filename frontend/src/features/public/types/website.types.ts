@@ -73,6 +73,8 @@ export interface CaseStudy {
   country?: string;
   category?: string;
   coverImage?: string;
+  cover_image?: string;
+  coverimage?: string;
   industry: string;
   challenge: string;
   solution?: string;
@@ -120,6 +122,8 @@ export interface BlogPost {
   tags?: string[] | any;
   imageUrl?: string;
   coverImage?: string;
+  cover_image?: string;
+  coverimage?: string;
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string | string[];

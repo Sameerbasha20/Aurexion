@@ -49,10 +49,16 @@ class CaseStudy(models.Model):
     outcomes_performance = models.TextField(blank=True, default="")
     
     confidential = models.BooleanField(default=False)
-    media = models.CharField(max_length=255, blank=True, null=True)
+    media = models.CharField(max_length=500, blank=True, null=True)
+    cover_image = models.CharField(max_length=500, blank=True, null=True, help_text="S3 / Cloud storage URL for cover image")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def coverimage(self):
+        return self.cover_image or self.media
+
 
     class Meta:
         indexes = [
@@ -105,8 +111,14 @@ class BlogPost(models.Model):
     content = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='posts', null=True, blank=True, db_index=True)
     tags = models.JSONField(default=list, blank=True)
-    media = models.CharField(max_length=255, blank=True, null=True)
+    media = models.CharField(max_length=500, blank=True, null=True)
+    cover_image = models.CharField(max_length=500, blank=True, null=True, help_text="S3 / Cloud storage URL for cover image")
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts')
+
+    @property
+    def coverimage(self):
+        return self.cover_image or self.media
+
     
     published_at = models.DateTimeField(blank=True, null=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

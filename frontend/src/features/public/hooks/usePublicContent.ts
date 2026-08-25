@@ -24,7 +24,7 @@ export const useCaseStudies = () => {
             challenge: item.challenge || item.business_challenge || item.context || "",
             solution: item.solution || item.proposed_architecture || (typeof item.architecture === "object" ? item.architecture?.description : item.architecture) || "",
             results: Array.isArray(item.results) ? item.results : (item.outcomes_performance ? [{ impact: item.outcomes_performance, label: "Key Outcome" }] : []),
-            coverImage: resolveMediaUrl(item.coverImage || item.imageUrl) || "/images/unsplash_1618005182384-a8.webp",
+            coverImage: resolveMediaUrl(item.cover_image || item.coverImage || item.coverimage || item.media || item.imageUrl) || "/images/unsplash_1618005182384-a8.webp",
           }));
           // Prefer backend when it has data; fall back to local fixtures only when backend empty
           setData(normalizedBackend.length > 0 ? normalizedBackend : caseStudiesData);
@@ -82,7 +82,7 @@ export const useBlogPosts = (filters?: { category?: string; tag?: string; search
           const normalized = result.map((item: any) => ({
             ...item,
             category: typeof item.category === "object" && item.category !== null ? item.category.name || "engineering" : (typeof item.category === "string" ? item.category : "engineering"),
-            coverImage: resolveMediaUrl(item.coverImage || item.media || item.imageUrl) || "/images/unsplash_1618005182384-a8.webp",
+            coverImage: resolveMediaUrl(item.cover_image || item.coverImage || item.coverimage || item.media || item.imageUrl) || "/images/unsplash_1618005182384-a8.webp",
             publishedAt: item.publishedAt || item.published_at || item.created_at || "2026-06-18T09:00:00Z"
           }));
           setData(normalized.length > 0 ? normalized : blogPosts);

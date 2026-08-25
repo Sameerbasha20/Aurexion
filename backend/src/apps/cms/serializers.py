@@ -55,7 +55,10 @@ class CaseStudySerializer(serializers.ModelSerializer):
         if instance.confidential and not is_staff:
             ret['client'] = "Confidential Client"
             # Redact the name of the client to satisfy the validation of confidentiality
+        ret['coverimage'] = instance.cover_image or instance.media
+        ret['coverImage'] = instance.cover_image or instance.media
         return ret
+
 
 class IndustrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -85,6 +88,13 @@ class BlogPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogPost
         fields = '__all__'
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['coverimage'] = instance.cover_image or instance.media
+        ret['coverImage'] = instance.cover_image or instance.media
+        return ret
+
 
     def create(self, validated_data):
         if not validated_data.get('category'):

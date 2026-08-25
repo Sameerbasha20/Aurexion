@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useBlogPosts } from "../../hooks/usePublicContent";
+import { resolveMediaUrl } from "../../../../utils/mediaUrl";
 import { blogPosts } from "../../../../data/blogPosts";
 import { blogCategories } from "../../../../data/blogCategories";
 import { blogTags } from "../../../../data/blogTags";
@@ -41,7 +42,7 @@ export const InsightsPage = () => {
         const staticPost = blogPosts.find(bp => bp.slug === post.slug);
         
         // Resolve coverImage
-        let coverImage = post.media || staticPost?.coverImage;
+        let coverImage = resolveMediaUrl(post.cover_image || post.coverImage || post.coverimage || post.media) || staticPost?.coverImage;
         if (!coverImage) {
           const categoryImages = {
             "cybersecurity": "/images/unsplash_1563986768609-32.webp",

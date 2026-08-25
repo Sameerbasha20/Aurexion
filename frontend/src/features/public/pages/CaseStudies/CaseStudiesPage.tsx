@@ -7,6 +7,7 @@ import { EngineeringCapabilities } from "./components/EngineeringCapabilities";
 import { CaseStudiesCTA } from "./components/CaseStudiesCTA";
 import { caseStudiesData } from "../../../../data/caseStudies";
 import { useCaseStudies } from "../../hooks/usePublicContent";
+import { resolveMediaUrl } from "../../../../utils/mediaUrl";
 import { SEO } from "../../../../components/seo/SEO";
 
 export const CaseStudiesPage = () => {
@@ -32,7 +33,7 @@ export const CaseStudiesPage = () => {
         industry: staticCaseStudy?.industry || "Technology",
         country: staticCaseStudy?.country || "Global",
         category: staticCaseStudy?.category || "Core Engineering",
-        coverImage: dbCase.media || staticCaseStudy?.coverImage || "/images/unsplash_1563986768609-32.webp",
+        coverImage: resolveMediaUrl(dbCase.cover_image || dbCase.coverImage || dbCase.coverimage || dbCase.media) || staticCaseStudy?.coverImage || "/images/unsplash_1563986768609-32.webp",
         challenge: dbCase.business_challenge || staticCaseStudy?.challenge || "",
         architecture: {
           description: dbCase.proposed_architecture || staticCaseStudy?.architecture?.description || "",
