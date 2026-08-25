@@ -150,50 +150,7 @@ export const Login: React.FC = () => {
           </div>
         )}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
-            SELECT SYSTEM ROLE SCOPE
-          </span>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
-            {[
-              "ADMIN",
-              "BDM",
-              "CLIENT",
-              "SALES",
-              "HR",
-              "CONTENT",
-              "SUPPORT"
-            ].map((r) => {
-              const isSelected = role === r;
-              const isSupport = r === "SUPPORT";
-              return (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => handleRoleSelect(r)}
-                  style={{
-                    height: "38px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "0.68rem",
-                    fontFamily: "IBM Plex Mono, monospace",
-                    borderRadius: "4px",
-                    backgroundColor: isSelected ? "rgba(99, 245, 232, 0.1)" : "#050811",
-                    border: isSelected ? "1px solid #63f5e8" : "1px solid #1e293b",
-                    color: isSelected ? "#63f5e8" : "#cbd5e1",
-                    cursor: "pointer",
-                    transition: "all 150ms",
-                    textAlign: "center",
-                    gridColumn: isSupport ? "span 3" : undefined,
-                  }}
-                >
-                  {r}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        
 
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <label htmlFor="username" style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#64748b" }}>
