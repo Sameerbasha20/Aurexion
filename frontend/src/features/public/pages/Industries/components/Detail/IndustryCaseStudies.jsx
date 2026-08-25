@@ -17,7 +17,7 @@ export const IndustryCaseStudies = ({ industry }) => {
       allCaseStudies.push({
         slug: dbCase.slug,
         title: dbCase.title || "",
-        coverImage: dbCase.media || "/webp_images/unsplash_1563986768609-32.webp",
+        coverImage: dbCase.media || "/images/unsplash_1563986768609-32.webp",
         challenge: dbCase.business_challenge || "",
         outcomes: dbCase.outcomes_performance ? [dbCase.outcomes_performance] : []
       });
@@ -29,7 +29,7 @@ export const IndustryCaseStudies = ({ industry }) => {
       allCaseStudies.push({
         slug: staticCs.slug,
         title: staticCs.title || "",
-        coverImage: staticCs.coverImage || "/webp_images/unsplash_1563986768609-32.webp",
+        coverImage: staticCs.coverImage || "/images/unsplash_1563986768609-32.webp",
         challenge: staticCs.challenge || "",
         outcomes: staticCs.results?.map(r => r.impact) || []
       });

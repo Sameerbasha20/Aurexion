@@ -11,7 +11,7 @@ export const ArticleCard = ({ article }) => {
       {/* Cover Image */}
       <div className="h-48 bg-[#0a0f18] relative overflow-hidden flex-shrink-0 border-b border-border/40">
         <img
-          src={article.coverImage || "/webp_images/unsplash_1460925895917-af.webp"}
+          src={article.coverImage || "/images/unsplash_1460925895917-af.webp"}
           alt={article.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />

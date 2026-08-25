@@ -1,7 +1,7 @@
 import React from "react";
 import { ArrowUpRight } from "lucide-react";
 
-const INSIGHTS_HERO_IMAGE = "/webp_images/unsplash_1454165804606-c3.webp";
+const INSIGHTS_HERO_IMAGE = "/images/unsplash_1454165804606-c3.webp";
 
 export const InsightsHero = () => {
   return (
