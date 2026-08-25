@@ -98,7 +98,9 @@ class BlogPostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         if not validated_data.get('category'):
-            default_cat, _ = Category.objects.get_or_create(name='General', defaults={'slug': 'general'})
+            default_cat = Category.objects.filter(name='General').first() or Category.objects.first()
+            if not default_cat:
+                default_cat, _ = Category.objects.get_or_create(name='General', defaults={'slug': 'general'})
             validated_data['category'] = default_cat
 
         if not validated_data.get('author'):
@@ -110,7 +112,6 @@ class BlogPostSerializer(serializers.ModelSerializer):
 
         if not validated_data.get('slug') and validated_data.get('title'):
             from django.utils.text import slugify
-            import uuid
             base_slug = slugify(validated_data['title']) or "blog-post"
             slug = base_slug
             counter = 1
@@ -119,7 +120,25 @@ class BlogPostSerializer(serializers.ModelSerializer):
                 counter += 1
             validated_data['slug'] = slug
 
+        # Sync cover_image and media
+        media_val = validated_data.get('media') or validated_data.get('cover_image')
+        cover_val = validated_data.get('cover_image') or validated_data.get('media')
+        if media_val:
+            validated_data['media'] = media_val
+        if cover_val:
+            validated_data['cover_image'] = cover_val
+
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        media_val = validated_data.get('media') or validated_data.get('cover_image')
+        cover_val = validated_data.get('cover_image') or validated_data.get('media')
+        if media_val:
+            validated_data['media'] = media_val
+        if cover_val:
+            validated_data['cover_image'] = cover_val
+        return super().update(instance, validated_data)
+
 
 class CompanyInformationSerializer(serializers.ModelSerializer):
     class Meta:

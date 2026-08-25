@@ -113,6 +113,8 @@ export interface BlogPostItem {
   content: string;
   tags: string[] | string;
   media: string | null;
+  cover_image?: string | null;
+  coverimage?: string | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -133,6 +135,8 @@ export interface BlogPostCreatePayload {
   author: number;
   status?: string;
   media?: string | null;
+  cover_image?: string | null;
+  coverimage?: string | null;
   meta_title?: string | null;
   meta_description?: string | null;
   meta_keywords?: string | null;

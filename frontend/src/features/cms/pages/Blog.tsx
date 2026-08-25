@@ -138,7 +138,8 @@ export const Blog: React.FC = () => {
       .filter(Boolean);
 
     const authorId = Number(user?.id) || 1;
-    const catId = createForm.category || (categories[0]?.id || 1);
+    const selectedCat = categories.find((c) => c.id === createForm.category) || categories[0];
+    const catId: number = Number(selectedCat?.id) || 14;
 
     try {
       await createPost({
@@ -146,6 +147,7 @@ export const Blog: React.FC = () => {
         category: catId,
         author: authorId,
         tags: tagsArray,
+        cover_image: createForm.media,
       });
       setIsCreateOpen(false);
       setCreateForm({
@@ -153,7 +155,7 @@ export const Blog: React.FC = () => {
         slug: "",
         content: "",
         tags: [],
-        category: categories[0]?.id || 1,
+        category: categories[0]?.id,
         author: authorId,
         status: "published",
         media: "",
@@ -162,7 +164,12 @@ export const Blog: React.FC = () => {
       setActionSuccess("Article published successfully.");
       setTimeout(() => setActionSuccess(null), 3000);
     } catch (err: any) {
-      setCreateError(err?.response?.data?.detail || err?.message || "Failed to publish article.");
+      const errorMsg =
+        err?.response?.data?.category?.[0] ||
+        err?.response?.data?.detail ||
+        err?.message ||
+        "Failed to publish article.";
+      setCreateError(errorMsg);
     }
   };
 
