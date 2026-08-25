@@ -90,9 +90,13 @@ export const ArticleHero = ({ article }: { article: any }) => {
             {article.coverImage && (
               <div className="w-full h-64 sm:h-80 lg:h-96 max-w-md lg:max-w-none mx-auto rounded-xl overflow-hidden border border-border/20 shadow-2xl relative group bg-background">
                 <img
-                  src={article.coverImage}
+                  src={article.coverImage || "/images/unsplash_1486406146926-c6.webp"}
                   alt={article.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "/images/unsplash_1486406146926-c6.webp";
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050B14]/80 via-transparent to-transparent pointer-events-none" />
               </div>

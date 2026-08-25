@@ -69,9 +69,13 @@ export const CaseStudyHero = ({ caseStudy }: { caseStudy: any }) => {
               {caseStudy.coverImage && (
                 <div className="h-48 sm:h-56 relative overflow-hidden bg-background">
                   <img
-                    src={caseStudy.coverImage}
+                    src={caseStudy.coverImage || "/images/unsplash_1563986768609-32.webp"}
                     alt={caseStudy.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/images/unsplash_1563986768609-32.webp";
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#080f1a] via-[#080f1a]/40 to-transparent" />
                 </div>

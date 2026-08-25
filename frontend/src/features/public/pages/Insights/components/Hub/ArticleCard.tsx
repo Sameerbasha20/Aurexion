@@ -14,6 +14,10 @@ export const ArticleCard = ({ article }: { article: any }) => {
           src={article.coverImage || "/images/unsplash_1460925895917-af.webp"}
           alt={article.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/images/unsplash_1460925895917-af.webp";
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f18]/80 via-transparent to-transparent pointer-events-none" />
       </div>
