@@ -187,21 +187,6 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, showToggle = fa
                 ← Back to Home
               </span>
             </Link>
-            <Link href="/login?role=client">
-              <span
-                style={{
-                  fontSize: "0.8rem",
-                  color: "#050811",
-                  backgroundColor: "#63f5e8",
-                  padding: "0.4rem 0.75rem",
-                  borderRadius: "4px",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
-              >
-                Client Portal
-              </span>
-            </Link>
           </div>
         )}
       </div>

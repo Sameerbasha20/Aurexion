@@ -24,6 +24,12 @@ export const authService = {
       username,
       password,
     });
+
+    // Store CSRF token from response in localStorage for cross-origin access
+    if (data && data.csrftoken) {
+      localStorage.setItem('csrftoken', data.csrftoken);
+    }
+
     return data;
   },
 
@@ -36,6 +42,7 @@ export const authService = {
       localStorage.removeItem("aurexion_user");
       localStorage.removeItem("aurexion_token");
       localStorage.removeItem("access_token");
+      localStorage.removeItem("csrftoken");
     }
     return { success: true };
   },
