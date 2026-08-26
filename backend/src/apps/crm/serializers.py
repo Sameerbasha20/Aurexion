@@ -261,7 +261,19 @@ class LeadFollowUpCreateSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(), required=False, allow_null=True
     )
     follow_up_type = serializers.CharField(required=False, default="email")
-    meeting_link = serializers.URLField(required=False, allow_blank=True)
+    meeting_link = serializers.CharField(required=False, allow_blank=True, default="")
+    scheduled_at = serializers.DateTimeField(
+        input_formats=[
+            "iso-8601",
+            "%m/%d/%Y %I:%M %p",
+            "%m/%d/%Y %H:%M",
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d %H:%M",
+        ]
+    )
 
     def validate_follow_up_type(self, value):
         if not value:
@@ -294,7 +306,20 @@ class LeadFollowUpCreateSerializer(serializers.ModelSerializer):
 
 class LeadFollowUpUpdateSerializer(serializers.ModelSerializer):
     follow_up_type = serializers.CharField(required=False, default="email")
-    meeting_link = serializers.URLField(required=False, allow_blank=True)
+    meeting_link = serializers.CharField(required=False, allow_blank=True, default="")
+    scheduled_at = serializers.DateTimeField(
+        required=False,
+        input_formats=[
+            "iso-8601",
+            "%m/%d/%Y %I:%M %p",
+            "%m/%d/%Y %H:%M",
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d %H:%M",
+        ]
+    )
 
     def validate_follow_up_type(self, value):
         if not value:

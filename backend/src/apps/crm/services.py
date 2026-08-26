@@ -509,7 +509,7 @@ def assign_lead(*, lead, target_user, actor, request=None):
     return lead
 
 
-def schedule_followup(*, lead, actor, scheduled_at, follow_up_type, notes="", assigned_to=None, request=None):
+def schedule_followup(*, lead, actor, scheduled_at, follow_up_type, notes="", meeting_link="", status=None, assigned_to=None, request=None, **kwargs):
     """
     Create a follow-up and refresh the lead's next_follow_up_at.
     If follow_up_type is MEETING, send email notification to lead.
@@ -518,9 +518,20 @@ def schedule_followup(*, lead, actor, scheduled_at, follow_up_type, notes="", as
         validate_assignable_user(assigned_to)
 
     if isinstance(scheduled_at, str):
-        scheduled_at = parse_datetime(scheduled_at)
+        parsed = parse_datetime(scheduled_at)
+        if parsed is None:
+            from datetime import datetime
+            for fmt in ("%m/%d/%Y %I:%M %p", "%m/%d/%Y %H:%M", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
+                try:
+                    parsed = datetime.strptime(scheduled_at.strip(), fmt)
+                    break
+                except ValueError:
+                    pass
+        scheduled_at = parsed
         if scheduled_at is None:
             raise ValidationError("scheduled_at must be a valid datetime.")
+
+    followup_status = status or LeadFollowUp.Status.PENDING
 
     followup = LeadFollowUp.objects.create(
         lead=lead,
@@ -529,15 +540,18 @@ def schedule_followup(*, lead, actor, scheduled_at, follow_up_type, notes="", as
         follow_up_type=follow_up_type,
         scheduled_at=scheduled_at,
         notes=notes,
+        meeting_link=meeting_link or "",
+        status=followup_status,
     )
     _sync_lead_next_follow_up(lead)
 
+    iso_str = scheduled_at.isoformat() if hasattr(scheduled_at, 'isoformat') else str(scheduled_at)
     log_audit_event(
         user=actor,
         action="FOLLOWUP_CREATED",
         module="crm",
         object_id=lead.id,
-        repr_str=f"Follow-up scheduled for lead {lead.reference_id} at {scheduled_at.isoformat()}",
+        repr_str=f"Follow-up scheduled for lead {lead.reference_id} at {iso_str}",
         updated_state=get_model_state(followup),
         request=request,
     )
@@ -551,6 +565,7 @@ def schedule_followup(*, lead, actor, scheduled_at, follow_up_type, notes="", as
             logger.exception(f"Failed to send meeting email for lead {lead.reference_id}")
 
     return followup
+
 
 
 def update_followup(*, followup, actor, request=None, **data):
