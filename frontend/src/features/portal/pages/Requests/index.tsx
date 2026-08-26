@@ -453,7 +453,8 @@ export const Requests: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleCreateConsultation} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <form onSubmit={handleCreateConsultation} className="cons-form" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <style>{`.cons-form input::placeholder,.cons-form textarea::placeholder{color:#4a6070;font-style:italic;opacity:1}`}</style>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING TYPE</label>
                 <select
@@ -526,7 +527,7 @@ export const Requests: React.FC = () => {
                     padding: "0.65rem 0.75rem",
                     backgroundColor: "#050811",
                     border: "1px solid rgba(140,174,187,0.25)",
-                    color: "#f8fafc",
+                    color: consPreferredDate ? "#f8fafc" : "#4a6070",
                     borderRadius: "4px",
                     fontSize: "0.88rem",
                     outline: "none",
