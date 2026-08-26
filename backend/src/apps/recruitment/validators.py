@@ -42,5 +42,9 @@ def validate_resume(file):
             raise ValidationError(_("The file appears to be corrupted or tampered with."))
         elif ext == '.docx' and not header.startswith(b'PK\x03\x04'):
             raise ValidationError(_("The file appears to be corrupted or tampered with."))
-    except Exception as e:
+    except ValidationError:
+        # Re-raise security/validation signals so they are not swallowed
+        raise
+    except OSError:
+        # Only catch genuine I/O failures (e.g., unreadable file stream)
         raise ValidationError(_("Could not verify file contents."))
