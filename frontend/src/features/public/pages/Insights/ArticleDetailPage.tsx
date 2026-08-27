@@ -36,6 +36,7 @@ export const ArticleDetailPage = () => {
     category: apiArticle.category_name || apiArticle.category,
     tags: (Array.isArray(apiArticle.tags) && apiArticle.tags.length > 0) ? apiArticle.tags : (staticArticle?.tags || []),
     authorId: staticArticle?.authorId || (() => {
+// duplicate authorId logic removed
       const contentStr = (apiArticle.title + " " + apiArticle.content).toLowerCase();
       if (contentStr.includes("security") || contentStr.includes("cryptography") || contentStr.includes("zero-trust") || contentStr.includes("cybersecurity")) {
         return "auth-003";
@@ -86,7 +87,7 @@ export const ArticleDetailPage = () => {
     return null;
   }
 
-  const siteUrl = getSiteUrl();
+
   const descText = article.meta_description || article.excerpt || article.content.substring(0, 150);
   const articleSchema = createArticleSchema({
     title: article.title,

@@ -6,6 +6,7 @@ export interface User {
   email: string;
   role: string;
   permissions: string[];
+  rawRole?: string;
 }
 
 export interface AuthContextType {

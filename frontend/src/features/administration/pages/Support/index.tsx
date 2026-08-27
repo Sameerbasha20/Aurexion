@@ -91,9 +91,8 @@ export const Support: React.FC = () => {
     try {
       await updateAdminTicket.update(id, {
         status: nextStatus,
-        resolution_notes: ticket.resolution_notes || undefined,
       });
-      adminTickets.refetch();
+      await adminTickets.refetch();
     } catch (err: any) {
       // Error in updateAdminTicket.error
     } finally {
@@ -116,9 +115,9 @@ export const Support: React.FC = () => {
         resolution_notes: modalNotes.trim(),
       });
       setDialogOpen(false);
-      adminTickets.refetch();
+      await adminTickets.refetch();
     } catch (err: any) {
-      const msg = err?.response?.data?.resolution_notes?.[0] || err?.response?.data?.detail || "Failed to update ticket resolution notes.";
+      const msg = (err as any)?.message || "Failed to update ticket resolution notes.";
       setModalError(msg);
     } finally {
       setSavingId(null);
@@ -144,7 +143,7 @@ export const Support: React.FC = () => {
     const nextStatus: TicketStatus = assigned_to ? "assigned" : "open";
     try {
       await updateAdminTicket.update(id, { assigned_to, status: nextStatus });
-      adminTickets.refetch();
+      await adminTickets.refetch();
     } catch {
       // Handled
     } finally {
@@ -156,7 +155,7 @@ export const Support: React.FC = () => {
     setSavingId(id);
     try {
       await updateAdminTicket.update(id, { priority: nextPriority });
-      adminTickets.refetch();
+      await adminTickets.refetch();
     } catch {
       // Handled
     } finally {

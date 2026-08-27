@@ -8,7 +8,7 @@ export interface PortalQueryResult<T> {
   isLoading: boolean;
   isError: boolean;
   error: ApiError | null;
-  refetch: () => void;
+  refetch: () => Promise<any>;
 }
 
 export function usePortalQuery<T>(
@@ -44,9 +44,7 @@ export function usePortalQuery<T>(
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error ?? null,
-    refetch: () => {
-      query.refetch();
-    },
+    refetch: () => query.refetch(),
   };
 }
 

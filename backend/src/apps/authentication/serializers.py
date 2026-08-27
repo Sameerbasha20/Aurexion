@@ -10,8 +10,25 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
     email = serializers.EmailField(required=True)
-    role = serializers.ChoiceField(choices=UserProfile.ROLE_CHOICES, required=False, default='client_user')
+    role = serializers.CharField(required=False, default='client_user')
     password = serializers.CharField(write_only=True, required=False, min_length=8)
+
+    def validate_role(self, value):
+        """Validate role against both static ROLE_CHOICES and dynamic Role DB table."""
+        if not value:
+            return 'client_user'
+        value = value.strip().lower()
+        # Check static ROLE_CHOICES
+        valid_static_codes = {code for code, _ in UserProfile.ROLE_CHOICES}
+        if value in valid_static_codes:
+            return value
+        # Check dynamic Role table
+        from apps.administration.models import Role
+        if Role.objects.filter(code__iexact=value).exists():
+            return value
+        raise serializers.ValidationError(
+            f"\"{value}\" is not a valid role. Valid roles: {', '.join(sorted(valid_static_codes))}"
+        )
 
     class Meta:
         model = User

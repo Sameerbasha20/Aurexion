@@ -62,7 +62,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   if (!open || !user) return null;
 
   const role = user.role.toUpperCase();
-  const navItems = SIDEBAR_NAV[role] || [];
+  let navItems = SIDEBAR_NAV[role] || [];
+  if (role === "ADMIN" && user.rawRole === "administrator") {
+    navItems = navItems.filter(item => item.path !== "/admin/audit-logs");
+  }
 
   const asideContent = (
     <aside
@@ -126,17 +129,70 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
 
       <div
         style={{
-          fontFamily: "IBM Plex Mono, monospace",
-          fontSize: "0.72rem",
-          color: "#64748b",
-          padding: "0 0.75rem 0.5rem 0.75rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
+          padding: "0 0.75rem 0.75rem 0.75rem",
           borderBottom: isMobile ? "none" : "1px solid #1e293b",
           marginBottom: isMobile ? "0.25rem" : "0.75rem",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.35rem"
         }}
       >
-        System Scope: {role}
+        <span style={{
+          fontFamily: "IBM Plex Mono, monospace",
+          fontSize: "0.65rem",
+          color: "#64748b",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+        }}>System Scope</span>
+        {user.role === "ADMIN" && user.rawRole === "super_admin" ? (
+          <span style={{
+            fontSize: "0.72rem",
+            fontWeight: 600,
+            fontFamily: "var(--font-mono)",
+            color: "#c084fc",
+            backgroundColor: "rgba(192, 132, 252, 0.1)",
+            border: "1px solid rgba(192, 132, 252, 0.25)",
+            padding: "0.2rem 0.5rem",
+            borderRadius: "4px",
+            width: "fit-content",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.25rem"
+          }}>
+            <ShieldAlert size={12} /> SUPER ADMIN
+          </span>
+        ) : user.role === "ADMIN" && user.rawRole === "administrator" ? (
+          <span style={{
+            fontSize: "0.72rem",
+            fontWeight: 600,
+            fontFamily: "var(--font-mono)",
+            color: "#38bdf8",
+            backgroundColor: "rgba(56, 189, 248, 0.1)",
+            border: "1px solid rgba(56, 189, 248, 0.25)",
+            padding: "0.2rem 0.5rem",
+            borderRadius: "4px",
+            width: "fit-content",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.25rem"
+          }}>
+            <Key size={12} /> ADMINISTRATOR
+          </span>
+        ) : (
+          <span style={{
+            fontSize: "0.72rem",
+            fontWeight: 600,
+            fontFamily: "var(--font-mono)",
+            color: "var(--color-cyan)",
+            backgroundColor: "rgba(99, 245, 232, 0.1)",
+            border: "1px solid rgba(99, 245, 232, 0.25)",
+            padding: "0.2rem 0.5rem",
+            borderRadius: "4px",
+            width: "fit-content",
+          }}>
+            {role}
+          </span>
+        )}
       </div>
 
       {navItems.map((item) => {

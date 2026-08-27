@@ -66,7 +66,7 @@ export const ArticleContent = ({ content }: { content: any }) => {
       if (/^\d+\.\s/.test(block)) {
         const items = block.split(/\n(?=\d+\.\s)/);
         return (
-          <ol key={index} className="list-decimal list-outside ml-6 space-y-3 mb-8 text-lg text-muted-foreground leading-relaxed">
+          <ol key={index} className="list-decimal list-outside ml-6 space-y-3 mb-8 text-lg text-foreground leading-relaxed">
             {items.map((item: any, i: number) => (
               <li key={i} className="pl-2">
                 {/* Parse bold text within list items */}
@@ -84,7 +84,7 @@ export const ArticleContent = ({ content }: { content: any }) => {
 
       // Standard Paragraph with bold support
       return (
-        <p key={index} className="text-lg text-muted-foreground leading-relaxed mb-8">
+        <p key={index} className="text-foreground">
           {block.split(/(\*\*.*?\*\*)/).map((part: any, i: number) => {
             if (part.startsWith('**') && part.endsWith('**')) {
               return <strong key={i} className="text-foreground font-bold">{part.slice(2, -2)}</strong>;

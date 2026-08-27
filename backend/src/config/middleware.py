@@ -2,6 +2,24 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.utils.deprecation import MiddlewareMixin
 
+class BearerTokenCsrfExemptMiddleware(MiddlewareMixin):
+    """
+    Marks requests that carry a Bearer token in the Authorization header as
+    CSRF-exempt before CsrfViewMiddleware runs.
+
+    Rationale: CSRF attacks exploit cookie-based session authentication.
+    When a client authenticates via a JWT Bearer token in the Authorization
+    header, the browser cannot be tricked into sending that header
+    cross-origin, so CSRF protection is both unnecessary and actively
+    harmful for cross-origin SPA -> API calls.
+    """
+
+    def process_request(self, request):
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        if auth_header.startswith('Bearer '):
+            request._dont_enforce_csrf_checks = True
+
+
 class SecurityHeadersMiddleware(MiddlewareMixin):
     """
     Adds security headers to all responses.

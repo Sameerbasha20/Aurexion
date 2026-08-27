@@ -527,6 +527,7 @@ export const ContactForms: React.FC = () => {
                     fontSize: "0.88rem",
                     width: "100%",
                     boxSizing: "border-box",
+                    colorScheme: "dark",
                   }}
                 />
               </div>

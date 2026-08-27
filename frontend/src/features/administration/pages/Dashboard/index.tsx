@@ -34,6 +34,7 @@ import {
 import administrationService from "../../services/administrationService";
 import crmService from "../../../crm/services/crmService";
 import supportService from "../../../support/services/supportService";
+import useAuth from "../../../../hooks/useAuth";
 
 // Mock/Standard charts data
 const activityData = [
@@ -55,6 +56,8 @@ const leadsData = [
 ];
 
 export const Dashboard: React.FC = () => {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === "ADMIN" && user?.rawRole === "super_admin";
   const isMobile = useIsMobile();
   const [usersCount, setUsersCount] = useState({ total: 1424, active: 1382 });
   const [leadsCount, setLeadsCount] = useState({ total: 642, unassignedRfps: 12 });
@@ -130,7 +133,7 @@ export const Dashboard: React.FC = () => {
     loadDashboardData();
   }, []);
 
-  const stats = [
+  const stats = isSuperAdmin ? [
     { title: "Total Users", value: usersCount.total, detail: `${usersCount.active} active profiles`, icon: UsersIcon, path: "/admin/users" },
     { title: "Active Operators", value: usersCount.active, detail: "All permissions secure", icon: UserCheck, path: "/admin/roles" },
     { title: "Total Leads", value: leadsCount.total, detail: "Qualified CRM targets", icon: TrendingUp, path: "/admin/crm" },
@@ -139,14 +142,28 @@ export const Dashboard: React.FC = () => {
     { title: "Open Support Tickets", value: supportTicketsCount.open, detail: `${supportTicketsCount.critical} marked CRITICAL`, icon: MessageSquare, path: "/admin/support" },
     { title: "Job Applications", value: recruitmentCount.applications, detail: `${recruitmentCount.vacancies} vacant positions`, icon: Briefcase, path: "/admin/recruitment" },
     { title: "Website Activity", value: "45.9k", detail: "Platform views monthly", icon: Globe, path: "/admin/cms" },
+  ] : [
+    { title: "Total Accounts", value: usersCount.total, detail: `${usersCount.active} active logins`, icon: UsersIcon, path: "/admin/users" },
+    { title: "Active Operators", value: usersCount.active, detail: "Staff and executive roles", icon: UserCheck, path: "/admin/roles" },
+    { title: "CRM Leads", value: leadsCount.total, detail: "Total pipeline items", icon: TrendingUp, path: "/admin/crm" },
+    { title: "RFPs Pending", value: leadsCount.unassignedRfps, detail: "Awaiting review", icon: FileText, path: "/admin/rfp" },
+    { title: "Managed Clients", value: 98, detail: "Contracted accounts", icon: Building2, path: "/admin/clients" },
+    { title: "Support Queue", value: supportTicketsCount.open, detail: `${supportTicketsCount.critical} critical tickets`, icon: MessageSquare, path: "/admin/support" },
+    { title: "Open Positions", value: recruitmentCount.vacancies, detail: `${recruitmentCount.applications} applicants pending`, icon: Briefcase, path: "/admin/recruitment" },
+    { title: "Content Articles", value: "142", detail: "Published CMS pages", icon: FileText, path: "/admin/cms" },
   ];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       {/* Title & Eyebrow */}
       <div>
-        <p className="eyebrow"><Shield size={12} /> GLOBAL SYSTEM MASTER CONTROL</p>
-        <h1 style={{ fontSize: "2rem", margin: "0.5rem 0 0 0", fontFamily: "var(--font-display)", fontWeight: 600 }}>Super Admin Dashboard</h1>
+        <p className="eyebrow">
+          <Shield size={12} style={{ color: isSuperAdmin ? "#c084fc" : "var(--color-cyan)" }} />{" "}
+          {isSuperAdmin ? "GLOBAL SYSTEM MASTER CONTROL" : "ENTERPRISE OPERATOR PANEL"}
+        </p>
+        <h1 style={{ fontSize: "2rem", margin: "0.5rem 0 0 0", fontFamily: "var(--font-display)", fontWeight: 600 }}>
+          {isSuperAdmin ? "Super Admin Dashboard" : "Administrator Dashboard"}
+        </h1>
       </div>
 
       {/* KPI Cards Grid */}
@@ -161,7 +178,7 @@ export const Dashboard: React.FC = () => {
                     <span style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--color-text-muted)", textTransform: "uppercase" }}>
                       {stat.title}
                     </span>
-                    <Icon size={16} style={{ color: "var(--color-cyan)" }} />
+                    <Icon size={16} style={{ color: isSuperAdmin ? "#c084fc" : "var(--color-cyan)" }} />
                   </div>
                   <div>
                     <div style={{
@@ -186,7 +203,8 @@ export const Dashboard: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle style={{ fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <Globe size={16} style={{ color: "var(--color-cyan)" }} /> Platform Activity & API Traffic
+              <Globe size={16} style={{ color: isSuperAdmin ? "#c084fc" : "var(--color-cyan)" }} />{" "}
+              {isSuperAdmin ? "Platform Activity & API Traffic" : "User Activity & Actions"}
             </CardTitle>
           </CardHeader>
           <CardContent style={{ height: "300px" }}>
@@ -194,8 +212,8 @@ export const Dashboard: React.FC = () => {
               <AreaChart data={activityData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-cyan)" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="var(--color-cyan)" stopOpacity={0}/>
+                    <stop offset="5%" stopColor={isSuperAdmin ? "#c084fc" : "var(--color-cyan)"} stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor={isSuperAdmin ? "#c084fc" : "var(--color-cyan)"} stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
@@ -203,10 +221,10 @@ export const Dashboard: React.FC = () => {
                 <YAxis stroke="var(--color-text-muted)" style={{ fontSize: "0.7rem" }} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: "#0c1222", borderColor: "#1e293b", color: "#f8fafc" }}
-                  labelStyle={{ color: "var(--color-cyan)" }}
+                  labelStyle={{ color: isSuperAdmin ? "#c084fc" : "var(--color-cyan)" }}
                 />
-                <Area type="monotone" dataKey="pageviews" name="Page Views" stroke="var(--color-cyan)" fillOpacity={1} fill="url(#colorPv)" />
-                <Area type="monotone" dataKey="apiRequests" name="API Calls" stroke="#a855f7" fillOpacity={0} />
+                <Area type="monotone" dataKey="pageviews" name={isSuperAdmin ? "Page Views" : "Total Actions"} stroke={isSuperAdmin ? "#c084fc" : "var(--color-cyan)"} fillOpacity={1} fill="url(#colorPv)" />
+                <Area type="monotone" dataKey={isSuperAdmin ? "apiRequests" : "activeUsers"} name={isSuperAdmin ? "API Calls" : "Active Operators"} stroke={isSuperAdmin ? "#a855f7" : "#0ea5e9"} fillOpacity={0} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -215,7 +233,7 @@ export const Dashboard: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle style={{ fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <TrendingUp size={16} style={{ color: "var(--color-cyan)" }} /> Lead Pipeline Performance
+              <TrendingUp size={16} style={{ color: isSuperAdmin ? "#c084fc" : "var(--color-cyan)" }} /> Lead Pipeline Performance
             </CardTitle>
           </CardHeader>
           <CardContent style={{ height: "300px" }}>
@@ -341,39 +359,67 @@ export const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               <Link href="/admin/users">
-                <Button glow style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem" }}>
+                <Button glow style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem", background: isSuperAdmin ? "var(--color-purple)" : undefined }}>
                   <Plus size={16} /> CREATE NEW OPERATOR
                 </Button>
               </Link>
-              <Link href="/admin/roles">
-                <Button variant="outline" style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem", borderColor: "var(--color-border)" }}>
-                  <Shield size={16} /> MODIFY RBAC MATRIX
-                </Button>
-              </Link>
-              <Link href="/admin/settings">
-                <Button variant="outline" style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem", borderColor: "var(--color-border)" }}>
-                  <Key size={16} /> ROTATE API GATEWAY KEYS
-                </Button>
-              </Link>
-              <Link href="/admin/audit-logs">
-                <Button variant="outline" style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem", borderColor: "var(--color-border)" }}>
-                  <Activity size={16} /> VIEW SECURE LEDGER
-                </Button>
-              </Link>
+              {isSuperAdmin ? (
+                <>
+                  <Link href="/admin/roles">
+                    <Button variant="outline" style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem", borderColor: "var(--color-border)" }}>
+                      <Shield size={16} /> MODIFY RBAC MATRIX
+                    </Button>
+                  </Link>
+                  <Link href="/admin/settings">
+                    <Button variant="outline" style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem", borderColor: "var(--color-border)" }}>
+                      <Key size={16} /> ROTATE API GATEWAY KEYS
+                    </Button>
+                  </Link>
+                  <Link href="/admin/audit-logs">
+                    <Button variant="outline" style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem", borderColor: "var(--color-border)" }}>
+                      <Activity size={16} /> VIEW SECURE LEDGER
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/admin/clients">
+                    <Button variant="outline" style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem", borderColor: "var(--color-border)" }}>
+                      <Building2 size={16} /> MANAGE CLIENT LIST
+                    </Button>
+                  </Link>
+                  <Link href="/admin/support">
+                    <Button variant="outline" style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem", borderColor: "var(--color-border)" }}>
+                      <MessageSquare size={16} /> OPEN SUPPORT DESK
+                    </Button>
+                  </Link>
+                  <Link href="/admin/settings">
+                    <Button variant="outline" style={{ width: "100%", justifyContent: "flex-start", gap: "0.5rem", borderColor: "var(--color-border)" }}>
+                      <Settings size={16} /> VIEW SYSTEM SETTINGS
+                    </Button>
+                  </Link>
+                </>
+              )}
             </CardContent>
           </Card>
-
+ 
           {/* System Processes Card */}
           <Card>
             <CardHeader>
-              <CardTitle style={{ fontSize: "1.1rem" }}>Master Core Services</CardTitle>
+              <CardTitle style={{ fontSize: "1.1rem" }}>
+                {isSuperAdmin ? "Master Core Services" : "Operational Gateways"}
+              </CardTitle>
             </CardHeader>
             <CardContent style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              {[
+              {(isSuperAdmin ? [
                 { name: "API GATEWAY", details: "0ms latency", status: "ONLINE", icon: Globe },
                 { name: "ESTIMATOR ENGINE", details: "v1.2.0-core", status: "ONLINE", icon: Database },
                 { name: "AUDIT RECORDER", details: "verified secure", status: "ONLINE", icon: Shield },
-              ].map((proc, index) => {
+              ] : [
+                { name: "CRM SYNC GATEWAY", details: "synced 2m ago", status: "ONLINE", icon: Globe },
+                { name: "EMAIL SERVER", details: "SMTP active", status: "ONLINE", icon: Database },
+                { name: "CLIENT PORTAL ENGINE", details: "v1.1.5-deploy", status: "ONLINE", icon: Shield },
+              ]).map((proc, index) => {
                 const ProcIcon = proc.icon;
                 return (
                   <div key={index} style={{
@@ -386,7 +432,7 @@ export const Dashboard: React.FC = () => {
                     backgroundColor: "rgba(255,255,255,0.01)"
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <ProcIcon size={14} style={{ color: "var(--color-cyan)" }} />
+                      <ProcIcon size={14} style={{ color: isSuperAdmin ? "#c084fc" : "var(--color-cyan)" }} />
                       <div>
                         <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-text-primary)" }}>{proc.name}</div>
                         <div style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>{proc.details}</div>
@@ -395,11 +441,11 @@ export const Dashboard: React.FC = () => {
                     <span style={{
                       fontSize: "0.7rem",
                       fontFamily: "var(--font-mono)",
-                      color: "var(--color-cyan)",
-                      backgroundColor: "rgba(99,245,232,0.05)",
+                      color: isSuperAdmin ? "#c084fc" : "var(--color-cyan)",
+                      backgroundColor: isSuperAdmin ? "rgba(192, 132, 252, 0.05)" : "rgba(99, 245, 232, 0.05)",
                       padding: "0.1rem 0.4rem",
                       borderRadius: "3px",
-                      border: "1px solid rgba(99,245,232,0.15)"
+                      border: isSuperAdmin ? "1px solid rgba(192, 132, 252, 0.15)" : "1px solid rgba(99, 245, 232, 0.15)"
                     }}>{proc.status}</span>
                   </div>
                 );

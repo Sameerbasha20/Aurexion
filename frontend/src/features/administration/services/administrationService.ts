@@ -205,12 +205,15 @@ export const administrationService = {
   },
 
   createUser: async (userData: { username: string; email: string; role: string; password?: string }) => {
-    const res = await axiosClient.post(API_ENDPOINTS.ADMIN.USERS, {
+    const payload = {
       username: userData.username,
       email: userData.email,
       role: userData.role.toLowerCase(),
+      is_active: true,
       ...(userData.password ? { password: userData.password } : {}),
-    });
+    };
+    console.log('Creating user with payload:', payload);
+    const res = await axiosClient.post(API_ENDPOINTS.ADMIN.USERS, payload);
     clearAdminCache();
     return res;
   },
