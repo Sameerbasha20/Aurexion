@@ -372,9 +372,10 @@ export const Categories: React.FC = () => {
                 <input
                   type="text"
                   required
+                  placeholder="e.g. cloud-computing"
                   value={createForm.slug}
                   onChange={(e) => setCreateForm({ ...createForm, slug: e.target.value })}
-                  style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", textOverflow: "ellipsis" }}
                 />
               </div>
 

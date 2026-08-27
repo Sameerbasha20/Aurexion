@@ -9,6 +9,7 @@ import LoadingState from "../../../../components/feedback/LoadingState";
 import ErrorState from "../../../../components/feedback/ErrorState";
 import EmptyState from "../../../../components/feedback/EmptyState";
 import { Mail, Phone, Search, RefreshCw, MessageSquare, CheckCircle2, Calendar } from "lucide-react";
+import { toast } from "sonner";
 
 export const ContactForms: React.FC = () => {
   const [, navigate] = useLocation();
@@ -26,6 +27,7 @@ export const ContactForms: React.FC = () => {
   const [meetingLink, setMeetingLink] = useState("");
   const [meetingNotes, setMeetingNotes] = useState("");
   const [scheduling, setScheduling] = useState(false);
+  const [meetingSuccessInfo, setMeetingSuccessInfo] = useState<{ leadName: string; email: string } | null>(null);
 
   // Custom Mark WON Modal State
   const [selectedWonLead, setSelectedWonLead] = useState<any | null>(null);
@@ -54,7 +56,12 @@ export const ContactForms: React.FC = () => {
         notes: meetingNotes,
       });
       setScheduledLeadIds((prev) => new Set(prev).add(selectedMeetingLead.id));
-      setActionSuccess(`Meeting scheduled and notification email sent to ${selectedMeetingLead.email || selectedMeetingLead.name}!`);
+      const leadName = selectedMeetingLead.name || selectedMeetingLead.company || "Client";
+      const leadEmail = selectedMeetingLead.email || "";
+      const msg = `Meeting scheduled successfully! Notification email dispatched to ${leadEmail || leadName}.`;
+      setActionSuccess(msg);
+      toast.success("Meeting scheduled successfully!");
+      setMeetingSuccessInfo({ leadName, email: leadEmail });
       setSelectedMeetingLead(null);
       setScheduledAt("");
       setMeetingLink("");
@@ -187,6 +194,13 @@ export const ContactForms: React.FC = () => {
         <div style={{ padding: "0.85rem 1.25rem", backgroundColor: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.4)", borderRadius: "6px", color: "#f87171", fontSize: "0.88rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span>⚠️ {actionError}</span>
           <button onClick={() => setActionError(null)} style={{ background: "none", border: 0, color: "#f87171", cursor: "pointer", fontSize: "1rem" }}>✕</button>
+        </div>
+      )}
+
+      {actionSuccess && (
+        <div style={{ padding: "0.85rem 1.25rem", backgroundColor: "rgba(52, 211, 153, 0.15)", border: "1px solid rgba(52, 211, 153, 0.4)", borderRadius: "6px", color: "#34d399", fontSize: "0.88rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>✅ {actionSuccess}</span>
+          <button onClick={() => setActionSuccess(null)} style={{ background: "none", border: 0, color: "#34d399", cursor: "pointer", fontSize: "1rem" }}>✕</button>
         </div>
       )}
 
@@ -809,6 +823,63 @@ export const ContactForms: React.FC = () => {
                 </Button>
               </div>
             </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Meeting Scheduled Confirmation Modal Pop-up */}
+      {meetingSuccessInfo && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(5,8,17,0.85)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1100,
+          padding: "1rem",
+        }}>
+          <Card borderAccent style={{
+            width: "100%",
+            maxWidth: "460px",
+            padding: "2rem",
+            textAlign: "center",
+            boxSizing: "border-box",
+          }}>
+            <div style={{
+              width: "60px",
+              height: "60px",
+              borderRadius: "50%",
+              backgroundColor: "rgba(99, 245, 232, 0.15)",
+              border: "1px solid #63f5e8",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 1.25rem",
+              color: "#63f5e8",
+            }}>
+              <CheckCircle2 size={36} />
+            </div>
+            <span style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#63f5e8", letterSpacing: "0.1em" }}>
+              CONFIRMATION
+            </span>
+            <h2 style={{ fontSize: "1.35rem", color: "#f8fafc", margin: "0.25rem 0 0.75rem 0" }}>
+              Meeting Scheduled Successfully!
+            </h2>
+            <p style={{ fontSize: "0.88rem", color: "#94a3b8", margin: "0 0 1.5rem 0", lineHeight: 1.5 }}>
+              The meeting with <strong style={{ color: "#f8fafc" }}>{meetingSuccessInfo.leadName}</strong> has been scheduled.
+              {meetingSuccessInfo.email && (
+                <> A calendar invite and notification email have been sent to <strong style={{ color: "#63f5e8" }}>{meetingSuccessInfo.email}</strong>.</>
+              )}
+            </p>
+            <Button
+              glow
+              onClick={() => setMeetingSuccessInfo(null)}
+              style={{ width: "100%", justifyContent: "center", padding: "0.65rem 1rem" }}
+            >
+              <CheckCircle2 size={16} style={{ marginRight: "0.4rem" }} /> OK, Got It
+            </Button>
           </Card>
         </div>
       )}

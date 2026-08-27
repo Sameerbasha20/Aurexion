@@ -512,7 +512,7 @@ export const Industries: React.FC = () => {
             )}
 
             <form onSubmit={handleCreateSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: "1rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>INDUSTRY NAME *</label>
                   <input
@@ -534,9 +534,10 @@ export const Industries: React.FC = () => {
                   <input
                     type="text"
                     required
+                    placeholder="e.g. healthcare-domain"
                     value={createForm.slug}
                     onChange={(e) => setCreateForm({ ...createForm, slug: e.target.value })}
-                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", textOverflow: "ellipsis" }}
                   />
                 </div>
               </div>
@@ -619,7 +620,7 @@ export const Industries: React.FC = () => {
             )}
 
             <form onSubmit={handleEditSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: "1rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>NAME</label>
                   <input
@@ -636,9 +637,10 @@ export const Industries: React.FC = () => {
                   <input
                     type="text"
                     required
+                    placeholder="e.g. healthcare-domain"
                     value={editForm.slug || ""}
                     onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
-                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", textOverflow: "ellipsis" }}
                   />
                 </div>
               </div>
