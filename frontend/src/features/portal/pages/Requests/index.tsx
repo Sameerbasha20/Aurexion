@@ -572,6 +572,7 @@ export const Requests: React.FC = () => {
                     borderRadius: "4px",
                     fontSize: "0.88rem",
                     outline: "none",
+                    colorScheme: "dark",
                   }}
                 />
               </div>

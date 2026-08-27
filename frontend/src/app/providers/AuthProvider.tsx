@@ -60,6 +60,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         email: response.user.email,
         role: mappedRole,
         permissions: getPermissionsForRole(mappedRole),
+        rawRole: response.user.role,
       };
 
       setUser(activeUser);

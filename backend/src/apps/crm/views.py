@@ -63,12 +63,13 @@ class FastPaginator(Paginator):
     def count(self):
         if self._count_override is not None:
             return self._count_override
-        return super().count
+        # Bypass cached_property on parent to avoid descriptor conflict
+        return self.object_list.count() if hasattr(self.object_list, 'count') else len(self.object_list)
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 25
     page_size_query_param = "page_size"
-    max_page_size = 100
+    max_page_size = 500
     django_paginator_class = FastPaginator
 from apps.crm.services import (
     add_note,

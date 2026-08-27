@@ -151,7 +151,31 @@ export const Users: React.FC = () => {
       setDialogOpen(false);
       fetchUsers();
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || err?.response?.data?.message || "Failed to save user account.";
+      // The interceptor returns an ApiError with userMessage, details, and errors properties
+      let msg = "Failed to save user account.";
+      if (err?.userMessage && err.userMessage !== "An unexpected error occurred. Please try again.") {
+        msg = err.userMessage;
+      } else if (err?.details) {
+        // Extract field-level validation errors from DRF response
+        if (typeof err.details === "object") {
+          const fieldErrors: string[] = [];
+          for (const [key, val] of Object.entries(err.details)) {
+            if (key === "detail" || key === "message") {
+              msg = String(val);
+              break;
+            }
+            const errMsg = Array.isArray(val) ? val.join(", ") : String(val);
+            fieldErrors.push(`${key}: ${errMsg}`);
+          }
+          if (fieldErrors.length > 0) {
+            msg = fieldErrors.join("; ");
+          }
+        } else if (typeof err.details === "string") {
+          msg = err.details;
+        }
+      } else if (err?.message) {
+        msg = err.message;
+      }
       setFormError(msg);
     } finally {
       setSubmitting(false);
@@ -174,7 +198,8 @@ export const Users: React.FC = () => {
         await administrationService.deleteUser(userId);
         fetchUsers();
       } catch (err: any) {
-        alert(err?.response?.data?.detail || "Failed to delete user.");
+        const msg = err?.userMessage || err?.details?.detail || err?.message || "Failed to delete user.";
+        alert(msg);
       }
     }
   };
