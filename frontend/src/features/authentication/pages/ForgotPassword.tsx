@@ -18,7 +18,7 @@ export const ForgotPassword: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res: any = await axiosClient.post("auth/forgot-password/", { email });
+      const res = await axiosClient.post<{ detail?: string; reset_link?: string; data?: { reset_link?: string } }, { detail?: string; reset_link?: string; data?: { reset_link?: string } }>("auth/forgot-password/", { email });
       const resetUrl = res?.reset_link || res?.data?.reset_link || null;
       setResetLink(resetUrl);
       setSubmitted(true);

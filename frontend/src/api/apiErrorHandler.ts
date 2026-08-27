@@ -1,129 +1,135 @@
-export class ApiError extends Error {
-  statusCode?: number;
-  errors?: Record<string, string[] | string>;
-  code?: string;
+export interface ApiError {
+  statusCode: number;
+  message: string;
   userMessage: string;
-  details?: any;
+  isNetworkError: boolean;
+  details?: Record<string, unknown> | string[] | unknown;
+  errors?: Record<string, string[] | string>;
+}
+
+export interface AxiosLikeError {
+  response?: {
+    status?: number;
+    data?: unknown;
+  };
+  code?: string;
+  message?: string;
+  request?: unknown;
+}
+
+export class CustomApiError extends Error implements ApiError {
+  statusCode: number;
+  userMessage: string;
+  isNetworkError: boolean;
+  details?: Record<string, unknown> | string[] | unknown;
+  errors?: Record<string, string[] | string>;
 
   constructor(
+    statusCode: number,
     message: string,
-    statusCode?: number,
-    errors?: Record<string, string[] | string>,
-    code?: string,
-    userMessage?: string,
-    details?: any
+    userMessage: string,
+    isNetworkError: boolean = false,
+    details?: Record<string, unknown> | string[] | unknown,
+    errors?: Record<string, string[] | string>
   ) {
     super(message);
     this.name = "ApiError";
     this.statusCode = statusCode;
-    this.errors = errors;
-    this.code = code;
-    this.userMessage = userMessage || message;
+    this.userMessage = userMessage;
+    this.isNetworkError = isNetworkError;
     this.details = details;
-    Object.setPrototypeOf(this, ApiError.prototype);
+    this.errors = errors;
   }
 }
 
-export function handleApiError(error: any): ApiError {
-  let message = "An unexpected error occurred. Please try again.";
-  let userMessage = "An unexpected error occurred. Please try again.";
-  let statusCode: number | undefined;
+export function handleApiError(error: AxiosLikeError | unknown): ApiError {
+  const err = (error || {}) as AxiosLikeError;
+  let statusCode = 500;
+  let message = "An unexpected error occurred.";
+  let userMessage = "Something went wrong. Please try again later.";
+  let isNetworkError = false;
+  let details: Record<string, unknown> | string[] | unknown;
   let errors: Record<string, string[] | string> | undefined;
-  let code: string | undefined;
-  let details: any;
 
-  if (error instanceof ApiError) {
-    return error;
-  }
+  if (err.response) {
+    statusCode = err.response.status || 500;
+    const responseData = err.response.data as Record<string, unknown> | string | undefined;
+    details = responseData;
 
-  if (error?.response) {
-    // Server responded with status code outside 2xx range
-    statusCode = error.response.status;
-    const data = error.response.data;
-    details = data;
-
-    // Standardize error message extraction
-    if (typeof data === "string") {
-      message = `Server Error (${statusCode})`;
-      userMessage = "Something went wrong on the server. Please try again later.";
-    } else if (data && typeof data === "object") {
-      message = data.detail || data.message || data.error || `Error ${statusCode}`;
-      if (data.errors && typeof data.errors === "object") {
-        errors = data.errors;
-      } else if (statusCode === 400 || statusCode === 422) {
-        // DRF style field errors dictionary
-        errors = data;
-      }
-      code = data.code || undefined;
+    if (responseData && typeof responseData === "object") {
+      errors = responseData as Record<string, string[] | string>;
     }
 
-    // HTTP Status-specific safe user messages
+    // Handle common HTTP error statuses
     switch (statusCode) {
       case 400:
-        userMessage = message || "Bad request. Please check your input and try again.";
-        code = code || "BAD_REQUEST";
+        message = "Bad Request";
+        userMessage = "The request could not be understood or was missing required parameters.";
+        if (responseData && typeof responseData === "object") {
+          const firstKey = Object.keys(responseData)[0];
+          if (firstKey) {
+            const val = (responseData as Record<string, unknown>)[firstKey];
+            if (Array.isArray(val) && val.length > 0) {
+              userMessage = `${firstKey}: ${val[0]}`;
+            } else if (typeof val === "string") {
+              userMessage = `${firstKey}: ${val}`;
+            }
+          }
+        }
         break;
       case 401:
-        userMessage = "Your session has expired or you are unauthorized. Please sign in again.";
-        code = code || "UNAUTHORIZED";
+        message = "Unauthorized";
+        userMessage = "Your session has expired or you are not authorized. Please log in.";
         break;
       case 403:
+        message = "Forbidden";
         userMessage = "You do not have permission to perform this action.";
-        code = code || "FORBIDDEN";
         break;
       case 404:
-        userMessage = "The requested resource was not found.";
-        code = code || "NOT_FOUND";
+        message = "Not Found";
+        userMessage = "The requested resource could not be found.";
         break;
       case 409:
-        userMessage = message || "A conflict occurred with your request. Please try again.";
-        code = code || "CONFLICT";
+        message = "Conflict";
+        userMessage = "A conflict occurred with the current state of the resource.";
         break;
       case 422:
-        userMessage = "Validation failed. Please correct the highlighted errors.";
-        code = code || "UNPROCESSABLE_ENTITY";
+        message = "Unprocessable Entity";
+        userMessage = "The data provided is invalid.";
         break;
       case 429:
-        userMessage = "Too many requests. Please wait a moment and try again.";
-        code = code || "RATE_LIMITED";
+        message = "Too Many Requests";
+        userMessage = "You have made too many requests. Please wait a moment and try again.";
         break;
       case 500:
-        userMessage = "Something went wrong on the server. Please try again later.";
-        code = code || "INTERNAL_SERVER_ERROR";
-        break;
       case 502:
       case 503:
       case 504:
-        userMessage = "Service is temporarily unavailable or timing out. Please try again shortly.";
-        code = code || "GATEWAY_ERROR";
+        message = "Server Error";
+        userMessage = "A server error occurred. Our team has been notified.";
         break;
       default:
-        userMessage = message || `Server returned error status ${statusCode}.`;
-        break;
+        message = `HTTP Error ${statusCode}`;
+        userMessage = "An unexpected error occurred.";
     }
-  } else if (error?.code === "ECONNABORTED" || error?.message?.includes("timeout")) {
-    message = "Request timed out. Please check your connection and try again.";
-    userMessage = "The server is taking too long to respond. Please try again.";
-    code = "TIMEOUT";
-  } else if (error?.request) {
-    // Request was made but no response received
-    message = "No response from server. Please check your network connection.";
-    userMessage = "Network error. Unable to reach the Aurexion servers. Please check your connection.";
-    code = "NETWORK_ERROR";
-  } else if (error instanceof Error) {
-    message = error.message;
-    userMessage = error.message;
-  } else if (typeof error === "string") {
-    message = error;
-    userMessage = error;
+
+    if (responseData && typeof responseData === "object" && "detail" in responseData) {
+      message = String((responseData as Record<string, unknown>).detail);
+      userMessage = message;
+    }
+  } else if (err.code === "ECONNABORTED" || (err.message && err.message.includes("timeout"))) {
+    statusCode = 408;
+    message = "Request Timeout";
+    userMessage = "The request timed out. Please check your internet connection.";
+    isNetworkError = true;
+  } else if (err.request || !navigator.onLine) {
+    statusCode = 0;
+    message = "Network Error";
+    userMessage = "Unable to connect to the server. Please check your internet connection.";
+    isNetworkError = true;
   }
 
-  // Ensure no sensitive passwords, secrets, or raw internal paths are leaked in userMessage
-  if (userMessage.toLowerCase().includes("password") || userMessage.toLowerCase().includes("token") || userMessage.toLowerCase().includes("secret")) {
-    userMessage = "Authentication or authorization request failed.";
-  }
-
-  return new ApiError(message, statusCode, errors, code, userMessage, details);
+  return new CustomApiError(statusCode, message, userMessage, isNetworkError, details, errors);
 }
 
 export default handleApiError;

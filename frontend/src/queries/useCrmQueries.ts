@@ -293,7 +293,7 @@ export function useSharedRoleChoicesQuery() {
 /**
  * Shared Query Hook: Fetch Public Industries with 10 min deduplication staleTime
  */
-export function useSharedIndustriesQuery(filters?: Record<string, any>) {
+export function useSharedIndustriesQuery(filters?: Record<string, unknown> | object) {
   return useQuery({
     queryKey: queryKeys.cms.industries(filters),
     queryFn: async () => {

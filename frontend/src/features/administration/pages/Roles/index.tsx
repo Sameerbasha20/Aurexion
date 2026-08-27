@@ -10,7 +10,7 @@ interface RoleItem {
   code: string;
   name: string;
   description: string;
-  permissions: any[];
+  permissions: (string | { module?: string; can_view?: boolean; can_create?: boolean; can_edit?: boolean; can_delete?: boolean; [key: string]: unknown })[];
 }
 
 export const Roles: React.FC = () => {

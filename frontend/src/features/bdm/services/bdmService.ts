@@ -14,7 +14,7 @@ export interface RfpEnquiryDetails {
   nda_required?: boolean | string;
   document_attachment?: string;
   services_required?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 import axiosClient from "../../../api/axiosClient";
 import { API_ENDPOINTS } from "../../../api/endpoints";
@@ -118,7 +118,7 @@ export interface WonClient {
   budget_range?: string;
   nda_required?: boolean | string;
   document_attachment?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface Lead {

@@ -1,6 +1,6 @@
 import React from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { ApiError } from "@/api/apiErrorHandler";
+import { ApiError, CustomApiError } from "../../api/apiErrorHandler";
 
 interface ErrorStateProps {
   title?: string;
@@ -22,8 +22,8 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   let displayMessage = message;
 
   if (!displayMessage) {
-    if (error instanceof ApiError) {
-      displayMessage = error.userMessage || error.message;
+    if (error instanceof CustomApiError || (error && typeof error === "object" && "userMessage" in error)) {
+      displayMessage = (error as ApiError).userMessage || (error as ApiError).message;
     } else if (error instanceof Error) {
       displayMessage = error.message;
     } else if (typeof error === "string") {

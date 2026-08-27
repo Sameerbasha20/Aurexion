@@ -14,7 +14,7 @@ export const RfpOverview: React.FC = () => {
         const data = await rfpService.getRfps();
         if (data && data.length > 0) {
           // Map to display full metadata
-          setRfps(data.map((r: any) => ({
+          setRfps(data.map((r: { id: string | number; title?: string; due_date?: string; dueDate?: string; status?: string; company?: string }) => ({
             id: r.id,
             title: r.title,
             dueDate: r.dueDate || "N/A",
