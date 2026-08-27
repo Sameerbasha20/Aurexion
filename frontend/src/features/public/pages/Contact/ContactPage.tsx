@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Link } from "wouter";
 import { publicService } from "../../services/publicService";
-import { Mail, Phone, MapPin, Clock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, CheckCircle2, Loader2, AlertCircle, LifeBuoy } from "lucide-react";
 import { SEO } from "../../../../components/seo/SEO";
 
 interface CountryCodeOption {
@@ -67,23 +68,27 @@ export const clampPhoneNumber = (phone: string, countryCode: string): string => 
   return raw.slice(0, country.digitsMax);
 };
 
-const nameRegex = /^[a-zA-Z0-9\s'-]+$/;
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const nameRegex = /^[a-zA-Z\s'-]+$/;
 
 const contactSchema = z.object({
   firstName: z
     .string()
     .min(1, "First name is required.")
     .min(2, "First name must be at least 2 characters.")
-    .regex(nameRegex, "First name contains invalid characters."),
+    .regex(nameRegex, "First name must only contain letters, spaces, hyphens, or apostrophes."),
   lastName: z
     .string()
     .min(1, "Last name is required.")
-    .regex(nameRegex, "Last name contains invalid characters."),
+    .min(2, "Last name must be at least 2 characters.")
+    .regex(nameRegex, "Last name must only contain letters, spaces, hyphens, or apostrophes."),
   email: z
     .string()
+    .trim()
     .min(1, "Please enter a valid work email.")
-    .regex(emailRegex, "Please enter a valid work email address."),
+    .email("Please enter a valid work email address.")
+    .refine((val) => !/^\d+@/.test(val), {
+      message: "Please enter a valid work email address (username cannot be only numbers).",
+    }),
   countryCode: z.string(),
   phone: z.string(),
   subject: z
@@ -126,7 +131,7 @@ export const ContactPage: React.FC = () => {
     formState: { errors },
   } = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
-    mode: "onTouched",
+    mode: "onChange",
     defaultValues: {
       countryCode: "+1",
       phone: "",
@@ -159,6 +164,26 @@ export const ContactPage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handlePhoneClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigator.clipboard.writeText("+15551234567").then(() => {
+      alert("Phone number '+1 (555) 123-4567' copied to clipboard!");
+    }).catch(() => {
+      alert("Call: +1 (555) 123-4567");
+    });
+    window.location.href = "tel:+15551234567";
+  };
+
+  const handleEmailClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigator.clipboard.writeText("support@aurexion.com").then(() => {
+      alert("Email address 'support@aurexion.com' copied to clipboard!");
+    }).catch(() => {
+      alert("Email: support@aurexion.com");
+    });
+    window.location.href = "mailto:support@aurexion.com";
   };
 
   return (
@@ -197,42 +222,61 @@ export const ContactPage: React.FC = () => {
 
             <div className="space-y-6">
               {/* Email */}
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 mt-0.5">
+              <a 
+                href="mailto:support@aurexion.com" 
+                onClick={handleEmailClick}
+                className="flex items-start gap-4 group cursor-pointer"
+              >
+                <div className="shrink-0 p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 mt-0.5 transition-colors group-hover:bg-primary/20">
                   <Mail className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm sm:text-base mb-0.5">Email</h3>
-                  <a href="mailto:support@aurexion.com" className="text-muted-foreground hover:text-primary text-sm transition-colors block">
+                  <h3 className="font-semibold text-foreground text-sm sm:text-base mb-0.5 group-hover:text-primary transition-colors">Email</h3>
+                  <span className="text-muted-foreground group-hover:text-primary/80 text-sm transition-colors block">
                     support@aurexion.com
-                  </a>
+                  </span>
                 </div>
-              </div>
+              </a>
 
               {/* Phone */}
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 mt-0.5">
+              <a 
+                href="tel:+15551234567" 
+                onClick={handlePhoneClick}
+                className="flex items-start gap-4 group cursor-pointer"
+              >
+                <div className="shrink-0 p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 mt-0.5 transition-colors group-hover:bg-primary/20">
                   <Phone className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm sm:text-base mb-0.5">Phone</h3>
-                  <p className="text-muted-foreground text-sm">+1 (555) 123-4567</p>
+                  <h3 className="font-semibold text-foreground text-sm sm:text-base mb-0.5 group-hover:text-primary transition-colors">Phone</h3>
+                  <span className="text-muted-foreground group-hover:text-primary/80 text-sm transition-colors block">
+                    +1 (555) 123-4567
+                  </span>
                 </div>
-              </div>
+              </a>
 
               {/* Office */}
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 mt-0.5">
+              <a 
+                href="https://maps.google.com/?q=123+Innovation+Street,+San+Francisco,+CA+94102" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open("https://maps.google.com/?q=123+Innovation+Street,+San+Francisco,+CA+94102", "_blank");
+                }}
+                className="flex items-start gap-4 group cursor-pointer"
+              >
+                <div className="shrink-0 p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 mt-0.5 transition-colors group-hover:bg-primary/20">
                   <MapPin className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground text-sm sm:text-base mb-0.5">Office</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
+                  <h3 className="font-semibold text-foreground text-sm sm:text-base mb-0.5 group-hover:text-primary transition-colors">Office</h3>
+                  <span className="text-muted-foreground group-hover:text-primary/80 text-sm leading-relaxed block transition-colors">
                     123 Innovation Street<br />
                     San Francisco, CA 94102
-                  </p>
+                  </span>
                 </div>
-              </div>
+              </a>
 
               {/* Hours */}
               <div className="flex items-start gap-4">
@@ -296,7 +340,7 @@ export const ContactPage: React.FC = () => {
                           {...register("firstName")} 
                           aria-invalid={!!errors.firstName}
                           className={`w-full h-11 px-3.5 py-2.5 rounded-md bg-background border ${errors.firstName ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground transition-colors`} 
-                          placeholder="John"
+                          placeholder="Enter your first name"
                         />
                         {errors.firstName && (
                           <p className="text-xs text-destructive mt-1 flex items-center gap-1">
@@ -314,7 +358,7 @@ export const ContactPage: React.FC = () => {
                           {...register("lastName")} 
                           aria-invalid={!!errors.lastName}
                           className={`w-full h-11 px-3.5 py-2.5 rounded-md bg-background border ${errors.lastName ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground transition-colors`} 
-                          placeholder="Doe"
+                          placeholder="Enter your last name"
                         />
                         {errors.lastName && (
                           <p className="text-xs text-destructive mt-1 flex items-center gap-1">
@@ -336,7 +380,7 @@ export const ContactPage: React.FC = () => {
                           {...register("email")} 
                           aria-invalid={!!errors.email}
                           className={`w-full h-11 px-3.5 py-2.5 rounded-md bg-background border ${errors.email ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground transition-colors`} 
-                          placeholder="john@company.com"
+                          placeholder="Enter your work email"
                         />
                         {errors.email && (
                           <p className="text-xs text-destructive mt-1 flex items-center gap-1">
@@ -361,13 +405,13 @@ export const ContactPage: React.FC = () => {
                               setPhoneNumber(clamped);
                               setValue("phone", clamped, { shouldValidate: true });
                             }}
-                            className="h-11 px-3 rounded-md bg-background border border-input focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground transition-colors cursor-pointer shrink-0 font-medium"
+                            className="h-11 px-3 py-2.5 rounded-md bg-background border border-input focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground transition-colors cursor-pointer shrink-0 font-medium"
                             style={{
                               backgroundColor: "#050811",
                               color: "#f8fafc",
                               border: "1px solid rgba(140, 174, 187, 0.25)",
-                              minWidth: "140px",
-                              maxWidth: "155px",
+                              minWidth: "90px",
+                              maxWidth: "110px",
                             }}
                           >
                             {COUNTRY_CODES.map((c) => (
@@ -389,8 +433,8 @@ export const ContactPage: React.FC = () => {
                                 setValue("phone", clamped, { shouldValidate: true });
                               }}
                               aria-invalid={!!errors.phone}
-                              className={`w-full h-11 px-3.5 py-2.5 rounded-md bg-background border ${errors.phone ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground font-mono transition-colors`} 
-                              placeholder={currentCountry.placeholder}
+                              className={`w-full h-11 px-3.5 py-2.5 rounded-md bg-background border ${errors.phone ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground font-mono placeholder:font-sans transition-colors`} 
+                              placeholder="Enter phone number"
                             />
                           </div>
                         </div>
@@ -413,7 +457,7 @@ export const ContactPage: React.FC = () => {
                         {...register("subject")} 
                         aria-invalid={!!errors.subject}
                         className={`w-full h-11 px-3.5 py-2.5 rounded-md bg-background border ${errors.subject ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground transition-colors`} 
-                        placeholder="Inquiry about custom enterprise solutions"
+                        placeholder="Enter subject"
                       />
                       {errors.subject && (
                         <p className="text-xs text-destructive mt-1 flex items-center gap-1">
@@ -433,7 +477,7 @@ export const ContactPage: React.FC = () => {
                         {...register("message")} 
                         aria-invalid={!!errors.message}
                         className={`w-full p-3.5 rounded-md bg-background border ${errors.message ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground resize-none transition-colors`} 
-                        placeholder="Write your message here..."
+                        placeholder="Enter your message"
                       />
                       {errors.message && (
                         <p className="text-xs text-destructive mt-1 flex items-center gap-1">

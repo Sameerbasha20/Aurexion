@@ -5,6 +5,7 @@ import * as z from "zod";
 import { publicService } from "../../services/publicService";
 import { CheckCircle2, Loader2, AlertCircle, Upload } from "lucide-react";
 import { SEO } from "../../../../components/seo/SEO";
+import { COUNTRY_CODES, validatePhoneNumber, clampPhoneNumber } from "../Contact/ContactPage";
 
 const COUNTRIES = [
   "United States", "United Kingdom", "India", "Canada", "Australia", "Germany",
@@ -45,13 +46,34 @@ const rfpSchema = z.object({
     .min(2, "Full name must be at least 2 characters")
     .regex(nameRegex, "Please enter a valid name format (letters, spaces, hyphens, and apostrophes only)")
     .refine((val) => val.trim().length >= 2, "Please enter a valid full name"),
-  company_name: z.string().min(2, "Company name is required"),
-  work_email: z.string().email("Valid work email is required"),
-  phone: z
+  company_name: z
     .string()
-    .min(1, "Phone number is required")
-    .regex(/^\d{10}$/, "Phone number must be exactly 10 digits (numbers only)"),
-  designation: z.string().min(2, "Designation / job title is required"),
+    .min(2, "Company name is required")
+    .refine((val) => !/^\d+$/.test(val.trim()), {
+      message: "Company name cannot contain only numbers",
+    })
+    .refine((val) => !/^(.)\1+$/.test(val.trim()), {
+      message: "Company name cannot contain repeating characters",
+    }),
+  work_email: z
+    .string()
+    .trim()
+    .min(1, "Work email is required")
+    .email("Valid work email is required")
+    .refine((val) => !/^\d+@/.test(val), {
+      message: "Work email address username cannot be only numbers",
+    }),
+  countryCode: z.string(),
+  phone: z.string(),
+  designation: z
+    .string()
+    .min(2, "Designation / job title is required")
+    .refine((val) => !/^\d+$/.test(val.trim()), {
+      message: "Designation / job title cannot contain only numbers",
+    })
+    .refine((val) => !/^(.)\1+$/.test(val.trim()), {
+      message: "Designation / job title cannot contain repeating characters",
+    }),
   country: z
     .string()
     .min(1, "Please select your country")
@@ -66,6 +88,15 @@ const rfpSchema = z.object({
     .refine((val) => BUDGET_RANGES.includes(val), "Please select a valid budget range"),
   project_description: z.string().min(50, "Please provide at least 50 characters describing your project"),
   nda_required: z.boolean().optional(),
+}).superRefine((data, ctx) => {
+  const phoneErr = validatePhoneNumber(data.phone || "", data.countryCode || "+1");
+  if (phoneErr) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: phoneErr,
+      path: ["phone"],
+    });
+  }
 });
 
 type RfpFormValues = z.infer<typeof rfpSchema>;
@@ -78,10 +109,19 @@ export const RfpPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [charCount, setCharCount] = useState(0);
+  const [selectedCountryCode, setSelectedCountryCode] = useState<string>("+1");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<RfpFormValues>({
+  const currentCountry = COUNTRY_CODES.find((c) => c.code === selectedCountryCode) || COUNTRY_CODES[0];
+
+  const { register, handleSubmit, setValue, formState: { errors }, reset } = useForm<RfpFormValues>({
     resolver: zodResolver(rfpSchema),
-    defaultValues: { nda_required: false }
+    mode: "onChange",
+    defaultValues: {
+      nda_required: false,
+      countryCode: "+1",
+      phone: "",
+    }
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,8 +145,13 @@ export const RfpPage: React.FC = () => {
   const onSubmit = async (data: RfpFormValues) => {
     setIsSubmitting(true);
     setSubmitError(null);
+
+    const formattedPhone = selectedCountryCode === "+other"
+      ? data.phone.trim()
+      : `${selectedCountryCode} ${data.phone.replace(/\D/g, "")}`;
+
     try {
-      await publicService.submitRfp({ ...data, file });
+      await publicService.submitRfp({ ...data, phone: formattedPhone, file });
       const ref = generateRef();
       setRefCode(ref);
       setSuccess(true);
@@ -160,7 +205,14 @@ export const RfpPage: React.FC = () => {
                 <p style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".6rem", color: "#5a6b72", marginTop: ".5rem" }}>Please save this for your records</p>
               </div>
               <button type="button"
-                onClick={() => { setSuccess(false); reset(); setFile(null); setCharCount(0); }}
+                onClick={() => {
+                  setSuccess(false);
+                  reset();
+                  setFile(null);
+                  setCharCount(0);
+                  setPhoneNumber("");
+                  setSelectedCountryCode("+1");
+                }}
                 style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", background: "none", border: "none", cursor: "pointer" }}
               >
                 ← SUBMIT ANOTHER RFP
@@ -176,17 +228,16 @@ export const RfpPage: React.FC = () => {
               )}
 
               <form onSubmit={handleSubmit(onSubmit)} style={{ padding: "clamp(1.25rem, 5vw, 2.5rem)" }}>
-
                 {/* Row 1: Full Name + Company */}
                 <div className="rfp-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
                   <div>
                     <label className={labelClass}>Full Name <span style={{ color: "#63f5e8" }}>*</span></label>
-                    <input {...register("full_name")} className={fieldClass} placeholder="John Anderson" />
+                    <input {...register("full_name")} className={fieldClass} placeholder="Enter your full name" />
                     {errors.full_name && <p className={errorClass}>{errors.full_name.message}</p>}
                   </div>
                   <div>
                     <label className={labelClass}>Company Name <span style={{ color: "#63f5e8" }}>*</span></label>
-                    <input {...register("company_name")} className={fieldClass} placeholder="Acme Corporation" />
+                    <input {...register("company_name")} className={fieldClass} placeholder="Enter your company name" />
                     {errors.company_name && <p className={errorClass}>{errors.company_name.message}</p>}
                   </div>
                 </div>
@@ -195,12 +246,56 @@ export const RfpPage: React.FC = () => {
                 <div className="rfp-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
                   <div>
                     <label className={labelClass}>Work Email <span style={{ color: "#63f5e8" }}>*</span></label>
-                    <input {...register("work_email")} type="email" className={fieldClass} placeholder="j.anderson@company.com" />
+                    <input {...register("work_email")} type="email" className={fieldClass} placeholder="Enter your work email" />
                     {errors.work_email && <p className={errorClass}>{errors.work_email.message}</p>}
                   </div>
                   <div>
                     <label className={labelClass}>Phone Number <span style={{ color: "#63f5e8" }}>*</span></label>
-                    <input {...register("phone")} type="tel" className={fieldClass} placeholder="Enter 10-digit number" maxLength={10} />
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <select
+                        id="countryCode"
+                        value={selectedCountryCode}
+                        onChange={(e) => {
+                          const newCode = e.target.value;
+                          setSelectedCountryCode(newCode);
+                          setValue("countryCode", newCode, { shouldValidate: true });
+                          const clamped = clampPhoneNumber(phoneNumber, newCode);
+                          setPhoneNumber(clamped);
+                          setValue("phone", clamped, { shouldValidate: true });
+                        }}
+                        className={fieldClass}
+                        style={{
+                          backgroundColor: "#050811",
+                          color: "#f8fafc",
+                          border: "1px solid rgba(99,245,232,.2)",
+                          minWidth: "90px",
+                          maxWidth: "110px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {COUNTRY_CODES.map((c) => (
+                          <option key={c.code} value={c.code} style={{ backgroundColor: "#050811", color: "#f8fafc" }}>
+                            {c.flag} {c.code}
+                          </option>
+                        ))}
+                      </select>
+                      <div style={{ flex: 1 }}>
+                        <input 
+                          id="phone" 
+                          type="tel"
+                          value={phoneNumber}
+                          maxLength={currentCountry.digitsMax}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/\D/g, "");
+                            const clamped = raw.slice(0, currentCountry.digitsMax);
+                            setPhoneNumber(clamped);
+                            setValue("phone", clamped, { shouldValidate: true });
+                          }}
+                          className={`${fieldClass} font-mono placeholder:font-sans`} 
+                          placeholder="Enter phone number"
+                        />
+                      </div>
+                    </div>
                     {errors.phone && <p className={errorClass}>{errors.phone.message}</p>}
                   </div>
                 </div>
@@ -209,7 +304,7 @@ export const RfpPage: React.FC = () => {
                 <div className="rfp-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
                   <div>
                     <label className={labelClass}>Designation / Job Title <span style={{ color: "#63f5e8" }}>*</span></label>
-                    <input {...register("designation")} className={fieldClass} placeholder="CTO / VP Engineering" />
+                    <input {...register("designation")} className={fieldClass} placeholder="Enter your designation / job title" />
                     {errors.designation && <p className={errorClass}>{errors.designation.message}</p>}
                   </div>
                   <div>
@@ -251,7 +346,7 @@ export const RfpPage: React.FC = () => {
                     {...register("project_description")}
                     rows={5}
                     className={fieldClass}
-                    placeholder="Describe your project requirements, goals, and technical challenges. What problem are you trying to solve? What outcomes are you targeting? (Minimum 50 characters)"
+                    placeholder="Enter project description"
                     onChange={(e) => setCharCount(e.target.value.length)}
                     style={{ resize: "vertical" }}
                   />

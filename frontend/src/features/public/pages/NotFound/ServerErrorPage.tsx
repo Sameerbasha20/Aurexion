@@ -82,7 +82,7 @@ export const ServerErrorPage: React.FC<ServerErrorPageProps> = ({ onRetry }) => 
           <Link href="/" className="outline-button">
             RETURN TO HOME
           </Link>
-          <a href="mailto:support@aurexion.io" className="text-button" style={{ display: "inline-flex", alignItems: "center" }}>
+          <a href="mailto:support@aurexion.com" className="text-button" style={{ display: "inline-flex", alignItems: "center" }}>
             CONTACT SUPPORT
           </a>
         </div>
