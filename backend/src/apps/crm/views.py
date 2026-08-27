@@ -1,5 +1,9 @@
 import csv
 import io
+import logging
+
+from django.core.exceptions import ObjectDoesNotExist
+logger = logging.getLogger(__name__)
 
 from django.db.models import Count, Exists, OuterRef, Subquery, IntegerField
 import django.db.models
@@ -405,8 +409,11 @@ class LeadViewSet(viewsets.ModelViewSet):
             })
         except ValidationError as e:
             return Response({"detail": str(e.detail if hasattr(e, 'detail') else e)}, status=status.HTTP_400_BAD_REQUEST)
+        except ObjectDoesNotExist:
+            return Response({"detail": "Lead not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.exception("Unexpected system error during client onboarding")
+            return Response({"detail": "An unexpected server error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=["post"], url_path="onboard_client")
     def onboard_client_underscore(self, request, pk=None):

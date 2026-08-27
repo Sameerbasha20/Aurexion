@@ -1,6 +1,9 @@
 import time
 from django.conf import settings
 from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
+import logging
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -303,15 +306,17 @@ class LogoutView(APIView):
                 from rest_framework_simplejwt.tokens import RefreshToken
                 token = RefreshToken(refresh_token_candidate)
                 token.blacklist()
+            except TokenError:
+                logger.warning("Token already blacklisted or invalid")
             except Exception:
-                pass
+                logger.exception("Unexpected error during token blacklisting")
 
         # Invalidate server-side session
         try:
             if hasattr(request, 'session'):
                 request.session.flush()
         except Exception:
-            pass
+            logger.exception("Unexpected error during session flush")
 
         if is_authenticated:
             django_logout(request)
