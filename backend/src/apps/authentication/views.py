@@ -4,6 +4,7 @@ from django.core.cache import cache
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 import logging
+logger = logging.getLogger(__name__)
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -305,21 +306,27 @@ class LogoutView(APIView):
             try:
                 from rest_framework_simplejwt.tokens import RefreshToken
                 token = RefreshToken(refresh_token_candidate)
-                token.blacklist()
+                if hasattr(token, 'blacklist'):
+                    token.blacklist()
             except TokenError:
                 logger.warning("Token already blacklisted or invalid")
             except Exception:
                 logger.exception("Unexpected error during token blacklisting")
 
-        # Invalidate server-side session
+        # Invalidate server-side session if session middleware is active
+        raw_request = getattr(request, '_request', request)
         try:
-            if hasattr(request, 'session'):
-                request.session.flush()
+            if hasattr(raw_request, 'session') and raw_request.session:
+                raw_request.session.flush()
         except Exception:
-            logger.exception("Unexpected error during session flush")
+            logger.debug("No active session to flush")
 
         if is_authenticated:
-            django_logout(request)
+            try:
+                if hasattr(raw_request, 'session') and raw_request.session:
+                    django_logout(raw_request)
+            except Exception:
+                logger.debug("No active Django session for logout")
 
         return response
 

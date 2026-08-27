@@ -45,9 +45,9 @@ export const ArticleDetailPage = () => {
         return "auth-001";
       }
     })(),
-    authorName: apiArticle.author_username || apiArticle.author_name || undefined,
-    publishedAt: apiArticle.published_at || apiArticle.created_at,
-    readingTime: apiArticle.reading_time || staticArticle?.readingTime || "5 min read",
+    authorName: (apiArticle as any).author_username || (apiArticle as any).author_name || (apiArticle as any).author || undefined,
+    publishedAt: apiArticle.published_at || (apiArticle as any).publishedAt || apiArticle.created_at,
+    readingTime: (apiArticle as any).reading_time || (apiArticle as any).readingTime || staticArticle?.readingTime || "5 min read",
     relatedServices: staticArticle?.relatedServices || [],
     relatedIndustries: staticArticle?.relatedIndustries || [],
     relatedCaseStudies: staticArticle?.relatedCaseStudies || [],

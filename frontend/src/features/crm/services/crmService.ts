@@ -70,6 +70,7 @@ export interface LeadFollowUp {
   scheduled_at: string;
   status: string; // PENDING, COMPLETED, CANCELLED, OVERDUE
   status_display: string;
+  meeting_link?: string;
   notes: string;
   completed_at: string | null;
   created_at: string;
