@@ -1,8 +1,12 @@
-from django.db import connections
+from django.db import connections, DatabaseError
 from django.http import JsonResponse
 from django.views import View
 from django.views.decorators.http import require_GET
 import redis
+from redis.exceptions import RedisError
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class HealthCheckView(View):
@@ -20,8 +24,12 @@ class HealthCheckView(View):
                 cursor.execute("SELECT 1;")
                 cursor.fetchone()
             health_status["services"]["database"] = "connected"
-        except Exception as e:
+        except DatabaseError as e:
             health_status["services"]["database"] = f"error: {str(e)}"
+            health_status["status"] = "degraded"
+        except Exception as e:
+            logger.exception("Unexpected error checking database health")
+            health_status["services"]["database"] = "error: unexpected server error"
             health_status["status"] = "degraded"
         
         # Check Redis (optional)
@@ -34,8 +42,12 @@ class HealthCheckView(View):
                 health_status["services"]["redis"] = "connected"
             else:
                 health_status["services"]["redis"] = "not_configured"
-        except Exception as e:
+        except RedisError as e:
             health_status["services"]["redis"] = f"error: {str(e)}"
+            health_status["status"] = "degraded"
+        except Exception as e:
+            logger.exception("Unexpected error checking redis health")
+            health_status["services"]["redis"] = "error: unexpected server error"
             health_status["status"] = "degraded"
         
         status_code = 200 if health_status["status"] == "healthy" else 503
@@ -59,7 +71,10 @@ def health_check(request):
             cursor.execute("SELECT 1;")
             cursor.fetchone()
         db_status = "ok"
+    except DatabaseError:
+        db_status = "error"
     except Exception:
+        logger.exception("Unexpected error in simple health check")
         db_status = "error"
     
     # Get project info

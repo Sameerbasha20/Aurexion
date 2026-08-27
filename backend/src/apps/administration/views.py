@@ -2,6 +2,10 @@ from rest_framework import viewsets, serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.models import User
+import logging
+from django.db import DatabaseError
+
+logger = logging.getLogger(__name__)
 
 from apps.administration.models import Role, ModulePermission
 from apps.administration.serializers import RoleSerializer, ModulePermissionSerializer
@@ -125,7 +129,8 @@ class AdminDashboardView(APIView):
         try:
             open_tickets = SupportTicket.objects.exclude(status__in=['resolved', 'closed', 'RESOLVED', 'CLOSED']).count()
             critical_tickets = SupportTicket.objects.filter(priority__iexact='critical').exclude(status__in=['resolved', 'closed', 'RESOLVED', 'CLOSED']).count()
-        except Exception:
+        except DatabaseError as e:
+            logger.exception("Failed to aggregate support ticket metrics")
             open_tickets = 0
             critical_tickets = 0
 

@@ -18,7 +18,7 @@ def _clear_dashboard_cache():
     try:
         cache.delete("bdm_dashboard_metrics")
     except Exception:
-        pass
+        logger.exception("Failed to clear BDM dashboard cache")
 
 from apps.authentication.audit import get_model_state, log_audit_event
 from apps.authentication.models import UserProfile
@@ -279,7 +279,7 @@ def mark_lead_won(*, lead, actor, value=None, notes=None, request=None):
         try:
             add_note(lead=lead, author=actor, content=f"Deal WON Notes: {str(notes).strip()}", request=request)
         except Exception:
-            pass
+            logger.exception(f"Failed to add WON notes for lead {lead.reference_id}")
 
     # Send congratulations email to the client
     if lead.email:
@@ -361,7 +361,7 @@ def onboard_lead_as_client(*, lead, actor, password=None, email=None, request=No
         from apps.portal.views import ensure_client_project_exists
         ensure_client_project_exists(user)
     except Exception:
-        pass
+        logger.exception(f"Failed to provision ClientProject for user {user.username}")
 
     # Dispatch welcome credentials email
     try:
@@ -740,8 +740,10 @@ def schedule_meeting_and_notify(*, lead, scheduled_at, follow_up_type="meeting",
                 actor=actor,
                 request=request,
             )
+        except LeadStateTransitionError as e:
+            logger.warning(f"Lead transition failed during meeting schedule: {e}")
         except Exception:
-            pass
+            logger.exception(f"Failed to transition lead {lead.reference_id} to CONTACTED")
 
     # Dispatch email if lead has an email address
     if lead.email:

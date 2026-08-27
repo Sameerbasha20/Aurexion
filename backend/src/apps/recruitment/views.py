@@ -13,6 +13,8 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
+from django.core.exceptions import ValidationError, ObjectDoesNotExist, ImproperlyConfigured
+from django.db import IntegrityError
 from .models import JobVacancy, ApplicationNote, CandidateApplication
 from .serializers import (
     JobVacancySerializer, ApplySerializer,
@@ -133,6 +135,9 @@ class ApplyForJobView(APIView):
                 # Read the actual bytes from the InMemoryUploadedFile
                 file_bytes = resume_file.read()
                 upload_resume(storage_path, file_bytes, resume_file.content_type)
+            except (ValueError, ImproperlyConfigured) as e:
+                logger.warning(f"Storage misconfiguration or bad path: {e}")
+                return Response({'error': 'Resume upload failed due to server configuration.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             except Exception:
                 logger.exception("Resume upload to storage failed for application")
                 return Response({'error': 'Resume upload failed. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -162,10 +167,17 @@ class ApplyForJobView(APIView):
                     'tracking_code': application.tracking_code
                 }, status=status.HTTP_201_CREATED)
 
-                
+            except ValidationError as e:
+                delete_resume(storage_path)
+                return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            except IntegrityError as e:
+                delete_resume(storage_path)
+                logger.warning(f"Database integrity conflict during application creation: {e}")
+                return Response({'error': 'An application with this email or phone may already exist.'}, status=status.HTTP_409_CONFLICT)
             except Exception as e:
                 # 3. Cleanup orphaned storage object if database persistence fails
                 delete_resume(storage_path)
+                logger.exception("Unexpected system error during application creation")
                 return Response({'error': 'Failed to save application. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -234,6 +246,8 @@ class AdminCandidateApplicationViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             url = generate_signed_url(application.resume_storage_path, expires_in=3600)
             return Response({'download_url': url})
+        except (ValueError, ObjectDoesNotExist) as e:
+            return Response({'error': 'Resource not found or invalid path.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception:
             logger.exception("Failed to generate signed resume URL")
             return Response({'error': 'Could not generate a download link. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -43,7 +43,7 @@ def _save_audit_log_task(db_user_id, action, module, object_id, repr_str, clean_
             user_agent=resolved_ua
         )
     except Exception as exc:
-        logger.debug("Background audit log creation failed: %s", exc)
+        logger.exception("Background audit log creation failed")
 
 def log_audit_event(user, action, module, object_id=None, repr_str=None, previous_state=None, updated_state=None, request=None, ip_address=None, user_agent=None):
     """
@@ -91,5 +91,5 @@ def get_model_state(instance):
             else:
                 state[field.name] = str(val)
         except Exception as exc:
-            logger.debug("Failed to serialize field %s for audit log: %s", getattr(field, 'name', 'unknown'), exc)
+            logger.exception("Failed to serialize field %s for audit log", getattr(field, 'name', 'unknown'))
     return state
