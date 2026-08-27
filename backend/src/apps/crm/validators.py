@@ -24,6 +24,8 @@ def validate_magic_bytes(file_obj):
         mime_type = magic.from_buffer(sample, mime=True)
         if mime_type not in ALLOWED_MIME_TYPES:
             raise ValidationError(f"Security Warning: File type '{mime_type}' is not allowed.")
+    except ValidationError:
+        raise
     except Exception:
         # Fallback to extension check if python-magic is not installed/configured
         name = getattr(file_obj, 'name', '').lower()
