@@ -6,6 +6,7 @@ import * as z from "zod";
 import { publicService } from "../../services/publicService";
 import { ArrowUpRight, Loader2, CheckCircle2, AlertCircle, Mail, Phone, Building2 } from "lucide-react";
 import { SEO } from "../../../../components/seo/SEO";
+import { COUNTRY_CODES, validatePhoneNumber, clampPhoneNumber } from "../Contact/ContactPage";
 
 const ESTIMATOR_STEPS = [
   {
@@ -77,13 +78,35 @@ const followUpSchema = z.object({
     .min(2, "Full name must be at least 2 characters")
     .regex(nameRegex, "Please enter a valid name format (letters, spaces, hyphens, and apostrophes only)")
     .refine((val) => val.trim().length >= 2, "Please enter a valid full name"),
-  email: z.string().email("Valid email is required"),
-  phone: z
+  email: z
     .string()
-    .min(1, "Phone number is required")
-    .regex(/^\d{10}$/, "Phone number must be exactly 10 digits (numbers only)"),
-  company: z.string().optional(),
+    .trim()
+    .min(1, "Email is required")
+    .email("Valid email is required")
+    .refine((val) => !/^\d+@/.test(val), {
+      message: "Email address username cannot be only numbers",
+    }),
+  countryCode: z.string(),
+  phone: z.string(),
+  company: z
+    .string()
+    .optional()
+    .refine((val) => !val || !/^\d+$/.test(val.trim()), {
+      message: "Company name cannot contain only numbers",
+    })
+    .refine((val) => !val || !/^(.)\1+$/.test(val.trim()), {
+      message: "Company name cannot contain repeating characters",
+    }),
   message: z.string().optional(),
+}).superRefine((data, ctx) => {
+  const phoneErr = validatePhoneNumber(data.phone || "", data.countryCode || "+1");
+  if (phoneErr) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: phoneErr,
+      path: ["phone"],
+    });
+  }
 });
 
 type FollowUpFormValues = z.infer<typeof followUpSchema>;
@@ -96,25 +119,41 @@ export const EstimatorPage: React.FC = () => {
   const [followUpSubmitted, setFollowUpSubmitted] = useState(false);
   const [followUpError, setFollowUpError] = useState<string | null>(null);
   const [isSubmittingFollowUp, setIsSubmittingFollowUp] = useState(false);
+  const [selectedCountryCode, setSelectedCountryCode] = useState<string>("+1");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
 
-  const { register, handleSubmit, formState: { errors }, reset: resetForm } = useForm<FollowUpFormValues>({
+  const currentCountry = COUNTRY_CODES.find((c) => c.code === selectedCountryCode) || COUNTRY_CODES[0];
+
+  const { register, handleSubmit, setValue, formState: { errors }, reset: resetForm } = useForm<FollowUpFormValues>({
     resolver: zodResolver(followUpSchema),
+    mode: "onChange",
+    defaultValues: {
+      countryCode: "+1",
+      phone: "",
+    }
   });
 
   const onFollowUpSubmit = async (data: FollowUpFormValues) => {
     setIsSubmittingFollowUp(true);
     setFollowUpError(null);
+
+    const formattedPhone = selectedCountryCode === "+other"
+      ? data.phone.trim()
+      : `${selectedCountryCode} ${data.phone.replace(/\D/g, "")}`;
+
     try {
       await publicService.calculateEstimate({
         name: data.name,
         email: data.email,
-        phone: data.phone,
+        phone: formattedPhone,
         company: data.company || "",
         requirements: data.message || "Estimator follow-up request",
         estimatedCost: getBudgetRange(selections as number[]),
       });
       setFollowUpSubmitted(true);
       resetForm();
+      setPhoneNumber("");
+      setSelectedCountryCode("+1");
     } catch (err: any) {
       setFollowUpError(err.message || "Failed to submit. Please try again.");
     } finally {
@@ -265,72 +304,124 @@ export const EstimatorPage: React.FC = () => {
                         <p style={{ color: "#f87171", fontSize: ".82rem", margin: 0 }}>{followUpError}</p>
                       </div>
                     )}
-
                     <form onSubmit={handleSubmit(onFollowUpSubmit)} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                          <label style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", textTransform: "uppercase" }}>
-                            Name *
-                          </label>
-                          <input 
-                            {...register("name")} 
-                            type="text"
-                            placeholder="John Doe"
-                            style={{ padding: "0.75rem 1rem", background: "#050811", border: "1px solid rgba(99,245,232,.2)", color: "#eef4f3", borderRadius: "4px", fontFamily: "inherit", fontSize: ".875rem" }}
-                          />
-                          {errors.name && <p style={{ color: "#f87171", fontSize: ".75rem", fontFamily: "'IBM Plex Mono'" }}>{errors.name.message}</p>}
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                          <label style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", textTransform: "uppercase" }}>
-                            Email *
-                          </label>
-                          <input 
-                            {...register("email")} 
-                            type="email"
-                            placeholder="john@company.com"
-                            style={{ padding: "0.75rem 1rem", background: "#050811", border: "1px solid rgba(99,245,232,.2)", color: "#eef4f3", borderRadius: "4px", fontFamily: "inherit", fontSize: ".875rem" }}
-                          />
-                          {errors.email && <p style={{ color: "#f87171", fontSize: ".75rem", fontFamily: "'IBM Plex Mono'" }}>{errors.email.message}</p>}
-                        </div>
-                      </div>
-                      
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                          <label style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", textTransform: "uppercase" }}>
-                            Phone *
-                          </label>
-                          <input 
-                            {...register("phone")} 
-                            type="tel"
-                            placeholder="+1 (555) 000-0000"
-                            style={{ padding: "0.75rem 1rem", background: "#050811", border: "1px solid rgba(99,245,232,.2)", color: "#eef4f3", borderRadius: "4px", fontFamily: "inherit", fontSize: ".875rem" }}
-                          />
-                          {errors.phone && <p style={{ color: "#f87171", fontSize: ".75rem", fontFamily: "'IBM Plex Mono'" }}>{errors.phone.message}</p>}
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                          <label style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", textTransform: "uppercase" }}>
-                            Company
-                          </label>
-                          <input 
-                            {...register("company")} 
-                            type="text"
-                            placeholder="Acme Corp"
-                            style={{ padding: "0.75rem 1rem", background: "#050811", border: "1px solid rgba(99,245,232,.2)", color: "#eef4f3", borderRadius: "4px", fontFamily: "inherit", fontSize: ".875rem" }}
-                          />
-                        </div>
-                      </div>
+                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                           <label style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", textTransform: "uppercase" }}>
+                             Name *
+                           </label>
+                           <input 
+                             {...register("name")} 
+                             type="text"
+                             placeholder="Enter your full name"
+                             style={{ padding: "0.75rem 1rem", background: "#050811", border: "1px solid rgba(99,245,232,.2)", color: "#eef4f3", borderRadius: "4px", fontFamily: "inherit", fontSize: ".875rem" }}
+                           />
+                           {errors.name && <p style={{ color: "#f87171", fontSize: ".75rem", fontFamily: "'IBM Plex Mono'" }}>{errors.name.message}</p>}
+                         </div>
+                         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                           <label style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", textTransform: "uppercase" }}>
+                             Email *
+                           </label>
+                           <input 
+                             {...register("email")} 
+                             type="email"
+                             placeholder="Enter your email"
+                             style={{ padding: "0.75rem 1rem", background: "#050811", border: "1px solid rgba(99,245,232,.2)", color: "#eef4f3", borderRadius: "4px", fontFamily: "inherit", fontSize: ".875rem" }}
+                           />
+                           {errors.email && <p style={{ color: "#f87171", fontSize: ".75rem", fontFamily: "'IBM Plex Mono'" }}>{errors.email.message}</p>}
+                         </div>
+                       </div>
+                       
+                       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                            <label style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", textTransform: "uppercase" }}>
+                              Phone *
+                            </label>
+                            <div style={{ display: "flex", gap: "0.5rem" }}>
+                              <select
+                                id="countryCode"
+                                value={selectedCountryCode}
+                                onChange={(e) => {
+                                  const newCode = e.target.value;
+                                  setSelectedCountryCode(newCode);
+                                  setValue("countryCode", newCode, { shouldValidate: true });
+                                  const clamped = clampPhoneNumber(phoneNumber, newCode);
+                                  setPhoneNumber(clamped);
+                                  setValue("phone", clamped, { shouldValidate: true });
+                                }}
+                                style={{
+                                  padding: "0.75rem 0.5rem",
+                                  background: "#050811",
+                                  border: "1px solid rgba(99,245,232,.2)",
+                                  color: "#eef4f3",
+                                  borderRadius: "4px",
+                                  fontFamily: "inherit",
+                                  fontSize: ".875rem",
+                                  minWidth: "90px",
+                                  maxWidth: "110px",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                {COUNTRY_CODES.map((c) => (
+                                  <option key={c.code} value={c.code} style={{ backgroundColor: "#050811", color: "#eef4f3" }}>
+                                    {c.flag} {c.code}
+                                  </option>
+                                ))}
+                              </select>
+                              <div style={{ flex: 1 }}>
+                                <input 
+                                  id="phone" 
+                                  type="tel"
+                                  value={phoneNumber}
+                                  maxLength={currentCountry.digitsMax}
+                                  onChange={(e) => {
+                                    const raw = e.target.value.replace(/\D/g, "");
+                                    const clamped = raw.slice(0, currentCountry.digitsMax);
+                                    setPhoneNumber(clamped);
+                                    setValue("phone", clamped, { shouldValidate: true });
+                                  }}
+                                  placeholder="Enter phone number"
+                                  style={{
+                                    width: "100%",
+                                    padding: "0.75rem 1rem",
+                                    background: "#050811",
+                                    border: "1px solid rgba(99,245,232,.2)",
+                                    color: "#eef4f3",
+                                    borderRadius: "4px",
+                                    fontFamily: "monospace",
+                                    fontSize: ".875rem",
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            {errors.phone && <p style={{ color: "#f87171", fontSize: ".75rem", fontFamily: "'IBM Plex Mono'" }}>{errors.phone.message}</p>}
+                          </div>
 
-                      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                        <label style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", textTransform: "uppercase" }}>
-                          Message (Optional)
-                        </label>
-                        <textarea 
-                          {...register("message")} 
-                          rows={3}
-                          placeholder="Briefly describe your project goals..."
-                          style={{ padding: "0.75rem 1rem", background: "#050811", border: "1px solid rgba(99,245,232,.2)", color: "#eef4f3", borderRadius: "4px", fontFamily: "inherit", fontSize: ".875rem", resize: "vertical" }}
-                        />
-                      </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                            <label style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", textTransform: "uppercase" }}>
+                              Company
+                            </label>
+                            <input 
+                              {...register("company")} 
+                              type="text"
+                              placeholder="Enter company name"
+                              style={{ padding: "0.75rem 1rem", background: "#050811", border: "1px solid rgba(99,245,232,.2)", color: "#eef4f3", borderRadius: "4px", fontFamily: "inherit", fontSize: ".875rem" }}
+                            />
+                            {errors.company && <p style={{ color: "#f87171", fontSize: ".75rem", fontFamily: "'IBM Plex Mono'" }}>{errors.company.message}</p>}
+                          </div>
+                        </div>
+ 
+                       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                         <label style={{ fontFamily: "'IBM Plex Mono'", fontSize: ".62rem", letterSpacing: ".1em", color: "#63f5e8", textTransform: "uppercase" }}>
+                           Message (Optional)
+                         </label>
+                         <textarea 
+                           {...register("message")} 
+                           rows={3}
+                           placeholder="Enter project details"
+                           style={{ padding: "0.75rem 1rem", background: "#050811", border: "1px solid rgba(99,245,232,.2)", color: "#eef4f3", borderRadius: "4px", fontFamily: "inherit", fontSize: ".875rem", resize: "vertical" }}
+                         />
+                       </div>
 
                       <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem" }}>
                         <button 

@@ -44,6 +44,7 @@ export const Requests: React.FC = () => {
 
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [consError, setConsError] = useState<string | null>(null);
 
   const projectsQuery = usePortalQuery<ClientProjectItem[]>(
     ["portal", "projects"],
@@ -100,13 +101,31 @@ export const Requests: React.FC = () => {
   const handleCreateConsultation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!consTitle.trim()) return;
+    setConsError(null);
+
+    if (!consPreferredDate) {
+      setConsError("Please enter a preferred date and time.");
+      return;
+    }
+
+    const dateObj = new Date(consPreferredDate);
+    if (isNaN(dateObj.getTime())) {
+      setConsError("Please enter a valid date and time format.");
+      return;
+    }
+
+    if (dateObj.getFullYear() > 9999 || dateObj.getFullYear() < new Date().getFullYear() - 1) {
+      setConsError("Please enter a valid date with a 4-digit year.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       await portalService.createConsultation({
         request_type: consType,
         title: consTitle.trim(),
         description: consDescription.trim(),
-        preferred_date: consPreferredDate ? new Date(consPreferredDate).toISOString() : null,
+        preferred_date: dateObj.toISOString(),
         project: consProjectId ? Number(consProjectId) : null,
       });
       setFeedback({ type: "success", text: "Consultation meeting requested successfully!" });
@@ -117,7 +136,7 @@ export const Requests: React.FC = () => {
       setIsConsultationModalOpen(false);
       consultationsQuery.refetch();
     } catch (err: any) {
-      setFeedback({ type: "error", text: err?.message || "Failed to request consultation." });
+      setConsError(err?.message || "Failed to request consultation.");
     } finally {
       setSubmitting(false);
     }
@@ -134,7 +153,7 @@ export const Requests: React.FC = () => {
             <Button variant="outline" size="sm" onClick={handleRefresh}>
               <RefreshCw size={14} style={{ marginRight: "0.35rem" }} /> Refresh
             </Button>
-            <Button variant="outline" size="sm" onClick={() => { setFeedback(null); setIsConsultationModalOpen(true); }}>
+            <Button variant="outline" size="sm" onClick={() => { setFeedback(null); setConsError(null); setIsConsultationModalOpen(true); }}>
               <Calendar size={14} style={{ marginRight: "0.35rem" }} /> Request Consultation Call
             </Button>
             <Button glow size="sm" onClick={() => { setFeedback(null); setIsRequestModalOpen(true); }}>
@@ -519,10 +538,32 @@ export const Requests: React.FC = () => {
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>PREFERRED DATE & TIME</label>
+                <style>{`
+                  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+                    filter: invert(0.9) sepia(1) saturate(5) hue-rotate(200deg);
+                    cursor: pointer;
+                    transform: scale(1.15);
+                  }
+                `}</style>
                 <input
                   type="datetime-local"
                   value={consPreferredDate}
-                  onChange={(e) => setConsPreferredDate(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setConsPreferredDate(val);
+                    if (val) {
+                      const dateObj = new Date(val);
+                      if (isNaN(dateObj.getTime()) || dateObj.getFullYear() > 9999) {
+                        setConsError("Please enter a valid date with a 4-digit year.");
+                      } else {
+                        setConsError(null);
+                      }
+                    } else {
+                      setConsError(null);
+                    }
+                  }}
+                  min={new Date().toISOString().slice(0, 16)}
+                  max="9999-12-31T23:59"
                   style={{
                     padding: "0.65rem 0.75rem",
                     backgroundColor: "#050811",
@@ -554,6 +595,21 @@ export const Requests: React.FC = () => {
                   }}
                 />
               </div>
+
+              {consError && (
+                <div style={{
+                  color: "#ef4444",
+                  fontSize: "0.82rem",
+                  fontFamily: "IBM Plex Mono, monospace",
+                  marginTop: "0.5rem",
+                  padding: "0.5rem 0.75rem",
+                  background: "rgba(239, 68, 68, 0.08)",
+                  border: "1px solid rgba(239, 68, 68, 0.25)",
+                  borderRadius: "4px"
+                }}>
+                  ⚠️ {consError}
+                </div>
+              )}
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
                 <Button type="button" variant="outline" onClick={() => setIsConsultationModalOpen(false)}>Cancel</Button>
