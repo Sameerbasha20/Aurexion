@@ -768,7 +768,6 @@ export const Clients: React.FC = () => {
                     </label>
                     <input
                       type="email"
-                      placeholder="e.g. client@company.com"
                       value={emailInput}
                       onChange={(e) => setEmailInput(e.target.value)}
                       style={{

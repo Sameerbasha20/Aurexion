@@ -135,7 +135,6 @@ export const ResetPassword: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="••••••••"
                 style={{
                   width: "100%",
                   height: "44px",
@@ -191,7 +190,6 @@ export const ResetPassword: React.FC = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                placeholder="••••••••"
                 style={{
                   width: "100%",
                   height: "44px",

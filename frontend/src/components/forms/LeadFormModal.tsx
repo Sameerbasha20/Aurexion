@@ -105,7 +105,6 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
             <Input
               id="name"
               {...register("name")}
-              placeholder="e.g. Sarah Jenkins"
               className={`mt-1 bg-slate-950 border-slate-800 text-slate-100 ${
                 errors.name ? "border-red-500 focus:ring-red-500" : ""
               }`}
@@ -121,7 +120,6 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
               id="email"
               type="email"
               {...register("email")}
-              placeholder="sarah@example.com"
               className={`mt-1 bg-slate-950 border-slate-800 text-slate-100 ${
                 errors.email ? "border-red-500 focus:ring-red-500" : ""
               }`}
@@ -137,7 +135,6 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
               <Input
                 id="phone"
                 {...register("phone")}
-                placeholder="+1 (555) 000-0000"
                 className="mt-1 bg-slate-950 border-slate-800 text-slate-100"
               />
             </div>
@@ -148,7 +145,6 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
               <Input
                 id="company"
                 {...register("company")}
-                placeholder="Aurexion Labs"
                 className="mt-1 bg-slate-950 border-slate-800 text-slate-100"
               />
             </div>
@@ -196,7 +192,6 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
               id="description"
               {...register("description")}
               rows={3}
-              placeholder="Detail client requirement context..."
               className="mt-1 w-full p-3 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm"
             />
           </div>

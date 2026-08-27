@@ -408,7 +408,6 @@ export const Support: React.FC = () => {
                 value={modalNotes}
                 onChange={(e) => setModalNotes(e.target.value)}
                 rows={5}
-                placeholder="Enter resolution notes, root cause analysis, or client guidance..."
                 style={{
                   width: "100%",
                   backgroundColor: "#0c1222",

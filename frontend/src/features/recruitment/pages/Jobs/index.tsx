@@ -553,7 +553,6 @@ export const Jobs: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. AI-003"
                     value={createForm.job_id}
                     onChange={(e) => setCreateForm({ ...createForm, job_id: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -565,7 +564,6 @@ export const Jobs: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Full Stack Engineer"
                     value={createForm.title}
                     onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -578,7 +576,6 @@ export const Jobs: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DEPARTMENT</label>
                   <input
                     type="text"
-                    placeholder="e.g. Engineering"
                     value={createForm.department}
                     onChange={(e) => setCreateForm({ ...createForm, department: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -589,7 +586,6 @@ export const Jobs: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>LOCATION</label>
                   <input
                     type="text"
-                    placeholder="e.g. Remote"
                     value={createForm.location}
                     onChange={(e) => setCreateForm({ ...createForm, location: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -600,7 +596,6 @@ export const Jobs: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EXPERIENCE</label>
                   <input
                     type="text"
-                    placeholder="e.g. 3+ Years"
                     value={createForm.experience}
                     onChange={(e) => setCreateForm({ ...createForm, experience: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -625,7 +620,6 @@ export const Jobs: React.FC = () => {
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>REQUIRED SKILLS</label>
                 <input
                   type="text"
-                  placeholder="e.g. React, TypeScript, Node.js, GraphQL"
                   value={createForm.skills}
                   onChange={(e) => setCreateForm({ ...createForm, skills: e.target.value })}
                   style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -636,7 +630,6 @@ export const Jobs: React.FC = () => {
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>RESPONSIBILITIES</label>
                 <textarea
                   rows={3}
-                  placeholder="Describe key responsibilities and deliverables..."
                   value={createForm.responsibilities}
                   onChange={(e) => setCreateForm({ ...createForm, responsibilities: e.target.value })}
                   style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", resize: "vertical" }}
@@ -700,7 +693,6 @@ export const Jobs: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DEPARTMENT</label>
                   <input
                     type="text"
-                    placeholder="e.g. Engineering"
                     value={editForm.department || ""}
                     onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -711,7 +703,6 @@ export const Jobs: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>LOCATION</label>
                   <input
                     type="text"
-                    placeholder="e.g. Remote"
                     value={editForm.location || ""}
                     onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -722,7 +713,6 @@ export const Jobs: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EXPERIENCE</label>
                   <input
                     type="text"
-                    placeholder="e.g. 3+ Years"
                     value={editForm.experience || ""}
                     onChange={(e) => setEditForm({ ...editForm, experience: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}

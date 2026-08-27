@@ -552,9 +552,9 @@ export default function Home() {
             <DialogDescription>{dialog === "project" ? "Tell us what you are trying to engineer." : "Aurexion connects strategy, engineering and intelligence in one conversation."}</DialogDescription>
           </DialogHeader>
           <div className="dialog-form">
-            <input placeholder="Your name" aria-label="Your name" />
-            <input placeholder="Work email" aria-label="Work email" type="email" />
-            <textarea placeholder="What are you trying to make possible?" aria-label="Project details" rows={4} />
+            <input aria-label="Your name" />
+            <input aria-label="Work email" type="email" />
+            <textarea aria-label="Project details" rows={4} />
             <Button className="signal-button" onClick={() => { setDialog(null); toast("Message queued"); }}>SEND MESSAGE <ArrowUpRight size={16} /></Button>
           </div>
         </DialogContent>

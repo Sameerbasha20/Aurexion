@@ -418,7 +418,6 @@ export const EstimatorPage: React.FC = () => {
                          <textarea 
                            {...register("message")} 
                            rows={3}
-                           placeholder="Enter project details"
                            style={{ padding: "0.75rem 1rem", background: "#050811", border: "1px solid rgba(99,245,232,.2)", color: "#eef4f3", borderRadius: "4px", fontFamily: "inherit", fontSize: ".875rem", resize: "vertical" }}
                          />
                        </div>

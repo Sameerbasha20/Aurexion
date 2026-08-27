@@ -516,7 +516,6 @@ export const RFP: React.FC = () => {
             <Textarea
               value={declineReason}
               onChange={(e) => setDeclineReason(e.target.value)}
-              placeholder="Enter a detailed reason for declining this RFP (minimum 10 characters)..."
               rows={4}
               disabled={isActionLoading}
               minLength={10}

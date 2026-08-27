@@ -311,7 +311,7 @@ export const ApplyPage: React.FC = () => {
                   border: errors.name ? "1px solid #ef4444" : "1px solid #1e293b",
                   boxShadow: errors.name ? "0 0 0 1px rgba(239, 68, 68, 0.25)" : undefined,
                 }} 
-                placeholder="Jane Doe"
+                placeholder="Enter your full name"
               />
               {errors.name && (
                 <p style={{ color: "#ef4444", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.35rem", marginTop: "0.35rem", fontFamily: "IBM Plex Mono, monospace" }}>
@@ -334,7 +334,7 @@ export const ApplyPage: React.FC = () => {
                   border: errors.email ? "1px solid #ef4444" : "1px solid #1e293b",
                   boxShadow: errors.email ? "0 0 0 1px rgba(239, 68, 68, 0.25)" : undefined,
                 }} 
-                placeholder="jane@example.com"
+                placeholder="Enter your email address"
               />
               {errors.email && (
                 <p style={{ color: "#ef4444", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.35rem", marginTop: "0.35rem", fontFamily: "IBM Plex Mono, monospace" }}>
@@ -431,7 +431,6 @@ export const ApplyPage: React.FC = () => {
               {...register("coverLetter")} 
               className="w-full p-3 rounded-md bg-background focus:outline-none resize-none"
               style={{ border: "1px solid #1e293b" }}
-              placeholder="Tell us why you're a great fit for this role..."
             />
           </div>
 

@@ -462,7 +462,6 @@ export const TicketList: React.FC = () => {
                 value={modalNotes}
                 onChange={(e) => setModalNotes(e.target.value)}
                 rows={5}
-                placeholder="Enter resolution notes, technical findings, or guidance for the client..."
                 style={{
                   width: "100%",
                   backgroundColor: "#0c1222",
