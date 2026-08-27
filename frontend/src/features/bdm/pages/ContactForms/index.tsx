@@ -645,7 +645,6 @@ export const ContactForms: React.FC = () => {
                 </div>
                 <textarea
                   rows={3}
-                  placeholder="Provide a detailed reason for rejecting (minimum 10 characters)..."
                   value={declineReason}
                   onChange={(e) => setDeclineReason(e.target.value)}
                   required

@@ -518,7 +518,6 @@ export const Industries: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Healthcare & Life Sciences"
                     value={createForm.name}
                     onChange={(e) => {
                       const name = e.target.value;
@@ -534,7 +533,6 @@ export const Industries: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. healthcare-domain"
                     value={createForm.slug}
                     onChange={(e) => setCreateForm({ ...createForm, slug: e.target.value })}
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", textOverflow: "ellipsis" }}
@@ -547,7 +545,6 @@ export const Industries: React.FC = () => {
                 <textarea
                   rows={2}
                   required
-                  placeholder="Domain friction, compliance, scaling barriers..."
                   value={createForm.challenges}
                   onChange={(e) => setCreateForm({ ...createForm, challenges: e.target.value })}
                   style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -559,7 +556,6 @@ export const Industries: React.FC = () => {
                 <textarea
                   rows={2}
                   required
-                  placeholder="Engineered responses, data architectures, model deployments..."
                   value={createForm.target_solutions}
                   onChange={(e) => setCreateForm({ ...createForm, target_solutions: e.target.value })}
                   style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -637,7 +633,6 @@ export const Industries: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. healthcare-domain"
                     value={editForm.slug || ""}
                     onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", textOverflow: "ellipsis" }}

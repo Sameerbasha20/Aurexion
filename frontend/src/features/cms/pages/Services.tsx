@@ -575,7 +575,6 @@ export const Services: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Enterprise Neural Systems"
                     value={createForm.title}
                     onChange={(e) => {
                       const title = e.target.value;
@@ -591,7 +590,6 @@ export const Services: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. neural-systems"
                     value={createForm.slug}
                     onChange={(e) => setCreateForm({ ...createForm, slug: e.target.value })}
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", textOverflow: "ellipsis" }}
@@ -604,7 +602,6 @@ export const Services: React.FC = () => {
                 <textarea
                   rows={2}
                   required
-                  placeholder="Overview of core capability..."
                   value={createForm.description}
                   onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
                   style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -617,7 +614,6 @@ export const Services: React.FC = () => {
                   <textarea
                     rows={2}
                     required
-                    placeholder="Enterprise bottlenecks..."
                     value={createForm.problem}
                     onChange={(e) => setCreateForm({ ...createForm, problem: e.target.value })}
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -629,7 +625,6 @@ export const Services: React.FC = () => {
                   <textarea
                     rows={2}
                     required
-                    placeholder="Technical architecture..."
                     value={createForm.solution}
                     onChange={(e) => setCreateForm({ ...createForm, solution: e.target.value })}
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -641,7 +636,6 @@ export const Services: React.FC = () => {
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>TECH STACK (COMMA SEPARATED)</label>
                 <input
                   type="text"
-                  placeholder="e.g. Python, PyTorch, Ray, Kubernetes"
                   value={techStackInput}
                   onChange={(e) => setTechStackInput(e.target.value)}
                   style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -730,7 +724,6 @@ export const Services: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. neural-systems"
                     value={editForm.slug || ""}
                     onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", textOverflow: "ellipsis" }}

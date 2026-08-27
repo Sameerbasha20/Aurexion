@@ -612,7 +612,6 @@ export const CaseStudies: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Autonomous Logistics Engine"
                     value={createForm.title}
                     onChange={(e) => {
                       const title = e.target.value;
@@ -628,7 +627,6 @@ export const CaseStudies: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. logistics-engine"
                     value={createForm.slug}
                     onChange={(e) => setCreateForm({ ...createForm, slug: e.target.value })}
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", textOverflow: "ellipsis" }}
@@ -642,7 +640,6 @@ export const CaseStudies: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Global Freight Logistics Corp"
                     value={createForm.client}
                     onChange={(e) => setCreateForm({ ...createForm, client: e.target.value })}
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -653,7 +650,6 @@ export const CaseStudies: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>TECH STACK</label>
                   <input
                     type="text"
-                    placeholder="e.g. Python, Ray, PostgreSQL, Kafka"
                     value={techStackInput}
                     onChange={(e) => setTechStackInput(e.target.value)}
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -666,7 +662,6 @@ export const CaseStudies: React.FC = () => {
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <input
                     type="text"
-                    placeholder="https://example.com/image.png"
                     value={createForm.media || ""}
                     onChange={(e) => setCreateForm({ ...createForm, media: e.target.value })}
                     style={{ flex: 1, padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -705,7 +700,6 @@ export const CaseStudies: React.FC = () => {
                 <textarea
                   rows={2}
                   required
-                  placeholder="The core problem the enterprise faced..."
                   value={createForm.business_challenge}
                   onChange={(e) => setCreateForm({ ...createForm, business_challenge: e.target.value })}
                   style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -717,7 +711,6 @@ export const CaseStudies: React.FC = () => {
                 <textarea
                   rows={2}
                   required
-                  placeholder="System design & technical implementation..."
                   value={createForm.proposed_architecture}
                   onChange={(e) => setCreateForm({ ...createForm, proposed_architecture: e.target.value })}
                   style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -729,7 +722,6 @@ export const CaseStudies: React.FC = () => {
                 <textarea
                   rows={2}
                   required
-                  placeholder="Measurable business results (e.g. 34% cost reduction)..."
                   value={createForm.outcomes_performance}
                   onChange={(e) => setCreateForm({ ...createForm, outcomes_performance: e.target.value })}
                   style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -835,7 +827,6 @@ export const CaseStudies: React.FC = () => {
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <input
                     type="text"
-                    placeholder="https://example.com/image.png"
                     value={editForm.media || ""}
                     onChange={(e) => setEditForm({ ...editForm, media: e.target.value })}
                     style={{ flex: 1, padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}

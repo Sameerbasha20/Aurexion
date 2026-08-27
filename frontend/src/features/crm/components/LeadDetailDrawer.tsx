@@ -498,7 +498,6 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
                           <textarea
                             value={followUpNotes}
                             onChange={(e) => setFollowUpNotes(e.target.value)}
-                            placeholder="Add meeting agenda or notes..."
                             rows={2}
                             style={{
                               width: "100%",
@@ -578,7 +577,6 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
                   <form onSubmit={handleAddNote} style={{ display: "flex", gap: "0.5rem" }}>
                     <input
                       type="text"
-                      placeholder="Add an internal lead note..."
                       value={newNoteContent}
                       onChange={(e) => setNewNoteContent(e.target.value)}
                       style={{
@@ -697,7 +695,6 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
               <textarea
                 value={lostReason}
                 onChange={(e) => setLostReason(e.target.value)}
-                placeholder="e.g. Budget constraints, Competitor chosen..."
                 rows={3}
                 style={{
                   width: "100%",

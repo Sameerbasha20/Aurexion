@@ -346,7 +346,6 @@ export const RfpPage: React.FC = () => {
                     {...register("project_description")}
                     rows={5}
                     className={fieldClass}
-                    placeholder="Enter project description"
                     onChange={(e) => setCharCount(e.target.value.length)}
                     style={{ resize: "vertical" }}
                   />

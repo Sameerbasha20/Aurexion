@@ -674,7 +674,6 @@ export const LeadDetail: React.FC = () => {
             <form onSubmit={handleAddNote} style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               <textarea
                 rows={3}
-                placeholder="Log notes, call outcome, requirement updates..."
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
                 style={{
@@ -1062,7 +1061,6 @@ const LeadLostModal: React.FC<LeadLostModalProps> = ({
           <textarea
             rows={3}
             required
-            placeholder="e.g. Client budget constraints, selected competing vendor, or postponed project..."
             value={lostReason}
             onChange={(e) => onReasonChange(e.target.value)}
             style={{ padding: "0.75rem", backgroundColor: "#050811", border: "1px solid rgba(248, 113, 113, 0.4)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
@@ -1337,7 +1335,6 @@ const LeadScheduleFollowUpModal: React.FC<LeadScheduleFollowUpModalProps> = ({
               <input
                 type="url"
                 required
-                placeholder="https://meet.google.com/xxx-xxxx-xxx"
                 value={followUpForm.meeting_link || ""}
                 onChange={(e) => onFormChange({ ...followUpForm, meeting_link: e.target.value })}
                 style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -1349,7 +1346,6 @@ const LeadScheduleFollowUpModal: React.FC<LeadScheduleFollowUpModalProps> = ({
             <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>AGENDA / PRE-MEETING NOTES</label>
             <textarea
               rows={3}
-              placeholder="Specify topics to address, key questions, or objective..."
               value={followUpForm.notes}
               onChange={(e) => onFormChange({ ...followUpForm, notes: e.target.value })}
               style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}

@@ -450,7 +450,6 @@ export const ContactPage: React.FC = () => {
                         {...register("message")} 
                         aria-invalid={!!errors.message}
                         className={`w-full p-3.5 rounded-md bg-background border ${errors.message ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary text-sm text-foreground resize-none transition-colors`} 
-                        placeholder="Enter your message"
                       />
                       {errors.message && (
                         <p className="text-xs text-destructive mt-1 flex items-center gap-1">

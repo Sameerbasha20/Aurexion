@@ -230,7 +230,6 @@ const ChangePasswordForm: React.FC = () => {
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
-            placeholder="••••••••"
             style={{
               padding: "0.6rem 0.85rem",
               backgroundColor: "#050811",
@@ -252,7 +251,6 @@ const ChangePasswordForm: React.FC = () => {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
-            placeholder="••••••••"
             style={{
               padding: "0.6rem 0.85rem",
               backgroundColor: "#050811",
@@ -274,7 +272,6 @@ const ChangePasswordForm: React.FC = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            placeholder="••••••••"
             style={{
               padding: "0.6rem 0.85rem",
               backgroundColor: "#050811",

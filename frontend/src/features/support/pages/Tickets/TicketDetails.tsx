@@ -257,7 +257,6 @@ const ResolutionNotesCard: React.FC<ResolutionNotesCardProps> = ({
       value={notes}
       onChange={(e) => onNotesChange(e.target.value)}
       rows={6}
-      placeholder="Enter resolution notes, root cause analysis, or response details for the client..."
       style={{
         width: "100%",
         backgroundColor: "#0c1222",

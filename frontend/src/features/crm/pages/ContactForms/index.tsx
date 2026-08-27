@@ -559,7 +559,6 @@ export const ContactForms: React.FC = () => {
                 <input
                   type="url"
                   required
-                  placeholder="https://meet.google.com/xyz-abc-123"
                   value={meetingLink}
                   onChange={(e) => setMeetingLink(e.target.value)}
                   style={{
@@ -580,7 +579,6 @@ export const ContactForms: React.FC = () => {
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING LINK (Google Meet / Zoom)</label>
                 <input
                   type="url"
-                  placeholder="https://meet.google.com/xyz-abc-123"
                   value={meetingLink}
                   onChange={(e) => setMeetingLink(e.target.value)}
                   style={{
@@ -601,7 +599,6 @@ export const ContactForms: React.FC = () => {
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>AGENDA / NOTES</label>
                 <textarea
                   rows={3}
-                  placeholder="Discuss project requirements, scope, timeline, and pricing..."
                   value={meetingNotes}
                   onChange={(e) => setMeetingNotes(e.target.value)}
                   style={{
@@ -684,7 +681,6 @@ export const ContactForms: React.FC = () => {
                   type="number"
                   min="0"
                   step="any"
-                  placeholder="25000"
                   value={wonValue}
                   onChange={(e) => setWonValue(e.target.value)}
                   style={{
@@ -704,7 +700,6 @@ export const ContactForms: React.FC = () => {
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>CLOSING SCOPE & AGREEMENT NOTES</label>
                 <textarea
                   rows={3}
-                  placeholder="Client agreed to proposal scope. Kick-off meeting to be scheduled."
                   value={wonNotes}
                   onChange={(e) => setWonNotes(e.target.value)}
                   style={{
@@ -795,7 +790,6 @@ export const ContactForms: React.FC = () => {
                 <textarea
                   required
                   rows={4}
-                  placeholder="Project scope outside operational focus or budget mismatch..."
                   value={lostReason}
                   onChange={(e) => setLostReason(e.target.value)}
                   style={{
