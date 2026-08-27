@@ -62,8 +62,11 @@ def _validate_storage_path(file_path):
         raise ValueError("Invalid storage path.")
     parts = file_path.split('/')
     for part in parts:
+        # Fully decode the segment (handles %2F, %252F, etc.)
         decoded = urllib.parse.unquote(part)
-        if part in ('', '.', '..') or decoded in ('.', '..'):
+        # Reject empty segments, dot-segments, or any segment that contained
+        # a percent-encoded slash (%2F / %2f) which would inject a path separator
+        if part in ('', '.', '..') or decoded in ('.', '..') or '/' in decoded:
             raise ValueError("Invalid storage path.")
 
 def upload_resume(file_path, file_content, content_type):
