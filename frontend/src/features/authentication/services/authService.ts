@@ -16,11 +16,12 @@ export interface LoginResponse {
     access: string;
     refresh: string;
   };
+  csrftoken?: string;
 }
 
 export const authService = {
   login: async (username: string, password: string): Promise<LoginResponse> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.AUTH.LOGIN, {
+    const data = await axiosClient.post<LoginResponse, LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, {
       username,
       password,
     });
@@ -47,7 +48,7 @@ export const authService = {
   },
 
   getMe: async (): Promise<UserResponse> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.AUTH.ME);
+    const data = await axiosClient.get<UserResponse, UserResponse>(API_ENDPOINTS.AUTH.ME);
     return data;
   },
 };

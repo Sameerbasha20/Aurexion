@@ -21,8 +21,8 @@ export interface ExecutiveDashboardStats {
 }
 
 // In-Memory Cache Store for Support Desk
-const supportCache = new Map<string, { data: any; timestamp: number }>();
-const supportPromises = new Map<string, Promise<any>>();
+const supportCache = new Map<string, { data: unknown; timestamp: number }>();
+const supportPromises = new Map<string, Promise<unknown>>();
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 export function clearSupportCache(keyPrefix?: string) {
@@ -47,7 +47,7 @@ function getFromCache<T>(key: string): T | null {
   return null;
 }
 
-function setCache(key: string, data: any) {
+function setCache(key: string, data: unknown) {
   supportCache.set(key, { data, timestamp: Date.now() });
 }
 
@@ -59,26 +59,26 @@ export const supportService = {
       const cached = getFromCache<SupportTicketItem[]>(cacheKey);
       if (cached) return cached;
     }
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.MY_TICKETS);
-    const result = Array.isArray(data) ? data : (data.results || []);
+    const data = await axiosClient.get<SupportTicketItem[], SupportTicketItem[]>(API_ENDPOINTS.PORTAL.MY_TICKETS);
+    const result = Array.isArray(data) ? data : ((data as any)?.results || []);
     setCache(cacheKey, result);
     return result;
   },
 
   getMyTicketDetails: async (id: number): Promise<SupportTicketDetail> => {
-    const data = await axiosClient.get<any, any>(`${API_ENDPOINTS.PORTAL.MY_TICKETS}${id}/`);
+    const data = await axiosClient.get<SupportTicketDetail, SupportTicketDetail>(`${API_ENDPOINTS.PORTAL.MY_TICKETS}${id}/`);
     return data;
   },
 
   createMyTicket: async (ticket: SupportTicketCreateInput): Promise<SupportTicketDetail> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.MY_TICKETS, ticket);
+    const data = await axiosClient.post<SupportTicketDetail, SupportTicketDetail>(API_ENDPOINTS.PORTAL.MY_TICKETS, ticket);
     clearSupportCache();
     notifySupportDataChanged();
     return data;
   },
 
   updateMyTicket: async (id: number, ticket: SupportTicketUpdateInput): Promise<SupportTicketDetail> => {
-    const data = await axiosClient.patch<any, any>(`${API_ENDPOINTS.PORTAL.MY_TICKETS}${id}/`, ticket);
+    const data = await axiosClient.patch<SupportTicketDetail, SupportTicketDetail>(`${API_ENDPOINTS.PORTAL.MY_TICKETS}${id}/`, ticket);
     clearSupportCache();
     notifySupportDataChanged();
     return data;
@@ -91,10 +91,10 @@ export const supportService = {
       const cached = getFromCache<ExecutiveDashboardStats>(cacheKey);
       if (cached) return cached;
     }
-    const data = await axiosClient.get<any, any>(`${API_ENDPOINTS.PORTAL.TICKETS}stats/`);
+    const data = await axiosClient.get<ExecutiveDashboardStats, ExecutiveDashboardStats>(`${API_ENDPOINTS.PORTAL.TICKETS}stats/`);
     let result = data;
-    if (data && typeof data === "object" && "data" in data && data.data) {
-      result = data.data;
+    if (data && typeof data === "object" && "data" in data && (data as { data?: ExecutiveDashboardStats }).data) {
+      result = (data as { data: ExecutiveDashboardStats }).data;
     }
     setCache(cacheKey, result);
     return result;
@@ -106,19 +106,19 @@ export const supportService = {
       const cached = getFromCache<SupportTicketItem[]>(cacheKey);
       if (cached) return cached;
     }
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.TICKETS);
-    const result = Array.isArray(data) ? data : (data.results || []);
+    const data = await axiosClient.get<SupportTicketItem[], SupportTicketItem[]>(API_ENDPOINTS.PORTAL.TICKETS);
+    const result = Array.isArray(data) ? data : ((data as any)?.results || []);
     setCache(cacheKey, result);
     return result;
   },
 
   getExecutiveTicketDetails: async (id: number): Promise<SupportTicketDetail> => {
-    const data = await axiosClient.get<any, any>(`${API_ENDPOINTS.PORTAL.TICKETS}${id}/`);
+    const data = await axiosClient.get<SupportTicketDetail, SupportTicketDetail>(`${API_ENDPOINTS.PORTAL.TICKETS}${id}/`);
     return data;
   },
 
   updateExecutiveTicket: async (id: number, ticket: ExecutiveTicketUpdateInput): Promise<SupportTicketDetail> => {
-    const data = await axiosClient.patch<any, any>(`${API_ENDPOINTS.PORTAL.TICKETS}${id}/`, ticket);
+    const data = await axiosClient.patch<SupportTicketDetail, SupportTicketDetail>(`${API_ENDPOINTS.PORTAL.TICKETS}${id}/`, ticket);
     clearSupportCache();
     notifySupportDataChanged();
     return data;
@@ -131,19 +131,19 @@ export const supportService = {
       const cached = getFromCache<SupportTicketItem[]>(cacheKey);
       if (cached) return cached;
     }
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.ADMIN_TICKETS);
-    const result = Array.isArray(data) ? data : (data.results || []);
+    const data = await axiosClient.get<SupportTicketItem[], SupportTicketItem[]>(API_ENDPOINTS.PORTAL.ADMIN_TICKETS);
+    const result = Array.isArray(data) ? data : ((data as any)?.results || []);
     setCache(cacheKey, result);
     return result;
   },
 
   getAdminTicketDetails: async (id: number): Promise<SupportTicketDetail> => {
-    const data = await axiosClient.get<any, any>(`${API_ENDPOINTS.PORTAL.ADMIN_TICKETS}${id}/`);
+    const data = await axiosClient.get<SupportTicketDetail, SupportTicketDetail>(`${API_ENDPOINTS.PORTAL.ADMIN_TICKETS}${id}/`);
     return data;
   },
 
   updateAdminTicket: async (id: number, ticket: AdminTicketUpdateInput): Promise<SupportTicketDetail> => {
-    const data = await axiosClient.patch<any, any>(`${API_ENDPOINTS.PORTAL.ADMIN_TICKETS}${id}/`, ticket);
+    const data = await axiosClient.patch<SupportTicketDetail, SupportTicketDetail>(`${API_ENDPOINTS.PORTAL.ADMIN_TICKETS}${id}/`, ticket);
     clearSupportCache();
     notifySupportDataChanged();
     return data;
@@ -156,8 +156,8 @@ export const supportService = {
       const cached = getFromCache<AssignableUser[]>(cacheKey);
       if (cached) return cached;
     }
-    const data = await axiosClient.get<any, any>(`${API_ENDPOINTS.ADMIN.USERS}?role=support_executive`);
-    const result = Array.isArray(data) ? data : (data.results || []);
+    const data = await axiosClient.get<AssignableUser[], AssignableUser[]>(`${API_ENDPOINTS.ADMIN.USERS}?role=support_executive`);
+    const result = Array.isArray(data) ? data : ((data as any)?.results || []);
     setCache(cacheKey, result);
     return result;
   },

@@ -96,6 +96,20 @@ export interface CategoryItem {
   slug: string;
   parent: number | null;
   description?: string;
+  post_count?: number;
+}
+
+export interface PaginatedCmsResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+export interface UploadResponse {
+  url: string;
+  file_name?: string;
+  public_url?: string;
 }
 
 export interface CategoryCreatePayload {
@@ -194,26 +208,26 @@ export const clearCmsCache = (key?: keyof typeof cmsCache) => {
 export const cmsService = {
   // Services
   getAdminServices: async (page = 1, pageSize = 10): Promise<{ results: ServiceItem[]; count: number }> => {
-    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_SERVICES, { params: { page, page_size: pageSize } });
+    const data: PaginatedCmsResponse<ServiceItem> | ServiceItem[] = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_SERVICES, { params: { page, page_size: pageSize } });
     const results: ServiceItem[] = Array.isArray(data) ? data : (data?.results || []);
-    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    const count: number = Array.isArray(data) ? results.length : (typeof data?.count === "number" ? data.count : results.length);
     return { results, count };
   },
 
   createService: async (serviceData: ServiceCreatePayload): Promise<ServiceItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICES, serviceData);
+    const data = await axiosClient.post<ServiceItem, ServiceItem>(API_ENDPOINTS.CMS.ADMIN_SERVICES, serviceData);
     clearCmsCache("services");
     return data;
   },
 
   updateService: async (id: number, serviceData: Partial<ServiceItem>): Promise<ServiceItem> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICE_DETAIL(id), serviceData);
+    const data = await axiosClient.patch<ServiceItem, ServiceItem>(API_ENDPOINTS.CMS.ADMIN_SERVICE_DETAIL(id), serviceData);
     clearCmsCache("services");
     return data;
   },
 
   toggleServiceStatus: async (id: number, status: "published" | "draft" | "archived"): Promise<ServiceItem> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_SERVICE_DETAIL(id), { status });
+    const data = await axiosClient.patch<ServiceItem, ServiceItem>(API_ENDPOINTS.CMS.ADMIN_SERVICE_DETAIL(id), { status });
     clearCmsCache("services");
     return data;
   },
@@ -225,26 +239,26 @@ export const cmsService = {
 
   // Case Studies
   getAdminCaseStudies: async (page = 1, pageSize = 10): Promise<{ results: CaseStudyItem[]; count: number }> => {
-    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, { params: { page, page_size: pageSize } });
+    const data: PaginatedCmsResponse<CaseStudyItem> | CaseStudyItem[] = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, { params: { page, page_size: pageSize } });
     const results: CaseStudyItem[] = Array.isArray(data) ? data : (data?.results || []);
-    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    const count: number = Array.isArray(data) ? results.length : (typeof data?.count === "number" ? data.count : results.length);
     return { results, count };
   },
 
   createCaseStudy: async (csData: CaseStudyCreatePayload): Promise<CaseStudyItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, csData);
+    const data = await axiosClient.post<CaseStudyItem, CaseStudyItem>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDIES, csData);
     clearCmsCache("caseStudies");
     return data;
   },
 
   updateCaseStudy: async (id: number, csData: Partial<CaseStudyItem>): Promise<CaseStudyItem> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDY_DETAIL(id), csData);
+    const data = await axiosClient.patch<CaseStudyItem, CaseStudyItem>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDY_DETAIL(id), csData);
     clearCmsCache("caseStudies");
     return data;
   },
 
   toggleCaseStudyStatus: async (id: number, status: "published" | "draft" | "archived"): Promise<CaseStudyItem> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDY_DETAIL(id), { status });
+    const data = await axiosClient.patch<CaseStudyItem, CaseStudyItem>(API_ENDPOINTS.CMS.ADMIN_CASE_STUDY_DETAIL(id), { status });
     clearCmsCache("caseStudies");
     return data;
   },
@@ -256,26 +270,26 @@ export const cmsService = {
 
   // Industries
   getAdminIndustries: async (page = 1, pageSize = 10): Promise<{ results: IndustryItem[]; count: number }> => {
-    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, { params: { page, page_size: pageSize } });
+    const data: PaginatedCmsResponse<IndustryItem> | IndustryItem[] = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, { params: { page, page_size: pageSize } });
     const results: IndustryItem[] = Array.isArray(data) ? data : (data?.results || []);
-    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    const count: number = Array.isArray(data) ? results.length : (typeof data?.count === "number" ? data.count : results.length);
     return { results, count };
   },
 
   createIndustry: async (indData: IndustryCreatePayload): Promise<IndustryItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, indData);
+    const data = await axiosClient.post<IndustryItem, IndustryItem>(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, indData);
     clearCmsCache("industries");
     return data;
   },
 
   updateIndustry: async (id: number, indData: Partial<IndustryItem>): Promise<IndustryItem> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRY_DETAIL(id), indData);
+    const data = await axiosClient.patch<IndustryItem, IndustryItem>(API_ENDPOINTS.CMS.ADMIN_INDUSTRY_DETAIL(id), indData);
     clearCmsCache("industries");
     return data;
   },
 
   toggleIndustryStatus: async (id: number, status: "published" | "draft" | "archived"): Promise<IndustryItem> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_INDUSTRY_DETAIL(id), { status });
+    const data = await axiosClient.patch<IndustryItem, IndustryItem>(API_ENDPOINTS.CMS.ADMIN_INDUSTRY_DETAIL(id), { status });
     clearCmsCache("industries");
     return data;
   },
@@ -287,14 +301,14 @@ export const cmsService = {
 
   // Categories
   getAdminCategories: async (page = 1, pageSize = 10): Promise<{ results: CategoryItem[]; count: number }> => {
-    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, { params: { page, page_size: pageSize } });
+    const data: PaginatedCmsResponse<CategoryItem> | CategoryItem[] = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, { params: { page, page_size: pageSize } });
     const results: CategoryItem[] = Array.isArray(data) ? data : (data?.results || []);
-    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    const count: number = Array.isArray(data) ? results.length : (typeof data?.count === "number" ? data.count : results.length);
     return { results, count };
   },
 
   createCategory: async (categoryData: CategoryCreatePayload): Promise<CategoryItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, categoryData);
+    const data = await axiosClient.post<CategoryItem, CategoryItem>(API_ENDPOINTS.CMS.ADMIN_CATEGORIES, categoryData);
     clearCmsCache("categories");
     return data;
   },
@@ -306,26 +320,26 @@ export const cmsService = {
 
   // Blog
   getAdminBlog: async (page = 1, pageSize = 10): Promise<{ results: BlogPostItem[]; count: number }> => {
-    const data: any = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_BLOG, { params: { page, page_size: pageSize } });
+    const data: PaginatedCmsResponse<BlogPostItem> | BlogPostItem[] = await axiosClient.get(API_ENDPOINTS.CMS.ADMIN_BLOG, { params: { page, page_size: pageSize } });
     const results: BlogPostItem[] = Array.isArray(data) ? data : (data?.results || []);
-    const count: number = typeof data?.count === "number" ? data.count : (typeof (data as any)?.count === "number" ? (data as any).count : results.length);
+    const count: number = Array.isArray(data) ? results.length : (typeof data?.count === "number" ? data.count : results.length);
     return { results, count };
   },
 
   createBlogPost: async (blogData: BlogPostCreatePayload): Promise<BlogPostItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG, blogData);
+    const data = await axiosClient.post<BlogPostItem, BlogPostItem>(API_ENDPOINTS.CMS.ADMIN_BLOG, blogData);
     clearCmsCache("blogPosts");
     return data;
   },
 
   updateBlogPost: async (id: number, blogData: Partial<BlogPostItem>): Promise<BlogPostItem> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG_DETAIL(id), blogData);
+    const data = await axiosClient.patch<BlogPostItem, BlogPostItem>(API_ENDPOINTS.CMS.ADMIN_BLOG_DETAIL(id), blogData);
     clearCmsCache("blogPosts");
     return data;
   },
 
   toggleBlogStatus: async (id: number, status: "published" | "draft" | "archived"): Promise<BlogPostItem> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.CMS.ADMIN_BLOG_DETAIL(id), { status });
+    const data = await axiosClient.patch<BlogPostItem, BlogPostItem>(API_ENDPOINTS.CMS.ADMIN_BLOG_DETAIL(id), { status });
     clearCmsCache("blogPosts");
     return data;
   },
@@ -336,23 +350,23 @@ export const cmsService = {
   },
 
   // Public endpoints
-  getPublicServiceDetail: async (slug: string) => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.PUBLIC_SERVICE_DETAIL(slug));
+  getPublicServiceDetail: async (slug: string): Promise<ServiceItem> => {
+    const data = await axiosClient.get<ServiceItem, ServiceItem>(API_ENDPOINTS.CMS.PUBLIC_SERVICE_DETAIL(slug));
     return data;
   },
 
-  getPublicIndustryDetail: async (slug: string) => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.PUBLIC_INDUSTRY_DETAIL(slug));
+  getPublicIndustryDetail: async (slug: string): Promise<IndustryItem> => {
+    const data = await axiosClient.get<IndustryItem, IndustryItem>(API_ENDPOINTS.CMS.PUBLIC_INDUSTRY_DETAIL(slug));
     return data;
   },
 
   getPublicCaseStudies: async (): Promise<CaseStudyItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.PUBLIC_CASE_STUDIES, { params: { page_size: 100 } });
+    const data = await axiosClient.get<PaginatedCmsResponse<CaseStudyItem> | CaseStudyItem[], PaginatedCmsResponse<CaseStudyItem> | CaseStudyItem[]>(API_ENDPOINTS.CMS.PUBLIC_CASE_STUDIES, { params: { page_size: 100 } });
     return Array.isArray(data) ? data : (data.results || []);
   },
 
   getPublicBlog: async (): Promise<BlogPostItem[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.CMS.PUBLIC_BLOG, { params: { page_size: 100 } });
+    const data = await axiosClient.get<PaginatedCmsResponse<BlogPostItem> | BlogPostItem[], PaginatedCmsResponse<BlogPostItem> | BlogPostItem[]>(API_ENDPOINTS.CMS.PUBLIC_BLOG, { params: { page_size: 100 } });
     return Array.isArray(data) ? data : (data.results || []);
   },
 
@@ -415,10 +429,10 @@ export const cmsService = {
   },
 
   // File Upload
-  uploadMedia: async (file: File): Promise<{ url: string }> => {
+  uploadMedia: async (file: File): Promise<UploadResponse> => {
     const formData = new FormData();
     formData.append("file", file);
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CMS.ADMIN_UPLOAD, formData, {
+    const data = await axiosClient.post<UploadResponse, UploadResponse>(API_ENDPOINTS.CMS.ADMIN_UPLOAD, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

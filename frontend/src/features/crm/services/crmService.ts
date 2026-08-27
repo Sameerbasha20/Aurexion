@@ -25,7 +25,35 @@ export interface LeadItem {
   updated_at: string;
   value?: number;
   estimated_value?: number;
-  rfp_enquiry_details?: any;
+  rfp_enquiry_details?: RfpEnquiryDetails;
+  next_follow_up_at?: string | null;
+  follow_up_count?: number;
+}
+
+export interface RfpEnquiryDetails {
+  id?: number;
+  name?: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+  designation?: string;
+  country?: string;
+  project_type?: string;
+  budget_range?: string;
+  timeline?: string;
+  description?: string;
+  project_description?: string;
+  nda_required?: boolean | string;
+  document_attachment?: string;
+  services_required?: string[];
+  [key: string]: any;
+}
+
+export interface OnboardClientResponse {
+  message: string;
+  lead: LeadItem;
+  user_id: number;
+  username: string;
 }
 
 export interface LeadFollowUp {
@@ -113,6 +141,10 @@ export interface ActivityItem {
   lead_company?: string;
   actor: string;
   timestamp: string;
+  repr?: string;
+  user_username?: string;
+  user?: number | string;
+  [key: string]: any;
 }
 
 export interface OpportunityItem {
@@ -267,7 +299,7 @@ export const crmService = {
     }
     const promise = (async () => {
       try {
-        const response = await axiosClient.get<any, any>(API_ENDPOINTS.CRM.LEADS, { params: queryParams });
+        const response: any = await axiosClient.get<PaginatedLeads, any>(API_ENDPOINTS.CRM.LEADS, { params: queryParams });
         let result: LeadItem[] = [];
         if (Array.isArray(response)) {
           result = response;
@@ -305,7 +337,7 @@ export const crmService = {
 
     const promise = (async () => {
       try {
-        const response = await axiosClient.get<any, any>(API_ENDPOINTS.CRM.LEADS, { params });
+        const response: any = await axiosClient.get<PaginatedLeads, any>(API_ENDPOINTS.CRM.LEADS, { params });
         if (Array.isArray(response)) {
           const res: PaginatedLeads = {
             count: response.length,
@@ -349,7 +381,7 @@ export const crmService = {
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(`${API_ENDPOINTS.CRM.LEADS}${leadId}/`);
+        const data = await axiosClient.get<LeadItem, LeadItem>(`${API_ENDPOINTS.CRM.LEADS}${leadId}/`);
         leadDetailCache.set(leadId, data);
         return data;
       } finally {
@@ -365,7 +397,7 @@ export const crmService = {
    * Create a new lead
    */
   createLead: async (leadData: Partial<LeadItem>): Promise<LeadItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEADS, leadData);
+    const data = await axiosClient.post<LeadItem, LeadItem>(API_ENDPOINTS.CRM.LEADS, leadData);
     clearCrmCache();
     return data;
   },
@@ -374,7 +406,7 @@ export const crmService = {
    * Update lead info
    */
   updateLead: async (leadId: number, leadData: Partial<LeadItem>): Promise<LeadItem> => {
-    const data = await axiosClient.patch<any, any>(`${API_ENDPOINTS.CRM.LEADS}${leadId}/`, leadData);
+    const data = await axiosClient.patch<LeadItem, LeadItem>(`${API_ENDPOINTS.CRM.LEADS}${leadId}/`, leadData);
     clearCrmCache();
     return data;
   },
@@ -383,7 +415,7 @@ export const crmService = {
    * Assign lead to an executive
    */
   assignLead: async (leadId: number, assignedTo: number): Promise<LeadItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEAD_ASSIGN(leadId), { assigned_to: assignedTo });
+    const data = await axiosClient.post<LeadItem, LeadItem>(API_ENDPOINTS.CRM.LEAD_ASSIGN(leadId), { assigned_to: assignedTo });
     clearCrmCache();
     return data;
   },
@@ -392,7 +424,7 @@ export const crmService = {
    * Status transition for lead
    */
   transitionLead: async (leadId: number, status: string): Promise<LeadItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEAD_TRANSITION(leadId), { status });
+    const data = await axiosClient.post<LeadItem, LeadItem>(API_ENDPOINTS.CRM.LEAD_TRANSITION(leadId), { status });
     clearCrmCache();
     return data;
   },
@@ -401,7 +433,7 @@ export const crmService = {
    * Qualify a lead
    */
   qualifyLead: async (leadId: number): Promise<LeadItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEAD_QUALIFY(leadId), {});
+    const data = await axiosClient.post<LeadItem, LeadItem>(API_ENDPOINTS.CRM.LEAD_QUALIFY(leadId), {});
     clearCrmCache();
     return data;
   },
@@ -410,7 +442,7 @@ export const crmService = {
    * Mark lead as Won with optional project cost value and notes
    */
   markLeadWon: async (leadId: number, payload?: { value?: number; notes?: string }): Promise<LeadItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEAD_WON(leadId), payload || {});
+    const data = await axiosClient.post<LeadItem, LeadItem>(API_ENDPOINTS.CRM.LEAD_WON(leadId), payload || {});
     clearCrmCache();
     return data;
   },
@@ -419,7 +451,7 @@ export const crmService = {
    * Mark lead as Lost with mandatory reason
    */
   markLeadLost: async (leadId: number, reason: string): Promise<LeadItem> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEAD_LOST(leadId), { reason });
+    const data = await axiosClient.post<LeadItem, LeadItem>(API_ENDPOINTS.CRM.LEAD_LOST(leadId), { reason });
     clearCrmCache();
     return data;
   },
@@ -428,7 +460,7 @@ export const crmService = {
    * Re-open a declined/lost lead back into the active pipeline
    */
   reopenLead: async (leadId: number): Promise<LeadItem> => {
-    const data = await axiosClient.post<any, any>(`${API_ENDPOINTS.CRM.LEADS}${leadId}/reopen/`, {});
+    const data = await axiosClient.post<LeadItem, LeadItem>(`${API_ENDPOINTS.CRM.LEADS}${leadId}/reopen/`, {});
     clearCrmCache();
     return data;
   },
@@ -437,7 +469,7 @@ export const crmService = {
    * BDM Action: Onboard won lead as client and dispatch welcome email with credentials
    */
   onboardClient: async (leadId: number, password?: string, email?: string): Promise<{ message: string; lead: LeadItem; user_id: number; username: string }> => {
-    const data = await axiosClient.post<any, any>(`${API_ENDPOINTS.CRM.LEADS}${leadId}/onboard-client/`, { password, email });
+    const data = await axiosClient.post<OnboardClientResponse, OnboardClientResponse>(`${API_ENDPOINTS.CRM.LEADS}${leadId}/onboard-client/`, { password, email });
     clearCrmCache();
     return data;
   },
@@ -448,8 +480,8 @@ export const crmService = {
   scheduleMeeting: async (
     leadId: number,
     payload: { scheduled_at: string; follow_up_type?: string; meeting_link?: string; notes?: string }
-  ): Promise<any> => {
-    const data = await axiosClient.post<any, any>(`/leads/${leadId}/schedule-meeting/`, payload);
+  ): Promise<LeadFollowUp> => {
+    const data = await axiosClient.post<LeadFollowUp, LeadFollowUp>(`/leads/${leadId}/schedule-meeting/`, payload);
     clearCrmCache();
     return data;
   },
@@ -468,8 +500,8 @@ export const crmService = {
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.CRM.LEAD_FOLLOW_UPS(leadId));
-        const res = Array.isArray(data) ? data : (data.results || []);
+        const data = await axiosClient.get<LeadFollowUp[], LeadFollowUp[]>(API_ENDPOINTS.CRM.LEAD_FOLLOW_UPS(leadId));
+        const res = Array.isArray(data) ? data : ((data as any)?.results || []);
         followUpsCache.set(leadId, res);
         return res;
       } finally {
@@ -485,7 +517,7 @@ export const crmService = {
    * Schedule a new follow-up for a lead
    */
   createFollowUp: async (leadId: number, followUpData: Partial<LeadFollowUp>): Promise<LeadFollowUp> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEAD_FOLLOW_UPS(leadId), followUpData);
+    const data = await axiosClient.post<LeadFollowUp, LeadFollowUp>(API_ENDPOINTS.CRM.LEAD_FOLLOW_UPS(leadId), followUpData);
     followUpsCache.delete(leadId);
     allFollowUpsCache = null;
     dashboardStatsCache = null;
@@ -497,7 +529,7 @@ export const crmService = {
    * Complete a follow-up
    */
   completeFollowUp: async (leadId: number, followUpId: number): Promise<LeadFollowUp> => {
-    const data = await axiosClient.post<any, any>(`${API_ENDPOINTS.CRM.LEAD_FOLLOW_UPS(leadId)}${followUpId}/complete/`, {});
+    const data = await axiosClient.post<LeadFollowUp, LeadFollowUp>(`${API_ENDPOINTS.CRM.LEAD_FOLLOW_UPS(leadId)}${followUpId}/complete/`, {});
     followUpsCache.delete(leadId);
     allFollowUpsCache = null;
     dashboardStatsCache = null;
@@ -519,8 +551,8 @@ export const crmService = {
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.CRM.LEAD_NOTES(leadId));
-        const res = Array.isArray(data) ? data : (data.results || []);
+        const data = await axiosClient.get<LeadNote[], LeadNote[]>(API_ENDPOINTS.CRM.LEAD_NOTES(leadId));
+        const res = Array.isArray(data) ? data : ((data as any)?.results || []);
         notesCache.set(leadId, res);
         return res;
       } finally {
@@ -536,7 +568,7 @@ export const crmService = {
    * Add a new note to a lead
    */
   createNote: async (leadId: number, content: string): Promise<LeadNote> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEAD_NOTES(leadId), { content });
+    const data = await axiosClient.post<LeadNote, LeadNote>(API_ENDPOINTS.CRM.LEAD_NOTES(leadId), { content });
     notesCache.delete(leadId);
     activitiesCache = null;
     return data;
@@ -545,9 +577,9 @@ export const crmService = {
   /**
    * Fetch activity timeline for a lead
    */
-  getActivities: async (leadId: number): Promise<any[]> => {
-    const data = await axiosClient.get<any, any>(`/leads/${leadId}/activities/`);
-    return Array.isArray(data) ? data : (data.results || []);
+  getActivities: async (leadId: number): Promise<ActivityItem[]> => {
+    const data = await axiosClient.get<ActivityItem[], ActivityItem[]>(`/leads/${leadId}/activities/`);
+    return Array.isArray(data) ? data : ((data as any)?.results || []);
   },
 
   /**
@@ -574,9 +606,9 @@ export const crmService = {
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS);
-        const list = Array.isArray(data) ? data : (data.results || []);
-        const res = list.map((u: any) => ({
+        const data = await axiosClient.get<UserOption[], UserOption[]>(API_ENDPOINTS.ADMIN.USERS);
+        const list = Array.isArray(data) ? data : ((data as any)?.results || []);
+        const res = list.map((u: UserOption & { first_name?: string; last_name?: string; profile?: { role?: string } }) => ({
           id: u.id,
           username: u.username,
           email: u.email,

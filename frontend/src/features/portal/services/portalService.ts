@@ -16,9 +16,96 @@ import type {
   ClientNotificationItem,
 } from "../types/portal.types";
 
+// ── DTO Interfaces ────────────────────────────────────────────────────────────
+export interface ClientProfile {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  profile?: {
+    role: string;
+    avatar?: string;
+    company?: string;
+  };
+}
+
+export interface ProjectItem {
+  id: number;
+  name: string;
+  description?: string;
+  status: string;
+  progress?: number;
+  start_date?: string;
+  end_date?: string;
+  lead_id?: number;
+  created_at?: string;
+}
+
+export interface MilestoneItem {
+  id: number;
+  project: number;
+  title: string;
+  due_date: string;
+  status: string;
+  description?: string;
+}
+
+export interface DeliverableItem {
+  id: number;
+  milestone?: number;
+  title: string;
+  file_url?: string;
+  status: string;
+  created_at?: string;
+}
+
+export interface RequestItem {
+  id: number;
+  subject: string;
+  description: string;
+  status: string;
+  category?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ConsultationItem {
+  id: number;
+  title: string;
+  scheduled_at: string;
+  status: string;
+  notes?: string;
+  meeting_link?: string;
+}
+
+export interface DocumentItem {
+  id: number;
+  title: string;
+  file_url: string;
+  category?: string;
+  uploaded_at: string;
+}
+
+export interface PortalNotification {
+  id: number;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  notification_type?: string;
+  link?: string;
+}
+
+export interface NotificationActionResponse {
+  success: boolean;
+  message?: string;
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 // In-Memory Cache Store & Promise Deduplication for Client Portal
-const portalCache = new Map<string, { data: any; timestamp: number }>();
-const portalPromises = new Map<string, Promise<any>>();
+const portalCache = new Map<string, { data: unknown; timestamp: number }>();
+const portalPromises = new Map<string, Promise<unknown>>();
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 export function clearPortalCache(keyPrefix?: string) {
@@ -43,7 +130,7 @@ function getFromCache<T>(key: string): T | null {
   return null;
 }
 
-function setCache(key: string, data: any) {
+function setCache(key: string, data: unknown) {
   portalCache.set(key, { data, timestamp: Date.now() });
 }
 
@@ -51,14 +138,14 @@ export const portalService = {
   getProfile: async (forceRefresh = false): Promise<PortalProfile> => {
     const cacheKey = "profile";
     if (!forceRefresh) {
-      const cached = getFromCache<PortalProfile>(cacheKey);
+      const cached = getFromCache<any>(cacheKey);
       if (cached) return cached;
-      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)! as any;
     }
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.AUTH.ME);
+        const data = await axiosClient.get<ClientProfile, ClientProfile>(API_ENDPOINTS.AUTH.ME);
         const result = data as PortalProfile;
         setCache(cacheKey, result);
         return result;
@@ -90,15 +177,15 @@ export const portalService = {
   getProjects: async (forceRefresh = false): Promise<ClientProjectItem[]> => {
     const cacheKey = "projects";
     if (!forceRefresh) {
-      const cached = getFromCache<ClientProjectItem[]>(cacheKey);
+      const cached = getFromCache<any>(cacheKey);
       if (cached) return cached;
-      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)! as any;
     }
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.PROJECTS);
-        const result = Array.isArray(data) ? data : (data.results || []);
+        const data = await axiosClient.get<ClientProjectItem[], ClientProjectItem[]>(API_ENDPOINTS.PORTAL.PROJECTS);
+        const result: any = Array.isArray(data) ? data : ((data as any)?.results || []);
         setCache(cacheKey, result);
         return result;
       } finally {
@@ -113,15 +200,15 @@ export const portalService = {
   getMilestones: async (forceRefresh = false): Promise<ProjectMilestone[]> => {
     const cacheKey = "milestones";
     if (!forceRefresh) {
-      const cached = getFromCache<ProjectMilestone[]>(cacheKey);
+      const cached = getFromCache<any>(cacheKey);
       if (cached) return cached;
-      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)! as any;
     }
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.MILESTONES);
-        const result = Array.isArray(data) ? data : (data.results || []);
+        const data = await axiosClient.get<ProjectMilestone[], ProjectMilestone[]>(API_ENDPOINTS.PORTAL.MILESTONES);
+        const result: any = Array.isArray(data) ? data : ((data as any)?.results || []);
         setCache(cacheKey, result);
         return result;
       } finally {
@@ -136,15 +223,15 @@ export const portalService = {
   getDeliverables: async (forceRefresh = false): Promise<SprintDeliverable[]> => {
     const cacheKey = "deliverables";
     if (!forceRefresh) {
-      const cached = getFromCache<SprintDeliverable[]>(cacheKey);
+      const cached = getFromCache<any>(cacheKey);
       if (cached) return cached;
-      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)! as any;
     }
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.DELIVERABLES);
-        const result = Array.isArray(data) ? data : (data.results || []);
+        const data = await axiosClient.get<SprintDeliverable[], SprintDeliverable[]>(API_ENDPOINTS.PORTAL.DELIVERABLES);
+        const result: any = Array.isArray(data) ? data : ((data as any)?.results || []);
         setCache(cacheKey, result);
         return result;
       } finally {
@@ -159,15 +246,15 @@ export const portalService = {
   getRequests: async (forceRefresh = false): Promise<ClientRequestItem[]> => {
     const cacheKey = "requests";
     if (!forceRefresh) {
-      const cached = getFromCache<ClientRequestItem[]>(cacheKey);
+      const cached = getFromCache<any>(cacheKey);
       if (cached) return cached;
-      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)! as any;
     }
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.REQUESTS);
-        const result = Array.isArray(data) ? data : (data.results || []);
+        const data = await axiosClient.get<ClientRequestItem[], ClientRequestItem[]>(API_ENDPOINTS.PORTAL.REQUESTS);
+        const result: any = Array.isArray(data) ? data : ((data as any)?.results || []);
         setCache(cacheKey, result);
         return result;
       } finally {
@@ -180,7 +267,7 @@ export const portalService = {
   },
 
   createRequest: async (requestData: { title: string; category?: string; description?: string; priority?: string; project?: number | null }): Promise<ClientRequestItem> => {
-    const res = await axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.REQUESTS, requestData);
+    const res = await axiosClient.post<ClientRequestItem, ClientRequestItem>(API_ENDPOINTS.PORTAL.REQUESTS, requestData);
     clearPortalCache("requests");
     return res;
   },
@@ -188,15 +275,15 @@ export const portalService = {
   getConsultations: async (forceRefresh = false): Promise<ConsultationRequestItem[]> => {
     const cacheKey = "consultations";
     if (!forceRefresh) {
-      const cached = getFromCache<ConsultationRequestItem[]>(cacheKey);
+      const cached = getFromCache<any>(cacheKey);
       if (cached) return cached;
-      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)! as any;
     }
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.CONSULTATIONS);
-        const result = Array.isArray(data) ? data : (data.results || []);
+        const data = await axiosClient.get<ConsultationRequestItem[], ConsultationRequestItem[]>(API_ENDPOINTS.PORTAL.CONSULTATIONS);
+        const result: any = Array.isArray(data) ? data : ((data as any)?.results || []);
         setCache(cacheKey, result);
         return result;
       } finally {
@@ -215,7 +302,7 @@ export const portalService = {
     preferred_date?: string | null;
     project?: number | null;
   }): Promise<ConsultationRequestItem> => {
-    const res = await axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.CONSULTATIONS, consultationData);
+    const res = await axiosClient.post<ConsultationRequestItem, ConsultationRequestItem>(API_ENDPOINTS.PORTAL.CONSULTATIONS, consultationData);
     clearPortalCache("consultations");
     return res;
   },
@@ -223,15 +310,15 @@ export const portalService = {
   getDocuments: async (forceRefresh = false): Promise<ClientDocumentItem[]> => {
     const cacheKey = "documents";
     if (!forceRefresh) {
-      const cached = getFromCache<ClientDocumentItem[]>(cacheKey);
+      const cached = getFromCache<any>(cacheKey);
       if (cached) return cached;
-      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)! as any;
     }
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.DOCUMENTS);
-        const result = Array.isArray(data) ? data : (data.results || []);
+        const data = await axiosClient.get<ClientDocumentItem[], ClientDocumentItem[]>(API_ENDPOINTS.PORTAL.DOCUMENTS);
+        const result: any = Array.isArray(data) ? data : ((data as any)?.results || []);
         setCache(cacheKey, result);
         return result;
       } finally {
@@ -245,21 +332,21 @@ export const portalService = {
 
   downloadDocument: async (documentId: number): Promise<{ id: number; title: string; file_url: string; file_size: string }> => {
     const endpoint = API_ENDPOINTS.PORTAL.DOCUMENT_DOWNLOAD(documentId);
-    return axiosClient.get<any, any>(endpoint);
+    return axiosClient.get(endpoint);
   },
 
   getNotifications: async (forceRefresh = false): Promise<ClientNotificationItem[]> => {
     const cacheKey = "notifications";
     if (!forceRefresh) {
-      const cached = getFromCache<ClientNotificationItem[]>(cacheKey);
+      const cached = getFromCache<any>(cacheKey);
       if (cached) return cached;
-      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)!;
+      if (portalPromises.has(cacheKey)) return portalPromises.get(cacheKey)! as any;
     }
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.PORTAL.NOTIFICATIONS);
-        const result = Array.isArray(data) ? data : (data.results || []);
+        const data = await axiosClient.get<ClientNotificationItem[], ClientNotificationItem[]>(API_ENDPOINTS.PORTAL.NOTIFICATIONS);
+        const result: any = Array.isArray(data) ? data : ((data as any)?.results || []);
         setCache(cacheKey, result);
         return result;
       } finally {
@@ -271,14 +358,14 @@ export const portalService = {
     return promise;
   },
 
-  markNotificationRead: async (id: number): Promise<any> => {
-    const res = await axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.NOTIFICATION_READ(id));
+  markNotificationRead: async (id: number): Promise<NotificationActionResponse> => {
+    const res = await axiosClient.post<NotificationActionResponse, NotificationActionResponse>(API_ENDPOINTS.PORTAL.NOTIFICATION_READ(id));
     clearPortalCache("notifications");
     return res;
   },
 
-  markAllNotificationsRead: async (): Promise<any> => {
-    const res = await axiosClient.post<any, any>(API_ENDPOINTS.PORTAL.NOTIFICATION_READ_ALL);
+  markAllNotificationsRead: async (): Promise<NotificationActionResponse> => {
+    const res = await axiosClient.post<NotificationActionResponse, NotificationActionResponse>(API_ENDPOINTS.PORTAL.NOTIFICATION_READ_ALL);
     clearPortalCache("notifications");
     return res;
   },
@@ -288,4 +375,4 @@ export const portalService = {
   },
 };
 
-export default portalService;
+export default portalService;

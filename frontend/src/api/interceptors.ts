@@ -1,11 +1,11 @@
 import { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from "axios";
 import handleApiError from "./apiErrorHandler";
 
-function attachPaginationMetadata(payload: any[], res: Record<string, any>): any[] {
-  const result: any = payload;
-  if ("count" in res) result.count = res.count;
-  if ("next" in res) result.next = res.next;
-  if ("previous" in res) result.previous = res.previous;
+function attachPaginationMetadata<T>(payload: T[], res: Record<string, unknown>): T[] & { count?: number; next?: string | null; previous?: string | null; results?: T[] } {
+  const result = payload as T[] & { count?: number; next?: string | null; previous?: string | null; results?: T[] };
+  if ("count" in res && typeof res.count === "number") result.count = res.count;
+  if ("next" in res && (typeof res.next === "string" || res.next === null)) result.next = res.next as string | null;
+  if ("previous" in res && (typeof res.previous === "string" || res.previous === null)) result.previous = res.previous as string | null;
   result.results = payload;
   return result;
 }

@@ -4,7 +4,7 @@ import { useBlogPostDetails, useRelatedBlogPosts } from "../../hooks/usePublicCo
 import { blogPosts } from "../../../../data/blogPosts";
 import { ArticleHero } from "./components/Detail/ArticleHero";
 import { ReadingProgress } from "./components/Detail/ReadingProgress";
-import { TableOfContents } from "./components/Detail/TableOfContents";
+import { TableOfContents, extractHeadings } from "./components/Detail/TableOfContents";
 import { ArticleContent } from "./components/Detail/ArticleContent";
 import { AuthorCard } from "./components/Detail/AuthorCard";
 import { ShareButtons } from "./components/Detail/ShareButtons";
@@ -31,12 +31,12 @@ export const ArticleDetailPage = () => {
     id: String(apiArticle.id),
     slug: apiArticle.slug,
     title: apiArticle.title,
-    excerpt: apiArticle.summary || apiArticle.content.substring(0, 150) + "...",
-    content: apiArticle.content,
-    category: apiArticle.category_name || apiArticle.category,
+    excerpt: apiArticle.summary || (apiArticle.content ? apiArticle.content.substring(0, 150) + "..." : ""),
+    content: apiArticle.content || "",
+    category: apiArticle.category_name || apiArticle.category || "AI & Machine Learning",
     tags: (Array.isArray(apiArticle.tags) && apiArticle.tags.length > 0) ? apiArticle.tags : (staticArticle?.tags || []),
     authorId: staticArticle?.authorId || (() => {
-      const contentStr = (apiArticle.title + " " + apiArticle.content).toLowerCase();
+      const contentStr = ((apiArticle.title || "") + " " + (apiArticle.content || "")).toLowerCase();
       if (contentStr.includes("security") || contentStr.includes("cryptography") || contentStr.includes("zero-trust") || contentStr.includes("cybersecurity")) {
         return "auth-003";
       } else if (contentStr.includes("cloud") || contentStr.includes("devops") || contentStr.includes("kubernetes") || contentStr.includes("architecture")) {
@@ -45,7 +45,9 @@ export const ArticleDetailPage = () => {
         return "auth-001";
       }
     })(),
+    authorName: apiArticle.author_username || apiArticle.author_name || undefined,
     publishedAt: apiArticle.published_at || apiArticle.created_at,
+    readingTime: apiArticle.reading_time || staticArticle?.readingTime || "5 min read",
     relatedServices: staticArticle?.relatedServices || [],
     relatedIndustries: staticArticle?.relatedIndustries || [],
     relatedCaseStudies: staticArticle?.relatedCaseStudies || [],
@@ -86,15 +88,16 @@ export const ArticleDetailPage = () => {
     return null;
   }
 
+  const headings = extractHeadings(article.content || "");
   const siteUrl = getSiteUrl();
-  const descText = article.meta_description || article.excerpt || article.content.substring(0, 150);
+  const descText = article.meta_description || article.excerpt || (article.content ? article.content.substring(0, 150) : "");
   const articleSchema = createArticleSchema({
     title: article.title,
     description: descText,
     url: `/blogengine/${article.slug}`,
     image: article.coverImage,
     datePublished: article.publishedAt,
-    authorName: "Aurexion Engineering Team"
+    authorName: article.authorName || "Aurexion Engineering Team"
   }, siteUrl);
 
   return (
@@ -115,9 +118,32 @@ export const ArticleDetailPage = () => {
       <div className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
         {/* Table of Contents & Quick Meta Header Card */}
         <div className="mb-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 p-6 bg-[#080f1a] border border-border/20 rounded-xl shadow-lg">
-            <TableOfContents content={article.content} />
-          </div>
+          {headings.length > 0 ? (
+            <div className="md:col-span-2 p-6 bg-[#080f1a] border border-border/20 rounded-xl shadow-lg">
+              <TableOfContents headings={headings} />
+            </div>
+          ) : (
+            <div className="md:col-span-2 p-6 bg-[#080f1a] border border-border/20 rounded-xl shadow-lg flex flex-col justify-between">
+              <div>
+                <span className="text-[10px] font-mono font-bold text-[#63f5e8] tracking-widest uppercase mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#63f5e8]" />
+                  EXECUTIVE SUMMARY
+                </span>
+                <p className="text-sm text-gray-300 leading-relaxed italic">
+                  {article.excerpt || article.summary || "Technical analysis and engineering documentation authored by Aurexion Technical Research."}
+                </p>
+              </div>
+              {article.tags && article.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-white/5">
+                  {article.tags.map((tag: any) => (
+                    <span key={tag} className="text-[10px] font-mono px-2 py-0.5 bg-white/5 border border-white/10 text-gray-300 rounded">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="p-6 bg-[#080f1a] border border-border/20 rounded-xl flex flex-col justify-between">
             <div>
@@ -125,11 +151,11 @@ export const ArticleDetailPage = () => {
               <div className="space-y-2.5 text-xs font-mono text-gray-300">
                 <div className="flex justify-between py-1 border-b border-white/5">
                   <span className="text-gray-400">CATEGORY</span>
-                  <span className="text-[#63f5e8] font-bold capitalize">{(article.category || "Technology").replace('-', ' ')}</span>
+                  <span className="text-[#63f5e8] font-bold capitalize">{String(article.category || "Technology").replace('-', ' ')}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-white/5">
                   <span className="text-gray-400">EST. READ TIME</span>
-                  <span className="text-white font-semibold">{article.readingTime || "6 min read"}</span>
+                  <span className="text-white font-semibold">{article.readingTime || "5 min read"}</span>
                 </div>
                 <div className="flex justify-between py-1">
                   <span className="text-gray-400">PUBLISHED</span>
@@ -158,7 +184,7 @@ export const ArticleDetailPage = () => {
 
         {/* Author Spotlight */}
         <div className="mt-10">
-          <AuthorCard authorId={article.authorId} />
+          <AuthorCard authorId={article.authorId} authorName={article.authorName} />
         </div>
 
         {/* Executive Consultation Box */}
@@ -180,7 +206,7 @@ export const ArticleDetailPage = () => {
       </div>
 
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <RelatedContent currentArticle={article} />
+        <RelatedContent currentArticle={article} apiRelated={apiRelated} />
       </div>
 
       <InsightsCTA />

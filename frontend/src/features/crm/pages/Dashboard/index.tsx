@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "wouter";
 import { useAuth } from "../../../../hooks/useAuth";
 import { useSalesDashboardQuery, useLeadsQuery } from "../../../../queries/useCrmQueries";
-import crmService from "../../services/crmService";
+import crmService, { LeadItem, LeadFollowUp, ActivityItem } from "../../services/crmService";
 import { toast } from "sonner";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
@@ -36,10 +36,10 @@ export const Dashboard: React.FC = () => {
 
   const stats: any = statsData || {
     total_leads: leads.length,
-    new_leads: leads.filter((l: any) => l.status === "new").length,
-    contacted_leads: leads.filter((l: any) => l.status === "contacted").length,
+    new_leads: leads.filter((l: LeadItem) => l.status === "new").length,
+    contacted_leads: leads.filter((l: LeadItem) => l.status === "contacted").length,
     under_review_leads: 0,
-    qualified_leads: leads.filter((l: any) => l.status === "qualified").length,
+    qualified_leads: leads.filter((l: LeadItem) => l.status === "qualified").length,
     active_opportunities: 0,
     total_pipeline_value: 125000,
     won_deals_value: 85000,
@@ -59,7 +59,7 @@ export const Dashboard: React.FC = () => {
     recent_activities: [],
   };
 
-  const assignedLeads = leads.filter((lead: any) => {
+  const assignedLeads = leads.filter((lead: LeadItem) => {
     if (lead.status === "won" || lead.status === "WON") return false;
     if (lead.status === "lost" || lead.status === "LOST") return false;
     if (user && user.role === "SALES_EXECUTIVE") {
@@ -78,12 +78,12 @@ export const Dashboard: React.FC = () => {
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Lead Detail Modal State
-  const [selectedLeadDetail, setSelectedLeadDetail] = useState<any | null>(null);
+  const [selectedLeadDetail, setSelectedLeadDetail] = useState<LeadItem | null>(null);
 
   const [scheduledLeadIds, setScheduledLeadIds] = useState<Set<number>>(new Set());
 
   // Meeting Schedule Modal State
-  const [selectedMeetingLead, setSelectedMeetingLead] = useState<any | null>(null);
+  const [selectedMeetingLead, setSelectedMeetingLead] = useState<LeadItem | null>(null);
   const [scheduledAt, setScheduledAt] = useState("");
   const [meetingType, setMeetingType] = useState("MEETING");
   const [meetingLink, setMeetingLink] = useState("");
@@ -92,14 +92,14 @@ export const Dashboard: React.FC = () => {
   const [meetingSuccessInfo, setMeetingSuccessInfo] = useState<{ leadName: string; email: string } | null>(null);
 
   // Custom Mark WON Modal State
-  const [selectedWonLead, setSelectedWonLead] = useState<any | null>(null);
+  const [selectedWonLead, setSelectedWonLead] = useState<LeadItem | null>(null);
   const [wonValue, setWonValue] = useState("25000");
   const [wonNotes, setWonNotes] = useState("Client agreed to project scope and signed proposal.");
   const [wonLoading, setWonLoading] = useState(false);
   const [wonSuccess, setWonSuccess] = useState(false);
 
   // Custom Decline / Mark LOST Modal State
-  const [selectedLostLead, setSelectedLostLead] = useState<any | null>(null);
+  const [selectedLostLead, setSelectedLostLead] = useState<LeadItem | null>(null);
   const [lostReason, setLostReason] = useState("");
   const [lostLoading, setLostLoading] = useState(false);
 
@@ -200,7 +200,7 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const handleOpenLeadDetail = (lead: any) => {
+  const handleOpenLeadDetail = (lead: LeadItem) => {
     setSelectedLeadDetail(lead);
   };
 
@@ -372,7 +372,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {stats.pipeline_summary.map((stage: any) => {
+            {stats.pipeline_summary.map((stage: { status: string; label: string; count: number; color: string }) => {
               const percentage = stats.total_leads > 0 ? Math.round((stage.count / stats.total_leads) * 100) : 0;
               return (
                 <div key={stage.status} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
@@ -422,7 +422,7 @@ export const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              {stats.urgent_follow_ups.slice(0, 4).map((fu: any) => {
+              {stats.urgent_follow_ups.slice(0, 4).map((fu: LeadFollowUp) => {
                 const isOverdue = new Date(fu.scheduled_at).getTime() < Date.now();
                 return (
                   <div
@@ -531,7 +531,7 @@ export const Dashboard: React.FC = () => {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-            {assignedLeads.slice(0, 6).map((lead: any) => (
+            {assignedLeads.slice(0, 6).map((lead: LeadItem) => (
               <div
                 key={lead.id}
                 style={{
@@ -615,7 +615,7 @@ export const Dashboard: React.FC = () => {
                       <ArrowUpRight size={13} style={{ marginRight: "0.3rem" }} /> Details
                     </Button>
 
-                    {(lead as any).next_follow_up_at || lead.status === "contacted" || lead.status === "qualified" || lead.status === "proposal_submitted" || lead.status === "negotiation" || lead.status === "won" || ((lead as any).follow_up_count && (lead as any).follow_up_count > 0) || scheduledLeadIds.has(lead.id) ? (
+                    {lead.next_follow_up_at || lead.status === "contacted" || lead.status === "qualified" || lead.status === "proposal_submitted" || lead.status === "negotiation" || lead.status === "won" || ((lead as any).follow_up_count && (lead as any).follow_up_count > 0) || scheduledLeadIds.has(lead.id) ? (
                       <Button
                         variant="outline"
                         size="sm"
@@ -700,7 +700,7 @@ export const Dashboard: React.FC = () => {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-            {stats.recent_activities.slice(0, 6).map((act: any) => (
+            {stats.recent_activities.slice(0, 6).map((act: ActivityItem) => (
               <div
                 key={act.id}
                 style={{

@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "../../../../hooks/useAuth";
 import { useLeadsQuery } from "../../../../queries/useCrmQueries";
-import crmService from "../../services/crmService";
+import crmService, { LeadItem } from "../../services/crmService";
 import Card from "../../../../components/ui/card";
 import Button from "../../../../components/ui/button";
 import LoadingState from "../../../../components/feedback/LoadingState";
 import ErrorState from "../../../../components/feedback/ErrorState";
 import EmptyState from "../../../../components/feedback/EmptyState";
-import { Mail, Phone, Search, RefreshCw, MessageSquare, CheckCircle2, Calendar } from "lucide-react";
+import { Mail, Phone, Search, RefreshCw, MessageSquare, CheckCircle2, Calendar, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export const ContactForms: React.FC = () => {
@@ -21,7 +21,7 @@ export const ContactForms: React.FC = () => {
   const [scheduledLeadIds, setScheduledLeadIds] = useState<Set<number>>(new Set());
 
   // Meeting Schedule Modal State
-  const [selectedMeetingLead, setSelectedMeetingLead] = useState<any | null>(null);
+  const [selectedMeetingLead, setSelectedMeetingLead] = useState<LeadItem | null>(null);
   const [scheduledAt, setScheduledAt] = useState("");
   const [meetingType, setMeetingType] = useState("MEETING");
   const [meetingLink, setMeetingLink] = useState("");
@@ -30,14 +30,14 @@ export const ContactForms: React.FC = () => {
   const [meetingSuccessInfo, setMeetingSuccessInfo] = useState<{ leadName: string; email: string } | null>(null);
 
   // Custom Mark WON Modal State
-  const [selectedWonLead, setSelectedWonLead] = useState<any | null>(null);
+  const [selectedWonLead, setSelectedWonLead] = useState<LeadItem | null>(null);
   const [wonValue, setWonValue] = useState("25000");
   const [wonNotes, setWonNotes] = useState("Client agreed to project scope and signed proposal.");
   const [wonLoading, setWonLoading] = useState(false);
   const [wonSuccess, setWonSuccess] = useState(false);
 
   // Custom Decline / Mark LOST Modal State
-  const [selectedLostLead, setSelectedLostLead] = useState<any | null>(null);
+  const [selectedLostLead, setSelectedLostLead] = useState<LeadItem | null>(null);
   const [lostReason, setLostReason] = useState("");
   const [lostLoading, setLostLoading] = useState(false);
 
@@ -120,7 +120,7 @@ export const ContactForms: React.FC = () => {
 
   const { user } = useAuth();
 
-  const contactLeads = leads.filter((lead: any) => {
+  const contactLeads = leads.filter((lead: LeadItem) => {
     // Sales Executive role scope: only display leads assigned to current executive
     if (user && user.role === "SALES_EXECUTIVE") {
       const isAssignedToMe =
@@ -242,7 +242,7 @@ export const ContactForms: React.FC = () => {
         ) : (
           <>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {paginatedContactLeads.map((lead: any) => (
+              {paginatedContactLeads.map((lead: LeadItem) => (
                 <div
                   key={lead.id}
                   style={{
@@ -330,7 +330,7 @@ export const ContactForms: React.FC = () => {
                   </span>
                   
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" }}>
-                    {(lead as any).next_follow_up_at || lead.status === "contacted" || lead.status === "qualified" || lead.status === "proposal_submitted" || lead.status === "negotiation" || lead.status === "won" || ((lead as any).follow_up_count && (lead as any).follow_up_count > 0) || scheduledLeadIds.has(lead.id) ? (
+                    {lead.next_follow_up_at || lead.status === "contacted" || lead.status === "qualified" || lead.status === "proposal_submitted" || lead.status === "negotiation" || lead.status === "won" || (lead.follow_up_count && (lead as any).follow_up_count > 0) || scheduledLeadIds.has(lead.id) ? (
                       <Button
                         variant="outline"
                         size="sm"
@@ -356,30 +356,68 @@ export const ContactForms: React.FC = () => {
                       </Button>
                     )}
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedWonLead(lead);
-                        setWonValue(lead.value ? String(lead.value) : "25000");
-                        setWonNotes("Client agreed to project scope and signed proposal.");
-                      }}
-                      style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", borderColor: "rgba(74, 222, 128, 0.4)", color: "#4ade80" }}
-                    >
-                      <CheckCircle2 size={13} style={{ marginRight: "0.3rem" }} /> Won
-                    </Button>
+                    {lead.status?.toLowerCase() === "won" ? (
+                      <div
+                        style={{
+                          fontSize: "0.75rem",
+                          padding: "0.35rem 0.65rem",
+                          border: "1px solid rgba(74, 222, 128, 0.4)",
+                          backgroundColor: "rgba(74, 222, 128, 0.12)",
+                          color: "#4ade80",
+                          borderRadius: "4px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          fontWeight: 600,
+                          fontFamily: "IBM Plex Mono, monospace",
+                        }}
+                      >
+                        <CheckCircle2 size={13} style={{ marginRight: "0.3rem" }} /> Won Deal {lead.value ? `($${Number(lead.value).toLocaleString()})` : ""}
+                      </div>
+                    ) : lead.status?.toLowerCase() === "lost" ? (
+                      <div
+                        style={{
+                          fontSize: "0.75rem",
+                          padding: "0.35rem 0.65rem",
+                          border: "1px solid rgba(248, 113, 113, 0.4)",
+                          backgroundColor: "rgba(248, 113, 113, 0.12)",
+                          color: "#f87171",
+                          borderRadius: "4px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          fontWeight: 600,
+                          fontFamily: "IBM Plex Mono, monospace",
+                        }}
+                      >
+                        <XCircle size={13} style={{ marginRight: "0.3rem" }} /> Declined
+                      </div>
+                    ) : (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedWonLead(lead);
+                            setWonValue(lead.value ? String(lead.value) : "25000");
+                            setWonNotes("Client agreed to project scope and signed proposal.");
+                          }}
+                          style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", borderColor: "rgba(74, 222, 128, 0.4)", color: "#4ade80" }}
+                        >
+                          <CheckCircle2 size={13} style={{ marginRight: "0.3rem" }} /> Won
+                        </Button>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedLostLead(lead);
-                        setLostReason("");
-                      }}
-                      style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", borderColor: "rgba(248, 113, 113, 0.4)", color: "#f87171" }}
-                    >
-                      Decline
-                    </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedLostLead(lead);
+                            setLostReason("");
+                          }}
+                          style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem", borderColor: "rgba(248, 113, 113, 0.4)", color: "#f87171" }}
+                        >
+                          Decline
+                        </Button>
+                      </>
+                    )}
 
                     <Link href={`/crm/leads/${lead.id}`}>
                       <Button variant="outline" style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}>

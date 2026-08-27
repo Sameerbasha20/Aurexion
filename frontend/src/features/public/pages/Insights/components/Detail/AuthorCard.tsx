@@ -1,10 +1,15 @@
 import React from "react";
 import { authors } from "../../../../../../data/authors";
 
-export const AuthorCard = ({ authorId }: { authorId: any }) => {
-  const author = authors.find(a => a.id === authorId);
-  
-  if (!author) return null;
+export const AuthorCard = ({ authorId, authorName }: { authorId?: any; authorName?: string }) => {
+  const author = authors.find(a => a.id === authorId) || {
+    id: "default-author",
+    name: authorName || "Aurexion Engineering Team",
+    role: "Principal Systems & Cloud Architect",
+    bio: "The Aurexion Technical Research & Engineering group specializes in high-assurance distributed systems, enterprise cloud architectures, and applied AI systems.",
+    expertise: ["Cloud Architecture", "Applied AI", "Distributed Systems", "Cybersecurity"],
+    image: "/images/unsplash_1534528741775-53994a69daeb.webp"
+  };
 
   return (
     <div className="bg-[#080f1a] border border-[rgba(99,245,232,0.2)] rounded-xl p-6 sm:p-8 mt-10 mb-8 shadow-xl relative overflow-hidden">
@@ -12,7 +17,15 @@ export const AuthorCard = ({ authorId }: { authorId: any }) => {
       <div className="flex flex-col sm:flex-row gap-6 items-start">
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-[rgba(99,245,232,0.3)] flex-shrink-0 flex items-center justify-center overflow-hidden shadow-lg bg-[#0a1422]">
           {author.image ? (
-            <img src={author.image} alt={author.name} className="w-full h-full object-cover" />
+            <img 
+              src={author.image} 
+              alt={author.name} 
+              className="w-full h-full object-cover" 
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/images/unsplash_1534528741775-53994a69daeb.webp";
+              }}
+            />
           ) : (
             <span className="text-3xl font-bold text-[#63f5e8] font-mono">{author.name.charAt(0)}</span>
           )}
@@ -40,3 +53,4 @@ export const AuthorCard = ({ authorId }: { authorId: any }) => {
     </div>
   );
 };
+

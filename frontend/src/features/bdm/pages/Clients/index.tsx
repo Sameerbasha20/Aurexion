@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useBdmDashboard } from "../../hooks/useBdmDashboard";
+import { WonClient } from "../../services/bdmService";
 import crmService from "../../../crm/services/crmService";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
@@ -39,7 +40,7 @@ import {
 
 export const Clients: React.FC = () => {
   const { data, isLoading, error, refetch } = useBdmDashboard();
-  const [selectedClient, setSelectedClient] = useState<any | null>(null);
+  const [selectedClient, setSelectedClient] = useState<WonClient | null>(null);
   const [passwordInput, setPasswordInput] = useState("Client@2026!");
   const [emailInput, setEmailInput] = useState("");
   const [isDispatching, setIsDispatching] = useState(false);

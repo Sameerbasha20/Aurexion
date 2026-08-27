@@ -76,9 +76,65 @@ export interface RoleChoiceItem {
   name: string;
 }
 
+export interface AdminDashboardStats {
+  total_users?: number;
+  active_leads?: number;
+  total_projects?: number;
+  open_tickets?: number;
+  [key: string]: number | undefined;
+}
+
+export interface AdminUserItem {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_active: boolean;
+  role?: string;
+  profile?: { role?: string };
+  date_joined?: string;
+}
+
+export interface PermissionItem {
+  module: string;
+  can_view: boolean;
+  can_create: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+}
+
+export interface RoleItem {
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+  permissions: PermissionItem[];
+}
+
+export interface SystemSettings {
+  [key: string]: string | number | boolean | null;
+}
+
+export interface PaginatedAdminResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+// Raw API shape for audit logs (before UI transformation)
+interface RawAuditLogItem {
+  timestamp: string;
+  user_username?: string;
+  action: string;
+  module?: string;
+  [key: string]: unknown;
+}
+
 // In-Memory Cache Store for Administration Dashboard
-const adminCache = new Map<string, { data: any; timestamp: number }>();
-const adminPromises = new Map<string, Promise<any>>();
+const adminCache = new Map<string, { data: unknown; timestamp: number }>();
+const adminPromises = new Map<string, Promise<unknown>>();
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes TTL
 
 export function clearAdminCache(keyPrefix?: string) {
@@ -103,7 +159,7 @@ function getFromCache<T>(key: string): T | null {
   return null;
 }
 
-function setCache(key: string, data: any) {
+function setCache(key: string, data: unknown) {
   adminCache.set(key, { data, timestamp: Date.now() });
 }
 
@@ -114,19 +170,19 @@ export const administrationService = {
       const cached = getFromCache<AdminDashboardOverviewData>(cacheKey);
       if (cached) return cached;
       if (adminPromises.has(cacheKey)) {
-        return adminPromises.get(cacheKey)!;
+        return adminPromises.get(cacheKey)! as Promise<AdminDashboardOverviewData>;
       }
     }
 
     const promise = (async () => {
       try {
-        const res = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.DASHBOARD);
+        const res = await axiosClient.get<AdminDashboardOverviewData & { data?: AdminDashboardOverviewData }, AdminDashboardOverviewData & { data?: AdminDashboardOverviewData }>(API_ENDPOINTS.ADMIN.DASHBOARD);
         let result = res;
         if (res && typeof res === "object") {
           if ("users" in res && "leads" in res && "support" in res) {
             result = res;
-          } else if (res.data && typeof res.data === "object" && "users" in res.data) {
-            result = res.data;
+          } else if ((res as any)?.data && typeof (res as any)?.data === "object" && "users" in (res as any)?.data) {
+            result = (res as any).data;
           }
         }
         setCache(cacheKey, result);
@@ -146,15 +202,15 @@ export const administrationService = {
       const cached = getFromCache<UserItem[]>(cacheKey);
       if (cached) return cached;
       if (adminPromises.has(cacheKey)) {
-        return adminPromises.get(cacheKey)!;
+        return adminPromises.get(cacheKey)! as Promise<UserItem[]>;
       }
     }
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS, { params });
-        const users = Array.isArray(data) ? data : (data.results || []);
-        const result = users.map((u: any) => ({
+        const data = await axiosClient.get<AdminUserItem[] | PaginatedAdminResponse<AdminUserItem>, AdminUserItem[] | PaginatedAdminResponse<AdminUserItem>>(API_ENDPOINTS.ADMIN.USERS, { params });
+        const users = Array.isArray(data) ? data : ((data as PaginatedAdminResponse<AdminUserItem>).results || []);
+        const result = users.map((u: AdminUserItem & { first_name?: string; last_name?: string }) => ({
           id: String(u.id),
           name: u.username,
           email: u.email,
@@ -184,8 +240,8 @@ export const administrationService = {
     }
 
     try {
-      const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.ROLE_CHOICES);
-      const result = Array.isArray(data) ? data : (data.results || []);
+      const data = await axiosClient.get<RoleChoiceItem[] | PaginatedAdminResponse<RoleChoiceItem>, RoleChoiceItem[] | PaginatedAdminResponse<RoleChoiceItem>>(API_ENDPOINTS.ADMIN.ROLE_CHOICES);
+      const result = Array.isArray(data) ? data : ((data as PaginatedAdminResponse<RoleChoiceItem>).results || []);
       setCache(cacheKey, result);
       return result;
     } catch (err) {
@@ -219,7 +275,7 @@ export const administrationService = {
   },
 
   updateUser: async (userId: string, userData: { username?: string; email?: string; role?: string; is_active?: boolean }) => {
-    const payload: any = {};
+    const payload: Partial<AdminUserItem> = {};
     if (userData.username) payload.username = userData.username;
     if (userData.email) payload.email = userData.email;
     if (userData.role) payload.role = userData.role.toLowerCase();
@@ -241,19 +297,19 @@ export const administrationService = {
       const cached = getFromCache<AuditLogItem[]>(cacheKey);
       if (cached) return cached;
       if (adminPromises.has(cacheKey)) {
-        return adminPromises.get(cacheKey)!;
+        return adminPromises.get(cacheKey)! as Promise<AuditLogItem[]>;
       }
     }
 
-    const promise = (async () => {
+    const promise = (async (): Promise<AuditLogItem[]> => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.AUDIT_LOGS);
-        const logs = Array.isArray(data) ? data : (data.results || []);
-        const result = logs.map((log: any) => ({
+        const data = await axiosClient.get<RawAuditLogItem[], RawAuditLogItem[]>(API_ENDPOINTS.ADMIN.AUDIT_LOGS);
+        const logs = Array.isArray(data) ? data : ((data as { results?: RawAuditLogItem[] }).results || []);
+        const result: AuditLogItem[] = logs.map((log) => ({
           timestamp: new Date(log.timestamp).toLocaleString(),
           operator: log.user_username || "system",
           action: log.action,
-          scope: log.module.toUpperCase(),
+          scope: (log.module || "").toUpperCase(),
           integrity: "SECURE",
         }));
         setCache(cacheKey, result);
@@ -273,27 +329,28 @@ export const administrationService = {
       const cached = getFromCache<any>(cacheKey);
       if (cached) return cached;
       if (adminPromises.has(cacheKey)) {
-        return adminPromises.get(cacheKey)!;
+        return adminPromises.get(cacheKey)! as Promise<Array<{ id: string; code: string; name: string; description: string; permissions: string[] }>>;
       }
     }
 
     const promise = (async () => {
       try {
-        const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.ROLES);
-        const roles = Array.isArray(data) ? data : (data.results || []);
-        const result = roles.map((r: any) => ({
+        const data = await axiosClient.get<RoleItem[], RoleItem[]>(API_ENDPOINTS.ADMIN.ROLES);
+        const roles = Array.isArray(data) ? data : ((data as { results?: RoleItem[] }).results || []);
+        const result = roles.map((r) => ({
           id: String(r.id),
           code: r.code || r.name,
           name: r.name,
-          description: r.description,
-          permissions: (r.permissions || r.module_permissions || []).map((rule: any) => {
+          description: r.description || '',
+          permissions: (r.permissions || []).map((rule: PermissionItem | string) => {
             if (typeof rule === "string") return rule;
             if (rule && typeof rule === "object") {
               if (rule.module) {
                 const actions = [
-                  rule.can_read && "read",
+                  (rule as unknown as { can_read?: boolean }).can_read && "read",
                   rule.can_create && "create",
-                  rule.can_update && "update",
+                  (rule as unknown as { can_update?: boolean }).can_update && "update",
+                  rule.can_edit && "edit",
                   rule.can_delete && "delete",
                 ].filter(Boolean).join(",");
                 return actions ? `${rule.module}: ${actions}` : rule.module;
@@ -322,7 +379,7 @@ export const administrationService = {
     };
   },
 
-  saveSettings: async (settings: any) => {
+  saveSettings: async (settings: SystemSettings) => {
     return { success: true, settings };
   },
 };

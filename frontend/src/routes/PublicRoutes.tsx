@@ -49,7 +49,7 @@ export const PublicRoutes: React.FC = () => {
         <Route path="/blogengine" component={InsightsPage} />
         <Route path="/blogengine/:slug" component={ArticleDetailPage} />
         <Route path="/insights"><Redirect to="/blogengine" /></Route>
-        <Route path="/insights/:slug">{(params: any) => <Redirect to={`/blogengine/${params.slug}`} />}</Route>
+        <Route path="/insights/:slug">{(params: { slug?: string }) => <Redirect to={`/blogengine/${params.slug}`} />}</Route>
         <Route path="/blog"><Redirect to="/blogengine" /></Route>
         
         <Route path="/contact" component={ContactPage} />

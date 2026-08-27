@@ -88,13 +88,47 @@ export interface RecruitmentDashboardStats {
   }>;
 }
 
+export interface JobItem {
+  id: number;
+  title: string;
+  department: string;
+  location: string;
+  employment_type: string;
+  status: string;
+  description: string;
+  requirements: string;
+  salary_range?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApplicationItem {
+  id: number;
+  tracking_id: string;
+  job: number;
+  job_title?: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  experience_years?: number;
+  current_stage: string;
+  applied_at: string;
+  resume_url?: string;
+  cover_letter?: string;
+}
+
+export interface ResumeResponse {
+  url: string;
+  file_name?: string;
+}
+
 export const recruitmentService = {
   /**
    * Fetch all jobs from admin recruitment API
    */
   getAdminJobs: async (): Promise<JobVacancy[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_JOBS);
-    const jobs = Array.isArray(data) ? data : (data.results || []);
+    const data = await axiosClient.get<JobVacancy[], JobVacancy[]>(API_ENDPOINTS.RECRUITMENT.ADMIN_JOBS);
+    const jobs: any[] = Array.isArray(data) ? data : ((data as any)?.results || []);
     return jobs;
   },
 
@@ -102,15 +136,15 @@ export const recruitmentService = {
    * Fetch public jobs listing
    */
   getPublicJobs: async (): Promise<JobVacancy[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.PUBLIC_JOBS);
-    return Array.isArray(data) ? data : (data.results || []);
+    const data = await axiosClient.get<JobVacancy[], JobVacancy[]>(API_ENDPOINTS.RECRUITMENT.PUBLIC_JOBS);
+    return Array.isArray(data) ? data : ((data as any)?.results || []);
   },
 
   /**
    * Fetch job details by job_id
    */
   getJobDetail: async (jobId: string): Promise<JobVacancy> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.PUBLIC_JOB_DETAIL(jobId));
+    const data = await axiosClient.get<JobVacancy, JobVacancy>(API_ENDPOINTS.RECRUITMENT.PUBLIC_JOB_DETAIL(jobId));
     return data;
   },
 
@@ -118,7 +152,7 @@ export const recruitmentService = {
    * Create a new job vacancy in the admin recruitment portal
    */
   createJob: async (jobData: JobCreatePayload): Promise<JobVacancy> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_JOBS, jobData);
+    const data = await axiosClient.post<JobVacancy, JobVacancy>(API_ENDPOINTS.RECRUITMENT.ADMIN_JOBS, jobData);
     return data;
   },
 
@@ -126,7 +160,7 @@ export const recruitmentService = {
    * Update a job vacancy using job_id
    */
   updateJob: async (jobId: string, jobData: Partial<JobVacancy>): Promise<JobVacancy> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_JOB_DETAIL(jobId), jobData);
+    const data = await axiosClient.patch<JobVacancy, JobVacancy>(API_ENDPOINTS.RECRUITMENT.ADMIN_JOB_DETAIL(jobId), jobData);
     return data;
   },
 
@@ -134,7 +168,7 @@ export const recruitmentService = {
    * Toggle job status (e.g. ACTIVE -> CLOSED or CLOSED -> ACTIVE)
    */
   toggleJobStatus: async (jobId: string, status: "ACTIVE" | "CLOSED" | "DRAFT"): Promise<JobVacancy> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_JOB_DETAIL(jobId), { status });
+    const data = await axiosClient.patch<JobVacancy, JobVacancy>(API_ENDPOINTS.RECRUITMENT.ADMIN_JOB_DETAIL(jobId), { status });
     return data;
   },
 
@@ -142,8 +176,8 @@ export const recruitmentService = {
    * Fetch all candidate applications
    */
   getAdminApplications: async (): Promise<CandidateApplication[]> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATIONS);
-    const apps = Array.isArray(data) ? data : (data.results || []);
+    const data = await axiosClient.get<CandidateApplication[], CandidateApplication[]>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATIONS);
+    const apps: any[] = Array.isArray(data) ? data : ((data as any)?.results || []);
     return apps;
   },
 
@@ -151,7 +185,7 @@ export const recruitmentService = {
    * Fetch a single application
    */
   getApplication: async (trackingCode: string): Promise<CandidateApplication> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_DETAIL(trackingCode));
+    const data = await axiosClient.get<CandidateApplication, CandidateApplication>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_DETAIL(trackingCode));
     return data;
   },
 
@@ -159,7 +193,7 @@ export const recruitmentService = {
    * Update application candidate stage (APPLIED, SCREENING, SHORTLISTED, INTERVIEW, OFFER, HIRED, REJECTED)
    */
   updateApplicationStage: async (trackingCode: string, stage: string): Promise<CandidateApplication> => {
-    const data = await axiosClient.patch<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_STAGE(trackingCode), { stage });
+    const data = await axiosClient.patch<CandidateApplication, CandidateApplication>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_STAGE(trackingCode), { stage });
     return data;
   },
 
@@ -167,12 +201,12 @@ export const recruitmentService = {
    * Get signed URL for downloading a candidate's resume
    */
   getApplicationResumeUrl: async (trackingCode: string): Promise<{ download_url: string }> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_RESUME(trackingCode));
+    const data = await axiosClient.get<{ download_url: string }, { download_url: string }>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_RESUME(trackingCode));
     return data;
   },
 
   getResumeUrl: async (trackingCode: string): Promise<{ resume_url?: string; download_url?: string }> => {
-    const data = await axiosClient.get<any, any>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_RESUME(trackingCode));
+    const data = await axiosClient.get<{ download_url?: string; resume_url?: string }, { download_url?: string; resume_url?: string }>(API_ENDPOINTS.RECRUITMENT.ADMIN_APPLICATION_RESUME(trackingCode));
     return {
       resume_url: data?.download_url || data?.resume_url,
       download_url: data?.download_url || data?.resume_url,

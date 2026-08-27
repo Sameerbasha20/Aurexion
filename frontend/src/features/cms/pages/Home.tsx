@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUpRight, ChevronRight, Circle, Landmark, LineChart, ShieldCheck, Activity, GraduationCap, Factory, ShoppingBag, ShoppingCart, Truck, Building, HardHat, Utensils, Plane, Car, Signal, Briefcase, Rocket, Cpu, BrainCircuit, Cloud, Layers, Globe, type LucideIcon } from "lucide-react";
 import { Button } from "../../../components/ui/button";
+import { IndustryItem, BlogPostItem } from "../services/cmsService";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
 import { useCaseStudies, useBlogPosts } from "../../public/hooks/usePublicContent";
 import { Link } from "wouter";
@@ -342,7 +343,7 @@ export default function Home() {
           </div>
 
           <div className="industries-18-grid">
-            {(showAllIndustries ? industriesData : industriesData.slice(0, 6)).map((ind: any, i: number) => {
+            {(showAllIndustries ? industriesData : industriesData.slice(0, 6)).map((ind, i: number) => {
               const Icon = INDUSTRY_ICONS[ind.icon] ?? Briefcase;
               return (
                 <Link

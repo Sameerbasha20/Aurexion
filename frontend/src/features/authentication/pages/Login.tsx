@@ -92,7 +92,7 @@ export const Login: React.FC = () => {
     setFieldErrors({});
 
     try {
-      const loggedInUser: any = await login(username, password);
+      const loggedInUser = (await login(username, password)) as any;
       const targetRole = loggedInUser?.role || loggedInUser?.user?.role || role;
       setLocation(getRoleDashboardPath(targetRole));
     } catch (err: any) {

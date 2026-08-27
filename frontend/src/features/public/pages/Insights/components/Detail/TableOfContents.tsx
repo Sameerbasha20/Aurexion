@@ -1,30 +1,82 @@
 import React, { useEffect, useState } from "react";
 
-const slugify = (text: any) => 
-  text.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+export const slugify = (text: any): string => {
+  if (!text) return "";
+  return String(text)
+    .toLowerCase()
+    .replace(/<[^>]*>/g, '') // remove HTML tags
+    .replace(/\*\*/g, '')    // remove markdown bold
+    .replace(/\*/g, '')     // remove markdown italic
+    .replace(/[^\w\s-]/g, '')
+    .trim()
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
 
-export const TableOfContents = ({ content }: { content: any }) => {
-  const [headings, setHeadings] = useState<any[]>([]);
+export interface HeadingItem {
+  id: string;
+  text: string;
+  level: number;
+}
+
+export const extractHeadings = (content: string): HeadingItem[] => {
+  if (!content || typeof content !== "string") return [];
+  
+  const matches: HeadingItem[] = [];
+  const seenIds = new Set<string>();
+
+  // 1. Check for Markdown headings (## Heading or ### Heading or # Heading)
+  const mdRegex = /^(#{1,4})\s+(.+)$/gm;
+  let mdMatch;
+  while ((mdMatch = mdRegex.exec(content)) !== null) {
+    const level = mdMatch[1].length;
+    const rawText = mdMatch[2].replace(/\*\*/g, "").replace(/\*/g, "").trim();
+    if (rawText) {
+      let id = slugify(rawText);
+      if (!id) id = `section-${matches.length + 1}`;
+      if (seenIds.has(id)) id = `${id}-${matches.length + 1}`;
+      seenIds.add(id);
+      matches.push({ id, text: rawText, level });
+    }
+  }
+
+  // 2. If no markdown headings found, check for HTML headings <h1> through <h4>
+  if (matches.length === 0) {
+    const htmlRegex = /<h([1-4])[^>]*>(.*?)<\/h\1>/gi;
+    let htmlMatch;
+    while ((htmlMatch = htmlRegex.exec(content)) !== null) {
+      const level = parseInt(htmlMatch[1], 10);
+      const rawText = htmlMatch[2].replace(/<[^>]*>/g, "").trim();
+      if (rawText) {
+        let id = slugify(rawText);
+        if (!id) id = `section-${matches.length + 1}`;
+        if (seenIds.has(id)) id = `${id}-${matches.length + 1}`;
+        seenIds.add(id);
+        matches.push({ id, text: rawText, level });
+      }
+    }
+  }
+
+  return matches;
+};
+
+export const TableOfContents = ({ content, headings: propHeadings }: { content?: string; headings?: HeadingItem[] }) => {
+  const [headings, setHeadings] = useState<HeadingItem[]>(propHeadings || []);
   const [activeId, setActiveId] = useState("");
 
   useEffect(() => {
-    // Extract H2 and H3 from markdown-like content string
-    // Format: ## 01 Introduction or ### 1. Subheading
-    const regex = /^(#{2,3})\s+(.+)$/gm;
-    const matches = [];
-    let match;
-    
-    while ((match = regex.exec(content)) !== null) {
-      const level = match[1].length;
-      const text = match[2].trim();
-      const id = slugify(text);
-      matches.push({ id, text, level });
+    if (propHeadings && propHeadings.length > 0) {
+      setHeadings(propHeadings);
+    } else if (content) {
+      setHeadings(extractHeadings(content));
+    } else {
+      setHeadings([]);
     }
-    
-    setHeadings(matches);
-  }, [content]);
+  }, [content, propHeadings]);
 
   useEffect(() => {
+    if (headings.length === 0) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -44,7 +96,7 @@ export const TableOfContents = ({ content }: { content: any }) => {
     return () => observer.disconnect();
   }, [headings]);
 
-  const scrollTo = (e: any, id: any) => {
+  const scrollTo = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     const el = document.getElementById(id);
     if (el) {
@@ -74,7 +126,7 @@ export const TableOfContents = ({ content }: { content: any }) => {
             href={`#${h.id}`}
             onClick={(e) => scrollTo(e, h.id)}
             className={`block py-1.5 pr-4 transition-all text-xs sm:text-sm cursor-pointer select-none ${
-              h.level === 3 ? "pl-7 text-xs text-muted-foreground" : "pl-4 font-medium"
+              h.level === 3 ? "pl-7 text-xs text-muted-foreground" : h.level === 4 ? "pl-9 text-xs text-muted-foreground" : "pl-4 font-medium"
             } ${
               activeId === h.id 
                 ? "text-[#63f5e8] border-l-2 border-[#63f5e8] -ml-[1px] font-semibold bg-[rgba(99,245,232,0.05)] rounded-r" 
@@ -88,3 +140,4 @@ export const TableOfContents = ({ content }: { content: any }) => {
     </div>
   );
 };
+

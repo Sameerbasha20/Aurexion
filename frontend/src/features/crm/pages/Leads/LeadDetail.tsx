@@ -153,22 +153,7 @@ export const LeadDetail: React.FC = () => {
   });
 
 
-  const handleOpenEdit = () => {
-    if (lead) {
-      setEditForm({
-        name: lead.name || "",
-        email: lead.email || "",
-        phone: lead.phone || "",
-        company: lead.company || "",
-        website: lead.website || "",
-        industry: lead.industry || "",
-        source: lead.source || "",
-        priority: lead.priority || "MEDIUM",
-        description: lead.description || "",
-      });
-      setIsEditOpen(true);
-    }
-  };
+  
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -385,12 +370,7 @@ export const LeadDetail: React.FC = () => {
 
           {/* Top Quick Actions */}
           <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-            <Button variant="outline" onClick={handleOpenEdit} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <Edit size={14} /> Edit Info
-            </Button>
-            <Button variant="outline" onClick={() => setIsAssignOpen(true)} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <UserCheck size={14} /> Assign
-            </Button>
+            
             <Button
               glow
               onClick={() => setIsFollowUpOpen(true)}

@@ -2,12 +2,15 @@ import { create } from "zustand";
 import { queryClient } from "../app/providers/QueryProvider";
 
 export interface User {
-  id: string;
-  name: string;
+  id: string | number;
+  name?: string;
+  username?: string;
   email: string;
   role: string;
-  permissions: string[];
+  permissions?: string[];
   rawRole?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 interface AuthState {
@@ -20,7 +23,7 @@ interface AuthState {
   hasRole: (role: string) => boolean;
 }
 
-export const useAuthStore = create<AuthState>((set: any, get: any) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: (() => {
     try {
       const storedUser = localStorage.getItem("aurexion_user");
@@ -32,7 +35,7 @@ export const useAuthStore = create<AuthState>((set: any, get: any) => ({
   token: localStorage.getItem("aurexion_token") || localStorage.getItem("access_token"),
   isAuthenticated: !!(localStorage.getItem("aurexion_token") || localStorage.getItem("access_token")),
 
-  setUser: (user: any, token?: any) => {
+  setUser: (user: User | null, token?: string) => {
     if (user) {
       localStorage.setItem("aurexion_user", JSON.stringify(user));
       if (token) {
@@ -55,8 +58,9 @@ export const useAuthStore = create<AuthState>((set: any, get: any) => ({
   hasPermission: (permission: string) => {
     const { user } = get();
     if (!user) return false;
-    if (user.role === "ADMIN") return true;
-    return user.permissions.includes(permission) || user.permissions.includes("*");
+    if (user.role === "ADMIN" || user.role === "administrator" || user.role === "super_admin") return true;
+    const perms = user.permissions || [];
+    return perms.includes(permission) || perms.includes("*");
   },
 
   hasRole: (role: string) => {

@@ -8,7 +8,7 @@ export function isValidPassword(password: string): boolean {
   return password.length >= 6 && /[A-Za-z]/.test(password) && /[0-9]/.test(password);
 }
 
-export function isRequired(value: any): boolean {
+export function isRequired(value: unknown): boolean {
   if (value === null || value === undefined) return false;
   if (typeof value === "string") return value.trim().length > 0;
   return true;

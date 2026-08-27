@@ -20,9 +20,9 @@ export function useLeadsQuery(params?: LeadQueryParams) {
       // Ensure structure matches PaginatedLeads format
       if (Array.isArray(response)) {
         return {
-          count: (response as any).count || response.length,
-          next: (response as any).next || null,
-          previous: (response as any).previous || null,
+          count: ((response as unknown as { count?: number }).count) || response.length,
+          next: ((response as unknown as { next?: string | null }).next) || null,
+          previous: ((response as unknown as { previous?: string | null }).previous) || null,
           results: response,
         };
       }
@@ -176,7 +176,7 @@ export function useCreateNoteMutation(leadId: number | null) {
 export function useCreateFollowUpMutation(leadId: number | null) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: any) => crmService.createFollowUp(leadId!, data),
+    mutationFn: (data: Partial<LeadFollowUp>) => crmService.createFollowUp(leadId!, data),
     onSuccess: () => {
       if (leadId) {
         queryClient.invalidateQueries({ queryKey: queryKeys.leads.followUps(leadId) });
@@ -261,7 +261,7 @@ export function useQualifyLeadMutation(leadId?: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (overrideId?: number) => crmService.qualifyLead((overrideId ?? leadId)!),
-    onSuccess: (data: any, variables: any) => {
+    onSuccess: (_data, variables) => {
       const targetId = variables ?? leadId;
       if (targetId) {
         queryClient.invalidateQueries({ queryKey: queryKeys.leads.detail(targetId) });

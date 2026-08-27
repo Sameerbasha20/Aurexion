@@ -1,3 +1,21 @@
+export interface RfpEnquiryDetails {
+  id?: number;
+  name?: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+  designation?: string;
+  country?: string;
+  project_type?: string;
+  budget_range?: string;
+  timeline?: string;
+  description?: string;
+  project_description?: string;
+  nda_required?: boolean | string;
+  document_attachment?: string;
+  services_required?: string[];
+  [key: string]: any;
+}
 import axiosClient from "../../../api/axiosClient";
 import { API_ENDPOINTS } from "../../../api/endpoints";
 
@@ -92,6 +110,15 @@ export interface WonClient {
   description?: string;
   updated_at: string;
   client_onboarded?: boolean;
+  rfp_enquiry_details?: RfpEnquiryDetails;
+  designation?: string;
+  country?: string;
+  project_type?: string;
+  industry?: string;
+  budget_range?: string;
+  nda_required?: boolean | string;
+  document_attachment?: string;
+  [key: string]: any;
 }
 
 export interface Lead {
@@ -125,7 +152,7 @@ export interface Lead {
   created_at: string;
   updated_at: string;
   client_onboarded?: boolean;
-  rfp_enquiry_details?: any;
+  rfp_enquiry_details?: RfpEnquiryDetails;
   designation?: string;
   country?: string;
   project_type?: string;
@@ -159,8 +186,30 @@ export interface LeadFollowUp {
   updated_at: string;
 }
 
+
+/** Raw shape returned by the admin users API endpoint */
+interface AssignableUserRaw {
+  id: number;
+  username: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  role?: string;
+  active_leads_count?: number;
+  profile?: {
+    role?: string;
+  };
+}
+
+/** Raw shape of paginated or plain-list admin users response */
+interface UsersApiResponse {
+  results?: AssignableUserRaw[];
+  data?: AssignableUserRaw[] | { results?: AssignableUserRaw[] };
+}
+
 // Global In-Memory Caches for BDM Service
 let cachedDashboard: DashboardData | null = null;
+
 let dashboardPromise: Promise<DashboardData> | null = null;
 
 const leadsCache = new Map<string, LeadsResponse>();
@@ -201,7 +250,7 @@ export const bdmService = {
       return cachedDashboard;
     }
     if (!dashboardPromise || force) {
-      dashboardPromise = axiosClient.get<any, DashboardData>(API_ENDPOINTS.BDM.DASHBOARD).then((res: DashboardData) => {
+      dashboardPromise = axiosClient.get<DashboardData, DashboardData>(API_ENDPOINTS.BDM.DASHBOARD).then((res: DashboardData) => {
         cachedDashboard = res;
         return res;
       }).finally(() => {
@@ -233,7 +282,7 @@ export const bdmService = {
       if (params?.source) queryParams.append("source", params.source);
       const url = `${API_ENDPOINTS.CRM.LEADS}?${queryParams.toString()}`;
 
-      const promise = axiosClient.get<any, LeadsResponse>(url).then((res: LeadsResponse) => {
+      const promise = axiosClient.get<LeadsResponse, LeadsResponse>(url).then((res: LeadsResponse) => {
         leadsCache.set(key, res);
         return res;
       }).finally(() => {
@@ -245,18 +294,18 @@ export const bdmService = {
   },
 
   getLead: async (id: number): Promise<Lead> => {
-    return axiosClient.get<any, any>(`${API_ENDPOINTS.CRM.LEADS}${id}/`);
+    return axiosClient.get<Lead, Lead>(`${API_ENDPOINTS.CRM.LEADS}${id}/`);
   },
 
   getLeadFollowUps: async (leadId: number): Promise<LeadFollowUp[]> => {
-    return axiosClient.get<any, any>(API_ENDPOINTS.CRM.LEAD_FOLLOW_UPS(leadId));
+    return axiosClient.get<LeadFollowUp[], LeadFollowUp[]>(API_ENDPOINTS.CRM.LEAD_FOLLOW_UPS(leadId));
   },
 
   /**
    * Assign lead to a sales executive (Accept RFP) - invalidates caches
    */
   assignLead: async (leadId: number, assignedTo: number): Promise<Lead> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEAD_ASSIGN(leadId), { assigned_to: assignedTo });
+    const data = await axiosClient.post<Lead, Lead>(API_ENDPOINTS.CRM.LEAD_ASSIGN(leadId), { assigned_to: assignedTo });
     clearBdmCache();
     return data;
   },
@@ -265,7 +314,7 @@ export const bdmService = {
    * Mark lead as Lost (Decline RFP) - invalidates caches
    */
   markLeadLost: async (leadId: number, reason: string): Promise<Lead> => {
-    const data = await axiosClient.post<any, any>(API_ENDPOINTS.CRM.LEAD_LOST(leadId), { reason });
+    const data = await axiosClient.post<Lead, Lead>(API_ENDPOINTS.CRM.LEAD_LOST(leadId), { reason });
     clearBdmCache();
     return data;
   },
@@ -280,14 +329,14 @@ export const bdmService = {
     if (!assignableUsersPromise || force) {
       assignableUsersPromise = (async () => {
         try {
-          const data = await axiosClient.get<any, any>(API_ENDPOINTS.ADMIN.USERS, { params: { role: 'sales_executive' } });
-          const list = Array.isArray(data) ? data : (data.results || data.data?.results || data.data || []);
+          const data = await axiosClient.get<UsersApiResponse | AssignableUserRaw[], UsersApiResponse | AssignableUserRaw[]>(API_ENDPOINTS.ADMIN.USERS, { params: { role: 'sales_executive' } });
+          const list: AssignableUserRaw[] = Array.isArray(data) ? data : ((data as UsersApiResponse).results || ((data as UsersApiResponse).data && !Array.isArray((data as UsersApiResponse).data) ? ((data as UsersApiResponse).data as { results?: AssignableUserRaw[] }).results : (data as UsersApiResponse).data as AssignableUserRaw[]) || []);
           const result = list
-            .filter((u: any) => {
+            .filter((u: AssignableUserRaw) => {
               const r = String(u.profile?.role || u.role || '').toLowerCase();
               return r === 'sales_executive' || r === 'sales' || r === 'sales_rep';
             })
-            .map((u: any) => ({
+            .map((u: AssignableUserRaw) => ({
               id: u.id,
               username: u.username,
               email: u.email,
