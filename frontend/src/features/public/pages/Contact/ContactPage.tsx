@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Link } from "wouter";
 import { publicService } from "../../services/publicService";
-import { Mail, Phone, MapPin, Clock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, CheckCircle2, Loader2, AlertCircle, LifeBuoy } from "lucide-react";
 import { SEO } from "../../../../components/seo/SEO";
 
 interface CountryCodeOption {
@@ -165,6 +166,26 @@ export const ContactPage: React.FC = () => {
     }
   };
 
+  const handlePhoneClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigator.clipboard.writeText("+15551234567").then(() => {
+      alert("Phone number '+1 (555) 123-4567' copied to clipboard!");
+    }).catch(() => {
+      alert("Call: +1 (555) 123-4567");
+    });
+    window.location.href = "tel:+15551234567";
+  };
+
+  const handleEmailClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigator.clipboard.writeText("support@aurexion.com").then(() => {
+      alert("Email address 'support@aurexion.com' copied to clipboard!");
+    }).catch(() => {
+      alert("Email: support@aurexion.com");
+    });
+    window.location.href = "mailto:support@aurexion.com";
+  };
+
   return (
     <div className="bg-background pt-16 pb-20 sm:pt-24 sm:pb-28 overflow-x-hidden">
       <SEO
@@ -203,6 +224,7 @@ export const ContactPage: React.FC = () => {
               {/* Email */}
               <a 
                 href="mailto:support@aurexion.com" 
+                onClick={handleEmailClick}
                 className="flex items-start gap-4 group cursor-pointer"
               >
                 <div className="shrink-0 p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 mt-0.5 transition-colors group-hover:bg-primary/20">
@@ -219,6 +241,7 @@ export const ContactPage: React.FC = () => {
               {/* Phone */}
               <a 
                 href="tel:+15551234567" 
+                onClick={handlePhoneClick}
                 className="flex items-start gap-4 group cursor-pointer"
               >
                 <div className="shrink-0 p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 mt-0.5 transition-colors group-hover:bg-primary/20">
@@ -237,6 +260,10 @@ export const ContactPage: React.FC = () => {
                 href="https://maps.google.com/?q=123+Innovation+Street,+San+Francisco,+CA+94102" 
                 target="_blank" 
                 rel="noopener noreferrer" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open("https://maps.google.com/?q=123+Innovation+Street,+San+Francisco,+CA+94102", "_blank");
+                }}
                 className="flex items-start gap-4 group cursor-pointer"
               >
                 <div className="shrink-0 p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 mt-0.5 transition-colors group-hover:bg-primary/20">
