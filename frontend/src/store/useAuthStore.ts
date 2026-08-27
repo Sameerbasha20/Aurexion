@@ -51,7 +51,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     localStorage.removeItem("aurexion_user");
     localStorage.removeItem("aurexion_token");
     localStorage.removeItem("access_token");
-    queryClient.clear(); // Clear all server query cache on logout!
+    localStorage.removeItem("aurexion_refresh_token");
+    localStorage.removeItem("refresh_token");
+    try {
+      queryClient.cancelQueries();
+      queryClient.clear();
+    } catch {
+      // safe fallback
+    }
     set({ user: null, token: null, isAuthenticated: false });
   },
 

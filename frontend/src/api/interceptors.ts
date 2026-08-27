@@ -10,22 +10,24 @@ function attachPaginationMetadata<T>(payload: T[], res: Record<string, unknown>)
   return result;
 }
 
-function unpackApiResponse(res: any): any {
+function unpackApiResponse(res: unknown): unknown {
   if (!res || typeof res !== "object" || !("status" in res) || !("data" in res)) {
     return res;
   }
-  const payload = res.data;
+  const obj = res as Record<string, unknown>;
+  const payload = obj.data;
   if (payload === null || payload === undefined) {
     return res;
   }
   if (Array.isArray(payload)) {
-    return attachPaginationMetadata(payload, res);
+    return attachPaginationMetadata(payload, obj);
   }
   return payload;
 }
 
 const EXEMPT_AUTH_ENDPOINTS = [
   "/auth/login",
+  "/auth/logout",
   "/auth/forgot-password",
   "/auth/reset-password",
   "/auth/token/refresh",
@@ -78,7 +80,7 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
 
   // Response Interceptor — secure token refresh with payload support
   axiosInstance.interceptors.response.use(
-    (response: AxiosResponse) => unpackApiResponse(response.data),
+    (response: AxiosResponse) => unpackApiResponse(response.data) as AxiosResponse,
     async (error) => {
       const originalRequest = error.config;
 
@@ -89,18 +91,27 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
         !isExemptAuthUrl(originalRequest.url)
       ) {
         originalRequest._retry = true;
-        try {
-          const refreshToken =
-            localStorage.getItem("aurexion_refresh_token") ||
-            localStorage.getItem("refresh_token");
+        const refreshToken =
+          localStorage.getItem("aurexion_refresh_token") ||
+          localStorage.getItem("refresh_token");
 
+        // If no refresh token exists, immediately fail and clear local credentials without firing 400 Bad Request
+        if (!refreshToken) {
+          localStorage.removeItem("aurexion_user");
+          localStorage.removeItem("aurexion_token");
+          localStorage.removeItem("access_token");
+          return Promise.reject(handleApiError(error));
+        }
+
+        try {
           // Send refresh token in JSON payload (supported cross-domain)
-          const res: any = await axiosInstance.post("/auth/token/refresh/", {
+          const res = await axiosInstance.post<{ access?: string; refresh?: string; data?: { access?: string; refresh?: string } }>("/auth/token/refresh/", {
             refresh: refreshToken,
           });
 
-          const newAccessToken = res?.access || res?.data?.access;
-          const newRefreshToken = res?.refresh || res?.data?.refresh;
+          const resData = res as { access?: string; refresh?: string; data?: { access?: string; refresh?: string } };
+          const newAccessToken = resData?.access || resData?.data?.access;
+          const newRefreshToken = resData?.refresh || resData?.data?.refresh;
 
           if (newAccessToken) {
             localStorage.setItem("aurexion_token", newAccessToken);
@@ -143,6 +154,7 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
           localStorage.removeItem("refresh_token");
         }
       }
+
       return Promise.reject(formattedError);
     }
   );
@@ -151,4 +163,3 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
 }
 
 export default setupInterceptors;
-
