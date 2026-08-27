@@ -26,7 +26,7 @@ class AdminServiceViewSet(viewsets.ModelViewSet):
     """
     serializer_class = ServiceSerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'slug'
+    lookup_field = 'pk'
 
     def get_queryset(self):
         queryset = Service.objects.all().order_by('-created_at')
@@ -82,7 +82,7 @@ class AdminCaseStudyViewSet(viewsets.ModelViewSet):
     """
     serializer_class = CaseStudySerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'slug'
+    lookup_field = 'pk'
 
     def get_queryset(self):
         queryset = CaseStudy.objects.all().order_by('-created_at')
@@ -140,7 +140,7 @@ class AdminIndustryViewSet(viewsets.ModelViewSet):
     """
     serializer_class = IndustrySerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'slug'
+    lookup_field = 'pk'
 
     def get_queryset(self):
         queryset = Industry.objects.all().prefetch_related('services', 'case_studies').order_by('-created_at')
@@ -197,7 +197,7 @@ class AdminCategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'slug'
+    lookup_field = 'pk'
 
     def list(self, request, *args, **kwargs):
         from django.core.cache import cache
@@ -237,7 +237,7 @@ class AdminBlogPostViewSet(viewsets.ModelViewSet):
     """
     serializer_class = BlogPostSerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'slug'
+    lookup_field = 'pk'
 
     def dispatch(self, request, *args, **kwargs):
         if hasattr(request, 'user') and request.user.is_authenticated:

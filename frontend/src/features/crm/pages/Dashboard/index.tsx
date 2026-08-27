@@ -828,6 +828,7 @@ export const Dashboard: React.FC = () => {
                     fontSize: "0.88rem",
                     width: "100%",
                     boxSizing: "border-box",
+                    colorScheme: "dark",
                   }}
                 />
               </div>
@@ -854,25 +855,28 @@ export const Dashboard: React.FC = () => {
                 </select>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING LINK (Google Meet / Zoom)</label>
-                <input
-                  type="url"
-                  placeholder="https://meet.google.com/xyz-abc-123"
-                  value={meetingLink}
-                  onChange={(e) => setMeetingLink(e.target.value)}
-                  style={{
-                    padding: "0.65rem",
-                    backgroundColor: "#050811",
-                    border: "1px solid rgba(140,174,187,0.25)",
-                    color: "#f8fafc",
-                    borderRadius: "4px",
-                    fontSize: "0.88rem",
-                    width: "100%",
-                    boxSizing: "border-box",
-                  }}
-                />
-              </div>
+               {meetingType === "MEETING" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING LINK (Google Meet / Zoom) *</label>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://meet.google.com/xyz-abc-123"
+                    value={meetingLink}
+                    onChange={(e) => setMeetingLink(e.target.value)}
+                    style={{
+                      padding: "0.65rem",
+                      backgroundColor: "#050811",
+                      border: "1px solid rgba(140,174,187,0.25)",
+                      color: "#f8fafc",
+                      borderRadius: "4px",
+                      fontSize: "0.88rem",
+                      width: "100%",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+              )}
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>AGENDA / NOTES</label>

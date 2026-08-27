@@ -1327,7 +1327,7 @@ const LeadScheduleFollowUpModal: React.FC<LeadScheduleFollowUpModalProps> = ({
               required
               value={followUpForm.scheduled_at}
               onChange={(e) => onFormChange({ ...followUpForm, scheduled_at: e.target.value })}
-              style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+              style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", colorScheme: "dark" }}
             />
           </div>
 

@@ -48,6 +48,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const [followUpDate, setFollowUpDate] = useState("");
   const [followUpType, setFollowUpType] = useState("meeting");
   const [followUpNotes, setFollowUpNotes] = useState("");
+  const [followUpMeetingLink, setFollowUpMeetingLink] = useState("");
   const [showLostDialog, setShowLostDialog] = useState(false);
   const [lostReason, setLostReason] = useState("");
 
@@ -63,6 +64,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
     setNewNoteContent("");
     setFollowUpDate("");
     setFollowUpNotes("");
+    setFollowUpMeetingLink("");
     setShowFollowUpForm(false);
   }, [lead?.id]);
 
@@ -104,10 +106,12 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
         scheduled_at: new Date(followUpDate).toISOString(),
         follow_up_type: followUpType,
         notes: followUpNotes,
+        meeting_link: followUpType === "meeting" ? followUpMeetingLink : "",
       });
       setShowFollowUpForm(false);
       setFollowUpDate("");
       setFollowUpNotes("");
+      setFollowUpMeetingLink("");
       toast.success("Follow-up scheduled successfully.");
     } catch (err: any) {
       toast.error(err?.message || "Failed to schedule follow up.");
@@ -466,6 +470,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
                               border: "1px solid var(--color-border)",
                               outline: "none",
                               marginTop: "0.2rem",
+                              colorScheme: "dark",
                             }}
                           />
                         </div>
@@ -492,6 +497,29 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
                             <option value="other">Other</option>
                           </select>
                         </div>
+
+                        {followUpType === "meeting" && (
+                          <div>
+                            <label style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>Meeting Link *</label>
+                            <input
+                              type="url"
+                              value={followUpMeetingLink}
+                              onChange={(e) => setFollowUpMeetingLink(e.target.value)}
+                              required
+                              placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                              style={{
+                                width: "100%",
+                                padding: "0.4rem",
+                                borderRadius: "4px",
+                                backgroundColor: "#070a12",
+                                color: "#fff",
+                                border: "1px solid var(--color-border)",
+                                outline: "none",
+                                marginTop: "0.2rem",
+                              }}
+                            />
+                          </div>
+                        )}
 
                         <div>
                           <label style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>Notes / Agenda</label>
