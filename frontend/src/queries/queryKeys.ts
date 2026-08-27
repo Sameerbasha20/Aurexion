@@ -70,6 +70,11 @@ export const queryKeys = {
     roles: () => ["administration", "roles"] as const,
     auditLogs: (filters?: Record<string, unknown> | object) => ["administration", "audit-logs", filters || {}] as const,
   },
+
+  // System health query keys
+  system: {
+    health: () => ["system", "health"] as const,
+  },
 };
 
 export default queryKeys;
