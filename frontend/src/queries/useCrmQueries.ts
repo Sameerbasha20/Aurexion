@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axiosClient from "../api/axiosClient";
+import { API_ENDPOINTS } from "../api/endpoints";
 import crmService, {
   LeadItem,
   LeadQueryParams,
@@ -33,12 +35,13 @@ export function useLeadsQuery(params?: LeadQueryParams) {
 }
 
 /**
- * Fetch Sales Dashboard Stats
+ * Fetch Sales Dashboard Stats with deduplication staleTime
  */
 export function useSalesDashboardQuery() {
   return useQuery<SalesDashboardStats>({
     queryKey: queryKeys.leads.metrics(),
     queryFn: () => crmService.getDashboardStats(),
+    staleTime: 2 * 60 * 1000, // 2 minutes deduplication
   });
 }
 
@@ -272,3 +275,46 @@ export function useQualifyLeadMutation(leadId?: number) {
     },
   });
 }
+
+/**
+ * Shared Query Hook: Fetch Role Choices with 5 min deduplication staleTime
+ */
+export function useSharedRoleChoicesQuery() {
+  return useQuery({
+    queryKey: queryKeys.administration.roleChoices(),
+    queryFn: async () => {
+      const response = await axiosClient.get(API_ENDPOINTS.ADMIN.ROLE_CHOICES);
+      return response;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes deduplication
+  });
+}
+
+/**
+ * Shared Query Hook: Fetch Public Industries with 10 min deduplication staleTime
+ */
+export function useSharedIndustriesQuery(filters?: Record<string, any>) {
+  return useQuery({
+    queryKey: queryKeys.cms.industries(filters),
+    queryFn: async () => {
+      const response = await axiosClient.get("/cms/public/industries/", { params: filters });
+      return response;
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes deduplication
+  });
+}
+
+/**
+ * Shared Query Hook: Fetch System Health with 1 min deduplication staleTime
+ */
+export function useSystemHealthQuery() {
+  return useQuery({
+    queryKey: queryKeys.system.health(),
+    queryFn: async () => {
+      const response = await axiosClient.get("/system/health/");
+      return response;
+    },
+    staleTime: 60 * 1000, // 1 minute deduplication
+  });
+}
+

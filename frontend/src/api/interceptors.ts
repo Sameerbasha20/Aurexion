@@ -24,6 +24,18 @@ function unpackApiResponse(res: any): any {
   return payload;
 }
 
+const EXEMPT_AUTH_ENDPOINTS = [
+  "/auth/login",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/auth/token/refresh",
+];
+
+export function isExemptAuthUrl(url?: string): boolean {
+  if (!url) return false;
+  return EXEMPT_AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint));
+}
+
 export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
   // Request Interceptor — attach Bearer token from localStorage for cross-domain Vercel -> Render support
   axiosInstance.interceptors.request.use(
@@ -74,10 +86,7 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
         error.response?.status === 401 &&
         originalRequest &&
         !originalRequest._retry &&
-        !originalRequest.url?.includes("/auth/login") &&
-        !originalRequest.url?.includes("/auth/forgot-password") &&
-        !originalRequest.url?.includes("/auth/reset-password") &&
-        !originalRequest.url?.includes("/auth/token/refresh")
+        !isExemptAuthUrl(originalRequest.url)
       ) {
         originalRequest._retry = true;
         try {
@@ -126,10 +135,7 @@ export function setupInterceptors(axiosInstance: AxiosInstance): AxiosInstance {
       const formattedError = handleApiError(error);
       if (formattedError.statusCode === 401) {
         const requestUrl = error?.config?.url || "";
-        if (
-          !requestUrl.includes("/auth/login") &&
-          !requestUrl.includes("/auth/token/refresh")
-        ) {
+        if (!isExemptAuthUrl(requestUrl)) {
           localStorage.removeItem("aurexion_user");
           localStorage.removeItem("aurexion_token");
           localStorage.removeItem("access_token");

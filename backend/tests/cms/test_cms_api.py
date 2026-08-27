@@ -140,6 +140,21 @@ class CMSAPITestCase(APITestCase):
         self.assertEqual(len(response.data['services']), 1)
         self.assertEqual(len(response.data['case_studies']), 1)
 
+    def test_public_industry_detail_caching(self):
+        from django.core.cache import cache
+        url = reverse('public-industry-detail', kwargs={'slug': 'finance-banking'})
+        # Cold request populates cache
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        cached_data = cache.get('cms_industry_detail_finance-banking')
+        self.assertIsNotNone(cached_data)
+        self.assertEqual(cached_data['name'], 'Finance & Banking')
+        # Warm request serves cached response
+        warm_response = self.client.get(url)
+        self.assertEqual(warm_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(warm_response.data['name'], 'Finance & Banking')
+
+
     def test_confidentiality_redaction(self):
         # Public anonymous access
         url = reverse('public-case-studies-detail', kwargs={'slug': 'fintech-migration'})

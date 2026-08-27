@@ -316,11 +316,25 @@ class PublicIndustryDetailView(generics.RetrieveAPIView):
     """
     Public API: GET /api/v1/cms/public/industries/{slug}/
     Queries and returns related challenges, solutions, services, and case studies.
+    Cached server-side (TTL: 300s) to eliminate cold request latency overhead.
     """
     queryset = Industry.objects.filter(status='published').prefetch_related('services', 'case_studies')
     serializer_class = IndustryPublicSerializer
     permission_classes = [AllowAny]
     lookup_field = 'slug'
+
+    def retrieve(self, request, *args, **kwargs):
+        from django.core.cache import cache
+        slug = kwargs.get(self.lookup_field)
+        cache_key = f"cms_industry_detail_{slug}"
+        cached_res = cache.get(cache_key)
+        if cached_res is not None:
+            return Response(cached_res)
+
+        response = super().retrieve(request, *args, **kwargs)
+        if response.status_code == 200:
+            cache.set(cache_key, response.data, timeout=300)
+        return response
 
 @extend_schema_view(
     list=extend_schema(tags=['CMS (Public)'], auth=[]),

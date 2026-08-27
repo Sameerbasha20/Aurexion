@@ -17,7 +17,7 @@ class CanCreateLead(BaseRolePermission):
 
 class CanAssignLead(BaseRolePermission):
     """Roles that may assign (or reassign) leads to pipeline users or onboard clients."""
-    allowed_roles = ["super_admin", "administrator", "bdm", "business_dev_manager", "sales_executive", "sales", "sales_user"]
+    allowed_roles = ["super_admin", "administrator", "bdm", "business_dev_manager"]
 
 
 class CanDeleteLead(BaseRolePermission):
