@@ -140,7 +140,7 @@ class ClientTicketViewSet(
         return (
             SupportTicket.objects
             .filter(client_user=self.request.user)
-            .select_related('client_user', 'assigned_to')
+            .select_related('client_user', 'assigned_to', 'project')
             .order_by('-created_at')
         )
 
@@ -328,7 +328,7 @@ class AdministratorTicketViewSet(
     """
     queryset = (
         SupportTicket.objects
-        .select_related('client_user', 'assigned_to')
+        .select_related('client_user', 'assigned_to', 'project')
         .all()
         .order_by('-created_at')
     )
@@ -605,7 +605,7 @@ class ClientProjectViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user and user.is_authenticated:
             ensure_client_project_exists(user)
-            return ClientProject.objects.filter(client_user=user)
+            return ClientProject.objects.filter(client_user=user).prefetch_related('milestones', 'deliverables')
         return ClientProject.objects.none()
 
     def perform_create(self, serializer):
@@ -628,7 +628,7 @@ class ClientRequestViewSet(viewsets.ModelViewSet):
     lookup_field = 'pk'
 
     def get_queryset(self):
-        return ClientRequest.objects.filter(client_user=self.request.user)
+        return ClientRequest.objects.filter(client_user=self.request.user).select_related('project')
 
     def perform_create(self, serializer):
         serializer.save(client_user=self.request.user)
@@ -650,7 +650,7 @@ class ClientDocumentViewSet(viewsets.ModelViewSet):
     lookup_field = 'pk'
 
     def get_queryset(self):
-        return ClientDocument.objects.filter(client_user=self.request.user)
+        return ClientDocument.objects.filter(client_user=self.request.user).select_related('project')
 
     def perform_create(self, serializer):
         serializer.save(client_user=self.request.user)
@@ -687,7 +687,7 @@ class SprintDeliverableViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'pk'
 
     def get_queryset(self):
-        return SprintDeliverable.objects.filter(project__client_user=self.request.user)
+        return SprintDeliverable.objects.filter(project__client_user=self.request.user).select_related('project')
 
 
 @extend_schema_view(
@@ -704,7 +704,7 @@ class ConsultationRequestViewSet(viewsets.ModelViewSet):
     lookup_field = 'pk'
 
     def get_queryset(self):
-        return ConsultationRequest.objects.filter(client_user=self.request.user)
+        return ConsultationRequest.objects.filter(client_user=self.request.user).select_related('project')
 
     def perform_create(self, serializer):
         serializer.save(client_user=self.request.user)

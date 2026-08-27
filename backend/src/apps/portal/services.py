@@ -24,7 +24,7 @@ class SupportTicketService:
 
     @staticmethod
     def get_client_tickets(client_user, status=None):
-        queryset = SupportTicket.objects.filter(client_user=client_user).select_related('client_user', 'assigned_to')
+        queryset = SupportTicket.objects.filter(client_user=client_user).select_related('client_user', 'assigned_to', 'project')
         if status:
             queryset = queryset.filter(status=status)
         return queryset.order_by('-created_at', '-id')
@@ -33,14 +33,14 @@ class SupportTicketService:
     def get_support_tickets(support_user, status=None):
         queryset = SupportTicket.objects.filter(
             models.Q(assigned_to=support_user) | models.Q(assigned_to__isnull=True)
-        ).select_related('client_user', 'assigned_to')
+        ).select_related('client_user', 'assigned_to', 'project')
         if status:
             queryset = queryset.filter(status=status)
         return queryset.order_by('-created_at', '-id')
 
     @staticmethod
     def get_all_tickets(status=None, category=None, priority=None):
-        queryset = SupportTicket.objects.all().select_related('client_user', 'assigned_to')
+        queryset = SupportTicket.objects.all().select_related('client_user', 'assigned_to', 'project')
         if status:
             queryset = queryset.filter(status=status)
         if category:
@@ -52,14 +52,14 @@ class SupportTicketService:
     @staticmethod
     def get_ticket_by_id(ticket_id):
         try:
-            return SupportTicket.objects.select_related('client_user', 'assigned_to').get(ticket_id=ticket_id)
+            return SupportTicket.objects.select_related('client_user', 'assigned_to', 'project').get(ticket_id=ticket_id)
         except SupportTicket.DoesNotExist:
             return None
 
     @staticmethod
     def get_ticket_by_pk(pk):
         try:
-            return SupportTicket.objects.select_related('client_user', 'assigned_to').get(pk=pk)
+            return SupportTicket.objects.select_related('client_user', 'assigned_to', 'project').get(pk=pk)
         except SupportTicket.DoesNotExist:
             return None
 

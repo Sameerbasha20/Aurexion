@@ -325,14 +325,20 @@ class ClientProjectSerializer(serializers.ModelSerializer):
         return super().to_internal_value(data)
 
     def get_current_milestone(self, obj):
-        curr = obj.milestones.filter(is_current=True).first()
+        milestones = list(obj.milestones.all())
+        curr = next((m for m in milestones if m.is_current), None)
         if not curr:
-            curr = obj.milestones.filter(status='in_progress').first()
+            curr = next((m for m in milestones if m.status == 'in_progress'), None)
         return ProjectMilestoneSerializer(curr).data if curr else None
 
     def get_next_milestone(self, obj):
-        upcoming = obj.milestones.filter(status='upcoming').order_by('planned_date', 'created_at').first()
-        return ProjectMilestoneSerializer(upcoming).data if upcoming else None
+        import datetime
+        milestones = list(obj.milestones.all())
+        upcoming = [m for m in milestones if m.status == 'upcoming']
+        if upcoming:
+            upcoming.sort(key=lambda m: (m.planned_date or datetime.date.max, m.created_at))
+            return ProjectMilestoneSerializer(upcoming[0]).data
+        return None
 
 
 class ClientRequestSerializer(serializers.ModelSerializer):
