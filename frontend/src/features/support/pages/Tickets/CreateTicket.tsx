@@ -124,7 +124,6 @@ export const CreateTicket: React.FC = () => {
                 value={subject}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSubject(e.target.value)}
                 maxLength={255}
-                placeholder="Operational inquiry or system issue summary"
                 required
               />
             </div>

@@ -132,7 +132,6 @@ export const CreateTicket: React.FC = () => {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 maxLength={255}
-                placeholder="Brief summary of the issue or operational incident"
                 aria-invalid={!!errors.subject}
               />
               {errors.subject && <span style={{ color: "#f87171", fontSize: "0.78rem" }}>{errors.subject}</span>}

@@ -161,7 +161,6 @@ export const Login: React.FC = () => {
             type="text"
             value={username}
             onChange={(e) => handleUsernameChange(e.target.value)}
-            placeholder="e.g. administrator or user@aurexion.io"
             style={{
               width: "100%",
               height: "44px",

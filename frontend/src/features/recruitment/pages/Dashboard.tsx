@@ -683,7 +683,6 @@ export const Dashboard: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DEPARTMENT</label>
                   <input
                     type="text"
-                    placeholder="e.g. Engineering"
                     value={editForm.department || ""}
                     onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -694,7 +693,6 @@ export const Dashboard: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>LOCATION</label>
                   <input
                     type="text"
-                    placeholder="e.g. Remote"
                     value={editForm.location || ""}
                     onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -705,7 +703,6 @@ export const Dashboard: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>EXPERIENCE</label>
                   <input
                     type="text"
-                    placeholder="e.g. 3+ Years"
                     value={editForm.experience || ""}
                     onChange={(e) => setEditForm({ ...editForm, experience: e.target.value })}
                     style={{ width: "100%", boxSizing: "border-box", padding: "0.65rem 0.75rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}

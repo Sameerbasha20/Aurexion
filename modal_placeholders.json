@@ -1,0 +1,1378 @@
+[
+  {
+    "file": "src/components/common/SearchInput.tsx",
+    "line": 19,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search records...",
+    "lineContent": "placeholder = \"Search records...\","
+  },
+  {
+    "file": "src/components/forms/LeadFormModal.tsx",
+    "line": 108,
+    "inModalContext": true,
+    "modalSnippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate",
+    "placeholder": "Enter lead full name",
+    "lineContent": "placeholder=\"Enter lead full name\""
+  },
+  {
+    "file": "src/components/forms/LeadFormModal.tsx",
+    "line": 124,
+    "inModalContext": true,
+    "modalSnippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate",
+    "placeholder": "Enter contact email address",
+    "lineContent": "placeholder=\"Enter contact email address\""
+  },
+  {
+    "file": "src/components/forms/LeadFormModal.tsx",
+    "line": 140,
+    "inModalContext": true,
+    "modalSnippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate",
+    "placeholder": "Enter phone number",
+    "lineContent": "placeholder=\"Enter phone number\""
+  },
+  {
+    "file": "src/components/forms/LeadFormModal.tsx",
+    "line": 151,
+    "inModalContext": true,
+    "modalSnippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate",
+    "placeholder": "Enter company name",
+    "lineContent": "placeholder=\"Enter company name\""
+  },
+  {
+    "file": "src/components/forms/LeadFormModal.tsx",
+    "line": 199,
+    "inModalContext": true,
+    "modalSnippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate",
+    "placeholder": "Enter client requirement details and context...",
+    "lineContent": "placeholder=\"Enter client requirement details and context...\""
+  },
+  {
+    "file": "src/features/administration/pages/AuditLogs/index.tsx",
+    "line": 87,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by action, operator, or module...",
+    "lineContent": "placeholder=\"Search by action, operator, or module...\""
+  },
+  {
+    "file": "src/features/administration/pages/CrmOverview/index.tsx",
+    "line": 138,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search leads by name, company, email...",
+    "lineContent": "placeholder=\"Search leads by name, company, email...\""
+  },
+  {
+    "file": "src/features/administration/pages/Support/index.tsx",
+    "line": 412,
+    "inModalContext": true,
+    "modalSnippet": "<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>",
+    "placeholder": "Enter resolution notes, root cause analysis, or client guidance...",
+    "lineContent": "placeholder=\"Enter resolution notes, root cause analysis, or client guidance...\""
+  },
+  {
+    "file": "src/features/administration/pages/Users/index.tsx",
+    "line": 221,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by username, email or ID...",
+    "lineContent": "placeholder=\"Search by username, email or ID...\""
+  },
+  {
+    "file": "src/features/authentication/pages/ForgotPassword.tsx",
+    "line": 143,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your registered email address",
+    "lineContent": "placeholder=\"Enter your registered email address\""
+  },
+  {
+    "file": "src/features/authentication/pages/Login.tsx",
+    "line": 164,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter username or email address",
+    "lineContent": "placeholder=\"Enter username or email address\""
+  },
+  {
+    "file": "src/features/authentication/pages/Login.tsx",
+    "line": 212,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your password",
+    "lineContent": "placeholder=\"Enter your password\""
+  },
+  {
+    "file": "src/features/authentication/pages/ResetPassword.tsx",
+    "line": 138,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter new password",
+    "lineContent": "placeholder=\"Enter new password\""
+  },
+  {
+    "file": "src/features/authentication/pages/ResetPassword.tsx",
+    "line": 194,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Confirm new password",
+    "lineContent": "placeholder=\"Confirm new password\""
+  },
+  {
+    "file": "src/features/bdm/pages/Clients/index.tsx",
+    "line": 334,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search clients...",
+    "lineContent": "placeholder=\"Search clients...\""
+  },
+  {
+    "file": "src/features/bdm/pages/Clients/index.tsx",
+    "line": 771,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter client email address",
+    "lineContent": "placeholder=\"Enter client email address\""
+  },
+  {
+    "file": "src/features/bdm/pages/ContactForms/index.tsx",
+    "line": 239,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search submissions by name, email, company, or ID...",
+    "lineContent": "placeholder=\"Search submissions by name, email, company, or ID...\""
+  },
+  {
+    "file": "src/features/bdm/pages/ContactForms/index.tsx",
+    "line": 572,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "-- Choose Sales Executive --",
+    "lineContent": "<SelectValue placeholder=\"-- Choose Sales Executive --\" />"
+  },
+  {
+    "file": "src/features/bdm/pages/ContactForms/index.tsx",
+    "line": 648,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter reason for rejecting this submission (minimum 10 characters)...",
+    "lineContent": "placeholder=\"Enter reason for rejecting this submission (minimum 10 characters)...\""
+  },
+  {
+    "file": "src/features/bdm/pages/Dashboard/index.tsx",
+    "line": 740,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "-- Choose Sales Executive --",
+    "lineContent": "<SelectValue placeholder=\"-- Choose Sales Executive --\" />"
+  },
+  {
+    "file": "src/features/bdm/pages/Dashboard/index.tsx",
+    "line": 815,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter reason for rejecting this submission (minimum 10 characters)...",
+    "lineContent": "placeholder=\"Enter reason for rejecting this submission (minimum 10 characters)...\""
+  },
+  {
+    "file": "src/features/bdm/pages/Leads/index.tsx",
+    "line": 95,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search leads...",
+    "lineContent": "placeholder=\"Search leads...\""
+  },
+  {
+    "file": "src/features/bdm/pages/Leads/index.tsx",
+    "line": 102,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "All Sources",
+    "lineContent": "<SelectValue placeholder=\"All Sources\" />"
+  },
+  {
+    "file": "src/features/bdm/pages/Leads/index.tsx",
+    "line": 113,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "All Statuses",
+    "lineContent": "<SelectValue placeholder=\"All Statuses\" />"
+  },
+  {
+    "file": "src/features/bdm/pages/Opportunities/index.tsx",
+    "line": 134,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search opportunities...",
+    "lineContent": "placeholder=\"Search opportunities...\""
+  },
+  {
+    "file": "src/features/bdm/pages/RFP/index.tsx",
+    "line": 256,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search RFPs...",
+    "lineContent": "placeholder=\"Search RFPs...\""
+  },
+  {
+    "file": "src/features/bdm/pages/RFP/index.tsx",
+    "line": 470,
+    "inModalContext": true,
+    "modalSnippet": "<Dialog open={isAcceptOpen} onOpenChange={(open) => !open && closeModals()}>",
+    "placeholder": "Select a sales executive",
+    "lineContent": "<SelectValue placeholder=\"Select a sales executive\" />"
+  },
+  {
+    "file": "src/features/bdm/pages/RFP/index.tsx",
+    "line": 519,
+    "inModalContext": true,
+    "modalSnippet": "<Dialog open={isDeclineOpen} onOpenChange={(open) => !open && closeModals()}>",
+    "placeholder": "Enter reason for declining this RFP (minimum 10 characters)...",
+    "lineContent": "placeholder=\"Enter reason for declining this RFP (minimum 10 characters)...\""
+  },
+  {
+    "file": "src/features/cms/pages/Blog.tsx",
+    "line": 308,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by title, content, slug, or tags...",
+    "lineContent": "placeholder=\"Search by title, content, slug, or tags...\""
+  },
+  {
+    "file": "src/features/cms/pages/Blog.tsx",
+    "line": 654,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter article title",
+    "lineContent": "placeholder=\"Enter article title\""
+  },
+  {
+    "file": "src/features/cms/pages/Blog.tsx",
+    "line": 670,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter article URL slug",
+    "lineContent": "placeholder=\"Enter article URL slug\""
+  },
+  {
+    "file": "src/features/cms/pages/Blog.tsx",
+    "line": 696,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter comma-separated tags",
+    "lineContent": "placeholder=\"Enter comma-separated tags\""
+  },
+  {
+    "file": "src/features/cms/pages/Blog.tsx",
+    "line": 709,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter featured image URL",
+    "lineContent": "placeholder=\"Enter featured image URL\""
+  },
+  {
+    "file": "src/features/cms/pages/Blog.tsx",
+    "line": 748,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter article content (supports Markdown)...",
+    "lineContent": "placeholder=\"Enter article content (supports Markdown)...\""
+  },
+  {
+    "file": "src/features/cms/pages/Blog.tsx",
+    "line": 831,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter article URL slug",
+    "lineContent": "placeholder=\"Enter article URL slug\""
+  },
+  {
+    "file": "src/features/cms/pages/Blog.tsx",
+    "line": 844,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter featured image URL",
+    "lineContent": "placeholder=\"Enter featured image URL\""
+  },
+  {
+    "file": "src/features/cms/pages/Blog.tsx",
+    "line": 882,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter article content (supports Markdown)...",
+    "lineContent": "placeholder=\"Enter article content (supports Markdown)...\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 303,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by title, client, slug, or tech stack...",
+    "lineContent": "placeholder=\"Search by title, client, slug, or tech stack...\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 615,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter case study title",
+    "lineContent": "placeholder=\"Enter case study title\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 631,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter case study slug",
+    "lineContent": "placeholder=\"Enter case study slug\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 645,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter client company name",
+    "lineContent": "placeholder=\"Enter client company name\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 656,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter comma-separated technologies",
+    "lineContent": "placeholder=\"Enter comma-separated technologies\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 669,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter featured image URL",
+    "lineContent": "placeholder=\"Enter featured image URL\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 708,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter enterprise business challenges and problem statement...",
+    "lineContent": "placeholder=\"Enter enterprise business challenges and problem statement...\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 720,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter technical architecture and system design...",
+    "lineContent": "placeholder=\"Enter technical architecture and system design...\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 732,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter measurable business results and key metrics...",
+    "lineContent": "placeholder=\"Enter measurable business results and key metrics...\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 838,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter featured image URL",
+    "lineContent": "placeholder=\"Enter featured image URL\""
+  },
+  {
+    "file": "src/features/cms/pages/CaseStudies.tsx",
+    "line": 876,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter delivered outcomes and metrics...",
+    "lineContent": "placeholder=\"Enter delivered outcomes and metrics...\""
+  },
+  {
+    "file": "src/features/cms/pages/Categories.tsx",
+    "line": 154,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search categories by name or slug...",
+    "lineContent": "placeholder=\"Search categories by name or slug...\""
+  },
+  {
+    "file": "src/features/cms/pages/Categories.tsx",
+    "line": 359,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter category name",
+    "lineContent": "placeholder=\"Enter category name\""
+  },
+  {
+    "file": "src/features/cms/pages/Categories.tsx",
+    "line": 375,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter category slug",
+    "lineContent": "placeholder=\"Enter category slug\""
+  },
+  {
+    "file": "src/features/cms/pages/Home.tsx",
+    "line": 555,
+    "inModalContext": true,
+    "modalSnippet": "<Dialog open={dialog !== null} onOpenChange={(open) => !open && setDialog(null)}",
+    "placeholder": "Your name",
+    "lineContent": "<input placeholder=\"Your name\" aria-label=\"Your name\" />"
+  },
+  {
+    "file": "src/features/cms/pages/Home.tsx",
+    "line": 556,
+    "inModalContext": true,
+    "modalSnippet": "<Dialog open={dialog !== null} onOpenChange={(open) => !open && setDialog(null)}",
+    "placeholder": "Work email",
+    "lineContent": "<input placeholder=\"Work email\" aria-label=\"Work email\" type=\"email\" />"
+  },
+  {
+    "file": "src/features/cms/pages/Home.tsx",
+    "line": 557,
+    "inModalContext": true,
+    "modalSnippet": "<Dialog open={dialog !== null} onOpenChange={(open) => !open && setDialog(null)}",
+    "placeholder": "Enter your project requirements and goals...",
+    "lineContent": "<textarea placeholder=\"Enter your project requirements and goals...\" aria-label=\"Project details\" rows={4} />"
+  },
+  {
+    "file": "src/features/cms/pages/Industries.tsx",
+    "line": 218,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by industry name, slug, challenges, or solutions...",
+    "lineContent": "placeholder=\"Search by industry name, slug, challenges, or solutions...\""
+  },
+  {
+    "file": "src/features/cms/pages/Industries.tsx",
+    "line": 521,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter industry name",
+    "lineContent": "placeholder=\"Enter industry name\""
+  },
+  {
+    "file": "src/features/cms/pages/Industries.tsx",
+    "line": 537,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter industry URL slug",
+    "lineContent": "placeholder=\"Enter industry URL slug\""
+  },
+  {
+    "file": "src/features/cms/pages/Industries.tsx",
+    "line": 550,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter industry challenges and operational friction...",
+    "lineContent": "placeholder=\"Enter industry challenges and operational friction...\""
+  },
+  {
+    "file": "src/features/cms/pages/Industries.tsx",
+    "line": 562,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter engineered solutions and architecture approaches...",
+    "lineContent": "placeholder=\"Enter engineered solutions and architecture approaches...\""
+  },
+  {
+    "file": "src/features/cms/pages/Industries.tsx",
+    "line": 640,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter industry URL slug",
+    "lineContent": "placeholder=\"Enter industry URL slug\""
+  },
+  {
+    "file": "src/features/cms/pages/Industries.tsx",
+    "line": 652,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter industry challenges...",
+    "lineContent": "placeholder=\"Enter industry challenges...\""
+  },
+  {
+    "file": "src/features/cms/pages/Industries.tsx",
+    "line": 663,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter targeted solutions...",
+    "lineContent": "placeholder=\"Enter targeted solutions...\""
+  },
+  {
+    "file": "src/features/cms/pages/Services.tsx",
+    "line": 264,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by title, slug, description, or tech stack...",
+    "lineContent": "placeholder=\"Search by title, slug, description, or tech stack...\""
+  },
+  {
+    "file": "src/features/cms/pages/Services.tsx",
+    "line": 578,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter service title",
+    "lineContent": "placeholder=\"Enter service title\""
+  },
+  {
+    "file": "src/features/cms/pages/Services.tsx",
+    "line": 594,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter service URL slug",
+    "lineContent": "placeholder=\"Enter service URL slug\""
+  },
+  {
+    "file": "src/features/cms/pages/Services.tsx",
+    "line": 607,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter executive summary and core capability description...",
+    "lineContent": "placeholder=\"Enter executive summary and core capability description...\""
+  },
+  {
+    "file": "src/features/cms/pages/Services.tsx",
+    "line": 620,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter operational bottlenecks and problems solved...",
+    "lineContent": "placeholder=\"Enter operational bottlenecks and problems solved...\""
+  },
+  {
+    "file": "src/features/cms/pages/Services.tsx",
+    "line": 632,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter technical solution and architectural details...",
+    "lineContent": "placeholder=\"Enter technical solution and architectural details...\""
+  },
+  {
+    "file": "src/features/cms/pages/Services.tsx",
+    "line": 644,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter comma-separated technologies",
+    "lineContent": "placeholder=\"Enter comma-separated technologies\""
+  },
+  {
+    "file": "src/features/cms/pages/Services.tsx",
+    "line": 733,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter service URL slug",
+    "lineContent": "placeholder=\"Enter service URL slug\""
+  },
+  {
+    "file": "src/features/cms/pages/Services.tsx",
+    "line": 745,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.8)",
+    "placeholder": "Enter service description...",
+    "lineContent": "placeholder=\"Enter service description...\""
+  },
+  {
+    "file": "src/features/crm/components/LeadDetailDrawer.tsx",
+    "line": 501,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter meeting agenda or notes...",
+    "lineContent": "placeholder=\"Enter meeting agenda or notes...\""
+  },
+  {
+    "file": "src/features/crm/components/LeadDetailDrawer.tsx",
+    "line": 581,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter internal note for this lead...",
+    "lineContent": "placeholder=\"Enter internal note for this lead...\""
+  },
+  {
+    "file": "src/features/crm/components/LeadDetailDrawer.tsx",
+    "line": 700,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter reason for closing this lead...",
+    "lineContent": "placeholder=\"Enter reason for closing this lead...\""
+  },
+  {
+    "file": "src/features/crm/pages/Companies/index.tsx",
+    "line": 62,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search companies by name, industry, or contact...",
+    "lineContent": "placeholder=\"Search companies by name, industry, or contact...\""
+  },
+  {
+    "file": "src/features/crm/pages/ContactForms/index.tsx",
+    "line": 213,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search assigned contact forms by name, email, company, or ID...",
+    "lineContent": "placeholder=\"Search assigned contact forms by name, email, company, or ID...\""
+  },
+  {
+    "file": "src/features/crm/pages/ContactForms/index.tsx",
+    "line": 562,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter video meeting URL (Google Meet, Zoom)",
+    "lineContent": "placeholder=\"Enter video meeting URL (Google Meet, Zoom)\""
+  },
+  {
+    "file": "src/features/crm/pages/ContactForms/index.tsx",
+    "line": 583,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter video meeting URL (Google Meet, Zoom)",
+    "lineContent": "placeholder=\"Enter video meeting URL (Google Meet, Zoom)\""
+  },
+  {
+    "file": "src/features/crm/pages/ContactForms/index.tsx",
+    "line": 604,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter meeting agenda and discussion topics...",
+    "lineContent": "placeholder=\"Enter meeting agenda and discussion topics...\""
+  },
+  {
+    "file": "src/features/crm/pages/ContactForms/index.tsx",
+    "line": 687,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter deal amount in USD",
+    "lineContent": "placeholder=\"Enter deal amount in USD\""
+  },
+  {
+    "file": "src/features/crm/pages/ContactForms/index.tsx",
+    "line": 707,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter deal terms, scope agreement, or onboarding notes...",
+    "lineContent": "placeholder=\"Enter deal terms, scope agreement, or onboarding notes...\""
+  },
+  {
+    "file": "src/features/crm/pages/ContactForms/index.tsx",
+    "line": 798,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter reason for declining this submission (minimum 10 characters)...",
+    "lineContent": "placeholder=\"Enter reason for declining this submission (minimum 10 characters)...\""
+  },
+  {
+    "file": "src/features/crm/pages/Contacts/index.tsx",
+    "line": 63,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search contacts by name, email, company, or phone...",
+    "lineContent": "placeholder=\"Search contacts by name, email, company, or phone...\""
+  },
+  {
+    "file": "src/features/crm/pages/Dashboard/index.tsx",
+    "line": 861,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter video meeting URL (Google Meet, Zoom)",
+    "lineContent": "placeholder=\"Enter video meeting URL (Google Meet, Zoom)\""
+  },
+  {
+    "file": "src/features/crm/pages/Dashboard/index.tsx",
+    "line": 881,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter meeting agenda and discussion topics...",
+    "lineContent": "placeholder=\"Enter meeting agenda and discussion topics...\""
+  },
+  {
+    "file": "src/features/crm/pages/Dashboard/index.tsx",
+    "line": 1175,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter deal amount in USD",
+    "lineContent": "placeholder=\"Enter deal amount in USD\""
+  },
+  {
+    "file": "src/features/crm/pages/Dashboard/index.tsx",
+    "line": 1195,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter deal terms, scope agreement, or onboarding notes...",
+    "lineContent": "placeholder=\"Enter deal terms, scope agreement, or onboarding notes...\""
+  },
+  {
+    "file": "src/features/crm/pages/Dashboard/index.tsx",
+    "line": 1286,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter reason for declining this submission (minimum 10 characters)...",
+    "lineContent": "placeholder=\"Enter reason for declining this submission (minimum 10 characters)...\""
+  },
+  {
+    "file": "src/features/crm/pages/Leads/index.tsx",
+    "line": 186,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search leads by name, email, company...",
+    "lineContent": "placeholder=\"Search leads by name, email, company...\""
+  },
+  {
+    "file": "src/features/crm/pages/Leads/LeadDetail.tsx",
+    "line": 677,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter call outcome, requirement updates, or activity notes...",
+    "lineContent": "placeholder=\"Enter call outcome, requirement updates, or activity notes...\""
+  },
+  {
+    "file": "src/features/crm/pages/Leads/LeadDetail.tsx",
+    "line": 1001,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter lead project requirements and scope...",
+    "lineContent": "placeholder=\"Enter lead project requirements and scope...\""
+  },
+  {
+    "file": "src/features/crm/pages/Leads/LeadDetail.tsx",
+    "line": 1066,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter reason for closing or disqualifying this lead (minimum 10 characters)...",
+    "lineContent": "placeholder=\"Enter reason for closing or disqualifying this lead (minimum 10 characters)...\""
+  },
+  {
+    "file": "src/features/crm/pages/Leads/LeadDetail.tsx",
+    "line": 1168,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter deal terms, scope agreement, or onboarding notes...",
+    "lineContent": "placeholder=\"Enter deal terms, scope agreement, or onboarding notes...\""
+  },
+  {
+    "file": "src/features/crm/pages/Leads/LeadDetail.tsx",
+    "line": 1342,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter video meeting URL (Google Meet, Zoom, Teams)",
+    "lineContent": "placeholder=\"Enter video meeting URL (Google Meet, Zoom, Teams)\""
+  },
+  {
+    "file": "src/features/crm/pages/Leads/LeadDetail.tsx",
+    "line": 1354,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter meeting agenda, objectives, and key questions...",
+    "lineContent": "placeholder=\"Enter meeting agenda, objectives, and key questions...\""
+  },
+  {
+    "file": "src/features/crm/pages/Opportunities/index.tsx",
+    "line": 116,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search opportunities by title, client, or contact...",
+    "lineContent": "placeholder=\"Search opportunities by title, client, or contact...\""
+  },
+  {
+    "file": "src/features/portal/pages/Profile/index.tsx",
+    "line": 233,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter current password",
+    "lineContent": "placeholder=\"Enter current password\""
+  },
+  {
+    "file": "src/features/portal/pages/Profile/index.tsx",
+    "line": 255,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter new password",
+    "lineContent": "placeholder=\"Enter new password\""
+  },
+  {
+    "file": "src/features/portal/pages/Profile/index.tsx",
+    "line": 277,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Confirm new password",
+    "lineContent": "placeholder=\"Confirm new password\""
+  },
+  {
+    "file": "src/features/portal/pages/Requests/index.tsx",
+    "line": 350,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5,8,17,0.8)\", ",
+    "placeholder": "Enter change request title",
+    "lineContent": "placeholder=\"Enter change request title\""
+  },
+  {
+    "file": "src/features/portal/pages/Requests/index.tsx",
+    "line": 437,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5,8,17,0.8)\", ",
+    "placeholder": "Enter change request description and technical justification...",
+    "lineContent": "placeholder=\"Enter change request description and technical justification...\""
+  },
+  {
+    "file": "src/features/portal/pages/Requests/index.tsx",
+    "line": 502,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5,8,17,0.8)\", ",
+    "placeholder": "Enter meeting or review subject",
+    "lineContent": "placeholder=\"Enter meeting or review subject\""
+  },
+  {
+    "file": "src/features/portal/pages/Requests/index.tsx",
+    "line": 583,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5,8,17,0.8)\", ",
+    "placeholder": "Enter meeting agenda and discussion topics...",
+    "lineContent": "placeholder=\"Enter meeting agenda and discussion topics...\""
+  },
+  {
+    "file": "src/features/portal/pages/Support/CreateTicket.tsx",
+    "line": 135,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Brief summary of the issue or operational incident",
+    "lineContent": "placeholder=\"Brief summary of the issue or operational incident\""
+  },
+  {
+    "file": "src/features/portal/pages/Support/CreateTicket.tsx",
+    "line": 147,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Select a project",
+    "lineContent": "<SelectValue placeholder=\"Select a project\" />"
+  },
+  {
+    "file": "src/features/portal/pages/Support/CreateTicket.tsx",
+    "line": 166,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Select a category",
+    "lineContent": "<SelectValue placeholder=\"Select a category\" />"
+  },
+  {
+    "file": "src/features/portal/pages/Support/CreateTicket.tsx",
+    "line": 185,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Select a priority",
+    "lineContent": "<SelectValue placeholder=\"Select a priority\" />"
+  },
+  {
+    "file": "src/features/portal/pages/Support/TicketList.tsx",
+    "line": 127,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Subject or ticket ID",
+    "lineContent": "placeholder=\"Subject or ticket ID\""
+  },
+  {
+    "file": "src/features/portal/pages/Support/TicketList.tsx",
+    "line": 136,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "All Statuses",
+    "lineContent": "<SelectValue placeholder=\"All Statuses\" />"
+  },
+  {
+    "file": "src/features/portal/pages/Support/TicketList.tsx",
+    "line": 151,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "All Categories",
+    "lineContent": "<SelectValue placeholder=\"All Categories\" />"
+  },
+  {
+    "file": "src/features/portal/pages/Support/TicketList.tsx",
+    "line": 166,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "All Priorities",
+    "lineContent": "<SelectValue placeholder=\"All Priorities\" />"
+  },
+  {
+    "file": "src/features/public/pages/Careers/ApplyPage.tsx",
+    "line": 314,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your full name",
+    "lineContent": "placeholder=\"Enter your full name\""
+  },
+  {
+    "file": "src/features/public/pages/Careers/ApplyPage.tsx",
+    "line": 337,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your email address",
+    "lineContent": "placeholder=\"Enter your email address\""
+  },
+  {
+    "file": "src/features/public/pages/Careers/ApplyPage.tsx",
+    "line": 434,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your cover letter or introduction (optional)...",
+    "lineContent": "placeholder=\"Enter your cover letter or introduction (optional)...\""
+  },
+  {
+    "file": "src/features/public/pages/Careers/CareersPage.tsx",
+    "line": 168,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search roles, skills, location…",
+    "lineContent": "placeholder=\"Search roles, skills, location…\""
+  },
+  {
+    "file": "src/features/public/pages/CaseStudies/components/CaseStudyFilters.tsx",
+    "line": 23,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search case studies...",
+    "lineContent": "placeholder=\"Search case studies...\""
+  },
+  {
+    "file": "src/features/public/pages/Contact/ContactPage.tsx",
+    "line": 316,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your first name",
+    "lineContent": "placeholder=\"Enter your first name\""
+  },
+  {
+    "file": "src/features/public/pages/Contact/ContactPage.tsx",
+    "line": 334,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your last name",
+    "lineContent": "placeholder=\"Enter your last name\""
+  },
+  {
+    "file": "src/features/public/pages/Contact/ContactPage.tsx",
+    "line": 356,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your work email",
+    "lineContent": "placeholder=\"Enter your work email\""
+  },
+  {
+    "file": "src/features/public/pages/Contact/ContactPage.tsx",
+    "line": 410,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter phone number",
+    "lineContent": "placeholder=\"Enter phone number\""
+  },
+  {
+    "file": "src/features/public/pages/Contact/ContactPage.tsx",
+    "line": 433,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter subject",
+    "lineContent": "placeholder=\"Enter subject\""
+  },
+  {
+    "file": "src/features/public/pages/Contact/ContactPage.tsx",
+    "line": 453,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your message",
+    "lineContent": "placeholder=\"Enter your message\""
+  },
+  {
+    "file": "src/features/public/pages/Estimator/EstimatorPage.tsx",
+    "line": 316,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your full name",
+    "lineContent": "placeholder=\"Enter your full name\""
+  },
+  {
+    "file": "src/features/public/pages/Estimator/EstimatorPage.tsx",
+    "line": 328,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your email",
+    "lineContent": "placeholder=\"Enter your email\""
+  },
+  {
+    "file": "src/features/public/pages/Estimator/EstimatorPage.tsx",
+    "line": 383,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter phone number",
+    "lineContent": "placeholder=\"Enter phone number\""
+  },
+  {
+    "file": "src/features/public/pages/Estimator/EstimatorPage.tsx",
+    "line": 407,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter company name",
+    "lineContent": "placeholder=\"Enter company name\""
+  },
+  {
+    "file": "src/features/public/pages/Estimator/EstimatorPage.tsx",
+    "line": 421,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter project details",
+    "lineContent": "placeholder=\"Enter project details\""
+  },
+  {
+    "file": "src/features/public/pages/Industries/components/IndustrySearch.tsx",
+    "line": 82,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by industry name...",
+    "lineContent": "placeholder=\"Search by industry name...\""
+  },
+  {
+    "file": "src/features/public/pages/Insights/components/Hub/InsightsCTA.tsx",
+    "line": 44,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Work Email",
+    "lineContent": "placeholder=\"Work Email\""
+  },
+  {
+    "file": "src/features/public/pages/Insights/components/Hub/SearchBar.tsx",
+    "line": 13,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search insights...",
+    "lineContent": "placeholder=\"Search insights...\""
+  },
+  {
+    "file": "src/features/public/pages/RequestQuote/RequestQuotePage.tsx",
+    "line": 187,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter target start date or estimated timeline",
+    "lineContent": "placeholder=\"Enter target start date or estimated timeline\""
+  },
+  {
+    "file": "src/features/public/pages/RequestQuote/RequestQuotePage.tsx",
+    "line": 199,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your project requirements, challenges, and goals...",
+    "lineContent": "placeholder=\"Enter your project requirements, challenges, and goals...\""
+  },
+  {
+    "file": "src/features/public/pages/Rfp/RfpPage.tsx",
+    "line": 235,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your full name",
+    "lineContent": "<input {...register(\"full_name\")} className={fieldClass} placeholder=\"Enter your full name\" />"
+  },
+  {
+    "file": "src/features/public/pages/Rfp/RfpPage.tsx",
+    "line": 240,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your company name",
+    "lineContent": "<input {...register(\"company_name\")} className={fieldClass} placeholder=\"Enter your company name\" />"
+  },
+  {
+    "file": "src/features/public/pages/Rfp/RfpPage.tsx",
+    "line": 249,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your work email",
+    "lineContent": "<input {...register(\"work_email\")} type=\"email\" className={fieldClass} placeholder=\"Enter your work email\" />"
+  },
+  {
+    "file": "src/features/public/pages/Rfp/RfpPage.tsx",
+    "line": 295,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter phone number",
+    "lineContent": "placeholder=\"Enter phone number\""
+  },
+  {
+    "file": "src/features/public/pages/Rfp/RfpPage.tsx",
+    "line": 307,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter your designation / job title",
+    "lineContent": "<input {...register(\"designation\")} className={fieldClass} placeholder=\"Enter your designation / job title\" />"
+  },
+  {
+    "file": "src/features/public/pages/Rfp/RfpPage.tsx",
+    "line": 349,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter project description",
+    "lineContent": "placeholder=\"Enter project description\""
+  },
+  {
+    "file": "src/features/public/pages/Services/components/ServiceSearch.tsx",
+    "line": 63,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by keyword or technology...",
+    "lineContent": "placeholder=\"Search by keyword or technology...\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Applications/ApplicationsPage.tsx",
+    "line": 238,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by candidate name, email, phone, or tracking code...",
+    "lineContent": "placeholder=\"Search by candidate name, email, phone, or tracking code...\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Applications/index.tsx",
+    "line": 197,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by candidate name, email, phone, or tracking code...",
+    "lineContent": "placeholder=\"Search by candidate name, email, phone, or tracking code...\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Candidates/index.tsx",
+    "line": 197,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by candidate name, email, phone, role, or tracking code...",
+    "lineContent": "placeholder=\"Search by candidate name, email, phone, role, or tracking code...\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Dashboard.tsx",
+    "line": 686,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.88",
+    "placeholder": "Enter department name",
+    "lineContent": "placeholder=\"Enter department name\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Dashboard.tsx",
+    "line": 697,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.88",
+    "placeholder": "Enter job location or Remote",
+    "lineContent": "placeholder=\"Enter job location or Remote\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Dashboard.tsx",
+    "line": 708,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.88",
+    "placeholder": "Enter required experience",
+    "lineContent": "placeholder=\"Enter required experience\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Dashboard.tsx",
+    "line": 743,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.88",
+    "placeholder": "Enter key job responsibilities, deliverables, and requirements...",
+    "lineContent": "placeholder=\"Enter key job responsibilities, deliverables, and requirements...\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 231,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Search by title, job ID, department, or required skills...",
+    "lineContent": "placeholder=\"Search by title, job ID, department, or required skills...\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 556,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter unique job code",
+    "lineContent": "placeholder=\"Enter unique job code\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 568,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter position title",
+    "lineContent": "placeholder=\"Enter position title\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 581,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter department name",
+    "lineContent": "placeholder=\"Enter department name\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 592,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter job location or Remote",
+    "lineContent": "placeholder=\"Enter job location or Remote\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 603,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter required experience",
+    "lineContent": "placeholder=\"Enter required experience\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 628,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter comma-separated required skills",
+    "lineContent": "placeholder=\"Enter comma-separated required skills\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 639,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter key job responsibilities, deliverables, and requirements...",
+    "lineContent": "placeholder=\"Enter key job responsibilities, deliverables, and requirements...\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 703,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter department name",
+    "lineContent": "placeholder=\"Enter department name\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 714,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter job location or Remote",
+    "lineContent": "placeholder=\"Enter job location or Remote\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 725,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter required experience",
+    "lineContent": "placeholder=\"Enter required experience\""
+  },
+  {
+    "file": "src/features/recruitment/pages/Jobs/index.tsx",
+    "line": 760,
+    "inModalContext": true,
+    "modalSnippet": "<div style={{ position: \"fixed\", inset: 0, backgroundColor: \"rgba(5, 8, 17, 0.85",
+    "placeholder": "Enter key job responsibilities, deliverables, and requirements...",
+    "lineContent": "placeholder=\"Enter key job responsibilities, deliverables, and requirements...\""
+  },
+  {
+    "file": "src/features/support/pages/Tickets/CreateTicket.tsx",
+    "line": 127,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Operational inquiry or system issue summary",
+    "lineContent": "placeholder=\"Operational inquiry or system issue summary\""
+  },
+  {
+    "file": "src/features/support/pages/Tickets/CreateTicket.tsx",
+    "line": 138,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Select a category",
+    "lineContent": "<SelectValue placeholder=\"Select a category\" />"
+  },
+  {
+    "file": "src/features/support/pages/Tickets/CreateTicket.tsx",
+    "line": 156,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Select a priority",
+    "lineContent": "<SelectValue placeholder=\"Select a priority\" />"
+  },
+  {
+    "file": "src/features/support/pages/Tickets/TicketDetails.tsx",
+    "line": 155,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Select Status",
+    "lineContent": "<SelectValue placeholder=\"Select Status\" />"
+  },
+  {
+    "file": "src/features/support/pages/Tickets/TicketDetails.tsx",
+    "line": 174,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Select Priority",
+    "lineContent": "<SelectValue placeholder=\"Select Priority\" />"
+  },
+  {
+    "file": "src/features/support/pages/Tickets/TicketDetails.tsx",
+    "line": 193,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Select Category",
+    "lineContent": "<SelectValue placeholder=\"Select Category\" />"
+  },
+  {
+    "file": "src/features/support/pages/Tickets/TicketDetails.tsx",
+    "line": 217,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Unassigned",
+    "lineContent": "<SelectValue placeholder=\"Unassigned\" />"
+  },
+  {
+    "file": "src/features/support/pages/Tickets/TicketDetails.tsx",
+    "line": 260,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Enter resolution notes, root cause analysis, or response details for the client...",
+    "lineContent": "placeholder=\"Enter resolution notes, root cause analysis, or response details for the client...\""
+  },
+  {
+    "file": "src/features/support/pages/Tickets/TicketList.tsx",
+    "line": 216,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "Subject, ID, or client",
+    "lineContent": "placeholder=\"Subject, ID, or client\""
+  },
+  {
+    "file": "src/features/support/pages/Tickets/TicketList.tsx",
+    "line": 226,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "All Statuses",
+    "lineContent": "<SelectValue placeholder=\"All Statuses\" />"
+  },
+  {
+    "file": "src/features/support/pages/Tickets/TicketList.tsx",
+    "line": 242,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "All Categories",
+    "lineContent": "<SelectValue placeholder=\"All Categories\" />"
+  },
+  {
+    "file": "src/features/support/pages/Tickets/TicketList.tsx",
+    "line": 258,
+    "inModalContext": false,
+    "modalSnippet": "",
+    "placeholder": "All Priorities",
+    "lineContent": "<SelectValue placeholder=\"All Priorities\" />"
+  },
+  {
+    "file": "src/features/support/pages/Tickets/TicketList.tsx",
+    "line": 465,
+    "inModalContext": true,
+    "modalSnippet": "<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>",
+    "placeholder": "Enter resolution notes, technical findings, or guidance for the client...",
+    "lineContent": "placeholder=\"Enter resolution notes, technical findings, or guidance for the client...\""
+  }
+]

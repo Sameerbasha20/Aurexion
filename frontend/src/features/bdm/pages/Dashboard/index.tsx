@@ -812,7 +812,6 @@ export const Dashboard: React.FC = () => {
                   value={declineReason}
                   onChange={(e) => setDeclineReason(e.target.value)}
                   rows={3}
-                  placeholder="Provide a detailed reason for rejecting (minimum 10 characters)..."
                   required
                   minLength={10}
                   style={{

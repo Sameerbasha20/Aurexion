@@ -184,7 +184,7 @@ export const RequestQuotePage: React.FC = () => {
                       <input 
                         id="timeline" 
                         {...register("timeline")} 
-                        placeholder="e.g., Q3 2026 or 3-6 months"
+                        placeholder="Enter target start date or estimated timeline"
                         className="w-full p-3 rounded-md bg-background border border-input focus:outline-none focus:ring-1 focus:ring-primary" 
                       />
                     </div>
@@ -196,7 +196,6 @@ export const RequestQuotePage: React.FC = () => {
                       id="requirements" 
                       rows={5}
                       {...register("requirements")} 
-                      placeholder="Please describe your challenges and what you're trying to achieve..."
                       className={`w-full p-3 rounded-md bg-background border ${errors.requirements ? 'border-destructive' : 'border-input'} focus:outline-none focus:ring-1 focus:ring-primary resize-none`} 
                     />
                     {errors.requirements && <p className="text-xs text-destructive">{errors.requirements.message}</p>}

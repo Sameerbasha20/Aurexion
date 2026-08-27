@@ -60,7 +60,7 @@ export const ServiceSearch: React.FC = () => {
             <input
               type="text"
               className="block w-full pl-12 pr-4 py-4 bg-card border border-border/50 rounded-lg text-foreground focus:ring-primary focus:border-primary transition-colors text-lg"
-              placeholder="Search by keyword, technology (e.g. 'AI', 'Cloud', 'Python')..."
+              placeholder="Search by keyword or technology..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />

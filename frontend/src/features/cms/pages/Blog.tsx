@@ -645,32 +645,32 @@ export const Blog: React.FC = () => {
             )}
 
             <form onSubmit={handleCreateSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>ARTICLE TITLE *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Distributed Neural Graph Reasoning"
-                  value={createForm.title}
-                  onChange={(e) => {
-                    const title = e.target.value;
-                    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-                    setCreateForm({ ...createForm, title, slug });
-                  }}
-                  style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
-                />
-              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: "1rem" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>ARTICLE TITLE *</label>
+                  <input
+                    type="text"
+                    required
+                    value={createForm.title}
+                    onChange={(e) => {
+                      const title = e.target.value;
+                      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+                      setCreateForm({ ...createForm, title, slug });
+                    }}
+                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
+                  />
+                </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SLUG *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. distributed-neural-graph-reasoning"
-                  value={createForm.slug}
-                  onChange={(e) => setCreateForm({ ...createForm, slug: e.target.value })}
-                  style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
-                />
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SLUG *</label>
+                  <input
+                    type="text"
+                    required
+                    value={createForm.slug}
+                    onChange={(e) => setCreateForm({ ...createForm, slug: e.target.value })}
+                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", textOverflow: "ellipsis" }}
+                  />
+                </div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
@@ -691,7 +691,6 @@ export const Blog: React.FC = () => {
                   <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>TAGS (COMMA SEPARATED)</label>
                   <input
                     type="text"
-                    placeholder="AI, Architecture, Systems"
                     value={tagsInput}
                     onChange={(e) => setTagsInput(e.target.value)}
                     style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -704,7 +703,6 @@ export const Blog: React.FC = () => {
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <input
                     type="text"
-                    placeholder="https://example.com/image.png"
                     value={createForm.media || ""}
                     onChange={(e) => setCreateForm({ ...createForm, media: e.target.value })}
                     style={{ flex: 1, padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}
@@ -743,7 +741,6 @@ export const Blog: React.FC = () => {
                 <textarea
                   rows={6}
                   required
-                  placeholder="Full markdown/technical content of the article..."
                   value={createForm.content}
                   onChange={(e) => setCreateForm({ ...createForm, content: e.target.value })}
                   style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", resize: "vertical" }}
@@ -820,16 +817,16 @@ export const Blog: React.FC = () => {
                 />
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SLUG</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. distributed-neural-graph-reasoning"
-                  value={editForm.slug || ""}
-                  onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
-                  style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", width: "100%", boxSizing: "border-box" }}
-                />
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SLUG</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.slug || ""}
+                    onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
+                    style={{ padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px", textOverflow: "ellipsis" }}
+                  />
+                </div>
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
@@ -837,7 +834,6 @@ export const Blog: React.FC = () => {
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <input
                     type="text"
-                    placeholder="https://example.com/image.png"
                     value={editForm.media || ""}
                     onChange={(e) => setEditForm({ ...editForm, media: e.target.value })}
                     style={{ flex: 1, padding: "0.6rem", backgroundColor: "#050811", border: "1px solid rgba(140, 174, 187, 0.25)", color: "#f8fafc", borderRadius: "4px" }}

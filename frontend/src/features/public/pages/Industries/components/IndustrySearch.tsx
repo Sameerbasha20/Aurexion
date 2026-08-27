@@ -79,7 +79,7 @@ export const IndustrySearch = () => {
             <input
               type="text"
               className="block w-full pl-12 pr-4 py-4 bg-card border border-border/50 rounded-lg text-foreground focus:ring-primary focus:border-primary transition-colors text-lg"
-              placeholder="Search by industry name (e.g. 'Banking', 'Healthcare')..."
+              placeholder="Search by industry name..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />

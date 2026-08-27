@@ -41,7 +41,7 @@ export const InsightsCTA = () => {
                 <input
                   type="email"
                   required
-                  placeholder="Work Email"
+                  placeholder="Enter your work email address"
                   value={email}
                   onChange={(e: any) => setEmail(e.target.value)}
                   className="block w-full pl-12 pr-4 py-3 border border-border/40 rounded-md bg-card text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"

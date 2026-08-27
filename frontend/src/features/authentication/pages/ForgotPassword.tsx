@@ -140,7 +140,6 @@ export const ForgotPassword: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="name@aurexion.io"
                 style={{
                   width: "100%",
                   height: "44px",

@@ -347,7 +347,6 @@ export const Requests: React.FC = () => {
                 <input
                   required
                   type="text"
-                  placeholder="e.g. Change Request — API Rate Limits"
                   value={reqTitle}
                   onChange={(e) => setReqTitle(e.target.value)}
                   style={{
@@ -434,7 +433,6 @@ export const Requests: React.FC = () => {
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>DESCRIPTION</label>
                 <textarea
                   rows={4}
-                  placeholder="Provide business or technical justification..."
                   value={reqDescription}
                   onChange={(e) => setReqDescription(e.target.value)}
                   style={{
@@ -499,7 +497,6 @@ export const Requests: React.FC = () => {
                 <input
                   required
                   type="text"
-                  placeholder="e.g. Architecture Technical Review — Phase 2"
                   value={consTitle}
                   onChange={(e) => setConsTitle(e.target.value)}
                   style={{
@@ -581,7 +578,6 @@ export const Requests: React.FC = () => {
                 <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>MEETING AGENDA / NOTES</label>
                 <textarea
                   rows={4}
-                  placeholder="Outline topics or discussion items for Aurexion delivery leads..."
                   value={consDescription}
                   onChange={(e) => setConsDescription(e.target.value)}
                   style={{
