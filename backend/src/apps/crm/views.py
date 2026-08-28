@@ -593,6 +593,9 @@ class LeadViewSet(viewsets.ModelViewSet):
         return response
 
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
 class PublicLeadCreateView(APIView):
     """
     Public endpoint for form submissions (estimator, RFP, contact forms).
@@ -609,6 +612,7 @@ class PublicLeadCreateView(APIView):
         responses={201: LeadSerializer},
         auth=[]
     )
+    @method_decorator(csrf_exempt, name='dispatch')
     def post(self, request):
         serializer = PublicLeadCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -645,6 +649,7 @@ class EstimatorCalculateView(APIView):
         responses={201: dict},
         auth=[]
     )
+    @method_decorator(csrf_exempt, name='dispatch')
     def post(self, request):
         data = request.data or {}
         scope = data.get("project_scope", [])
@@ -687,6 +692,7 @@ class EstimatorCalculateView(APIView):
 from rest_framework.throttling import AnonRateThrottle
 from apps.crm.serializers import RFPEnquirySerializer
 
+@method_decorator(csrf_exempt, name='dispatch')
 class RFPSubmitView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
