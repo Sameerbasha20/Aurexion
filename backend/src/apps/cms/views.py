@@ -19,14 +19,36 @@ from apps.administration.permissions import IsContentManager
 
 # --- Admin/Staff CMS ViewSets (CRUD) ---
 
-class AdminServiceViewSet(viewsets.ModelViewSet):
+class BaseSlugOrPkAdminViewSet(viewsets.ModelViewSet):
+    lookup_field = 'slug'
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_val = self.kwargs.get(lookup_url_kwarg)
+        if not lookup_val:
+            return super().get_object()
+
+        if str(lookup_val).isdigit():
+            obj = queryset.filter(Q(slug=lookup_val) | Q(pk=int(lookup_val))).first()
+        else:
+            obj = queryset.filter(slug=lookup_val).first()
+
+        if not obj:
+            from django.http import Http404
+            raise Http404(f"No {queryset.model._meta.object_name} matches '{lookup_val}'.")
+
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+
+class AdminServiceViewSet(BaseSlugOrPkAdminViewSet):
     """
     Admin API for Services Catalog.
     Optimized with database B-tree indexing and Server-Side Query Caching (TTL: 300s).
     """
     serializer_class = ServiceSerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'pk'
 
     def get_queryset(self):
         queryset = Service.objects.all().order_by('-created_at')
@@ -75,14 +97,13 @@ class AdminServiceViewSet(viewsets.ModelViewSet):
         cache.clear()
 
 
-class AdminCaseStudyViewSet(viewsets.ModelViewSet):
+class AdminCaseStudyViewSet(BaseSlugOrPkAdminViewSet):
     """
     Admin API for Case Studies Portfolio.
     Optimized with database B-tree indexing and Server-Side Query Caching (TTL: 300s).
     """
     serializer_class = CaseStudySerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'pk'
 
     def get_queryset(self):
         queryset = CaseStudy.objects.all().order_by('-created_at')
@@ -132,7 +153,7 @@ class AdminCaseStudyViewSet(viewsets.ModelViewSet):
         cache.clear()
 
 
-class AdminIndustryViewSet(viewsets.ModelViewSet):
+class AdminIndustryViewSet(BaseSlugOrPkAdminViewSet):
     """
     Admin API for Industry Verticals.
     Optimized with database B-tree indexing on [-created_at, status, name]
@@ -140,7 +161,6 @@ class AdminIndustryViewSet(viewsets.ModelViewSet):
     """
     serializer_class = IndustrySerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'pk'
 
     def get_queryset(self):
         queryset = Industry.objects.all().prefetch_related('services', 'case_studies').order_by('-created_at')
@@ -190,14 +210,13 @@ class AdminIndustryViewSet(viewsets.ModelViewSet):
         cache.clear()
 
 
-class AdminCategoryViewSet(viewsets.ModelViewSet):
+class AdminCategoryViewSet(BaseSlugOrPkAdminViewSet):
     """
     Admin API for Content Categories.
     """
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'pk'
 
     def list(self, request, *args, **kwargs):
         from django.core.cache import cache
@@ -231,13 +250,12 @@ class AdminCategoryViewSet(viewsets.ModelViewSet):
         cache.clear()
 
 
-class AdminBlogPostViewSet(viewsets.ModelViewSet):
+class AdminBlogPostViewSet(BaseSlugOrPkAdminViewSet):
     """
     Admin API for Blog Articles.
     """
     serializer_class = BlogPostSerializer
     permission_classes = [IsContentManager]
-    lookup_field = 'pk'
 
     def dispatch(self, request, *args, **kwargs):
         if hasattr(request, 'user') and request.user.is_authenticated:
