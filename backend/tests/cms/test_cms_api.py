@@ -203,3 +203,29 @@ class CMSAPITestCase(APITestCase):
         self.service1.title = "Cloud Integration Pro"
         self.service1.save()
         self.assertTrue(mock_clear.called)
+
+    def test_admin_category_delete_by_slug(self):
+        self.client.force_authenticate(user=self.cm_user)
+        url = reverse('admin-categories-detail', kwargs={'slug': 'engineering'})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Category.objects.filter(slug='engineering').exists())
+
+    def test_admin_blog_crud_by_slug(self):
+        self.client.force_authenticate(user=self.cm_user)
+        url = reverse('admin-blog-detail', kwargs={'slug': 'building-scalable-apis'})
+        # GET
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['title'], 'Building Scalable APIs')
+
+        # PATCH
+        response = self.client.patch(url, {'title': 'Building Scalable APIs v2'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['title'], 'Building Scalable APIs v2')
+
+        # DELETE
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(BlogPost.objects.filter(slug='building-scalable-apis').exists())
+
