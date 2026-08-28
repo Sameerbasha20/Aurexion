@@ -28,7 +28,7 @@ export function useCmsDashboard() {
       const stats = await cmsService.getDashboardStats();
       setData(stats);
     } catch (err: unknown) {
-      setError(err?.message || "Failed to load CMS metrics.");
+      setError(  "Failed to load CMS metrics.");
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +59,7 @@ export function useCmsServices(page = 1, pageSize = 10) {
       setServices(res.results);
       setTotalCount(res.count);
     } catch (err: unknown) {
-      setError(err?.message || "Failed to load services catalog.");
+      setError(  "Failed to load services catalog.");
     } finally {
       setIsLoading(false);
     }
@@ -146,7 +146,7 @@ export function useCmsCaseStudies(page = 1, pageSize = 10) {
       setCaseStudies(res.results);
       setTotalCount(res.count);
     } catch (err: unknown) {
-      setError(err?.message || "Failed to load case studies.");
+      setError(  "Failed to load case studies.");
     } finally {
       setIsLoading(false);
     }
@@ -233,7 +233,7 @@ export function useCmsIndustries(page = 1, pageSize = 10) {
       setIndustries(res.results);
       setTotalCount(res.count);
     } catch (err: unknown) {
-      setError(err?.message || "Failed to load industries.");
+      setError(  "Failed to load industries.");
     } finally {
       setIsLoading(false);
     }
@@ -320,7 +320,7 @@ export function useCmsCategories(page = 1, pageSize = 10) {
       setCategories(res.results);
       setTotalCount(res.count);
     } catch (err: unknown) {
-      setError(err?.message || "Failed to load categories.");
+      setError(  "Failed to load categories.");
     } finally {
       setIsLoading(false);
     }
@@ -383,7 +383,7 @@ export function useCmsBlog(page = 1, pageSize = 10) {
       setPosts(res.results);
       setTotalCount(res.count);
     } catch (err: unknown) {
-      setError(err?.message || "Failed to load blog posts.");
+      setError(  "Failed to load blog posts.");
     } finally {
       setIsLoading(false);
     }
