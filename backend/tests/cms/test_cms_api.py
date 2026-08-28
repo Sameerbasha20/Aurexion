@@ -255,4 +255,13 @@ class CMSAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Service.objects.filter(slug='cloud-integration').exists())
 
+    def test_admin_case_study_delete_by_slug(self):
+        self.client.force_authenticate(user=self.cm_user)
+        # Plural route /api/v1/cms/admin/case-studies/{slug}/
+        url_plural = reverse('admin-case-studies-detail', kwargs={'slug': 'fintech-migration'})
+        response = self.client.delete(url_plural)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(CaseStudy.objects.filter(slug='fintech-migration').exists())
+
+
 
