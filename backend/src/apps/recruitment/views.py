@@ -10,6 +10,7 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
@@ -103,12 +104,14 @@ class PublicJobVacancyDetailView(generics.RetrieveAPIView):
         auth=[]
     )
 )
+@method_decorator(csrf_exempt, name='dispatch')
 class ApplyForJobView(APIView):
     """
     Public API: POST /api/v1/careers/apply/
     Allows candidates to submit an application and upload their resume.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
     parser_classes = (MultiPartParser, FormParser)
     throttle_classes = [ApplyRateThrottle]
     serializer_class = ApplySerializer
