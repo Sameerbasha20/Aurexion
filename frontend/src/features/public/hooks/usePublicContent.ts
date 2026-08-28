@@ -31,7 +31,7 @@ export const useCaseStudies = () => {
         } else {
           setData(caseStudiesData);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setData(caseStudiesData);
         setError(err);
       } finally {
@@ -56,7 +56,7 @@ export const useCaseStudyDetails = (slug: string) => {
       try {
         const result = await publicService.getCaseStudyBySlug(slug);
         setData(result);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err);
       } finally {
         setLoading(false);
@@ -89,7 +89,7 @@ export const useBlogPosts = (filters?: { category?: string; tag?: string; search
         } else {
           setData(blogPosts);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setData(blogPosts);
         setError(err);
       } finally {
@@ -114,7 +114,7 @@ export const useBlogPostDetails = (slug: string) => {
       try {
         const result = await publicService.getBlogPostBySlug(slug);
         setData(result);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err);
       } finally {
         setLoading(false);
@@ -138,7 +138,7 @@ export const useRelatedBlogPosts = (slug: string) => {
       try {
         const result = await publicService.getRelatedBlogPosts(slug);
         setData(result);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err);
       } finally {
         setLoading(false);
@@ -160,7 +160,7 @@ export const useJobs = () => {
       try {
         const result = await publicService.getJobs();
         setData(result);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err);
       } finally {
         setLoading(false);
@@ -182,7 +182,7 @@ export const useServices = () => {
       try {
         const result = await publicService.getServices();
         setData(result);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err);
       } finally {
         setLoading(false);
@@ -204,7 +204,7 @@ export const useServiceDetails = (slug: string) => {
       try {
         const result = await publicService.getServiceBySlug(slug);
         setData(result);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err);
       } finally {
         setLoading(false);
@@ -226,7 +226,7 @@ export const useIndustries = () => {
       try {
         const result = await publicService.getIndustries();
         setData(result);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err);
       } finally {
         setLoading(false);
@@ -248,7 +248,7 @@ export const useIndustryDetails = (slug: string) => {
       try {
         const result = await publicService.getIndustryBySlug(slug);
         setData(result);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err);
       } finally {
         setLoading(false);
@@ -270,7 +270,7 @@ export const useJobDetails = (id: string) => {
       try {
         const result = await publicService.getJobById(id);
         setData(result);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err);
       } finally {
         setLoading(false);
@@ -297,7 +297,7 @@ export const useCompanyInfo = () => {
         } else {
           setData(aboutData);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setData(aboutData);
         setError(err);
       } finally {

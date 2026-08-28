@@ -27,7 +27,7 @@ export function useCmsDashboard() {
     try {
       const stats = await cmsService.getDashboardStats();
       setData(stats);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to load CMS metrics.");
     } finally {
       setIsLoading(false);
@@ -58,7 +58,7 @@ export function useCmsServices(page = 1, pageSize = 10) {
       const res = await cmsService.getAdminServices(page, pageSize);
       setServices(res.results);
       setTotalCount(res.count);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to load services catalog.");
     } finally {
       setIsLoading(false);
@@ -145,7 +145,7 @@ export function useCmsCaseStudies(page = 1, pageSize = 10) {
       const res = await cmsService.getAdminCaseStudies(page, pageSize);
       setCaseStudies(res.results);
       setTotalCount(res.count);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to load case studies.");
     } finally {
       setIsLoading(false);
@@ -232,7 +232,7 @@ export function useCmsIndustries(page = 1, pageSize = 10) {
       const res = await cmsService.getAdminIndustries(page, pageSize);
       setIndustries(res.results);
       setTotalCount(res.count);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to load industries.");
     } finally {
       setIsLoading(false);
@@ -319,7 +319,7 @@ export function useCmsCategories(page = 1, pageSize = 10) {
       const res = await cmsService.getAdminCategories(page, pageSize);
       setCategories(res.results);
       setTotalCount(res.count);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to load categories.");
     } finally {
       setIsLoading(false);
@@ -382,7 +382,7 @@ export function useCmsBlog(page = 1, pageSize = 10) {
       const res = await cmsService.getAdminBlog(page, pageSize);
       setPosts(res.results);
       setTotalCount(res.count);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to load blog posts.");
     } finally {
       setIsLoading(false);

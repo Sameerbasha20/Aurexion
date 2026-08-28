@@ -21,7 +21,7 @@ export function useRecruitmentDashboard() {
     try {
       const stats = await recruitmentService.getDashboardStats();
       setData(stats);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to load recruitment metrics.");
     } finally {
       setIsLoading(false);
@@ -50,7 +50,7 @@ export function useJobs() {
     try {
       const list = await recruitmentService.getAdminJobs();
       setJobs(list);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to load job vacancies.");
     } finally {
       setIsLoading(false);
@@ -138,7 +138,7 @@ export function useApplications() {
       });
 
       setApplications(enriched);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to load job applications.");
     } finally {
       setIsLoading(false);
@@ -186,7 +186,7 @@ export function useCandidates() {
     try {
       const list = await recruitmentService.getCandidates();
       setCandidates(list);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err?.message || "Failed to load candidate talent pool.");
     } finally {
       setIsLoading(false);

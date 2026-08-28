@@ -4,9 +4,9 @@ import { BlogPost, CaseStudy, Industry, Job, JobApplication, Service, ServiceApi
 
 export const publicService = {
   // CMS endpoints
-  getCompanyInfo: async (): Promise<any> => {
+  getCompanyInfo: async (): Promise<Record<string, unknown>> => {
     const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_COMPANY_INFO);
-    return response as any;
+    return (response || {}) as Record<string, unknown>;
   },
 
   getServiceBySlug: async (slug: string): Promise<ServiceApiDetail> => {
@@ -27,7 +27,7 @@ export const publicService = {
 
   getIndustryBySlug: async (slug: string): Promise<Industry> => {
     const response = await axiosClient.get(API_ENDPOINTS.CMS.PUBLIC_INDUSTRY_DETAIL(slug));
-    return response as any;
+    return (response || {}) as Record<string, unknown>;
   },
 
   getCaseStudies: async (): Promise<CaseStudy[]> => {
@@ -37,7 +37,7 @@ export const publicService = {
 
   getCaseStudyBySlug: async (slug: string): Promise<CaseStudy> => {
     const response = await axiosClient.get(`${API_ENDPOINTS.CMS.PUBLIC_CASE_STUDIES}${slug}/`);
-    return response as any;
+    return (response || {}) as Record<string, unknown>;
   },
 
   getBlogPosts: async (params?: { category?: string; tag?: string; search?: string }): Promise<BlogPost[]> => {
@@ -49,7 +49,7 @@ export const publicService = {
 
   getBlogPostBySlug: async (slug: string): Promise<BlogPost> => {
     const response = await axiosClient.get(`${API_ENDPOINTS.CMS.PUBLIC_BLOG}${slug}/`);
-    return response as any;
+    return (response || {}) as Record<string, unknown>;
   },
 
   getRelatedBlogPosts: async (slug: string): Promise<BlogPost[]> => {
@@ -66,7 +66,7 @@ export const publicService = {
 
   getJobById: async (jobId: string): Promise<Job> => {
     const response = await axiosClient.get(API_ENDPOINTS.RECRUITMENT.PUBLIC_JOB_DETAIL(jobId));
-    return response as any;
+    return (response || {}) as Record<string, unknown>;
   },
 
   applyForJob: async (data: JobApplication): Promise<void> => {
@@ -117,7 +117,7 @@ export const publicService = {
     });
   },
   
-  submitRfp: async (data: any): Promise<void> => {
+  submitRfp: async (data: Record<string, any>): Promise<void> => {
     const formData = new FormData();
     formData.append("full_name", data.full_name);
     formData.append("company_name", data.company_name);
@@ -151,7 +151,7 @@ export const publicService = {
     }
   },
   
-  calculateEstimate: async (data: any): Promise<any> => {
+  calculateEstimate: async (data: Record<string, any>): Promise<{ estimatedCost: string }> => {
     await axiosClient.post(API_ENDPOINTS.CRM.PUBLIC_LEADS, {
       name: data.name,
       email: data.email,
