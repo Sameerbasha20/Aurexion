@@ -229,3 +229,30 @@ class CMSAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(BlogPost.objects.filter(slug='building-scalable-apis').exists())
 
+    def test_admin_industry_crud_by_slug(self):
+        self.client.force_authenticate(user=self.cm_user)
+        url = reverse('admin-industry-detail', kwargs={'slug': 'finance-banking'})
+        # GET
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], 'Finance & Banking')
+
+        # PATCH
+        response = self.client.patch(url, {'name': 'Finance & Banking v2'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], 'Finance & Banking v2')
+
+        # DELETE
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Industry.objects.filter(slug='finance-banking').exists())
+
+    def test_admin_service_delete_by_slug(self):
+        self.client.force_authenticate(user=self.cm_user)
+        # Test alias route /api/v1/cms/admin/service/{slug}/
+        url_alias = reverse('admin-service-alias-detail', kwargs={'slug': 'cloud-integration'})
+        response = self.client.delete(url_alias)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Service.objects.filter(slug='cloud-integration').exists())
+
+
