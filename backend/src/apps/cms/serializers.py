@@ -61,9 +61,26 @@ class CaseStudySerializer(serializers.ModelSerializer):
 
 
 class IndustrySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=True, help_text="Name of the industry vertical.")
+    slug = serializers.CharField(required=False, allow_blank=True, help_text="URL friendly slug. Auto-generated if not provided.")
+    challenges = serializers.CharField(required=True, style={'base_template': 'textarea.html'}, help_text="Key sector challenges.")
+    target_solutions = serializers.CharField(required=True, style={'base_template': 'textarea.html'}, help_text="Solutions provided for this sector.")
+
     class Meta:
         model = Industry
         fields = '__all__'
+
+    def create(self, validated_data):
+        if not validated_data.get('slug') and validated_data.get('name'):
+            from django.utils.text import slugify
+            base_slug = slugify(validated_data['name']) or "industry"
+            slug = base_slug
+            counter = 1
+            while Industry.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            validated_data['slug'] = slug
+        return super().create(validated_data)
 
 class IndustryPublicSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=True)

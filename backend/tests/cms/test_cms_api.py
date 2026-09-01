@@ -231,6 +231,26 @@ class CMSAPITestCase(APITestCase):
 
     def test_admin_industry_crud_by_slug(self):
         self.client.force_authenticate(user=self.cm_user)
+        
+        # Test validation for required fields
+        create_url = reverse('admin-industry-list')
+        response_invalid = self.client.post(create_url, {
+            'name': 'Retail'
+            # Missing challenges and target_solutions
+        }, format='json')
+        self.assertEqual(response_invalid.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('challenges', response_invalid.data)
+        self.assertIn('target_solutions', response_invalid.data)
+
+        # Test successful creation
+        response_valid = self.client.post(create_url, {
+            'name': 'Retail',
+            'challenges': 'Inventory management',
+            'target_solutions': 'Automated tracking'
+        }, format='json')
+        self.assertEqual(response_valid.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_valid.data['slug'], 'retail')
+
         url = reverse('admin-industry-detail', kwargs={'slug': 'finance-banking'})
         # GET
         response = self.client.get(url)

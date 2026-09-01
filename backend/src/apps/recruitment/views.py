@@ -99,7 +99,7 @@ class PublicJobVacancyDetailView(generics.RetrieveAPIView):
     post=extend_schema(
         tags=['Careers (Public)'],
         summary="Submit Candidate Application",
-        description="Submit a job application with a resume file upload (PDF/DOCX max 5MB).",
+        description="Submit a job application with a resume file upload (PDF/DOCX max 5MB).\n\n**Note:** This endpoint strictly requires `multipart/form-data` due to the file upload. Sending `application/json` will result in a 415 Unsupported Media Type error.",
         request=ApplySerializer,
         auth=[]
     )

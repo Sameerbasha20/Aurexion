@@ -541,7 +541,7 @@ export const Industries: React.FC = () => {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SECTOR CHALLENGES</label>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SECTOR CHALLENGES *</label>
                 <textarea
                   rows={2}
                   required
@@ -552,7 +552,7 @@ export const Industries: React.FC = () => {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>TARGETED SOLUTIONS</label>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>TARGETED SOLUTIONS *</label>
                 <textarea
                   rows={2}
                   required
@@ -618,7 +618,7 @@ export const Industries: React.FC = () => {
             <form onSubmit={handleEditSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: "1rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>NAME</label>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>NAME *</label>
                   <input
                     type="text"
                     required
@@ -629,7 +629,7 @@ export const Industries: React.FC = () => {
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SLUG</label>
+                  <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SLUG *</label>
                   <input
                     type="text"
                     required
@@ -641,7 +641,7 @@ export const Industries: React.FC = () => {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SECTOR CHALLENGES</label>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>SECTOR CHALLENGES *</label>
                 <textarea
                   rows={2}
                   value={editForm.challenges || ""}
@@ -651,7 +651,7 @@ export const Industries: React.FC = () => {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>TARGETED SOLUTIONS</label>
+                <label style={{ fontSize: "0.75rem", fontFamily: "IBM Plex Mono, monospace", color: "#94a3b8" }}>TARGETED SOLUTIONS *</label>
                 <textarea
                   rows={2}
                   value={editForm.target_solutions || ""}
