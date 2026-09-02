@@ -6,6 +6,10 @@ import { blogPosts } from "../../../data/blogPosts";
 import { aboutData } from "../../../data/about";
 import { resolveMediaUrl } from "../../../utils/mediaUrl";
 
+const normalizeError = (err: unknown): Error => {
+  return err instanceof Error ? err : new Error(String(err));
+};
+
 
 export const useCaseStudies = () => {
   const [data, setData] = useState<any[]>(caseStudiesData);
@@ -31,9 +35,9 @@ export const useCaseStudies = () => {
         } else {
           setData(caseStudiesData);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         setData(caseStudiesData);
-        setError(err);
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -56,8 +60,8 @@ export const useCaseStudyDetails = (slug: string) => {
       try {
         const result = await publicService.getCaseStudyBySlug(slug);
         setData(result);
-      } catch (err) {
-        setError(err);
+      } catch (err: unknown) {
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -89,9 +93,9 @@ export const useBlogPosts = (filters?: { category?: string; tag?: string; search
         } else {
           setData(blogPosts);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         setData(blogPosts);
-        setError(err);
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -114,8 +118,8 @@ export const useBlogPostDetails = (slug: string) => {
       try {
         const result = await publicService.getBlogPostBySlug(slug);
         setData(result);
-      } catch (err) {
-        setError(err);
+      } catch (err: unknown) {
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -138,8 +142,8 @@ export const useRelatedBlogPosts = (slug: string) => {
       try {
         const result = await publicService.getRelatedBlogPosts(slug);
         setData(result);
-      } catch (err) {
-        setError(err);
+      } catch (err: unknown) {
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -160,8 +164,8 @@ export const useJobs = () => {
       try {
         const result = await publicService.getJobs();
         setData(result);
-      } catch (err) {
-        setError(err);
+      } catch (err: unknown) {
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -182,8 +186,8 @@ export const useServices = () => {
       try {
         const result = await publicService.getServices();
         setData(result);
-      } catch (err) {
-        setError(err);
+      } catch (err: unknown) {
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -204,8 +208,8 @@ export const useServiceDetails = (slug: string) => {
       try {
         const result = await publicService.getServiceBySlug(slug);
         setData(result);
-      } catch (err) {
-        setError(err);
+      } catch (err: unknown) {
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -226,8 +230,8 @@ export const useIndustries = () => {
       try {
         const result = await publicService.getIndustries();
         setData(result);
-      } catch (err) {
-        setError(err);
+      } catch (err: unknown) {
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -248,8 +252,8 @@ export const useIndustryDetails = (slug: string) => {
       try {
         const result = await publicService.getIndustryBySlug(slug);
         setData(result);
-      } catch (err) {
-        setError(err);
+      } catch (err: unknown) {
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -270,8 +274,8 @@ export const useJobDetails = (id: string) => {
       try {
         const result = await publicService.getJobById(id);
         setData(result);
-      } catch (err) {
-        setError(err);
+      } catch (err: unknown) {
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -297,9 +301,9 @@ export const useCompanyInfo = () => {
         } else {
           setData(aboutData);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         setData(aboutData);
-        setError(err);
+        setError(normalizeError(err));
       } finally {
         setLoading(false);
       }
